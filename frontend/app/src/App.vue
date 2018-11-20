@@ -1,23 +1,30 @@
 <template>
   <div id="app">
-    <img src="./assets/logo.png">
-    <router-view/>
+    <header-component/>
+    <div class="row">
+      <sidebar-component class="col-sm-2"/>
+      <main class="col-sm-10">
+        <router-view/>
+      </main>
+    </div>
+    <footer-component/>
   </div>
 </template>
 
 <script>
+import HeaderComponent from '@/components/TheHeader'
+import SidebarComponent from '@/components/TheSidebar'
+// import FooterComponent from '@/components/TheFooter'
+
 export default {
-  name: 'App'
+  name: 'App',
+  components: {
+    HeaderComponent,
+    SidebarComponent
+    // FooterComponent
+  }
 }
 </script>
 
 <style>
-#app {
-  font-family: 'Avenir', Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
-}
 </style>
