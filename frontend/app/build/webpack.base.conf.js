@@ -36,6 +36,7 @@ module.exports = {
     alias: {
       'vue$': 'vue/dist/vue.esm.js',
       '@': resolve('src'),
+      'third_party' : resolve('third_party')
     }
   },
   module: {
@@ -73,6 +74,15 @@ module.exports = {
         options: {
           limit: 10000,
           name: utils.assetsPath('fonts/[name].[hash:7].[ext]')
+        }
+      },
+      {
+        test: /third_party/,
+        use: { 
+          loader: 'file-loader',
+          options: {
+            name: '[name].[ext]'
+          }
         }
       }
     ]
