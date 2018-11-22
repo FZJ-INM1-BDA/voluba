@@ -9,12 +9,16 @@ import BootstrapVue from 'bootstrap-vue'
 import 'bootstrap/dist/css/bootstrap.min.css'
 import 'bootstrap-vue/dist/bootstrap-vue.css'
 
-// Font-awesome
-import 'vue-awesome/icons'
-import Icon from 'vue-awesome/components/Icon'
+// Font awesome
+import { library } from '@fortawesome/fontawesome-svg-core'
+import { faAngleLeft, faAngleRight, faAngleUp, faAngleDown, faEye, faBars, faPlayCircle, faUpload } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 
 Vue.use(BootstrapVue)
-Vue.component('icon', Icon)
+
+library.add(faAngleLeft, faAngleRight, faAngleUp, faAngleDown, faEye, faBars, faPlayCircle, faUpload)
+Vue.component('font-awesome-icon', FontAwesomeIcon)
+
 Vue.config.productionTip = false
 
 /* eslint-disable no-new */

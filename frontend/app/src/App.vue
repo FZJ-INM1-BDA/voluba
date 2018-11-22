@@ -1,12 +1,10 @@
 <template>
   <div id="app">
     <header-component/>
-    <div class="row">
-      <sidebar-component class="col-sm-2"/>
-      <main class="col-sm-10">
-        <router-view/>
-      </main>
-    </div>
+    <sidebar-component id="sidebar"/>
+    <main id="main">
+      <router-view/>
+    </main>
     <!--<footer-component/>-->
   </div>
 </template>
@@ -27,4 +25,14 @@ export default {
 </script>
 
 <style>
+#sidebar {
+  position: absolute;
+  left:0; top:56px; right:0; bottom:0;
+  width:340px;
+}
+
+#main {
+  position: absolute;
+  left:340px; top:56px; right:0; bottom:0;
+}
 </style>
