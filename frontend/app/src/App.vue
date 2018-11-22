@@ -12,14 +12,12 @@
 <script>
 import HeaderComponent from '@/components/TheHeader'
 import SidebarComponent from '@/components/TheSidebar'
-import NehubaCommponent from '@/components/Nehuba'
 // import FooterComponent from '@/components/TheFooter'
 
 export default {
   name: 'App',
   components: {
     HeaderComponent,
-    NehubaCommponent,
     SidebarComponent
     // FooterComponent
   }
