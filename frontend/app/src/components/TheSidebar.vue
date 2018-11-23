@@ -13,11 +13,19 @@
           <b-card-body>
             <label>Select a reference volume:</label>
             <br>
-            <select></select>
+            <select id="select-reference" v-model="selectReference">
+              <option v-for="referenceURL in referenceURLs" :key="referenceURL.id" :value="referenceURL.value">
+                {{ referenceURL.text }}
+              </option>
+            </select>
             <hr>
             <label>Select a template volume:</label>
             <br>
-            <select></select>
+            <select id="select-template" v-model="selectTemplate">
+              <option v-for="templateURL in templateURLs" :key="templateURL.id" :value="templateURL.value">
+                {{ templateURL.text }}
+              </option>
+            </select>
             <br><br>
             <b-button href="#" variant="secondary">
               <font-awesome-icon icon="upload"/>
@@ -65,12 +73,11 @@
           <b-card-body>
             <label>Select a transformation type:</label>
             <br>
-            <select>
-              <option value="rigid">Rigid</option>
-              <option value="rigid+reflection">Rigid (allow reflection)</option>
-              <option value="similarity">Similarity</option>
-              <option value="similarity+reflection">Similarity (allow reflection)</option>
-              <option value="affine">Affine</option>
+            <select id="select-transformation" v-model="selectTransformation">
+              <option v-for="transformationType in transformationTypes" :key="transformationType.id"
+                      :value="transformationType.value">
+                {{ transformationType.text }}
+              </option>
             </select>
             <br><br>
             <b-button href="#" variant="secondary">
@@ -101,7 +108,29 @@
 
 <script>
 export default {
-  name: 'SidebarComponent'
+  name: 'SidebarComponent',
+  data () {
+    return {
+      referenceURLs: [
+        { id: '1', text: 'BigBrain (2015)', value: 'precomputed://https://www.jubrain.fz-juelich.de/apps/neuroglancer/BigBrainRelease.2015/image' }
+      ],
+      templateURLs: [
+        { id: '1', text: 'Nucleus subthalamicus (B20)', value: 'precomputed://https://www.jubrain.fz-juelich.de/apps/neuroglancer/B20_stn_l/isotropic-raw' },
+        { id: '2', text: 'Hippocampus unmasked', value: 'TODO' }
+      ],
+      transformationTypes: [
+        { id: '1', text: 'Rigid', value: 'rigid' },
+        { id: '2', text: 'Rigid (allow reflection)', value: 'rigid+reflection' },
+        { id: '3', text: 'Similarity', value: 'similarity' },
+        { id: '4', text: 'Similarity (allow reflection)', value: 'similarity+reflection' },
+        { id: '5', text: 'Affine', value: 'affine' }
+      ],
+      selectReference: 'precomputed://https://www.jubrain.fz-juelich.de/apps/neuroglancer/BigBrainRelease.2015/image',
+      selectTemplate: 'precomputed://https://www.jubrain.fz-juelich.de/apps/neuroglancer/B20_stn_l/isotropic-raw',
+      selectTransformation: 'rigid'
+    }
+  },
+  methods: {}
 }
 </script>
 
