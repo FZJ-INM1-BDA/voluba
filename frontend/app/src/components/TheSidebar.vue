@@ -9,7 +9,7 @@
             <h6><strong>Datasets</strong></h6>
           </a>
         </b-card-header>
-        <b-collapse id="collapse-datasets" visible="true">
+        <b-collapse id="collapse-datasets" visible>
           <b-card-body>
             <label>Select a reference volume:</label>
             <br>
@@ -78,7 +78,7 @@
               Compute transformation
             </b-button>
             <hr>
-            <b-container-fluid>
+            <b-container fluid>
               <b-row>
                 <b-col md="5"><label>Determinant:</label></b-col>
                 <b-col md="7"><label/></b-col>
@@ -87,7 +87,7 @@
                 <b-col md="5"><label>RMSE:</label></b-col>
                 <b-col md="7"><label/></b-col>
               </b-row>
-            </b-container-fluid>
+            </b-container>
             <b-button href="#" variant="secondary">
               <font-awesome-icon icon="eye"/>
               Show transformation matrix
