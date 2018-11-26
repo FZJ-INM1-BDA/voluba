@@ -111,7 +111,6 @@ export default {
         name,
         source: uri
       }
-      debugger
       const newNgLayer = viewer.layerSpecification.getLayer(name, {source: uri})
       viewer.layerManager.addManagedLayer(newNgLayer)
       this.userLayers.push(

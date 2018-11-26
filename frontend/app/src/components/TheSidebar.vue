@@ -87,48 +87,6 @@
           </b-button>
         </template>
       </card-component>
-
-      <b-card no-body>
-        <b-card-header header-tag="header" role="tab">
-          <a v-b-toggle.collapse-transformation>
-            <font-awesome-icon icon="angle-left" pull="right" class="when-closed"/>
-            <font-awesome-icon icon="angle-down" pull="right" class="when-opened"/>
-            <h6><strong>Transformation</strong></h6>
-          </a>
-        </b-card-header>
-        <b-collapse id="collapse-transformation">
-          <b-card-body>
-            <label>Select a transformation type:</label>
-            <br>
-            <select id="select-transformation" v-model="selectTransformation">
-              <option v-for="transformationType in transformationTypes" :key="transformationType.id"
-                      :value="transformationType.value">
-                {{ transformationType.text }}
-              </option>
-            </select>
-            <br><br>
-            <b-button href="#" variant="secondary">
-              <font-awesome-icon icon="play-circle"/>
-              Compute transformation
-            </b-button>
-            <hr>
-            <b-container fluid>
-              <b-row>
-                <b-col md="5"><label>Determinant:</label></b-col>
-                <b-col md="7"><input type="text" disabled/></b-col>
-              </b-row>
-              <b-row class="my-1">
-                <b-col md="5"><label>RMSE:</label></b-col>
-                <b-col md="7"><input type="text" disabled/></b-col>
-              </b-row>
-            </b-container>
-            <b-button href="#" variant="secondary">
-              <font-awesome-icon icon="eye"/>
-              Show transformation matrix
-            </b-button>
-          </b-card-body>
-        </b-collapse>
-      </b-card>
     </div>
   </div>
 </template>
