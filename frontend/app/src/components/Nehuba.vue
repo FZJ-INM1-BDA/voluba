@@ -16,7 +16,7 @@ export default {
   data: function () {
     return {
       placeholderText: 'Loading nehuba ...',
-      cid: null,
+      cid: 'neuroglancer-container',
       nehubaViewer: null,
       appendNehubaPromise: new Promise((resolve, reject) => {
         if ('export_nehuba' in window) {
@@ -56,22 +56,29 @@ export default {
   mounted: function () {
     this.appendNehubaPromise
       .then(() => {
-        this.cid = 'neuroglancer-container'
-      })
-      .then(() => {
         this.nehubaViewer = window.export_nehuba.createNehubaViewer(this.testConfig, (e) => {
           console.log('nehuba throwing error')
         })
       })
       .then(() => {
+        this.cid = null
+      })
+      .then(() => {
         window['viewer'] = null
-        window['nehubaViewer'] = this.nehubaViewer
         this.nehubaViewer.setMeshesToLoad([100, 200])
+        window['nehubaViewer'] = this.nehubaViewer
       })
       .catch((e) => {
         console.log(e)
         this.placeholderText = 'loading nehuba failed'
       })
+  },
+  watch: {
+    cid: function (val) {
+      if (val === null) {
+        this.$emit('ready', null)
+      }
+    }
   },
   computed: {
   }
