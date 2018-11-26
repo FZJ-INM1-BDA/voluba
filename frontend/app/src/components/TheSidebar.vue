@@ -19,7 +19,7 @@
           <label>Select a template volume:</label>
           <br>
           <select id="select-template" v-model="selectTemplate">
-            <option v-for="templateURL in templateURLs" :key="templateURL.id" :value="templateURL.value">
+            <option v-for="templateURL in renderedTemplateURLs" :key="templateURL.id" :value="templateURL.value">
               {{ templateURL.text }}
             </option>
           </select>
@@ -143,8 +143,8 @@ export default {
         { id: '1', text: 'BigBrain (2015)', value: 'precomputed://https://www.jubrain.fz-juelich.de/apps/neuroglancer/BigBrainRelease.2015/image' }
       ],
       templateURLs: [
-        { id: '1', text: 'Nucleus subthalamicus (B20)', value: 'precomputed://https://www.jubrain.fz-juelich.de/apps/neuroglancer/B20_stn_l/isotropic-raw' },
-        { id: '2', text: 'Hippocampus unmasked', value: 'TODO' }
+        { id: '1', text: 'Nucleus subthalamicus (B20)', value: 'precomputed://https://neuroglancer-dev.humanbrainproject.org/precomputed/landmark-reg/B20_stn_l/v10' },
+        { id: '2', text: 'Hippocampus unmasked', value: 'precomputed://https://neuroglancer-dev.humanbrainproject.org/precomputed/landmark-reg/hippocampus-unmasked' }
       ],
       transformationTypes: [
         { id: '1', text: 'Rigid', value: 'rigid' },
@@ -154,11 +154,23 @@ export default {
         { id: '5', text: 'Affine', value: 'affine' }
       ],
       selectReference: 'precomputed://https://www.jubrain.fz-juelich.de/apps/neuroglancer/BigBrainRelease.2015/image',
-      selectTemplate: 'precomputed://https://www.jubrain.fz-juelich.de/apps/neuroglancer/B20_stn_l/isotropic-raw',
+      selectTemplate: null,
       selectTransformation: 'rigid'
     }
   },
-  methods: {},
+  computed: {
+    renderedTemplateURLs: function () {
+      return [{id: null, text: '-- Please select an incoming template --', value: null}].concat(this.templateURLs)
+    }
+  },
+  methods: {
+  },
+  watch: {
+    selectTemplate: function (nst) {
+      console.log('select template', nst)
+      this.$store.commit('selectIncomingTemplate', nst)
+    }
+  },
   components: {
     CardComponent
   }

@@ -18,6 +18,7 @@ export default {
       placeholderText: 'Loading nehuba ...',
       cid: 'neuroglancer-container',
       nehubaViewer: null,
+      userLayers: [],
       appendNehubaPromise: new Promise((resolve, reject) => {
         if ('export_nehuba' in window) {
           resolve()
@@ -78,9 +79,50 @@ export default {
       if (val === null) {
         this.$emit('ready', null)
       }
+    },
+    selectIncomingTemplate: function (val) {
+      console.log('selectIncomingTemplate change', val)
+      this.clearUserLayers()
+      this.addUserLayer(val)
+    }
+  },
+  methods: {
+    clearUserLayers: function () {
+      if (!this.nehubaViewer) {
+        return
+      }
+      const lm = this.nehubaViewer.ngviewer.layerManager
+      this.userLayers
+        .map(ul => ul.name)
+        .map(layerName => lm.getLayerByName(layerName))
+        .forEach(layer => lm.removeManagedLayer(layer))
+      this.userLayers = []
+    },
+    addUserLayer: function (uri) {
+      if (!this.nehubaViewer) {
+        return
+      }
+      if (!uri) {
+        return
+      }
+      const viewer = this.nehubaViewer.ngviewer
+      const name = `userlayer-${this.userLayers.length}`
+      const newLayer = {
+        name,
+        source: uri
+      }
+      debugger
+      const newNgLayer = viewer.layerSpecification.getLayer(name, {source: uri})
+      viewer.layerManager.addManagedLayer(newNgLayer)
+      this.userLayers.push(
+        newLayer
+      )
     }
   },
   computed: {
+    selectIncomingTemplate: function () {
+      return this.$store.state.incomingTemplate
+    }
   }
 }
 </script>
