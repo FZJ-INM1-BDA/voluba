@@ -16,7 +16,7 @@ export default {
   data: function () {
     return {
       placeholderText: 'Loading nehuba ...',
-      cid: 'neuroglancer-container',
+      cid: null,
       nehubaViewer: null,
       userLayers: [],
       appendNehubaPromise: new Promise((resolve, reject) => {
@@ -56,22 +56,11 @@ export default {
   },
   mounted: function () {
     this.appendNehubaPromise
-      .then(() => {
-        this.nehubaViewer = window.export_nehuba.createNehubaViewer(this.testConfig, (e) => {
-          console.log('nehuba throwing error')
-        })
-      })
-      .then(() => {
-        this.cid = null
-      })
-      .then(() => {
-        window['viewer'] = null
-        this.nehubaViewer.setMeshesToLoad([100, 200])
-        window['nehubaViewer'] = this.nehubaViewer
-      })
-      .catch((e) => {
-        console.log(e)
-        this.placeholderText = 'loading nehuba failed'
+      .then(this.initNehuba.bind(this))
+      .then(this.clearnUp.bind(this))
+      .catch(e => {
+        console.error('e')
+        this.placeholderText = 'error loading nehuba'
       })
   },
   watch: {
@@ -81,12 +70,23 @@ export default {
       }
     },
     selectIncomingTemplate: function (val) {
-      console.log('selectIncomingTemplate change', val)
       this.clearUserLayers()
       this.addUserLayer(val)
     }
   },
+  beforeMount: function () {
+    this.cid = 'neuroglancer-container'
+  },
   methods: {
+    initNehuba: function () {
+      this.nehubaViewer = window.export_nehuba.createNehubaViewer(this.testConfig, (e) => {
+        console.log('nehuba throwing error')
+      })
+    },
+    clearnUp: function () {
+      this.cid = null
+      window['viewer'] = null
+    },
     clearUserLayers: function () {
       if (!this.nehubaViewer) {
         return
