@@ -74,11 +74,11 @@
           <b-container fluid>
             <b-row>
               <b-col md="5"><label>Determinant:</label></b-col>
-              <b-col md="7"><label/></b-col>
+              <b-col md="7"><input type="text" disabled/></b-col>
             </b-row>
             <b-row class="my-1">
               <b-col md="5"><label>RMSE:</label></b-col>
-              <b-col md="7"><label/></b-col>
+              <b-col md="7"><input type="text" disabled/></b-col>
             </b-row>
           </b-container>
           <b-button href="#" variant="secondary">
@@ -125,7 +125,6 @@ export default {
   },
   watch: {
     selectTemplate: function (nst) {
-      console.log('select template', nst)
       this.$store.commit('selectIncomingTemplate', nst)
     }
   },
