@@ -2,13 +2,13 @@
   <div id="sidebar">
     <div id="accordion" role="tablist">
 
-      <!-- Dataset -->
+      <!-- Select datasets -->
       <card-component :initialVisibility = "true" :id = "'dataset'">
         <template slot = "header">
-          <h6><strong>Dataset</strong></h6>
+          <h6><strong>Select datasets</strong></h6>
         </template>
         <template slot = "body">
-          <label>Select a reference volume:</label>
+          <label>Reference volume:</label>
           <br>
           <select id="select-reference" v-model="selectReference">
             <option v-for="referenceURL in referenceURLs" :key="referenceURL.id" :value="referenceURL.value">
@@ -16,7 +16,7 @@
             </option>
           </select>
           <hr>
-          <label>Select a template volume:</label>
+          <label>Template volume:</label>
           <br>
           <select id="select-template" v-model="selectTemplate">
             <option v-for="templateURL in renderedTemplateURLs" :key="templateURL.id" :value="templateURL.value">
@@ -31,33 +31,34 @@
         </template>
       </card-component>
 
-      <!-- Registration -->
+      <!-- Anchor the dataset -->
       <card-component :initialVisibility = "false" :id = "'registration'">
         <template slot = "header">
-          <h6><strong>Registration</strong></h6>
+          <h6><strong>Anchor the template volume</strong></h6>
         </template>
         <template slot = "body">
-          <b-card-body></b-card-body>
+          <label>Scale:</label>
+          <input id="scaleSlider" type="range" :min="scaleMin" :max="scaleMax" :step="scaleStep" :value="scale"/>
         </template>
       </card-component>
 
-      <!-- Landmark Pairs -->
+      <!-- Detect landmark pairs -->
       <card-component :initialVisibility = "false" :id = "'landmarkPairs'">
         <template slot = "header">
-          <h6><strong>Landmark pairs</strong></h6>
+          <h6><strong>Detect landmark pairs</strong></h6>
         </template>
         <template slot = "body">
           <b-card-body></b-card-body>
         </template>
       </card-component>
 
-      <!-- Transformation -->
+      <!-- Compute the transformation -->
       <card-component :initialVisibility = "false" :id = "'transformation'">
         <template slot = "header">
-          <h6><strong>Transformation</strong></h6>
+          <h6><strong>Compute the transformation</strong></h6>
         </template>
         <template slot = "body">
-          <label>Select a transformation type:</label>
+          <label>Transformation type:</label>
           <br>
           <select id="select-transformation" v-model="selectTransformation">
             <option v-for="transformationType in transformationTypes" :key="transformationType.id"
@@ -74,16 +75,35 @@
           <b-container fluid>
             <b-row>
               <b-col md="5"><label>Determinant:</label></b-col>
-              <b-col md="7"><input type="text" disabled/></b-col>
+              <b-col md="7"><input id="inputDeterminant" type="text" disabled/></b-col>
             </b-row>
-            <b-row class="my-1">
+            <b-row>
               <b-col md="5"><label>RMSE:</label></b-col>
-              <b-col md="7"><input type="text" disabled/></b-col>
+              <b-col md="7"><input id="inputRMSE" type="text" disabled/></b-col>
             </b-row>
           </b-container>
+          <br>
           <b-button href="#" variant="secondary">
             <font-awesome-icon icon="eye"/>
             Show transformation matrix
+          </b-button>
+        </template>
+      </card-component>
+
+      <!-- Save & Publish -->
+      <card-component :initialVisibility = "false" :id = "'landmarkPairs'">
+        <template slot = "header">
+          <h6><strong>Save & Publish results</strong></h6>
+        </template>
+        <template slot = "body">
+            <b-button href="#" variant="secondary">
+            <font-awesome-icon icon="download"/>
+            Save as JSON
+          </b-button>
+          <br><br>
+          <b-button href="#" variant="secondary">
+            <font-awesome-icon icon="file-export"/>
+            Publish on HBP platform
           </b-button>
         </template>
       </card-component>
@@ -113,12 +133,16 @@ export default {
       ],
       selectReference: 'precomputed://https://www.jubrain.fz-juelich.de/apps/neuroglancer/BigBrainRelease.2015/image',
       selectTemplate: null,
-      selectTransformation: 'rigid'
+      selectTransformation: 'rigid',
+      scale: 50,
+      scaleMin: 0,
+      scaleMax: 100,
+      scaleStep: 0.01
     }
   },
   computed: {
     renderedTemplateURLs: function () {
-      return [{id: null, text: '-- Please select an incoming template --', value: null}].concat(this.templateURLs)
+      return [{id: null, text: '-- Please select a dataset --', value: null}].concat(this.templateURLs)
     }
   },
   methods: {
@@ -144,7 +168,12 @@ select, select option {
   max-width: 100%;
 }
 
-input {
+#scaleSlider {
+  min-width: 100%;
+  max-width: 100%;
+}
+
+#inputRMSE, #inputDeterminant  {
   max-width: 100%;
 }
 
