@@ -1,6 +1,8 @@
 <template>
-  <div class = "ng-container" :id = "cid">
-    {{ placeholderText }}
+  <div @mouseup.capture = "mouseup" @mousedown.capture = "mousedown" @mousemove.capture = "mousemove" id="nehubaContainer">
+    <div @viewportToData = "viewportToData" class = "ng-container" :id = "cid">
+      {{ placeholderText }}
+    </div>
   </div>
 </template>
 
@@ -8,6 +10,7 @@
 
 import 'third_party/export_nehuba/main.bundle.js'
 import 'third_party/export_nehuba/chunk_worker.bundle.js'
+import { getShader, patchSliceViewPanel, determineElement, testBigbrain } from './constants'
 
 export default {
   name: 'nehuba-component',
@@ -18,6 +21,13 @@ export default {
       placeholderText: 'Loading nehuba ...',
       cid: null,
       nehubaViewer: null,
+      ngUserLayer: null,
+      mouseOverIncoming: false,
+      movingIncoming: false,
+      mousemoveStart: null,
+      activeViewportToData: null,
+      subscriptions: [],
+      viewportToDatas: [],
       userLayers: [],
       appendNehubaPromise: new Promise((resolve, reject) => {
         if ('export_nehuba' in window) {
@@ -44,6 +54,7 @@ export default {
             //     this.regionSelectionEmitter.emit(region)
             //   }
             // }
+
             resolve()
           }
           el.onerror = reject
@@ -51,13 +62,13 @@ export default {
         }
       }),
       // eslint-disable-next-line
-      testConfig: {"configName":"BigBrain","globals":{"hideNullImageValues":true,"useNehubaLayout":{"keepDefaultLayouts":false},"useNehubaMeshLayer":true,"rightClickWithCtrlGlobal":false,"zoomWithoutCtrlGlobal":false,"useCustomSegmentColors":true},"zoomWithoutCtrl":true,"hideNeuroglancerUI":true,"rightClickWithCtrl":true,"rotateAtViewCentre":true,"enableMeshLoadingControl":true,"zoomAtViewCentre":true,"restrictUserNavigation":true,"disableSegmentSelection":true,"dataset":{"imageBackground":[1,1,1,1],"initialNgState":{"showDefaultAnnotations":false,"layers":{" grey value: ":{"type":"image","source":"precomputed://https://neuroglancer.humanbrainproject.org/precomputed/BigBrainRelease.2015/8bit","transform":[[1,0,0,-70677184],[0,1,0,-70010000],[0,0,1,-58788284],[0,0,0,1]]}," tissue type: ":{"type":"segmentation","source":"precomputed://https://neuroglancer.humanbrainproject.org/precomputed/BigBrainRelease.2015/classif","segments":["0"],"selectedAlpha":0,"notSelectedAlpha":0,"transform":[[1,0,0,-70666600],[0,1,0,-72910000],[0,0,1,-58777700],[0,0,0,1]]}},"navigation":{"pose":{"position":{"voxelSize":[21166.666015625,20000,21166.666015625],"voxelCoordinates":[-21.8844051361084,16.288618087768555,28.418994903564453]}},"zoomFactor":350000},"perspectiveOrientation":[0.3140767216682434,-0.7418519854545593,0.4988985061645508,-0.3195493221282959],"perspectiveZoom":1922235.5293810747}},"layout":{"views":"hbp-neuro","planarSlicesBackground":[1,1,1,1],"useNehubaPerspective":{"enableShiftDrag":false,"doNotRestrictUserNavigation":false,"perspectiveSlicesBackground":[1,1,1,1],"removePerspectiveSlicesBackground":{"color":[1,1,1,1],"mode":"=="},"perspectiveBackground":[1,1,1,1],"fixedZoomPerspectiveSlices":{"sliceViewportWidth":300,"sliceViewportHeight":300,"sliceZoom":563818.3562426177,"sliceViewportSizeMultiplier":2},"mesh":{"backFaceColor":[1,1,1,1],"removeBasedOnNavigation":true,"flipRemovedOctant":true},"centerToOrigin":true,"drawSubstrates":{"color":[0,0,0.5,0.15]},"drawZoomLevels":{"cutOff":200000,"color":[0.5,0,0,0.15]},"hideImages":false,"waitForMesh":true,"restrictZoomLevel":{"minZoom":1200000,"maxZoom":3500000}}}}
+      testConfig: testBigbrain
     }
   },
   mounted: function () {
     this.appendNehubaPromise
-      .then(this.initNehuba.bind(this))
-      .then(this.clearnUp.bind(this))
+      .then(this.initNehuba)
+      .then(this.clearnUp)
       .catch(e => {
         console.error('e')
         this.placeholderText = 'error loading nehuba'
@@ -72,25 +83,88 @@ export default {
     selectIncomingTemplate: function (val) {
       this.clearUserLayers()
       this.addUserLayer(val)
+    },
+    mouseOverIncoming: function (val) {
+      this.ngUserLayer.layer.opacity.restoreState(val
+        ? 1.0
+        : 0.5)
+      this.setNavigationActive(!val)
     }
   },
   beforeMount: function () {
     this.cid = 'neuroglancer-container'
   },
   methods: {
+    viewportToData: function (event) {
+      if (this.viewportToDatas[0] && this.viewportToDatas[1] && this.viewportToDatas[2]) {
+        return
+      }
+      const element = event.srcElement || event.originalTarget
+      this.viewportToDatas[determineElement(element)] = event.detail.viewportToData
+    },
+    mouseup: function () {
+      this.movingIncoming = false
+      this.mousemoveStart = null
+    },
+    mousedown: function (event) {
+      if (this.mouseOverIncoming) {
+        this.movingIncoming = true
+        this.mousemoveStart = [event.screenX, event.screenY]
+      }
+    },
+    mousemove: function (event) {
+      if (this.movingIncoming) {
+        const element = event.srcElement || event.originalTarget
+
+        // debugger
+        const deltaX = event.screenX - this.mousemoveStart[0]
+        const deltaY = event.screenY - this.mousemoveStart[1]
+        let pos = window.export_nehuba.vec3.fromValues(deltaX, deltaY, 0)
+        window.export_nehuba.vec3.transformMat4(pos, pos, this.viewportToDatas[determineElement(element)])
+        let mat = window.export_nehuba.mat4.fromTranslation(window.export_nehuba.mat4.create(), pos)
+        window.export_nehuba.mat4.transpose(mat, mat)
+        this.ngUserLayer.layer.transform.restoreState(Array.from(mat))
+        this.ngUserLayer.layer.transform.changed.dispatch()
+      }
+    },
+    setNavigationActive: function (bool) {
+      if (bool) {
+        this.nehubaViewer.ngviewer.inputEventBindings.sliceView.bindings.delete('at:mousedown0')
+      } else {
+        this.nehubaViewer.ngviewer.inputEventBindings.sliceView.bindings.set('at:mousedown0', {stopPropagation: true})
+      }
+    },
     initNehuba: function () {
       this.nehubaViewer = window.export_nehuba.createNehubaViewer(this.testConfig, (e) => {
         console.log('nehuba throwing error')
       })
+
+      /**
+       * TODO
+       */
+      // this.nehubaViewer.setMeshesToLoad([100, 200])
+      this.subscriptions.push(
+        this.nehubaViewer.mouseOver.image
+          .filter(v => v.layer.name === 'userlayer-0')
+          .map(ev => ev.value !== null && ev.value !== 0)
+          .distinctUntilChanged()
+          .subscribe(mouseOver => {
+            this.mouseOverIncoming = mouseOver
+          })
+      )
     },
     clearnUp: function () {
       this.cid = null
-      window['viewer'] = null
+      setTimeout(() => {
+        this.nehubaViewer.ngviewer.display.panels.forEach(patchSliceViewPanel)
+      })
+      // window['viewer'] = null
     },
     clearUserLayers: function () {
       if (!this.nehubaViewer) {
         return
       }
+      this.ngUserLayer = null
       const lm = this.nehubaViewer.ngviewer.layerManager
       this.userLayers
         .map(ul => ul.name)
@@ -108,13 +182,16 @@ export default {
       const viewer = this.nehubaViewer.ngviewer
       const name = `userlayer-${this.userLayers.length}`
       const newLayer = {
-        name,
-        source: uri
+        source: uri,
+        opacity: 0.5,
+        shader: getShader([1.0, 1.0, 0.0])
       }
-      const newNgLayer = viewer.layerSpecification.getLayer(name, {source: uri})
-      viewer.layerManager.addManagedLayer(newNgLayer)
+      const newNgLayer = viewer.layerSpecification.getLayer(name, newLayer)
+      this.ngUserLayer = viewer.layerManager.addManagedLayer(newNgLayer)
       this.userLayers.push(
-        newLayer
+        Object.assign({}, newLayer, {
+          name
+        })
       )
     }
   },
@@ -122,16 +199,14 @@ export default {
     selectIncomingTemplate: function () {
       return this.$store.state.incomingTemplate
     }
+  },
+  beforeDestroy () {
+    this.subscriptions.forEach(s => s.unsubscribe())
   }
 }
 </script>
 
 <style>
-.ng-container
-{
-  height: 100%;
-}
-
 div.scale-bar-container
 {
   text-align: center;
@@ -164,5 +239,25 @@ div.scale-bar-container
 {
   color:#f2f2f2;
   background-color:hsla(0,0%,60%,0.2);
+}
+
+#nehubaContainer,
+.ng-container
+{
+  width: 100%;
+  height: 100%;
+}
+
+#nehubaContainer
+{
+  position:relative;
+}
+
+.ng-container
+{
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 10;
 }
 </style>
