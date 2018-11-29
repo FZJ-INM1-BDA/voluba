@@ -2,11 +2,7 @@
 
 exports.getShader = (rgb) => `void main() {
   float x = toNormalized(getDataValue());
-  if(x < 0.05 ){
-    emitTransparent();
-  }else{
-    emitRGB(vec3(x * ${rgb[0].toFixed(1)}, x * ${rgb[1].toFixed(1)}, x * ${rgb[2].toFixed(1)} ));
-  }
+  emitRGB(vec3(x * ${rgb[0].toFixed(1)}, x * ${rgb[1].toFixed(1)}, x * ${rgb[2].toFixed(1)} ));
 }`
 
 exports.patchSliceViewPanel = function (sliceViewPanel) {
@@ -219,7 +215,7 @@ exports.testBigbrain = {
       1
     ],
     "initialNgState": {
-      "showDefaultAnnotations": false,
+      "showDefaultAnnotations": true,
       "layers": {
         " grey value: ": {
           "type": "image",
@@ -296,9 +292,9 @@ exports.testBigbrain = {
               21166.666015625
             ],
             "voxelCoordinates": [
-              -21.8844051361084,
-              16.288618087768555,
-              28.418994903564453
+              0, //-21.8844051361084,
+              0, //16.288618087768555,
+              0 //28.418994903564453
             ]
           }
         },
@@ -386,5 +382,18 @@ exports.testBigbrain = {
         "maxZoom": 3500000
       }
     }
+  }
+}
+
+exports.getRotationVec3 = (index) => {
+  if ('export_nehuba' in window) {
+    return {
+      vec3x: window.export_nehuba.vec3.fromValues(1, 0, 0),
+      vec3y: window.export_nehuba.vec3.fromValues(0, 1, 0)
+    }
+    
+  } else {
+    console.warn('export_nehuba is not present in window, has it not been exported?')
+    return [null, null]
   }
 }

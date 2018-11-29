@@ -28,7 +28,14 @@ Vue.config.productionTip = false
 const store = new Vuex.Store({
   state: {
     referenceTemplate: null,
-    incomingTemplate: null
+    incomingTemplate: null,
+    incomingTransformMatrix: null,
+    incomingScale: [1, 1, 1],
+    incomingTranslation: [0, 0, 0],
+    incomingRotation: [0, 0, 0, 1],
+    // in nm
+    viewerNavigationPosition: [0, 0, 0],
+    viewerMousePosition: [0, 0, 0]
   },
   mutations: {
     selectReferenceTemplate (state, refTemplate) {
@@ -36,6 +43,15 @@ const store = new Vuex.Store({
     },
     selectIncomingTemplate (state, incomingTemplate) {
       state.incomingTemplate = incomingTemplate
+    },
+    setIncomingTransformMatrix (state, array) {
+      state.incomingTransformMatrix = array
+    },
+    setViewerNavigationPosition (state, array) {
+      state.viewerNavigationPosition = array
+    },
+    setViewerMousePosition (state, array) {
+      state.viewerMousePosition = array
     }
   }
 })

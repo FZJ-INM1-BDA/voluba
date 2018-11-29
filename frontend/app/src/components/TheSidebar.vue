@@ -107,6 +107,12 @@
           </b-button>
         </template>
       </card-component>
+      <div>
+        {{ viewerNavigationPosition }}
+      </div>
+      <div>
+        {{ viewerMousePosition }}
+      </div>
     </div>
   </div>
 </template>
@@ -137,12 +143,20 @@ export default {
       scale: 50,
       scaleMin: 0,
       scaleMax: 100,
-      scaleStep: 0.01
+      scaleStep: 0.01,
+
+      viewerNavigationState: null
     }
   },
   computed: {
     renderedTemplateURLs: function () {
       return [{id: null, text: '-- Please select a dataset --', value: null}].concat(this.templateURLs)
+    },
+    viewerNavigationPosition: function () {
+      return this.$store.state.viewerNavigationPosition.join(', ')
+    },
+    viewerMousePosition: function () {
+      return this.$store.state.viewerMousePosition.join(', ')
     }
   },
   methods: {

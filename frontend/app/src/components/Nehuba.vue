@@ -10,7 +10,7 @@
 
 import 'third_party/export_nehuba/main.bundle.js'
 import 'third_party/export_nehuba/chunk_worker.bundle.js'
-import { getShader, patchSliceViewPanel, determineElement, testBigbrain } from './constants'
+import { getShader, patchSliceViewPanel, determineElement, testBigbrain, getRotationVec3 } from './constants'
 
 export default {
   name: 'nehuba-component',
@@ -24,11 +24,17 @@ export default {
       ngUserLayer: null,
       mouseOverIncoming: false,
       movingIncoming: false,
+      movingIncomingIndex: null,
+      rotatingIncoming: false,
       mousemoveStart: null,
+      rotateAbsoluteStart: null,
       activeViewportToData: null,
       subscriptions: [],
       viewportToDatas: [],
       userLayers: [],
+      tempMat4: null,
+      viewerNavigationPosition: [0, 0, 0],
+      viewerMousePosition: [0, 0, 0],
       appendNehubaPromise: new Promise((resolve, reject) => {
         if ('export_nehuba' in window) {
           resolve()
@@ -61,7 +67,6 @@ export default {
           document.head.appendChild(el)
         }
       }),
-      // eslint-disable-next-line
       testConfig: testBigbrain
     }
   },
@@ -86,9 +91,12 @@ export default {
     },
     mouseOverIncoming: function (val) {
       this.ngUserLayer.layer.opacity.restoreState(val
-        ? 1.0
+        ? 0.8
         : 0.5)
       this.setNavigationActive(!val)
+    },
+    incomingTransformMatrix: function (val) {
+      this.setIncomingLayerTransform(val)
     }
   },
   beforeMount: function () {
@@ -103,35 +111,88 @@ export default {
       this.viewportToDatas[determineElement(element)] = event.detail.viewportToData
     },
     mouseup: function () {
+      if ((this.movingIncoming || this.rotatingIncoming) && this.tempMat4) {
+        this.$store.commit('setIncomingTransformMatrix', Array.from(this.tempMat4))
+      }
+      this.rotatingIncoming = false
       this.movingIncoming = false
       this.mousemoveStart = null
+      this.movingIncomingIndex = null
+      this.rotateAbsoluteStart = null
     },
     mousedown: function (event) {
       if (this.mouseOverIncoming) {
-        this.movingIncoming = true
         this.mousemoveStart = [event.screenX, event.screenY]
+
+        if (event.shiftKey) {
+          this.rotatingIncoming = true
+          this.rotateAbsoluteStart = this.viewerMousePosition
+        } else {
+          this.movingIncoming = true
+        }
+
+        const element = event.srcElement || event.originalTarget
+        this.movingIncomingIndex = determineElement(element)
       }
     },
     mousemove: function (event) {
-      if (this.movingIncoming) {
-        const element = event.srcElement || event.originalTarget
+      if (this.movingIncoming || this.rotatingIncoming) {
+        this.tempMat4 = window.export_nehuba.mat4.create()
 
-        // debugger
         const deltaX = event.screenX - this.mousemoveStart[0]
         const deltaY = event.screenY - this.mousemoveStart[1]
         let pos = window.export_nehuba.vec3.fromValues(deltaX, deltaY, 0)
-        window.export_nehuba.vec3.transformMat4(pos, pos, this.viewportToDatas[determineElement(element)])
-        let mat = window.export_nehuba.mat4.fromTranslation(window.export_nehuba.mat4.create(), pos)
-        window.export_nehuba.mat4.transpose(mat, mat)
-        this.ngUserLayer.layer.transform.restoreState(Array.from(mat))
-        this.ngUserLayer.layer.transform.changed.dispatch()
+        window.export_nehuba.vec3.transformMat4(pos, pos, this.viewportToDatas[this.movingIncomingIndex])
+        window.export_nehuba.vec3.subtract(pos, pos, window.export_nehuba.vec3.fromValues(...this.viewerNavigationPosition))
+        if (this.movingIncoming) {
+          window.export_nehuba.mat4.fromTranslation(this.tempMat4, pos)
+        }
+
+        if (this.rotatingIncoming) {
+          let {vec3x, vec3y} = getRotationVec3(this.movingIncomingIndex)
+          if (vec3x === null || vec3y === null) {
+            return
+          }
+          
+          const actualQuat = window.export_nehuba.quat.mul(
+            window.export_nehuba.quat.create(),
+            window.export_nehuba.quat.setAxisAngle(
+              window.export_nehuba.quat.create(),
+              vec3x,
+              -deltaX * Math.PI / 180
+            ),
+            window.export_nehuba.quat.setAxisAngle(
+              window.export_nehuba.quat.create(),
+              vec3y,
+              deltaY * Math.PI / 180
+            )
+          )
+          const vec3id = window.export_nehuba.vec3.fromValues(1, 1, 1)
+          window.export_nehuba.mat4.fromRotationTranslationScaleOrigin(
+            this.tempMat4,
+            actualQuat,
+            vec3id,
+            vec3id,
+            window.export_nehuba.vec3.fromValues(...this.rotateAbsoluteStart)
+          )
+        }
+
+        window.export_nehuba.mat4.transpose(this.tempMat4, this.tempMat4)
+
+        if (this.incomingTransformMatrix) {
+          const _tempmat4 = window.export_nehuba.mat4.fromValues(...this.incomingTransformMatrix)
+          this.tempMat4 = window.export_nehuba.mat4.mul(window.export_nehuba.mat4.create(), _tempmat4, this.tempMat4 )
+        }
+        this.setIncomingLayerTransform(Array.from(this.tempMat4))
       }
     },
     setNavigationActive: function (bool) {
       if (bool) {
         this.nehubaViewer.ngviewer.inputEventBindings.sliceView.bindings.delete('at:mousedown0')
+        this.nehubaViewer.ngviewer.inputEventBindings.sliceView.bindings.delete('at:shift+mousedown0')
       } else {
         this.nehubaViewer.ngviewer.inputEventBindings.sliceView.bindings.set('at:mousedown0', {stopPropagation: true})
+        this.nehubaViewer.ngviewer.inputEventBindings.sliceView.bindings.set('at:shift+mousedown0', {stopPropagation: true})
       }
     },
     initNehuba: function () {
@@ -146,10 +207,27 @@ export default {
       this.subscriptions.push(
         this.nehubaViewer.mouseOver.image
           .filter(v => v.layer.name === 'userlayer-0')
-          .map(ev => ev.value !== null && ev.value !== 0)
+          .map(ev => ev.value !== null)
           .distinctUntilChanged()
           .subscribe(mouseOver => {
             this.mouseOverIncoming = mouseOver
+          })
+      )
+      this.subscriptions.push(
+        this.nehubaViewer.navigationState.position.inRealSpace
+          .subscribe(fa => {
+            this.viewerNavigationPosition = Array.from(fa)
+            this.$store.commit('setViewerNavigationPosition', Array.from(fa))
+          })
+      )
+      this.subscriptions.push(
+        this.nehubaViewer.mousePosition.inRealSpace
+          .subscribe(fa => {
+            const array = fa === null
+              ? [0, 0, 0]
+              : Array.from(fa)
+            this.viewerMousePosition = array
+            this.$store.commit('setViewerMousePosition', array)
           })
       )
     },
@@ -159,6 +237,10 @@ export default {
         this.nehubaViewer.ngviewer.display.panels.forEach(patchSliceViewPanel)
       })
       // window['viewer'] = null
+    },
+    setIncomingLayerTransform: function (array) {
+      this.ngUserLayer.layer.transform.restoreState(array)
+      this.ngUserLayer.layer.transform.changed.dispatch()
     },
     clearUserLayers: function () {
       if (!this.nehubaViewer) {
@@ -198,6 +280,9 @@ export default {
   computed: {
     selectIncomingTemplate: function () {
       return this.$store.state.incomingTemplate
+    },
+    incomingTransformMatrix: function () {
+      return this.$store.state.incomingTransformMatrix
     }
   },
   beforeDestroy () {
