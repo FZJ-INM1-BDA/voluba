@@ -37,8 +37,8 @@
           <h6><strong>Anchor the template volume</strong></h6>
         </template>
         <template slot = "body">
-          <label>Scale:</label>
-          <input id="scaleSlider" type="range" :min="scaleMin" :max="scaleMax" :step="scaleStep" :value="scale"/>
+          <label>Scale: {{ scale }}</label>
+          <input id="scaleSlider" type="range" :min="scaleMin" :max="scaleMax" :step="scaleStep" v-model="scale"/>
         </template>
       </card-component>
 
@@ -140,7 +140,7 @@ export default {
       selectReference: 'precomputed://https://www.jubrain.fz-juelich.de/apps/neuroglancer/BigBrainRelease.2015/image',
       selectTemplate: null,
       selectTransformation: 'rigid',
-      scale: 50,
+      scale: 1,
       scaleMin: 0,
       scaleMax: 100,
       scaleStep: 0.01,
@@ -164,6 +164,9 @@ export default {
   watch: {
     selectTemplate: function (nst) {
       this.$store.commit('selectIncomingTemplate', nst)
+    },
+    scale: function (val) {
+      this.$store.commit('setIncomingTemplateScale', [val, val, val])
     }
   },
   components: {

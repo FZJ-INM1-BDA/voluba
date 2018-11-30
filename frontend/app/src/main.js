@@ -35,7 +35,8 @@ const store = new Vuex.Store({
     incomingRotation: [0, 0, 0, 1],
     // in nm
     viewerNavigationPosition: [0, 0, 0],
-    viewerMousePosition: [0, 0, 0]
+    viewerMousePosition: [0, 0, 0],
+    viewerSliceOrientation: [0, 0, 0, 1]
   },
   mutations: {
     selectReferenceTemplate (state, refTemplate) {
@@ -52,6 +53,12 @@ const store = new Vuex.Store({
     },
     setViewerMousePosition (state, array) {
       state.viewerMousePosition = array
+    },
+    setViewerSliceOrientation (state, array) {
+      state.viewerSliceOrientation = array
+    },
+    setIncomingTemplateScale (state, array) {
+      state.incomingScale = array
     }
   }
 })

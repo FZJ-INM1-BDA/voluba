@@ -387,13 +387,31 @@ exports.testBigbrain = {
 
 exports.getRotationVec3 = (index) => {
   if ('export_nehuba' in window) {
-    return {
-      vec3x: window.export_nehuba.vec3.fromValues(1, 0, 0),
-      vec3y: window.export_nehuba.vec3.fromValues(0, 1, 0)
-    }
+    return index === 0
+    ? {
+        vec31: window.export_nehuba.vec3.fromValues(0, 0, 1),
+        vec32: window.export_nehuba.vec3.fromValues(1, 0, 0)
+      }
+    : index === 1
+      ? {
+          vec31: window.export_nehuba.vec3.fromValues(0, 0, 1),
+          vec32: window.export_nehuba.vec3.fromValues(0, 1, 0)
+        }
+      : index === 2
+        ? {
+            vec31: window.export_nehuba.vec3.fromValues(0, -1, 0),
+            vec32: window.export_nehuba.vec3.fromValues(1, 0, 0)
+          }
+        : (console.warn('getRotationVec3 index > 2, returning null'), {
+            vec31: null,
+            vec32: null
+          })
     
   } else {
     console.warn('export_nehuba is not present in window, has it not been exported?')
-    return [null, null]
+    return {
+      vec31: null,
+      vec32: null
+    }
   }
 }

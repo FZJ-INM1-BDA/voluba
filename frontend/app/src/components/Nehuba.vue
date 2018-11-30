@@ -35,6 +35,7 @@ export default {
       tempMat4: null,
       viewerNavigationPosition: [0, 0, 0],
       viewerMousePosition: [0, 0, 0],
+      viewerSliceOrientation: [0, 0, 0, 1],
       appendNehubaPromise: new Promise((resolve, reject) => {
         if ('export_nehuba' in window) {
           resolve()
@@ -141,38 +142,44 @@ export default {
 
         const deltaX = event.screenX - this.mousemoveStart[0]
         const deltaY = event.screenY - this.mousemoveStart[1]
-        let pos = window.export_nehuba.vec3.fromValues(deltaX, deltaY, 0)
-        window.export_nehuba.vec3.transformMat4(pos, pos, this.viewportToDatas[this.movingIncomingIndex])
-        window.export_nehuba.vec3.subtract(pos, pos, window.export_nehuba.vec3.fromValues(...this.viewerNavigationPosition))
         if (this.movingIncoming) {
+          let pos = window.export_nehuba.vec3.fromValues(deltaX, deltaY, 0)
+          window.export_nehuba.vec3.transformMat4(pos, pos, this.viewportToDatas[this.movingIncomingIndex])
+          window.export_nehuba.vec3.subtract(pos, pos, window.export_nehuba.vec3.fromValues(...this.viewerNavigationPosition))
           window.export_nehuba.mat4.fromTranslation(this.tempMat4, pos)
         }
 
         if (this.rotatingIncoming) {
-          let {vec3x, vec3y} = getRotationVec3(this.movingIncomingIndex)
-          if (vec3x === null || vec3y === null) {
+          let { vec31, vec32 } = getRotationVec3(this.movingIncomingIndex)
+          if (vec31 === null || vec32 === null) {
             return
           }
-          
-          const actualQuat = window.export_nehuba.quat.mul(
-            window.export_nehuba.quat.create(),
+
+          window.export_nehuba.vec3.transformQuat(vec31, vec31, window.export_nehuba.quat.fromValues(...this.viewerSliceOrientation))
+          window.export_nehuba.vec3.transformQuat(vec32, vec32, window.export_nehuba.quat.fromValues(...this.viewerSliceOrientation))
+
+          const vec3id = window.export_nehuba.vec3.fromValues(1, 1, 1)
+
+          let finalRotation = window.export_nehuba.quat.create()
+          window.export_nehuba.quat.mul(
+            finalRotation,
             window.export_nehuba.quat.setAxisAngle(
               window.export_nehuba.quat.create(),
-              vec3x,
+              vec31,
               -deltaX * Math.PI / 180
             ),
             window.export_nehuba.quat.setAxisAngle(
               window.export_nehuba.quat.create(),
-              vec3y,
+              vec32,
               deltaY * Math.PI / 180
             )
           )
-          const vec3id = window.export_nehuba.vec3.fromValues(1, 1, 1)
           window.export_nehuba.mat4.fromRotationTranslationScaleOrigin(
             this.tempMat4,
-            actualQuat,
+            finalRotation,
             vec3id,
             vec3id,
+            // window.export_nehuba.vec3.fromValues(this.viewerIncomingScale),
             window.export_nehuba.vec3.fromValues(...this.rotateAbsoluteStart)
           )
         }
@@ -181,7 +188,7 @@ export default {
 
         if (this.incomingTransformMatrix) {
           const _tempmat4 = window.export_nehuba.mat4.fromValues(...this.incomingTransformMatrix)
-          this.tempMat4 = window.export_nehuba.mat4.mul(window.export_nehuba.mat4.create(), _tempmat4, this.tempMat4 )
+          this.tempMat4 = window.export_nehuba.mat4.mul(window.export_nehuba.mat4.create(), _tempmat4, this.tempMat4)
         }
         this.setIncomingLayerTransform(Array.from(this.tempMat4))
       }
@@ -203,7 +210,7 @@ export default {
       /**
        * TODO
        */
-      // this.nehubaViewer.setMeshesToLoad([100, 200])
+      this.nehubaViewer.setMeshesToLoad([100, 200])
       this.subscriptions.push(
         this.nehubaViewer.mouseOver.image
           .filter(v => v.layer.name === 'userlayer-0')
@@ -228,6 +235,16 @@ export default {
               : Array.from(fa)
             this.viewerMousePosition = array
             this.$store.commit('setViewerMousePosition', array)
+          })
+      )
+      this.subscriptions.push(
+        this.nehubaViewer.navigationState.orientation
+          .subscribe(fa => {
+            const array = fa === null
+              ? [0, 0, 0, 1]
+              : Array.from(fa)
+            this.viewerSliceOrientation = array
+            this.$store.commit('setViewerSliceOrientation', array)
           })
       )
     },
@@ -283,6 +300,9 @@ export default {
     },
     incomingTransformMatrix: function () {
       return this.$store.state.incomingTransformMatrix
+    },
+    viewerIncomingScale: function () {
+      return this.$store.state.incomingScale
     }
   },
   beforeDestroy () {
