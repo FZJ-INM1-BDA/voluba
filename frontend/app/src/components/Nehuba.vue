@@ -68,6 +68,7 @@ export default {
           document.head.appendChild(el)
         }
       }),
+      userlayerSubscription$: null,
       testConfig: testBigbrain
     }
   },
@@ -113,7 +114,7 @@ export default {
     },
     mouseup: function () {
       if ((this.movingIncoming || this.rotatingIncoming) && this.tempMat4) {
-        this.$store.commit('setIncomingTransformMatrix', Array.from(this.tempMat4))
+        this.$store.dispatch('incomingTransformMatrixChanged', Array.from(this.tempMat4))
       }
       this.rotatingIncoming = false
       this.movingIncoming = false
@@ -202,6 +203,14 @@ export default {
         this.nehubaViewer.ngviewer.inputEventBindings.sliceView.bindings.set('at:shift+mousedown0', {stopPropagation: true})
       }
     },
+    updateState: function ({mouseOverUserlayer}) {
+      this.mouseOverIncoming = mouseOverUserlayer
+        ? true
+        : false
+      this.$store.dispatch( this.mouseOverIncoming
+        ? 'mouseOverIncmoingLayer'
+        : 'mouseOutIncomingLayer' )
+    },
     initNehuba: function () {
       this.nehubaViewer = window.export_nehuba.createNehubaViewer(this.testConfig, (e) => {
         console.log('nehuba throwing error')
@@ -214,17 +223,17 @@ export default {
       this.subscriptions.push(
         this.nehubaViewer.mouseOver.image
           .filter(v => v.layer.name === 'userlayer-0')
+          .filter(v => typeof v !== 'undefined')
           .map(ev => ev.value !== null)
           .distinctUntilChanged()
-          .subscribe(mouseOver => {
-            this.mouseOverIncoming = mouseOver
-          })
+          .map(bool => ({mouseOverUserlayer: bool}))
+          .subscribe(this.updateState)
       )
       this.subscriptions.push(
         this.nehubaViewer.navigationState.position.inRealSpace
           .subscribe(fa => {
             this.viewerNavigationPosition = Array.from(fa)
-            this.$store.commit('setViewerNavigationPosition', Array.from(fa))
+            this.$store.dispatch('viewerNavigationPositionChanged', Array.from(fa))
           })
       )
       this.subscriptions.push(
@@ -234,7 +243,7 @@ export default {
               ? [0, 0, 0]
               : Array.from(fa)
             this.viewerMousePosition = array
-            this.$store.commit('setViewerMousePosition', array)
+            this.$store.dispatch('viewerMousePositionChanged', array)
           })
       )
       this.subscriptions.push(
@@ -244,7 +253,7 @@ export default {
               ? [0, 0, 0, 1]
               : Array.from(fa)
             this.viewerSliceOrientation = array
-            this.$store.commit('setViewerSliceOrientation', array)
+            this.$store.dispatch('viewerSliceOrientationChanged', array)
           })
       )
     },
@@ -253,6 +262,11 @@ export default {
       setTimeout(() => {
         this.nehubaViewer.ngviewer.display.panels.forEach(patchSliceViewPanel)
       })
+      /**
+       * TODO remove window.nehubaViewer in prod
+       */
+      window['nehubaViewer'] = this.nehubaViewer
+      window['nehubaVue'] = this
       // window['viewer'] = null
     },
     setIncomingLayerTransform: function (array) {
@@ -279,7 +293,7 @@ export default {
         return
       }
       const viewer = this.nehubaViewer.ngviewer
-      const name = `userlayer-${this.userLayers.length}`
+      const name = `userlayer-0`
       const newLayer = {
         source: uri,
         opacity: 0.5,

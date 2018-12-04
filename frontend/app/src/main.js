@@ -36,7 +36,9 @@ const store = new Vuex.Store({
     // in nm
     viewerNavigationPosition: [0, 0, 0],
     viewerMousePosition: [0, 0, 0],
-    viewerSliceOrientation: [0, 0, 0, 1]
+    viewerSliceOrientation: [0, 0, 0, 1],
+    layers: null,
+    mouseoverUserlayer: null
   },
   mutations: {
     selectReferenceTemplate (state, refTemplate) {
@@ -59,6 +61,32 @@ const store = new Vuex.Store({
     },
     setIncomingTemplateScale (state, array) {
       state.incomingScale = array
+    },
+    setLayers (state, obj) {
+      state.layers = obj
+    },
+    setMouseoverUserlayer (state, bool) {
+      state.mouseoverUserlayer = bool
+    }
+  },
+  actions: {
+    viewerSliceOrientationChanged ({commit}, array ) {
+      commit('setViewerSliceOrientation', array)
+    },
+    incomingTransformMatrixChanged ({commit}, array) {
+      commit('setIncomingTransformMatrix', array)
+    },
+    mouseOverIncmoingLayer ({commit}) {
+      commit('setMouseoverUserlayer', true)
+    },
+    mouseOutIncomingLayer ({commit}) {
+      commit('setMouseoverUserlayer', false)
+    },
+    viewerNavigationPositionChanged ({commit}, array) {
+      commit('setViewerNavigationPosition', array)
+    },
+    viewerMousePositionChanged ({commit}, array) {
+      commit('setViewerMousePosition', array)
     }
   }
 })

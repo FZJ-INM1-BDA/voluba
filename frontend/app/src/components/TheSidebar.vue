@@ -113,6 +113,14 @@
       <div>
         {{ viewerMousePosition }}
       </div>
+      <div>
+        <div :key = "index" v-for = "(item, index) in layers">
+          {{ item.name }}
+        </div>
+      </div>
+      <div>
+        mouseover userlayer: {{ mouseoverUserlayer }}
+      </div>
     </div>
   </div>
 </template>
@@ -157,6 +165,19 @@ export default {
     },
     viewerMousePosition: function () {
       return this.$store.state.viewerMousePosition.join(', ')
+    },
+    layers: function () {
+      const layers = this.$store.state.layers
+      if (!layers) {
+        return []
+      }
+      const keys = Object.keys(layers)
+      return keys.map(name => Object.assign({}, layers[name], {name}))
+    },
+    mouseoverUserlayer: function () {
+      return this.$store.state.mouseoverUserlayer
+        ? true
+        : false
     }
   },
   methods: {
@@ -168,6 +189,8 @@ export default {
     scale: function (val) {
       this.$store.commit('setIncomingTemplateScale', [val, val, val])
     }
+  },
+  filters: {
   },
   components: {
     CardComponent
