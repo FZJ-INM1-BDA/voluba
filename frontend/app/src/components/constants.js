@@ -415,3 +415,6 @@ exports.getRotationVec3 = (index) => {
     }
   }
 }
+
+exports.incomingTemplateActiveOpacity = 0.8
+exports.incomingTemplateInactiveOpacity = 0.5

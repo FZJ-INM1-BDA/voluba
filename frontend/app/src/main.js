@@ -70,7 +70,7 @@ const store = new Vuex.Store({
     }
   },
   actions: {
-    viewerSliceOrientationChanged ({commit}, array ) {
+    viewerSliceOrientationChanged ({commit}, array) {
       commit('setViewerSliceOrientation', array)
     },
     incomingTransformMatrixChanged ({commit}, array) {

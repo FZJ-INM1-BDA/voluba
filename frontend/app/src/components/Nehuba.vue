@@ -10,7 +10,7 @@
 
 import 'third_party/export_nehuba/main.bundle.js'
 import 'third_party/export_nehuba/chunk_worker.bundle.js'
-import { getShader, patchSliceViewPanel, determineElement, testBigbrain, getRotationVec3 } from './constants'
+import { getShader, patchSliceViewPanel, determineElement, testBigbrain, getRotationVec3, incomingTemplateActiveOpacity, incomingTemplateInactiveOpacity } from './constants'
 
 export default {
   name: 'nehuba-component',
@@ -92,9 +92,6 @@ export default {
       this.addUserLayer(val)
     },
     mouseOverIncoming: function (val) {
-      this.ngUserLayer.layer.opacity.restoreState(val
-        ? 0.8
-        : 0.5)
       this.setNavigationActive(!val)
     },
     incomingTransformMatrix: function (val) {
@@ -196,9 +193,11 @@ export default {
     },
     setNavigationActive: function (bool) {
       if (bool) {
+        this.ngUserLayer.layer.opacity.restoreState(incomingTemplateInactiveOpacity)
         this.nehubaViewer.ngviewer.inputEventBindings.sliceView.bindings.delete('at:mousedown0')
         this.nehubaViewer.ngviewer.inputEventBindings.sliceView.bindings.delete('at:shift+mousedown0')
       } else {
+        this.ngUserLayer.layer.opacity.restoreState(incomingTemplateActiveOpacity)
         this.nehubaViewer.ngviewer.inputEventBindings.sliceView.bindings.set('at:mousedown0', {stopPropagation: true})
         this.nehubaViewer.ngviewer.inputEventBindings.sliceView.bindings.set('at:shift+mousedown0', {stopPropagation: true})
       }
@@ -207,9 +206,9 @@ export default {
       this.mouseOverIncoming = mouseOverUserlayer
         ? true
         : false
-      this.$store.dispatch( this.mouseOverIncoming
+      this.$store.dispatch(this.mouseOverIncoming
         ? 'mouseOverIncmoingLayer'
-        : 'mouseOutIncomingLayer' )
+        : 'mouseOutIncomingLayer')
     },
     initNehuba: function () {
       this.nehubaViewer = window.export_nehuba.createNehubaViewer(this.testConfig, (e) => {
