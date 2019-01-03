@@ -31,8 +31,6 @@ const store = new Vuex.Store({
     incomingTemplate: null,
     incomingTransformMatrix: null,
     incomingScale: [1, 1, 1],
-    incomingTranslation: [0, 0, 0],
-    incomingRotation: [0, 0, 0, 1],
     // in nm
     viewerNavigationPosition: [0, 0, 0],
     viewerMousePosition: [0, 0, 0],

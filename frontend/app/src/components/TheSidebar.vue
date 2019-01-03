@@ -121,6 +121,9 @@
       <div>
         mouseover userlayer: {{ mouseoverUserlayer }}
       </div>
+      <div>
+        incoming matrix: {{ incomingMatrix }}
+      </div>
     </div>
   </div>
 </template>
@@ -149,14 +152,17 @@ export default {
       selectTemplate: null,
       selectTransformation: 'rigid',
       scale: 1,
-      scaleMin: 0,
-      scaleMax: 100,
+      scaleMin: 0.1,
+      scaleMax: 10,
       scaleStep: 0.01,
 
       viewerNavigationState: null
     }
   },
   computed: {
+    incomingMatrix: function () {
+      return this.$store.state.incomingTransformMatrix
+    },
     renderedTemplateURLs: function () {
       return [{id: null, text: '-- Please select a dataset --', value: null}].concat(this.templateURLs)
     },
