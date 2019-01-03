@@ -19,9 +19,18 @@ export default {
   data: function () {
     return {
       placeholderText: 'Loading nehuba ...',
+
       cid: null,
       nehubaViewer: null,
+
+      /**
+       * instance of managed layer
+       */
       ngUserLayer: null,
+
+      /**
+       * managed layer state
+       */
       mouseOverIncoming: false,
       movingIncoming: false,
       movingIncomingIndex: null,
@@ -31,11 +40,19 @@ export default {
       activeViewportToData: null,
       subscriptions: [],
       viewportToDatas: [],
+
+      /**
+       * all managed layers
+       * TODO perhaps not necessary? since there is only a single user layer
+       */
       userLayers: [],
-      tempMat4: null,
+      translation: null,
+      rotation: null,
+      committedTransform: null,
       viewerNavigationPosition: [0, 0, 0],
       viewerMousePosition: [0, 0, 0],
       viewerSliceOrientation: [0, 0, 0, 1],
+      appendNehubaFlag: false,
       appendNehubaPromise: new Promise((resolve, reject) => {
         if ('export_nehuba' in window) {
           resolve()
@@ -43,6 +60,7 @@ export default {
           const el = document.createElement('script')
           el.src = 'main.bundle.js'
           el.onload = () => {
+            this.appendNehubaFlag = true
             /**
              * patching nehuba/neuroglancer default behaviour of altering hash
              */
@@ -69,6 +87,10 @@ export default {
         }
       }),
       userlayerSubscription$: null,
+
+      /**
+       * temporary. need to retrieve config separately
+       */
       testConfig: testBigbrain
     }
   },
@@ -77,7 +99,7 @@ export default {
       .then(this.initNehuba)
       .then(this.clearnUp)
       .catch(e => {
-        console.error('e')
+        console.error('e', e)
         this.placeholderText = 'error loading nehuba'
       })
   },
@@ -94,8 +116,30 @@ export default {
     mouseOverIncoming: function (val) {
       this.setNavigationActive(!val)
     },
-    incomingTransformMatrix: function (val) {
-      this.setIncomingLayerTransform(val)
+    incomingTransformMatrix: function (mat) {
+      if (!this.ngUserLayer) return
+      if (!'export_nehuba' in window) return
+      if (!mat) return
+
+      const { mat4, vec3, quat } = window.export_nehuba
+
+      if (this.committedTransform) {
+        const committedTransformMat = mat4.fromValues(...this.committedTransform),
+          commitedScalingVec3 = mat4.getScaling(vec3.create(), committedTransformMat),
+          commitedScalingMat4 = mat4.fromScaling(mat4.create(), commitedScalingVec3),
+          finalMat = mat4.create()
+        mat4.invert(commitedScalingMat4, commitedScalingMat4)
+        
+        /**
+         * apply commitedTransformMat first, then undo scaling
+         */
+        mat4.mul(finalMat, commitedScalingMat4, committedTransformMat)
+        mat4.mul(this.ngUserLayer.layer.transform.transform, mat, finalMat)
+      } else {
+        this.ngUserLayer.layer.transform.transform = mat
+      }
+      
+      this.ngUserLayer.layer.transform.changed.dispatch()
     }
   },
   beforeMount: function () {
@@ -110,14 +154,18 @@ export default {
       this.viewportToDatas[determineElement(element)] = event.detail.viewportToData
     },
     mouseup: function () {
-      if ((this.movingIncoming || this.rotatingIncoming) && this.tempMat4) {
-        this.$store.dispatch('incomingTransformMatrixChanged', Array.from(this.tempMat4))
+      if (this.movingIncoming || this.rotatingIncoming) {
+        this.committedTransform = Array.from(this.ngUserLayer.layer.transform.transform)
       }
+      
       this.rotatingIncoming = false
       this.movingIncoming = false
       this.mousemoveStart = null
       this.movingIncomingIndex = null
       this.rotateAbsoluteStart = null
+
+      this.translation = null
+      this.rotation = null
     },
     mousedown: function (event) {
       if (this.mouseOverIncoming) {
@@ -136,15 +184,15 @@ export default {
     },
     mousemove: function (event) {
       if (this.movingIncoming || this.rotatingIncoming) {
-        this.tempMat4 = window.export_nehuba.mat4.create()
+        const {mat4, vec3, quat} = window.export_nehuba
 
         const deltaX = event.screenX - this.mousemoveStart[0]
         const deltaY = event.screenY - this.mousemoveStart[1]
         if (this.movingIncoming) {
-          let pos = window.export_nehuba.vec3.fromValues(deltaX, deltaY, 0)
-          window.export_nehuba.vec3.transformMat4(pos, pos, this.viewportToDatas[this.movingIncomingIndex])
-          window.export_nehuba.vec3.subtract(pos, pos, window.export_nehuba.vec3.fromValues(...this.viewerNavigationPosition))
-          window.export_nehuba.mat4.fromTranslation(this.tempMat4, pos)
+          let pos = vec3.fromValues(deltaX, deltaY, 0)
+          vec3.transformMat4(pos, pos, this.viewportToDatas[this.movingIncomingIndex])
+          vec3.subtract(pos, pos, vec3.fromValues(...this.viewerNavigationPosition))
+          this.translation = Array.from(pos)
         }
 
         if (this.rotatingIncoming) {
@@ -153,44 +201,32 @@ export default {
             return
           }
 
-          window.export_nehuba.vec3.transformQuat(vec31, vec31, window.export_nehuba.quat.fromValues(...this.viewerSliceOrientation))
-          window.export_nehuba.vec3.transformQuat(vec32, vec32, window.export_nehuba.quat.fromValues(...this.viewerSliceOrientation))
+          vec3.transformQuat(vec31, vec31, quat.fromValues(...this.viewerSliceOrientation))
+          vec3.transformQuat(vec32, vec32, quat.fromValues(...this.viewerSliceOrientation))
 
-          const vec3id = window.export_nehuba.vec3.fromValues(1, 1, 1)
+          const vec3id = vec3.fromValues(1, 1, 1)
 
-          let finalRotation = window.export_nehuba.quat.create()
-          window.export_nehuba.quat.mul(
+          let finalRotation = quat.create()
+          quat.mul(
             finalRotation,
-            window.export_nehuba.quat.setAxisAngle(
-              window.export_nehuba.quat.create(),
+            quat.setAxisAngle(
+              quat.create(),
               vec31,
               -deltaX * Math.PI / 180
             ),
-            window.export_nehuba.quat.setAxisAngle(
-              window.export_nehuba.quat.create(),
+            quat.setAxisAngle(
+              quat.create(),
               vec32,
               deltaY * Math.PI / 180
             )
           )
-          window.export_nehuba.mat4.fromRotationTranslationScaleOrigin(
-            this.tempMat4,
-            finalRotation,
-            vec3id,
-            vec3id,
-            // window.export_nehuba.vec3.fromValues(this.viewerIncomingScale),
-            window.export_nehuba.vec3.fromValues(...this.rotateAbsoluteStart)
-          )
+          this.rotation = Array.from(finalRotation)
         }
-
-        window.export_nehuba.mat4.transpose(this.tempMat4, this.tempMat4)
-
-        if (this.incomingTransformMatrix) {
-          const _tempmat4 = window.export_nehuba.mat4.fromValues(...this.incomingTransformMatrix)
-          this.tempMat4 = window.export_nehuba.mat4.mul(window.export_nehuba.mat4.create(), _tempmat4, this.tempMat4)
-        }
-        this.setIncomingLayerTransform(Array.from(this.tempMat4))
       }
     },
+    /**
+     * overwrites NG original behaviour, so that on mouse down, the view port does not move
+     */
     setNavigationActive: function (bool) {
       if (bool) {
         this.ngUserLayer.layer.opacity.restoreState(incomingTemplateInactiveOpacity)
@@ -268,10 +304,6 @@ export default {
       window['nehubaVue'] = this
       // window['viewer'] = null
     },
-    setIncomingLayerTransform: function (array) {
-      this.ngUserLayer.layer.transform.restoreState(array)
-      this.ngUserLayer.layer.transform.changed.dispatch()
-    },
     clearUserLayers: function () {
       if (!this.nehubaViewer) {
         return
@@ -308,11 +340,62 @@ export default {
     }
   },
   computed: {
+    translationVec3 : {
+      get: function () {
+        if (this.appendNehubaFlag) {
+          const { vec3 } = window.export_nehuba
+          return this.translation
+            ? vec3.fromValues(...this.translation)
+            : vec3.fromValues(0, 0, 0)
+        } else {
+          return null
+        }
+      }
+    },
+    rotationQuat : {
+      get: function () {
+        if (this.appendNehubaFlag) {
+          const { quat } = window.export_nehuba
+          return this.rotation
+            ? quat.fromValues(...this.rotation)
+            : quat.fromValues(0, 0, 0, 1)
+        } else {
+          return null
+        }
+      }
+    },
+    scaleVec3 : {
+      get: function () {
+        if (this.appendNehubaFlag) {
+          const { vec3 } = window.export_nehuba
+          return vec3.fromValues(...this.$store.state.incomingScale)
+        } else {
+          return null
+        }
+      }
+    },
+    incomingTransformMatrix: {
+      get: function () {
+        if (this.appendNehubaFlag) {
+          const { mat4, vec3, quat } = window.export_nehuba
+
+          const rotateAbsoluteStart = this.rotateAbsoluteStart
+            ? this.rotateAbsoluteStart
+            : [0, 0, 0]
+
+          return mat4.fromRotationTranslationScaleOrigin(
+            mat4.create(),
+            this.rotationQuat,
+            this.translationVec3,
+            this.scaleVec3,
+            vec3.fromValues(...rotateAbsoluteStart)
+          )
+        } 
+        return null
+      }
+    },
     selectIncomingTemplate: function () {
       return this.$store.state.incomingTemplate
-    },
-    incomingTransformMatrix: function () {
-      return this.$store.state.incomingTransformMatrix
     },
     viewerIncomingScale: function () {
       return this.$store.state.incomingScale
