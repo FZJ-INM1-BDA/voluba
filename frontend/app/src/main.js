@@ -85,6 +85,16 @@ const store = new Vuex.Store({
     },
     viewerMousePositionChanged ({commit}, array) {
       commit('setViewerMousePosition', array)
+    },
+    alignReference () {
+      /**
+       * required for vuex event dispatch
+       */
+    },
+    alignIncoming () {
+      /**
+       * required for vuex event dispatch
+       */
     }
   }
 })

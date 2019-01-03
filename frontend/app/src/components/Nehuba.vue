@@ -102,6 +102,23 @@ export default {
         console.error('e', e)
         this.placeholderText = 'error loading nehuba'
       })
+
+    this.$store.subscribeAction(({type}) => {
+      if (!this.appendNehubaFlag) return
+      const { quat, mat4 } = window.export_nehuba
+      switch (type) {
+        case 'alignReference':
+          this.nehubaViewer.ngviewer.navigationState.pose.orientation.restoreState([0, 0, 0, 1])
+          break
+        case 'alignIncoming':
+          if (!this.committedTransform) return
+          const newQuat = mat4.getRotation(quat.create(), mat4.fromValues(...this.committedTransform))
+          // quat.invert(newQuat, newQuat)
+          this.nehubaViewer.ngviewer.navigationState.pose.orientation.restoreState(Array.from(newQuat))
+          break
+        default:
+      }
+    })
   },
   watch: {
     cid: function (val) {
@@ -118,18 +135,17 @@ export default {
     },
     incomingTransformMatrix: function (mat) {
       if (!this.ngUserLayer) return
-      if (!'export_nehuba' in window) return
+      if (!this.appendNehubaFlag) return
       if (!mat) return
 
-      const { mat4, vec3, quat } = window.export_nehuba
+      const { mat4, vec3 } = window.export_nehuba
 
       if (this.committedTransform) {
-        const committedTransformMat = mat4.fromValues(...this.committedTransform),
-          commitedScalingVec3 = mat4.getScaling(vec3.create(), committedTransformMat),
-          commitedScalingMat4 = mat4.fromScaling(mat4.create(), commitedScalingVec3),
-          finalMat = mat4.create()
+        const committedTransformMat = mat4.fromValues(...this.committedTransform)
+        const commitedScalingVec3 = mat4.getScaling(vec3.create(), committedTransformMat)
+        const commitedScalingMat4 = mat4.fromScaling(mat4.create(), commitedScalingVec3)
+        const finalMat = mat4.create()
         mat4.invert(commitedScalingMat4, commitedScalingMat4)
-        
         /**
          * apply commitedTransformMat first, then undo scaling
          */
@@ -138,7 +154,6 @@ export default {
       } else {
         this.ngUserLayer.layer.transform.transform = mat
       }
-      
       this.ngUserLayer.layer.transform.changed.dispatch()
     }
   },
@@ -157,7 +172,6 @@ export default {
       if (this.movingIncoming || this.rotatingIncoming) {
         this.committedTransform = Array.from(this.ngUserLayer.layer.transform.transform)
       }
-      
       this.rotatingIncoming = false
       this.movingIncoming = false
       this.mousemoveStart = null
@@ -184,7 +198,7 @@ export default {
     },
     mousemove: function (event) {
       if (this.movingIncoming || this.rotatingIncoming) {
-        const {mat4, vec3, quat} = window.export_nehuba
+        const {vec3, quat} = window.export_nehuba
 
         const deltaX = event.screenX - this.mousemoveStart[0]
         const deltaY = event.screenY - this.mousemoveStart[1]
@@ -203,8 +217,6 @@ export default {
 
           vec3.transformQuat(vec31, vec31, quat.fromValues(...this.viewerSliceOrientation))
           vec3.transformQuat(vec32, vec32, quat.fromValues(...this.viewerSliceOrientation))
-
-          const vec3id = vec3.fromValues(1, 1, 1)
 
           let finalRotation = quat.create()
           quat.mul(
@@ -240,8 +252,6 @@ export default {
     },
     updateState: function ({mouseOverUserlayer}) {
       this.mouseOverIncoming = mouseOverUserlayer
-        ? true
-        : false
       this.$store.dispatch(this.mouseOverIncoming
         ? 'mouseOverIncmoingLayer'
         : 'mouseOutIncomingLayer')
@@ -340,7 +350,7 @@ export default {
     }
   },
   computed: {
-    translationVec3 : {
+    translationVec3: {
       get: function () {
         if (this.appendNehubaFlag) {
           const { vec3 } = window.export_nehuba
@@ -352,7 +362,7 @@ export default {
         }
       }
     },
-    rotationQuat : {
+    rotationQuat: {
       get: function () {
         if (this.appendNehubaFlag) {
           const { quat } = window.export_nehuba
@@ -364,7 +374,7 @@ export default {
         }
       }
     },
-    scaleVec3 : {
+    scaleVec3: {
       get: function () {
         if (this.appendNehubaFlag) {
           const { vec3 } = window.export_nehuba
@@ -377,7 +387,7 @@ export default {
     incomingTransformMatrix: {
       get: function () {
         if (this.appendNehubaFlag) {
-          const { mat4, vec3, quat } = window.export_nehuba
+          const { mat4, vec3 } = window.export_nehuba
 
           const rotateAbsoluteStart = this.rotateAbsoluteStart
             ? this.rotateAbsoluteStart
@@ -390,7 +400,7 @@ export default {
             this.scaleVec3,
             vec3.fromValues(...rotateAbsoluteStart)
           )
-        } 
+        }
         return null
       }
     },

@@ -124,6 +124,16 @@
       <div>
         incoming matrix: {{ incomingMatrix }}
       </div>
+      <div>
+        <div class="btn-group">
+          <div @click = "alignReference($event)" class="btn btn-primary">
+            align reference
+          </div>
+          <div @click = "alignIncoming($event)" class="btn btn-primary">
+            align incoming
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -182,11 +192,15 @@ export default {
     },
     mouseoverUserlayer: function () {
       return this.$store.state.mouseoverUserlayer
-        ? true
-        : false
     }
   },
   methods: {
+    alignReference: function (event) {
+      this.$store.dispatch('alignReference')
+    },
+    alignIncoming: function (event) {
+      this.$store.dispatch('alignIncoming')
+    }
   },
   watch: {
     selectTemplate: function (nst) {
