@@ -417,7 +417,12 @@ export default {
 }
 </script>
 
-<style>
+<style scope>
+.ng-container
+{
+  height: 100%;
+}
+
 div.scale-bar-container
 {
   text-align: center;

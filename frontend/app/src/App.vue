@@ -27,12 +27,12 @@ export default {
 <style>
 #sidebar {
   position: absolute;
-  left:0; top:56px; right:0; bottom:0;
+  left:0; top:74px; right:0; bottom:0;
   width:340px;
 }
 
 #main {
   position: absolute;
-  left:340px; top:56px; right:0; bottom:0;
+  left:340px; top:74px; right:0; bottom:0;
 }
 </style>
