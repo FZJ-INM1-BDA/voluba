@@ -45,6 +45,8 @@ const store = new Vuex.Store({
 
     selectTemplate: null,
     selectTransformation: 'rigid',
+    selectedTransformationIndex: 0,
+
     steps: [
       "Data Selection & 3D Anchoring",
       "Entering Landmark-Pairs",
@@ -57,6 +59,7 @@ const store = new Vuex.Store({
     incomingTemplate: null,
     incomingTransformMatrix: null,
     incomingScale: [1, 1, 1],
+    incomingOpacity: 0.5,
     // in nm
     viewerNavigationPosition: [0, 0, 0],
     viewerMousePosition: [0, 0, 0],
@@ -86,6 +89,9 @@ const store = new Vuex.Store({
     setIncomingTemplateScale (state, array) {
       state.incomingScale = array
     },
+    setIncomingTemplateOpacity (state, newOpacity) {
+      state.incomingOpacity = newOpacity
+    },
     setLayers (state, obj) {
       state.layers = obj
     },
@@ -98,8 +104,8 @@ const store = new Vuex.Store({
     toggleSidebar (state) {
       state.sidebarCollapse = !state.sidebarCollapse
     },
-    selectMethod (state, method) {
-      state.selectTransformation = method
+    selectMethodIndex (state, index) {
+      state.selectedTransformationIndex = index
     },
     changeSidebarWidth(state, size) {
       state.sidebarWidth = size
@@ -149,8 +155,14 @@ const store = new Vuex.Store({
     changeSidebarWidth ({commit}, size) {
       commit('changeSidebarWidth', size)
     },
-    selectMethod ({commit}, method) {
-      commit('selectMethod', method)
+    selectMethodIndex (store, index) {
+      store.commit('selectMethodIndex', index)
+    },
+    changeScale ({commit}, newScale) {
+      commit('setIncomingTemplateScale', [newScale, newScale, newScale])
+    },
+    changeOpacity ({commit}, newOpacity) {
+      commit('setIncomingTemplateOpacity', newOpacity)
     }
   }
 })

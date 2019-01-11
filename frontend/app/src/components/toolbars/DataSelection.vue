@@ -15,7 +15,7 @@
           </option>
         </select>
         <hr>
-        <label>Template volume:</label>
+        <label>Incoming volume: </label>
         <!-- <br> -->
         <select id="select-template" v-model = "selectTemplate">
           <option v-for="templateURL in renderedTemplateURLs" :key="templateURL.id" :value="templateURL.value">
@@ -67,12 +67,12 @@
         
         <input type="checkbox" name="vehicle1" value="Bike">Isotropic Scaling<br><br>
         <div class="btn-group">
-          <div class="btn btn-primary">align reference</div>
-          <div class="btn btn-primary">align incoming</div>
+          <div @click = "alignReference" class="btn btn-primary">align reference</div>
+          <div @click = "alignIncoming" class="btn btn-primary">align incoming</div>
         </div>
         <br>
-        <label>Mouse position:</label><br>
-        <label>Current viewport:</label>
+        <label>Mouse position: {{ viewerMouse.join(', ') }} </label><br>
+        <label>Current viewport: {{ viewerNavigation.join(', ') }}</label>
       </template>
     </card-component>
   </div>
@@ -86,9 +86,9 @@ export default {
   data: function () {
     return {
       
-      scale: 50,
-      scaleMin: 0,
-      scaleMax: 100,
+      scale: 1,
+      scaleMin: 0.1,
+      scaleMax: 10,
       scaleStep: 0.01,
 
       opacity: 0.5,
@@ -114,13 +114,33 @@ export default {
       return this.$store.state.incomingTemplate
         ? this.$store.state.incomingTemplate.text
         : this.dummyIncomingTemplate.text
+    },
+    viewerNavigation: function () {
+      return this.$store.state.viewerNavigationPosition
+    },
+    viewerMouse: function () {
+      return this.$store.state.viewerMousePosition
     }
   },
   watch: {
     selectTemplate: function (nst) {
       this.$store.commit('selectIncomingTemplate', nst)
+    },
+    opacity: function (opacityVal) {
+      this.$store.dispatch('changeOpacity', Number(opacityVal))
+    },
+    scale: function (scaleVal) {
+      this.$store.dispatch('changeScale', scaleVal)
     }
   },
+  methods: {
+    alignReference: function () {
+      this.$store.dispatch('alignReference')
+    },
+    alignIncoming: function () {
+      this.$store.dispatch('alignIncoming')
+    }
+  }
 }
 </script>
 <style scoped>

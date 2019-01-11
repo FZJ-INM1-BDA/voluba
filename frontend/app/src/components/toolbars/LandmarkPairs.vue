@@ -1,15 +1,15 @@
 <template>
   <b-card-body class = "landmark-container">
-    <label>Transformation type:</label>
+    <label>Transformation type: </label>
     <br>
     <select 
       @change = "selectMethod"
       id="select-transformation" 
       :value = "selectTransformation">
       <option 
-        v-for="transformationType in transformationTypes" 
-        :key="transformationType.id"
-        :value="transformationType.value">
+        v-for = "transformationType in transformationTypes" 
+        :key = "transformationType.id"
+        :value = "transformationType.value">
         {{ transformationType.text }}
       </option>
     </select>
@@ -45,14 +45,22 @@ export default {
     transformationTypes: function () {
       return this.$store.state.transformationTypes
     },
+    selectedTransformationIndex: function () {
+      return this.$store.state.selectedTransformationIndex
+    },
     selectTransformation: function () {
-      console.log()
-      return this.$store.state.selectTransformation
+      const selectedTransform = this.$store.state.transformationTypes[
+        this.$store.state.selectedTransformationIndex
+      ]
+      return selectedTransform && selectedTransform.value
+        ? selectedTransform.value
+        : null
     }
   },
   methods: {
-    selectMethod: function (method) {
-      this.$store.dispatch('selectMethod', method.target.value)
+    selectMethod: function (event) {
+      const index = event.target.selectedIndex
+      this.$store.commit('selectMethodIndex', index)
     }
   },
 }

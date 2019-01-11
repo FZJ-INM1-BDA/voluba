@@ -10,7 +10,7 @@
 
 import 'third_party/export_nehuba/main.bundle.js'
 import 'third_party/export_nehuba/chunk_worker.bundle.js'
-import { getShader, patchSliceViewPanel, determineElement, testBigbrain, getRotationVec3, incomingTemplateActiveOpacity, incomingTemplateInactiveOpacity } from './constants'
+import { getShader, patchSliceViewPanel, determineElement, testBigbrain, getRotationVec3, incomingTemplateActiveOpacity } from './constants'
 
 export default {
   name: 'nehuba-component',
@@ -121,6 +121,10 @@ export default {
     })
   },
   watch: {
+    incomingOpacity: function (opacity) {
+      if (this.ngUserLayer)
+        this.ngUserLayer.layer.opacity.restoreState(opacity)
+    },
     cid: function (val) {
       if (val === null) {
         this.$emit('ready', null)
@@ -241,7 +245,7 @@ export default {
      */
     setNavigationActive: function (bool) {
       if (bool) {
-        this.ngUserLayer.layer.opacity.restoreState(incomingTemplateInactiveOpacity)
+        this.ngUserLayer.layer.opacity.restoreState(this.incomingOpacity )
         this.nehubaViewer.ngviewer.inputEventBindings.sliceView.bindings.delete('at:mousedown0')
         this.nehubaViewer.ngviewer.inputEventBindings.sliceView.bindings.delete('at:shift+mousedown0')
       } else {
@@ -337,7 +341,7 @@ export default {
       const name = `userlayer-0`
       const newLayer = {
         source: uri,
-        opacity: 0.5,
+        opacity: this.incomingOpacity,
         shader: getShader([1.0, 1.0, 0.0])
       }
       const newNgLayer = viewer.layerSpecification.getLayer(name, newLayer)
@@ -403,6 +407,9 @@ export default {
         }
         return null
       }
+    },
+    incomingOpacity: function () {
+      return this.$store.state.incomingOpacity
     },
     selectIncomingTemplate: function () {
       return this.$store.state.incomingTemplate
