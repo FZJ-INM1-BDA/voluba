@@ -1,9 +1,17 @@
 <template>
   <div id="app">
-    <header-component/>
-    <sidebar-component id="sidebar"/>
-    <main id="main">
-      <router-view/>
+    <header-component class = "app-header"/>
+    <main id = "main" class = "app-main">
+      <main-side
+        position = "left"
+        :collapse = "sidebarCollapse">
+        <template slot = "mainside-main">
+          <router-view/>
+        </template>
+        <template slot = "mainside-side">
+          <sidebar-component id="sidebar"/>
+        </template>
+      </main-side>
     </main>
     <!--<footer-component/>-->
   </div>
@@ -13,26 +21,45 @@
 import HeaderComponent from '@/components/TheHeader'
 import SidebarComponent from '@/components/TheSidebar'
 // import FooterComponent from '@/components/TheFooter'
+import { MainSide } from 'vue-components'
 
 export default {
   name: 'App',
   components: {
     HeaderComponent,
-    SidebarComponent
+    SidebarComponent,
+    MainSide
     // FooterComponent
-  }
+  },
+  computed: {
+    sidebarCollapse: function () {
+      return this.$store.state.sidebarCollapse
+    }
+  },
 }
 </script>
 
 <style>
-#sidebar {
-  position: absolute;
-  left:0; top:74px; right:0; bottom:0;
-  width:340px;
+#app
+{
+  display:flex;
+  flex-direction: column;
+}
+.app-header
+{
+  flex: 0 0 58px;
+}
+.app-main
+{
+  flex: 1 1 0;
+}
+#sidebar 
+{
+  width: 100%;
+  height: 100%;
 }
 
 #main {
-  position: absolute;
-  left:340px; top:74px; right:0; bottom:0;
+  width: 100%;
 }
 </style>

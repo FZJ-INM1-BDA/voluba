@@ -4,24 +4,16 @@
     <b-navbar-brand href="#">
       <img id="logo" src="../assets/HBP.png" width="32" height="32" alt="">
       <span>Spatial Registration</span>
+      <a href = "#" @click = "toggleSidebar">toggle</a>
     </b-navbar-brand>
 
-
     <b-collapse is-nav id="nav_collapse">
-      <b-navbar-nav style="margin-left: 300px;">
-        <b-nav-item href="#" active>
-          <strong>Step 1</strong>
-          <p class="description">Data Selection & 3D-Anchoring</p>
-        </b-nav-item>
-        <b-nav-item href="" disabled style="margin-top: 12px;"><font-awesome-icon icon="angle-double-right"/></b-nav-item>
-        <b-nav-item href="#">
-          <strong>Step 2</strong>
-          <p class="description">Entering Landmark-Pairs</p>
-        </b-nav-item>
-        <b-nav-item href="" disabled style="margin-top: 12px;"><font-awesome-icon icon="angle-double-right"/></b-nav-item>
-        <b-nav-item href="#">
-          <strong>Step 3</strong>
-          <p class="description">Save & Export Results</p>
+      <b-navbar-nav>
+        <b-nav-item :active = "index === computedActiveStepIndex" @click = "gotoStep(index)" :key = "step" v-for = "(step, index) in computedSteps">
+          <strong>Step {{index + 1}}</strong>
+          <p class="description">
+            {{ step }}
+          </p>
         </b-nav-item>
       </b-navbar-nav>
 
@@ -39,7 +31,26 @@
 
 <script>
 export default {
-  name: 'HeaderComponent'
+  name: 'HeaderComponent',
+  computed: {
+    computedSteps: function () {
+      return this.$store.state.steps
+    },
+    computedActiveStepIndex: function () {
+      return this.$store.state.activeStepIndex
+    },
+    sidebarCollapse: function () {
+      return this.$store.state.sidebarCollapse
+    }
+  },
+  methods:{
+    gotoStep (stepIndex) {
+      this.$store.dispatch('selectStep', stepIndex)
+    },
+    toggleSidebar () {
+      this.$store.dispatch('toggleSidebar')
+    }
+  }
 }
 </script>
 

@@ -27,6 +27,13 @@ Vue.config.productionTip = false
 
 const store = new Vuex.Store({
   state: {
+    steps: [
+      "Data Selection & 3D Anchoring",
+      "Entering Landmark-Pairs",
+      "Save & Export Results"
+    ],
+    activeStepIndex: 0,
+    sidebarCollapse: false,
     referenceTemplate: null,
     incomingTemplate: null,
     incomingTransformMatrix: null,
@@ -65,6 +72,12 @@ const store = new Vuex.Store({
     },
     setMouseoverUserlayer (state, bool) {
       state.mouseoverUserlayer = bool
+    },
+    selectStep (state, index) {
+      state.activeStepIndex = index
+    },
+    toggleSidebar (state) {
+      state.sidebarCollapse = !state.sidebarCollapse
     }
   },
   actions: {
@@ -95,6 +108,18 @@ const store = new Vuex.Store({
       /**
        * required for vuex event dispatch
        */
+    },
+    nextStep ({state, commit}) {
+
+    },
+    previousStep ({state, commit}) {
+
+    },
+    selectStep ({commit}, index) {
+      commit('selectStep', index)
+    },
+    toggleSidebar ({commit}) {
+      commit('toggleSidebar')
     }
   }
 })
