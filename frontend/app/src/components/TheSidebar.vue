@@ -2,12 +2,12 @@
   <div id="sidebar">
     <div id="accordion" role="tablist">
 
-      <!-- Select datasets -->
       <card-component :initialVisibility = "true" :id = "'dataset'">
         <template slot = "header">
-          <h6><strong>Select datasets</strong></h6>
+          <h6><strong>Step 1</strong></h6>
         </template>
         <template slot = "body">
+          <p><strong><u>Data Selection</u></strong></p>
           <label>Reference volume:</label>
           <br>
           <select id="select-reference" v-model="selectReference">
@@ -28,34 +28,28 @@
             <font-awesome-icon icon="upload"/>
             Upload
           </b-button>
+          <br><br>
+          <p><strong><u>Options</u></strong></p>
+          <label>Overlay color:</label>
+          <div style="background-color: yellow; max-width: 20px; min-height: 20px; border: 1px solid black;"></div>
+          <label>Overlay opacity:</label>
+          <input id="opacitySlider" class="slider" type="range" :min="scaleMin" :max="scaleMax" :step="scaleStep" :value="scale"/>
+          <label>Scale:</label>
+          <input id="scaleSlider" class="slider" type="range" :min="scaleMin" :max="scaleMax" :step="scaleStep" :value="scale"/>
+          <input type="checkbox" name="vehicle1" value="Bike">Isotropic Scaling<br><br>
+          <div class="btn-group">
+            <div class="btn btn-primary">align reference</div>
+            <div class="btn btn-primary">align incoming</div>
+          </div>
+          <br>
+          <label>Mouse position:</label><br>
+          <label>Current viewport:</label>
         </template>
       </card-component>
 
-      <!-- Anchor the dataset -->
       <card-component :initialVisibility = "false" :id = "'registration'">
         <template slot = "header">
-          <h6><strong>Anchor the template volume</strong></h6>
-        </template>
-        <template slot = "body">
-          <label>Scale: {{ scale }}</label>
-          <input id="scaleSlider" type="range" :min="scaleMin" :max="scaleMax" :step="scaleStep" v-model="scale"/>
-        </template>
-      </card-component>
-
-      <!-- Detect landmark pairs -->
-      <card-component :initialVisibility = "false" :id = "'landmarkPairs'">
-        <template slot = "header">
-          <h6><strong>Detect landmark pairs</strong></h6>
-        </template>
-        <template slot = "body">
-          <b-card-body></b-card-body>
-        </template>
-      </card-component>
-
-      <!-- Compute the transformation -->
-      <card-component :initialVisibility = "false" :id = "'transformation'">
-        <template slot = "header">
-          <h6><strong>Compute the transformation</strong></h6>
+          <h6><strong>Step 2</strong></h6>
         </template>
         <template slot = "body">
           <label>Transformation type:</label>
@@ -90,12 +84,12 @@
         </template>
       </card-component>
 
-      <!-- Save & Publish -->
       <card-component :initialVisibility = "false" :id = "'landmarkPairs'">
         <template slot = "header">
-          <h6><strong>Save & Publish results</strong></h6>
+          <h6><strong>Step 3</strong></h6>
         </template>
         <template slot = "body">
+          <b-card-body>
             <b-button href="#" variant="secondary">
             <font-awesome-icon icon="download"/>
             Save as JSON
@@ -105,35 +99,9 @@
             <font-awesome-icon icon="file-export"/>
             Publish on HBP platform
           </b-button>
+          </b-card-body>
         </template>
       </card-component>
-      <div>
-        {{ viewerNavigationPosition }}
-      </div>
-      <div>
-        {{ viewerMousePosition }}
-      </div>
-      <div>
-        <div :key = "index" v-for = "(item, index) in layers">
-          {{ item.name }}
-        </div>
-      </div>
-      <div>
-        mouseover userlayer: {{ mouseoverUserlayer }}
-      </div>
-      <div>
-        incoming matrix: {{ incomingMatrix }}
-      </div>
-      <div>
-        <div class="btn-group">
-          <div @click = "alignReference($event)" class="btn btn-primary">
-            align reference
-          </div>
-          <div @click = "alignIncoming($event)" class="btn btn-primary">
-            align incoming
-          </div>
-        </div>
-      </div>
     </div>
   </div>
 </template>
@@ -228,7 +196,7 @@ select, select option {
   max-width: 100%;
 }
 
-#scaleSlider {
+.slider {
   min-width: 100%;
   max-width: 100%;
 }
