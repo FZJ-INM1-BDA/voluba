@@ -27,6 +27,24 @@ Vue.config.productionTip = false
 
 const store = new Vuex.Store({
   state: {
+    referenceURLs: [
+      { id: '1', text: 'BigBrain (2015)', value: 'precomputed://https://www.jubrain.fz-juelich.de/apps/neuroglancer/BigBrainRelease.2015/image' }
+    ],
+    templateURLs: [
+      { id: '1', text: 'Nucleus subthalamicus (B20)', value: 'precomputed://https://neuroglancer-dev.humanbrainproject.org/precomputed/landmark-reg/B20_stn_l/v10' },
+      { id: '2', text: 'Hippocampus unmasked', value: 'precomputed://https://neuroglancer-dev.humanbrainproject.org/precomputed/landmark-reg/hippocampus-unmasked' }
+    ],
+    transformationTypes: [
+      { id: '1', text: 'Rigid', value: 'rigid' },
+      { id: '2', text: 'Rigid (allow reflection)', value: 'rigid+reflection' },
+      { id: '3', text: 'Similarity', value: 'similarity' },
+      { id: '4', text: 'Similarity (allow reflection)', value: 'similarity+reflection' },
+      { id: '5', text: 'Affine', value: 'affine' }
+    ],
+    selectReference: 'precomputed://https://www.jubrain.fz-juelich.de/apps/neuroglancer/BigBrainRelease.2015/image',
+
+    selectTemplate: null,
+    selectTransformation: 'rigid',
     steps: [
       "Data Selection & 3D Anchoring",
       "Entering Landmark-Pairs",
@@ -34,6 +52,7 @@ const store = new Vuex.Store({
     ],
     activeStepIndex: 0,
     sidebarCollapse: false,
+    sidebarWidth: 350,
     referenceTemplate: null,
     incomingTemplate: null,
     incomingTransformMatrix: null,
@@ -78,6 +97,12 @@ const store = new Vuex.Store({
     },
     toggleSidebar (state) {
       state.sidebarCollapse = !state.sidebarCollapse
+    },
+    selectMethod (state, method) {
+      state.selectTransformation = method
+    },
+    changeSidebarWidth(state, size) {
+      state.sidebarWidth = size
     }
   },
   actions: {
@@ -120,6 +145,12 @@ const store = new Vuex.Store({
     },
     toggleSidebar ({commit}) {
       commit('toggleSidebar')
+    },
+    changeSidebarWidth ({commit}, size) {
+      commit('changeSidebarWidth', size)
+    },
+    selectMethod ({commit}, method) {
+      commit('selectMethod', method)
     }
   }
 })

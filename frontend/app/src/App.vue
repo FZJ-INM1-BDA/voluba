@@ -4,6 +4,7 @@
     <main id = "main" class = "app-main">
       <main-side
         position = "left"
+        :sidebarSize = "sidebarWidth"
         :collapse = "sidebarCollapse">
         <template slot = "mainside-main">
           <router-view/>
@@ -34,6 +35,9 @@ export default {
   computed: {
     sidebarCollapse: function () {
       return this.$store.state.sidebarCollapse
+    },
+    sidebarWidth : function () {
+      return this.$store.state.sidebarWidth
     }
   },
 }
@@ -51,12 +55,14 @@ export default {
 }
 .app-main
 {
+  overflow:hidden;
   flex: 1 1 0;
 }
 #sidebar 
 {
   width: 100%;
   height: 100%;
+  overflow-y: scroll;
 }
 
 #main {

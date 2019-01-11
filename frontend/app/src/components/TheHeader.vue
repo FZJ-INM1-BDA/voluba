@@ -5,8 +5,9 @@
       <img id="logo" src="../assets/HBP.png" width="32" height="32" alt="">
       <span>Spatial Registration</span>
       <a href = "#" @click = "toggleSidebar">toggle</a>
+      
     </b-navbar-brand>
-
+    <input min = "100" max = "1000" v-model = "sizebarSize" type="range">
     <b-collapse is-nav id="nav_collapse">
       <b-navbar-nav>
         <b-nav-item :active = "index === computedActiveStepIndex" @click = "gotoStep(index)" :key = "step" v-for = "(step, index) in computedSteps">
@@ -32,6 +33,16 @@
 <script>
 export default {
   name: 'HeaderComponent',
+  data() {
+    return {
+      sizebarSize: 350
+    }
+  },
+  watch: {
+    sizebarSize: function (val) {
+      this.$store.dispatch('changeSidebarWidth', val)
+    }
+  },
   computed: {
     computedSteps: function () {
       return this.$store.state.steps
