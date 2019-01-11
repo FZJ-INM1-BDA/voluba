@@ -159,7 +159,7 @@ const store = new Vuex.Store({
       store.commit('selectMethodIndex', index)
     },
     changeScale ({commit}, newScale) {
-      commit('setIncomingTemplateScale', [newScale, newScale, newScale])
+      commit('setIncomingTemplateScale', newScale)
     },
     changeOpacity ({commit}, newOpacity) {
       commit('setIncomingTemplateOpacity', newOpacity)

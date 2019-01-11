@@ -37,35 +37,111 @@
         <h6><strong>Anchoring Options</strong></h6>
       </template>
       <template slot = "body">
-        <div>
-          <label>Overlay color:</label>
-          <div style="background-color: yellow; max-width: 20px; min-height: 20px; border: 1px solid black;"></div>
+
+        <!-- color -->
+        <div class="option-container">
+          <label for="colorPicker" class="option-label">color</label>
+          <div class="option-input">
+            <div style="background-color: yellow; max-width: 20px; min-height: 20px; border: 1px solid black;"></div>
+          </div>
         </div>
-        <div>
-          <label>Overlay opacity: {{ opacity }}</label>
-          <input 
-            id = "opacitySlider" 
-            class = "slider" 
-            type = "range" 
-            :min = "opacityMin" 
-            :max = "opacityMax" 
-            :step = "opacityStep" 
-            v-model = "opacity"/>
+
+        <!-- opacity -->
+        <div class="option-container">
+          <label for="opacitySlider" class="option-label">opacity</label>
+          <div class = "option-input">
+
+            <input 
+              name = "opacitySlider"
+              id = "opacitySlider" 
+              class = "slider" 
+              type = "range" 
+              :min = "opacityMin" 
+              :max = "opacityMax" 
+              :step = "opacityStep" 
+              v-model = "opacity"/>
+          </div>
+          <div class="option-value">
+            {{ Number(opacity).toFixed(2) }}
+          </div>
         </div>
         
-        <div>
-          <label>Scale: {{ scale }}</label>
-          <input 
-            id = "scaleSlider" 
-            class = "slider" 
-            type = "range" 
-            :min = "scaleMin" 
-            :max = "scaleMax" 
-            :step = "scaleStep" 
-            v-model = "scale"/>
+        <!-- scale -->
+        <div v-if = "isotropic" class="option-container">
+          <label for="scaleSlider" class="option-label">scale</label>
+          <div class="option-input">
+            <input 
+              name = "scaleSlider"
+              id = "scaleSlider" 
+              class = "slider" 
+              type = "range" 
+              :min = "scaleMin" 
+              :max = "scaleMax" 
+              :step = "scaleStep" 
+              v-model = "scale"/>
+          </div>
+          <div class="option-value">
+            {{ Number(scale).toFixed(2) }}
+          </div>
+        </div>
+
+        <!-- non-isotropic scale -->
+        <div v-if = "!isotropic" class="option-container">
+          <label for="scaleSlider" class="option-label">scale x</label>
+          <div class="option-input">
+            <input 
+              name = "scaleSlider"
+              id = "scaleSlider" 
+              class = "slider" 
+              type = "range" 
+              :min = "scaleMin" 
+              :max = "scaleMax" 
+              :step = "scaleStep" 
+              v-model = "scaleX"/>
+          </div>
+          <div class="option-value">
+            {{ Number(scaleX).toFixed(2) }}
+          </div>
+        </div>
+        <div v-if = "!isotropic" class="option-container">
+          <label for="scaleSlider" class="option-label">scale y</label>
+          <div class="option-input">
+            <input 
+              name = "scaleSlider"
+              id = "scaleSlider" 
+              class = "slider" 
+              type = "range" 
+              :min = "scaleMin" 
+              :max = "scaleMax" 
+              :step = "scaleStep" 
+              v-model = "scaleY"/>
+          </div>
+          <div class="option-value">
+            {{ Number(scaleY).toFixed(2) }}
+          </div>
+        </div>
+        <div v-if = "!isotropic" class="option-container">
+          <label for="scaleSlider" class="option-label">scale z</label>
+          <div class="option-input">
+            <input 
+              name = "scaleSlider"
+              id = "scaleSlider" 
+              class = "slider" 
+              type = "range" 
+              :min = "scaleMin" 
+              :max = "scaleMax" 
+              :step = "scaleStep" 
+              v-model = "scaleZ"/>
+          </div>
+          <div class="option-value">
+            {{ Number(scaleZ).toFixed(2) }}
+          </div>
         </div>
         
-        <input type="checkbox" name="vehicle1" value="Bike">Isotropic Scaling<br><br>
+        <input type="checkbox" id = "isotropic" name="isotropic" v-model = "isotropic" />
+        <label for = "isotropic">
+          isotropic scale
+        </label>
         <div class="btn-group">
           <div @click = "alignReference" class="btn btn-primary">align reference</div>
           <div @click = "alignIncoming" class="btn btn-primary">align incoming</div>
@@ -85,7 +161,11 @@ export default {
   },
   data: function () {
     return {
+      isotropic:true,
       
+      scaleX: 1,
+      scaleY: 1,
+      scaleZ: 1,
       scale: 1,
       scaleMin: 0.1,
       scaleMax: 10,
@@ -129,8 +209,22 @@ export default {
     opacity: function (opacityVal) {
       this.$store.dispatch('changeOpacity', Number(opacityVal))
     },
-    scale: function (scaleVal) {
-      this.$store.dispatch('changeScale', scaleVal)
+    scale: function () {
+      this.scaleChanged()
+    },
+    scaleX: function () {
+      this.scaleChanged()
+
+    },
+    scaleY: function () {
+      this.scaleChanged()
+
+    },
+    scaleZ: function () {
+      this.scaleChanged()
+    },
+    isotropic: function () {
+      this.scaleChanged()
     }
   },
   methods: {
@@ -139,10 +233,32 @@ export default {
     },
     alignIncoming: function () {
       this.$store.dispatch('alignIncoming')
+    },
+    scaleChanged: function () {
+      this.$store.dispatch('changeScale', this.isotropic
+        ? [this.scale, this.scale, this.scale]
+        : [this.scaleX, this.scaleY, this.scaleZ]
+      )
     }
   }
 }
 </script>
 <style scoped>
+.option-container
+{
+  display: flex;
+}
 
+.option-label
+{
+  flex: 0 0 30%;
+}
+.option-input
+{
+  flex: 1 1 0px;
+}
+.option-value
+{
+  flex: 0 0 10%;
+}
 </style>
