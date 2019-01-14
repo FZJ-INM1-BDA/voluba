@@ -42,7 +42,8 @@
         <div class="option-container">
           <label for="colorPicker" class="option-label">color</label>
           <div class="option-input">
-            <div style="background-color: yellow; max-width: 20px; min-height: 20px; border: 1px solid black;"></div>
+            <div :style = "{'background-color':overlayColor.hex}" style="max-width: 20px; min-height: 20px; border: 1px solid black;"></div>
+            <compact-picker v-model="overlayColor" />
           </div>
         </div>
 
@@ -155,9 +156,14 @@
 </template>
 <script>
 import CardComponent from '../Card'
+
+// Vue-Color
+import { Compact } from 'vue-color'
+
 export default {
   components: {
-    CardComponent
+    CardComponent,
+    'compact-picker': Compact
   },
   data: function () {
     return {
@@ -177,7 +183,9 @@ export default {
       opacityStep: 0.01,
 
       selectTemplate: null,
-      dummyIncomingTemplate: {id: null, text: '-- Please select a dataset --', value: null}
+      dummyIncomingTemplate: {id: null, text: '-- Please select a dataset --', value: null},
+
+      overlayColor: { hex: this.$store.state.overlayColor }
     }
   },
   computed: {
@@ -225,6 +233,9 @@ export default {
     },
     isotropic: function () {
       this.scaleChanged()
+    },
+    overlayColor: function () {
+      this.overlayColorChanged()
     }
   },
   methods: {
@@ -239,6 +250,10 @@ export default {
         ? [this.scale, this.scale, this.scale]
         : [this.scaleX, this.scaleY, this.scaleZ]
       )
+    },
+    overlayColorChanged: function () {
+      var rgb = {r: this.overlayColor.rgba.r, g: this.overlayColor.rgba.g, b: this.overlayColor.rgba.b}
+      this.$store.dispatch('changeOverlayColor', rgb)
     }
   }
 }

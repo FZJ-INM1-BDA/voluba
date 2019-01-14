@@ -60,6 +60,7 @@ const store = new Vuex.Store({
     incomingTransformMatrix: null,
     incomingScale: [1, 1, 1],
     incomingOpacity: 0.5,
+    overlayColor: '#FCDC00',
     // in nm
     viewerNavigationPosition: [0, 0, 0],
     viewerMousePosition: [0, 0, 0],
@@ -89,7 +90,10 @@ const store = new Vuex.Store({
     setIncomingTemplateScale (state, array) {
       state.incomingScale = array
     },
-    setIncomingTemplateOpacity (state, newOpacity) {
+    setIncomingTemplateOpacity (state, newOverlayColor) {
+      state.overlayColor = newOverlayColor
+    },
+    setOverlayColor (state, newOpacity) {
       state.incomingOpacity = newOpacity
     },
     setLayers (state, obj) {
@@ -163,6 +167,9 @@ const store = new Vuex.Store({
     },
     changeOpacity ({commit}, newOpacity) {
       commit('setIncomingTemplateOpacity', newOpacity)
+    },
+    changeOverlayColor ({commit}, newOverlayColor) {
+      commit('setOverlayColor', newOverlayColor)
     }
   }
 })
