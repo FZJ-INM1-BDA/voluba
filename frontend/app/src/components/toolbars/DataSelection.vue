@@ -167,8 +167,7 @@ export default {
   },
   data: function () {
     return {
-      isotropic:true,
-      
+      isotropic: true,
       scaleX: 1,
       scaleY: 1,
       scaleZ: 1,
@@ -176,12 +175,10 @@ export default {
       scaleMin: 0.1,
       scaleMax: 10,
       scaleStep: 0.01,
-
       opacity: 0.5,
       opacityMin: 0,
       opacityMax: 1.0,
       opacityStep: 0.01,
-
       selectTemplate: null,
       dummyIncomingTemplate: {id: null, text: '-- Please select a dataset --', value: null},
 
@@ -222,11 +219,9 @@ export default {
     },
     scaleX: function () {
       this.scaleChanged()
-
     },
     scaleY: function () {
       this.scaleChanged()
-
     },
     scaleZ: function () {
       this.scaleChanged()

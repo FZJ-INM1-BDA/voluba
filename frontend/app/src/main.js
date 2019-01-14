@@ -48,9 +48,9 @@ const store = new Vuex.Store({
     selectedTransformationIndex: 0,
 
     steps: [
-      "Data Selection & 3D Anchoring",
-      "Entering Landmark-Pairs",
-      "Save & Export Results"
+      'Data Selection & 3D Anchoring',
+      'Entering Landmark-Pairs',
+      'Save & Export Results'
     ],
     activeStepIndex: 0,
     sidebarCollapse: false,
@@ -105,13 +105,16 @@ const store = new Vuex.Store({
     selectStep (state, index) {
       state.activeStepIndex = index
     },
-    toggleSidebar (state) {
-      state.sidebarCollapse = !state.sidebarCollapse
+    hideSidebar (state) {
+      state.sidebarCollapse = true
+    },
+    showSidebar (state) {
+      state.sidebarCollapse = false
     },
     selectMethodIndex (state, index) {
       state.selectedTransformationIndex = index
     },
-    changeSidebarWidth(state, size) {
+    changeSidebarWidth (state, size) {
       state.sidebarWidth = size
     }
   },
@@ -144,6 +147,12 @@ const store = new Vuex.Store({
        * required for vuex event dispatch
        */
     },
+    layoutChange () {
+      /**
+       * required for vuex event dispatch
+       * used for nehuba to lsiten to layout changes
+       */
+    },
     nextStep ({state, commit}) {
 
     },
@@ -153,8 +162,15 @@ const store = new Vuex.Store({
     selectStep ({commit}, index) {
       commit('selectStep', index)
     },
-    toggleSidebar ({commit}) {
-      commit('toggleSidebar')
+    toggleSidebar ({commit, state}) {
+      commit(state.sidebarCollapse
+        ? 'showSidebar'
+        : 'hideSidebar')
+    },
+    setSidebarCollapseState ({commit}, bool) {
+      commit(bool
+        ? 'hideSidebar'
+        : 'showSidebar')
     },
     changeSidebarWidth ({commit}, size) {
       commit('changeSidebarWidth', size)

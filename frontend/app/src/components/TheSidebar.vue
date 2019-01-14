@@ -1,16 +1,14 @@
 <template>
   <div id = "sidebar">
-    <!-- step 1 -->
-    <data-selection-tool-bar v-if = "activeStepIndex === 0">
-    </data-selection-tool-bar>
+    <router-view class = "sidebar-container" />
 
-    <!-- step 2 -->
-    <landmark-pairs-tool-bar v-if = "activeStepIndex === 1">
-    </landmark-pairs-tool-bar>
-    
-    <!-- step 3 -->
-    <SaveExportToolBar v-if = "activeStepIndex === 2">
-    </SaveExportToolBar>
+    <!-- sidebar conrol -->
+    <div @click = "collapseSidebar" class="sidebar-control">
+      <div class="sidebar-control-content">
+        <font-awesome-icon icon = "angle-left" ></font-awesome-icon>
+        {{ controlText }}
+      </div>
+    </div>
   </div>
 </template>
 
@@ -31,6 +29,11 @@ export default {
     },
     activeStepName: function () {
       return this.$store.state.steps[this.$store.state.activeStepIndex]
+    },
+    controlText: function () {
+      return this.$store.state.sidebarCollapse
+        ? ''
+        : 'Collapse'
     }
   },
   methods: {
@@ -39,6 +42,9 @@ export default {
     },
     alignIncoming: function (event) {
       this.$store.dispatch('alignIncoming')
+    },
+    collapseSidebar: function () {
+      this.$store.dispatch('setSidebarCollapseState', true)
     }
   },
   watch: {
@@ -57,6 +63,36 @@ export default {
 <style scoped>
 #sidebar {
   background-color: lightgray;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.sidebar-container
+{
+  flex: 1 1 0px;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.sidebar-control
+{
+  flex: 0 0 3em;
+  padding-left: 1em;
+  background-color: rgba(255, 255, 255, 0.8);
+  display:flex;
+  align-items: center;
+}
+
+.sidebar-control:hover
+{
+  cursor:pointer;
+  background-color: rgba(255, 255, 255, 0.95);
+}
+
+.sidebar-control > *
+{
+  
 }
 
 select, select option {

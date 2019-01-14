@@ -4,19 +4,16 @@
     <b-navbar-brand href="#">
       <img id="logo" src="../assets/HBP.png" width="32" height="32" alt="">
       <span>Spatial Registration</span>
-      <a href = "#" @click = "toggleSidebar">toggle</a>
       
     </b-navbar-brand>
+    
+    <!-- sidebar control -->
+    <a href = "#" @click = "toggleSidebar">toggle</a>
     <input min = "100" max = "1000" v-model = "sizebarSize" type="range">
+
+    <progress-tracker />
+
     <b-collapse is-nav id="nav_collapse">
-      <b-navbar-nav>
-        <b-nav-item :active = "index === computedActiveStepIndex" @click = "gotoStep(index)" :key = "step" v-for = "(step, index) in computedSteps">
-          <strong>Step {{index + 1}}</strong>
-          <p class="description">
-            {{ step }}
-          </p>
-        </b-nav-item>
-      </b-navbar-nav>
 
       <!-- Right aligned nav items -->
       <b-navbar-nav class="ml-auto">
@@ -31,8 +28,13 @@
 </template>
 
 <script>
+import ProgressTracker from '@/views/ProgressTracker'
+
 export default {
   name: 'HeaderComponent',
+  components: {
+    ProgressTracker
+  },
   data() {
     return {
       sizebarSize: 350
