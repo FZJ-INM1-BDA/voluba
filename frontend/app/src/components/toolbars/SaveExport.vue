@@ -9,9 +9,8 @@
       <font-awesome-icon icon="file-export"/>
       Publish on HBP platform
     </b-button>
-  </b-card-body>  
+  </b-card-body>
 </template>
-
 <script>
 export default {
   methods: {

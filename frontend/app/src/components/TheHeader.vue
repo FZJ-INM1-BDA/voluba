@@ -4,9 +4,7 @@
     <b-navbar-brand href="#">
       <img id="logo" src="../assets/HBP.png" width="32" height="32" alt="">
       <span>Spatial Registration</span>
-      
     </b-navbar-brand>
-    
     <!-- sidebar control -->
     <a href = "#" @click = "toggleSidebar">toggle</a>
     <input min = "100" max = "1000" v-model = "sizebarSize" type="range">
@@ -35,7 +33,7 @@ export default {
   components: {
     ProgressTracker
   },
-  data() {
+  data () {
     return {
       sizebarSize: 350
     }
@@ -56,7 +54,7 @@ export default {
       return this.$store.state.sidebarCollapse
     }
   },
-  methods:{
+  methods: {
     gotoStep (stepIndex) {
       this.$store.dispatch('selectStep', stepIndex)
     },

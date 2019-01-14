@@ -121,9 +121,11 @@ export default {
     })
   },
   watch: {
-    incomingOpacity: function (opacity) {
-      if (this.ngUserLayer)
-        this.ngUserLayer.layer.opacity.restoreState(opacity)
+    incomingColor: function (rgba) {
+      if (this.ngUserLayer) {
+        this.ngUserLayer.layer.fragmentMain.restoreState(getShader(rgba))
+        this.ngUserLayer.layer.opacity.restoreState(rgba[3])
+      }
     },
     cid: function (val) {
       if (val === null) {
@@ -245,7 +247,7 @@ export default {
      */
     setNavigationActive: function (bool) {
       if (bool) {
-        this.ngUserLayer.layer.opacity.restoreState(this.incomingOpacity )
+        this.ngUserLayer.layer.opacity.restoreState(this.incomingColor[3])
         this.nehubaViewer.ngviewer.inputEventBindings.sliceView.bindings.delete('at:mousedown0')
         this.nehubaViewer.ngviewer.inputEventBindings.sliceView.bindings.delete('at:shift+mousedown0')
       } else {
@@ -341,8 +343,8 @@ export default {
       const name = `userlayer-0`
       const newLayer = {
         source: uri,
-        opacity: this.incomingOpacity,
-        shader: getShader([1.0, 1.0, 0.0])
+        opacity: this.incomingColor[3],
+        shader: getShader(this.incomingColor)
       }
       const newNgLayer = viewer.layerSpecification.getLayer(name, newLayer)
       this.ngUserLayer = viewer.layerManager.addManagedLayer(newNgLayer)
@@ -408,8 +410,8 @@ export default {
         return null
       }
     },
-    incomingOpacity: function () {
-      return this.$store.state.incomingOpacity
+    incomingColor: function () {
+      return this.$store.state.incomingColor.map((v, idx) => idx === 3 ? v : v / 255)
     },
     selectIncomingTemplate: function () {
       return this.$store.state.incomingTemplate

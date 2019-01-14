@@ -45,7 +45,7 @@ export default {
     },
     sidebarWidth: function () {
       return this.$store.state.sidebarWidth
-    },
+    }
   },
   methods: {
     expandSidebar: function () {
@@ -70,7 +70,7 @@ export default {
   overflow:hidden;
   flex: 1 1 0;
 }
-#sidebar 
+#sidebar
 {
   width: 100%;
   height: 100%;

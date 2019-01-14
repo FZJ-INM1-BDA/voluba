@@ -59,8 +59,9 @@ const store = new Vuex.Store({
     incomingTemplate: null,
     incomingTransformMatrix: null,
     incomingScale: [1, 1, 1],
-    incomingOpacity: 0.5,
-    overlayColor: '#FCDC00',
+    incomingColor: [252, 200, 0, 0.5],
+
+    defaultOverlayColor: '#FCDC00',
     // in nm
     viewerNavigationPosition: [0, 0, 0],
     viewerMousePosition: [0, 0, 0],
@@ -90,11 +91,19 @@ const store = new Vuex.Store({
     setIncomingTemplateScale (state, array) {
       state.incomingScale = array
     },
-    setIncomingTemplateOpacity (state, newOverlayColor) {
-      state.overlayColor = newOverlayColor
-    },
-    setOverlayColor (state, newOpacity) {
-      state.incomingOpacity = newOpacity
+    setIncomingTemplateRGBA (state, {color, opacity}) {
+      const oldColor = state.incomingColor
+      const oldRGB = [
+        oldColor[0],
+        oldColor[1],
+        oldColor[2]
+      ]
+      const oldOpacity = oldColor[3]
+      const newColor = [
+        ...(color ? color : oldRGB),
+        opacity ? opacity : oldOpacity
+      ]
+      state.incomingColor = newColor
     },
     setLayers (state, obj) {
       state.layers = obj
@@ -181,11 +190,16 @@ const store = new Vuex.Store({
     changeScale ({commit}, newScale) {
       commit('setIncomingTemplateScale', newScale)
     },
-    changeOpacity ({commit}, newOpacity) {
-      commit('setIncomingTemplateOpacity', newOpacity)
+    changeOpacity ({commit}, opacity) {
+      commit('setIncomingTemplateRGBA', { opacity })
     },
     changeOverlayColor ({commit}, newOverlayColor) {
-      commit('setOverlayColor', newOverlayColor)
+      const color = [
+        newOverlayColor.r,
+        newOverlayColor.g,
+        newOverlayColor.b
+      ]
+      commit('setIncomingTemplateRGBA', { color })
     }
   }
 })

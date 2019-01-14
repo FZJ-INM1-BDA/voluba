@@ -7,7 +7,7 @@ export default new Router({
   routes: [
     {
       path: '/',
-      redirect: '/select',
+      redirect: '/select'
     },
     {
       path: '/select',

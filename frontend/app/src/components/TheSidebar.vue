@@ -90,11 +90,6 @@ export default {
   background-color: rgba(255, 255, 255, 0.95);
 }
 
-.sidebar-control > *
-{
-  
-}
-
 select, select option {
   min-width: 100%;
   max-width: 100%;

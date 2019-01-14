@@ -1,7 +1,7 @@
 <template>
   <div class = "progress-tracker-container">
     <router-link
-      class = "progress-tracker-item" 
+      class = "progress-tracker-item"
       :key = "route.name"
       :to = "route"
       v-for = "(route, index) in routes">
@@ -31,7 +31,7 @@ export default {
         title: 'Save & Export Results'
       }]
     }
-  }  
+  }
 }
 </script>
 <style scoped>
