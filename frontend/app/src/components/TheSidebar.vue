@@ -14,9 +14,9 @@
 
 <script>
 import CardComponent from '@/components/Card'
-import DataSelectionToolBar from '@/components/toolbars/DataSelection'
-import LandmarkPairsToolBar from '@/components/toolbars/LandmarkPairs'
-import SaveExportToolBar from '@/components/toolbars/SaveExport'
+import ToolbarStep1 from '@/components/toolbars/ToolbarStep1'
+import ToolbarStep2 from '@/components/toolbars/ToolbarStep2'
+import ToolbarStep3 from '@/components/toolbars/ToolbarStep3'
 export default {
   name: 'SidebarComponent',
   data () {
@@ -53,9 +53,9 @@ export default {
   },
   components: {
     CardComponent,
-    DataSelectionToolBar,
-    LandmarkPairsToolBar,
-    SaveExportToolBar
+    ToolbarStep1,
+    ToolbarStep2,
+    ToolbarStep3
   }
 }
 </script>

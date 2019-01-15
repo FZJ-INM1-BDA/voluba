@@ -7,22 +7,22 @@ export default new Router({
   routes: [
     {
       path: '/',
-      redirect: '/select'
+      redirect: '/step1'
     },
     {
-      path: '/select',
-      name: 'Data Selection',
-      component: () => import('@/components/toolbars/DataSelection')
+      path: '/step1',
+      name: 'Step 1',
+      component: () => import('@/components/toolbars/ToolbarStep1')
     },
     {
-      path: '/landmarks',
-      name: 'Landmark Selection',
-      component: () => import('@/components/toolbars/LandmarkPairs')
+      path: '/step2',
+      name: 'Step 2',
+      component: () => import('@/components/toolbars/ToolbarStep2')
     },
     {
-      path: '/export',
-      name: 'Save & Export',
-      component: () => import('@/components/toolbars/SaveExport')
+      path: '/step3',
+      name: 'Step 3',
+      component: () => import('@/components/toolbars/ToolbarStep3')
     },
     {
       path: '*',

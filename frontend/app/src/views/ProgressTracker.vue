@@ -21,13 +21,13 @@ export default {
   data: function () {
     return {
       routes: [{
-        name: 'Data Selection',
+        name: 'Step 1',
         title: 'Data Selection & 3D Anchoring'
       }, {
-        name: 'Landmark Selection',
+        name: 'Step 2',
         title: 'Entering Landmark Pairs'
       }, {
-        name: 'Save & Export',
+        name: 'Step 3',
         title: 'Save & Export Results'
       }]
     }
