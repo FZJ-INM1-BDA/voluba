@@ -76,7 +76,7 @@ export default {
   },
   watch: {
     $route (to, from) {
-      this.showSecondNehuba = to.name === 'Landmark Selection'
+      this.showSecondNehuba = to.path === '/step2'
       this.$store.dispatch('redrawNehuba')
     }
   }

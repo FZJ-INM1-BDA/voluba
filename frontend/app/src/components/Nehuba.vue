@@ -167,7 +167,7 @@ export default {
     },
     $route: function (from, to) {
       if (this.ngUserLayer)
-        this.ngUserLayer.setVisible(to.path === '/landmarks')
+        this.ngUserLayer.setVisible(to.path === '/step2')
     }
   },
   beforeMount: function () {
