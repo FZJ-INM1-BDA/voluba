@@ -1,8 +1,25 @@
 <template>
-  <div @mouseup.capture = "mouseup" @mousedown.capture = "mousedown" @mousemove.capture = "mousemove" id="nehubaContainer">
-    <div @viewportToData = "viewportToData" class = "ng-container" :id = "cid">
+  <div
+    @mouseup.capture = "mouseup"
+    @mousedown.capture = "mousedown"
+    @mousemove.capture = "mousemove"
+    class = "nehuba-container">
+
+    <div
+      @sliceRenderEvent = "sliceRenderEvent"
+      @viewportToData = "viewportToData"
+      class = "nehuba-element"
+      :id = "cid">
       {{ placeholderText }}
     </div>
+
+    <NehubaLandmarksOverlay
+      ref = "lmOverlay"
+      v-if = "dataToViewport.length > 2"
+      :dataToViewport = "dataToViewport"
+      :landmarks = "referenceLandmarks"
+      class = "landmarks-overlay"
+    />
   </div>
 </template>
 
@@ -10,8 +27,9 @@
 
 import 'third_party/export_nehuba/main.bundle.js'
 import 'third_party/export_nehuba/chunk_worker.bundle.js'
-import { getShader, patchSliceViewPanel, determineElement, testBigbrain, getRotationVec3, incomingTemplateActiveOpacity } from './constants'
+import { defaultXform, getShader, patchSliceViewPanel, determineElement, testBigbrain, getRotationVec3, incomingTemplateActiveOpacity } from './constants'
 
+import NehubaLandmarksOverlay from '@/components/NehubaLandmarksOverlay'
 export default {
   name: 'nehuba-component',
   created: function () {
@@ -39,6 +57,11 @@ export default {
       rotateAbsoluteStart: null,
       activeViewportToData: null,
       subscriptions: [],
+      dataToViewport: [
+        defaultXform,
+        defaultXform,
+        defaultXform
+      ],
       viewportToDatas: [],
 
       /**
@@ -174,6 +197,18 @@ export default {
     this.cid = 'neuroglancer-container'
   },
   methods: {
+    sliceRenderEvent: function (event) {
+      if (
+        this.dataToViewport[0] !== defaultXform && 
+        this.dataToViewport[1] !== defaultXform && 
+        this.dataToViewport[2] !== defaultXform
+      ) {
+        return
+      }
+
+      const element = event.srcElement || event.originalTarget
+      this.dataToViewport[determineElement(element)] = event.detail.nanometersToOffsetPixels
+    },
     viewportToData: function (event) {
       if (this.viewportToDatas[0] && this.viewportToDatas[1] && this.viewportToDatas[2]) {
         return
@@ -321,6 +356,11 @@ export default {
             this.$store.dispatch('viewerSliceOrientationChanged', array)
           })
       )
+      this.subscriptions.push(
+        this.nehubaViewer.navigationState.full.subscribe(() => {
+          this.navigationChanged()
+        }) 
+      )
     },
     clearnUp: function () {
       this.cid = null
@@ -333,6 +373,9 @@ export default {
       window['nehubaViewer'] = this.nehubaViewer
       window['nehubaVue'] = this
       // window['viewer'] = null
+    },
+    navigationChanged: function () {
+      this.$refs.lmOverlay.$forceUpdate()
     },
     clearUserLayers: function () {
       if (!this.nehubaViewer) {
@@ -432,20 +475,21 @@ export default {
     },
     viewerIncomingScale: function () {
       return this.$store.state.incomingScale
+    },
+    referenceLandmarks: function () {
+      return this.$store.state.referenceLandmarks
     }
   },
   beforeDestroy () {
     this.subscriptions.forEach(s => s.unsubscribe())
+  },
+  components: {
+    NehubaLandmarksOverlay
   }
 }
 </script>
 
-<style scope>
-.ng-container
-{
-  height: 100%;
-}
-
+<style>
 div.scale-bar-container
 {
   text-align: center;
@@ -480,23 +524,36 @@ div.scale-bar-container
   background-color:hsla(0,0%,60%,0.2);
 }
 
-#nehubaContainer,
-.ng-container
+.nehuba-container,
+.nehuba-element
 {
   width: 100%;
   height: 100%;
 }
 
-#nehubaContainer
+.nehuba-container
 {
   position:relative;
 }
 
-.ng-container
+.nehuba-container > .nehuba-element
+{
+  position: relative;
+}
+.nehuba-container > .landmarks-overlay
 {
   position: absolute;
-  top: 0;
   left: 0;
+  top: 0;
+}
+
+.nehuba-element
+{
   z-index: 10;
+}
+
+.landmarks-overlay
+{
+  z-index: 11;
 }
 </style>

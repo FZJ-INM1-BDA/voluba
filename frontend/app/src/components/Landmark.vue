@@ -6,15 +6,17 @@
     </td>
     <td><input class="form-control-sm" type="text" style="max-width: 110px;" v-model="name"></td>
     <td>
-      <button type="button" class="btn btn-sm btn-default">
-        <font-awesome-icon icon="eye"/>
-      </button>
-      <button type="button" class="btn btn-sm btn-warning">
-        <font-awesome-icon icon="thumbtack" style="color: white;"/>
-      </button>
-      <button type="button" class="btn btn-sm btn-danger">
-        <font-awesome-icon icon="trash-alt"/>
-      </button>
+      <div class="btn-group">
+        <button type="button" class="btn btn-sm btn-primary">
+          <font-awesome-icon icon="eye"/>
+        </button>
+        <button type="button" class="btn btn-sm btn-warning">
+          <font-awesome-icon icon="thumbtack" style="color: white;"/>
+        </button>
+        <button type="button" class="btn btn-sm btn-danger">
+          <font-awesome-icon icon="trash-alt"/>
+        </button>
+      </div>
     </td>
   </tr>
 </template>

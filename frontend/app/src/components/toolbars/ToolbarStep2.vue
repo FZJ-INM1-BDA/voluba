@@ -10,18 +10,14 @@
         <input type="checkbox" id="synchronize-zoom" name="synchronize-zoom" v-model="synchronizeZoom" />
         <label for = "synchronize-zoom">Synchronize zoom</label>
         <div>
-          <button type="button" @click="loadLandmarkPairs" class="btn btn-default"><font-awesome-icon icon="file-upload"/> Load</button>
-          <button type="button" @click="saveLandmarkPairs" class="btn btn-default"><font-awesome-icon icon="file-download"/> Save</button>
+          <button type="button" @click = "loadLandmarkPairs" class="btn btn-default"><font-awesome-icon icon="file-upload"/> Load</button>
+          <button type="button" @click = "saveLandmarkPairs" class="btn btn-default"><font-awesome-icon icon="file-download"/> Save</button>
         </div>
         <div>
-          <button type="button" @click="clearList" class="btn btn-danger"><font-awesome-icon icon="trash-alt"/> Remove all</button>
-          <button type="button" @click="addLandmarkPair" class="btn btn-success"><font-awesome-icon icon="plus"/> Add</button>
+          <button type="button" @click = "clearList" class="btn btn-danger"><font-awesome-icon icon="trash-alt"/> Remove all</button>
+          <button type="button" @click = "addLandmarkPair" class="btn btn-success"><font-awesome-icon icon="plus"/> Add</button>
         </div>
-        <landmark-list>
-          <template slot="body">
-            <landmark :color="'#FCDC00'" :name="1"></landmark>
-          </template>
-        </landmark-list>
+        <landmark-list />
       </template>
     </card-component>
 
@@ -71,9 +67,8 @@
   </div>
 </template>
 <script>
-import CardComponent from '../Card'
-import Landmark from '../Landmark'
-import LandmarkList from '../LandmarkList'
+import CardComponent from '@/components/Card'
+import LandmarkList from '@/components/LandmarkList'
 
 // Vue-Color
 import { Compact } from 'vue-color'
@@ -81,7 +76,6 @@ import { Compact } from 'vue-color'
 export default {
   components: {
     CardComponent,
-    Landmark,
     LandmarkList,
     'compact-picker': Compact
   },
@@ -110,6 +104,18 @@ export default {
     selectMethod: function (event) {
       const index = event.target.selectedIndex
       this.$store.commit('selectMethodIndex', index)
+    },
+    loadLandmarkPairs: function () {
+
+    },
+    saveLandmarkPairs: function () {
+
+    },
+    clearList: function () {
+
+    },
+    addLandmarkPair: function () {
+      
     }
   },
 }

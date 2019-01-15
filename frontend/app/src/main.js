@@ -11,7 +11,7 @@ import 'bootstrap-vue/dist/bootstrap-vue.css'
 
 // Font awesome
 import { library } from '@fortawesome/fontawesome-svg-core'
-import { faAngleLeft, faAngleRight, faAngleDoubleRight, faAngleUp, faAngleDown, faEye, faBars, faPlayCircle, faUpload, faDownload, faFileExport, faQuestionCircle, faTimes, faTrashAlt, faThumbtack, faPlus, faFileUpload, faFileDownload } from '@fortawesome/free-solid-svg-icons'
+import {  faMapMarkerAlt, faAngleLeft, faAngleRight, faAngleDoubleRight, faAngleUp, faAngleDown, faEye, faBars, faPlayCircle, faUpload, faDownload, faFileExport, faQuestionCircle, faTimes, faTrashAlt, faThumbtack, faPlus, faFileUpload, faFileDownload } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 
 // Vuex
@@ -20,7 +20,7 @@ import Vuex from 'vuex'
 Vue.use(BootstrapVue)
 Vue.use(Vuex)
 
-library.add(faAngleLeft, faAngleRight, faAngleDoubleRight, faAngleUp, faAngleDown, faEye, faBars, faPlayCircle, faUpload, faDownload, faFileExport, faQuestionCircle, faTimes, faTrashAlt, faThumbtack, faPlus, faFileUpload, faFileDownload)
+library.add(faMapMarkerAlt, faAngleLeft, faAngleRight, faAngleDoubleRight, faAngleUp, faAngleDown, faEye, faBars, faPlayCircle, faUpload, faDownload, faFileExport, faQuestionCircle, faTimes, faTrashAlt, faThumbtack, faPlus, faFileUpload, faFileDownload)
 Vue.component('font-awesome-icon', FontAwesomeIcon)
 
 Vue.config.productionTip = false
@@ -67,7 +67,65 @@ const store = new Vuex.Store({
     viewerMousePosition: [0, 0, 0],
     viewerSliceOrientation: [0, 0, 0, 1],
     layers: null,
-    mouseoverUserlayer: null
+    mouseoverUserlayer: null,
+
+    referenceLandmarks: [{
+      id: 'uniqueIdRefLm1',
+      name: 'Reference Point 1',
+      coord: [
+        12.282029,
+        0.325772375,
+        -9.724908
+      ]
+    }, {
+      id: 'uniqueIdRefLm2',
+      name: 'Reference Point 2',
+      coord: [
+        6.4210755,
+        0.325772375,
+        -16.609202
+      ]
+    }, {
+      id: 'uniqueIdRefLm3',
+      name: 'Reference Point 3',
+      coord: [
+        9.398068,
+        -2.74425175,
+        -14.748581
+      ]
+    }],
+
+    incomingLandmarks: [{
+      id: 'uniqueIdIncLm1',
+      name: 'Incoming Point 1',
+      coord: [
+        11.087669,
+        6.56,
+        9.320814
+      ]
+    }, {
+      id: 'uniqueIdIncLm2',
+      name: 'Incoming Point 2',
+      coord: [
+        7.4451575,
+        6.56,
+        1.111573875
+      ]
+    }, {
+      id: 'uniqueIdIncLm3',
+      name: 'Incoming Point 3',
+      coord: [
+        8.505292,
+        5.0921215,
+        5.6511205
+      ]
+    }],
+
+    pairs: [
+      [0, 0],
+      [1, 1],
+      [2, 2]
+    ]
   },
   mutations: {
     selectReferenceTemplate (state, refTemplate) {

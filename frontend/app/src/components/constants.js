@@ -22,6 +22,10 @@ exports.patchSliceViewPanel = function (sliceViewPanel) {
   }
 }
 
+exports.defaultXform = function (array) {
+  return array
+}
+
 /**
  * Assuming 2 x 2 panel
  */

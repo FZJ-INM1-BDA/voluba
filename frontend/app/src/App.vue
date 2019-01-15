@@ -9,9 +9,10 @@
         <template slot = "mainside-main">
           <div class="mainside-main-item nehuba-container">
             <nehuba-component @ready = "mainNehubaReady" ref = "templatenehuba" />
-            <SimpleNehubaComponent :config = "simpleNehubaConfig" ref = "incomingnehuba" v-if = "showSecondNehuba && primaryNehubaReady">
-              hello world
-            </SimpleNehubaComponent>
+            <SimpleNehubaComponent
+              :config = "simpleNehubaConfig"
+              ref = "incomingnehuba"
+              v-if = "showSecondNehuba && primaryNehubaReady" />
           </div>
           <div v-if = "sidebarCollapse" class = "sidebar-control mainside-main-item">
             <b-button @click.prevent = "expandSidebar" variant="secondary">
