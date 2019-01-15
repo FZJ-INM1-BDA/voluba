@@ -7,7 +7,12 @@
         :sidebarSize = "sidebarWidth"
         :collapse = "sidebarCollapse">
         <template slot = "mainside-main">
-          <nehuba-component class = "mainside-main-item" />
+          <div class="mainside-main-item nehuba-container">
+            <nehuba-component @ready = "mainNehubaReady" ref = "templatenehuba" />
+            <SimpleNehubaComponent :config = "simpleNehubaConfig" ref = "incomingnehuba" v-if = "showSecondNehuba && primaryNehubaReady">
+              hello world
+            </SimpleNehubaComponent>
+          </div>
           <div v-if = "sidebarCollapse" class = "sidebar-control mainside-main-item">
             <b-button @click.prevent = "expandSidebar" variant="secondary">
               <font-awesome-icon icon = "angle-right"></font-awesome-icon>
@@ -27,8 +32,10 @@
 import HeaderComponent from '@/components/TheHeader'
 import SidebarComponent from '@/components/TheSidebar'
 import NehubaComponent from '@/components/Nehuba'
+import SimpleNehubaComponent from '@/components/SimpleNehuba'
 // import FooterComponent from '@/components/TheFooter'
 import { MainSide } from 'vue-components'
+import { getDefaultNehubaConfigLight } from '@/components/constants'
 
 export default {
   name: 'App',
@@ -36,8 +43,15 @@ export default {
     HeaderComponent,
     SidebarComponent,
     MainSide,
-    NehubaComponent
+    NehubaComponent,
+    SimpleNehubaComponent
     // FooterComponent
+  },
+  data: function () {
+    return {
+      showSecondNehuba: false,
+      primaryNehubaReady: false
+    }
   },
   computed: {
     sidebarCollapse: function () {
@@ -45,11 +59,25 @@ export default {
     },
     sidebarWidth: function () {
       return this.$store.state.sidebarWidth
+    },
+    simpleNehubaConfig: function () {
+      return this.$store.state.incomingTemplate
+        ? getDefaultNehubaConfigLight(this.$store.state.incomingTemplate)
+        : null
     }
   },
   methods: {
     expandSidebar: function () {
       this.$store.dispatch('setSidebarCollapseState', false)
+    },
+    mainNehubaReady: function () {
+      this.primaryNehubaReady = true
+    }
+  },
+  watch: {
+    $route (to, from) {
+      this.showSecondNehuba = to.name === 'Landmark Selection'
+      this.$store.dispatch('redrawNehuba')
     }
   }
 }
@@ -87,6 +115,18 @@ export default {
 {
   position: relative;
   z-index: 4;
+}
+
+.nehuba-container
+{
+  display: flex;
+  flex-direction: row;
+  height: 100%;
+}
+
+.nehuba-container > *
+{
+  flex: 1 1 0;
 }
 
 #main {

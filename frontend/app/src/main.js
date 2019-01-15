@@ -156,7 +156,7 @@ const store = new Vuex.Store({
        * required for vuex event dispatch
        */
     },
-    layoutChange () {
+    redrawNehuba () {
       /**
        * required for vuex event dispatch
        * used for nehuba to lsiten to layout changes
@@ -171,15 +171,17 @@ const store = new Vuex.Store({
     selectStep ({commit}, index) {
       commit('selectStep', index)
     },
-    toggleSidebar ({commit, state}) {
+    toggleSidebar ({dispatch, commit, state}) {
       commit(state.sidebarCollapse
         ? 'showSidebar'
         : 'hideSidebar')
+      setTimeout(() => dispatch('redrawNehuba'))
     },
-    setSidebarCollapseState ({commit}, bool) {
+    setSidebarCollapseState ({dispatch, commit}, bool) {
       commit(bool
         ? 'hideSidebar'
         : 'showSidebar')
+      setTimeout(() => dispatch('redrawNehuba'))
     },
     changeSidebarWidth ({commit}, size) {
       commit('changeSidebarWidth', size)

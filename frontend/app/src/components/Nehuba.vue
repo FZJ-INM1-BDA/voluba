@@ -107,6 +107,9 @@ export default {
       if (!this.appendNehubaFlag) return
       const { quat, mat4 } = window.export_nehuba
       switch (type) {
+        case 'redrawNehuba':
+          if (this.nehubaViewer) this.nehubaViewer.redraw()
+          break;
         case 'alignReference':
           this.nehubaViewer.ngviewer.navigationState.pose.orientation.restoreState([0, 0, 0, 1])
           break
@@ -161,6 +164,10 @@ export default {
         this.ngUserLayer.layer.transform.transform = mat
       }
       this.ngUserLayer.layer.transform.changed.dispatch()
+    },
+    $route: function (from, to) {
+      if (this.ngUserLayer)
+        this.ngUserLayer.setVisible(to.path === '/landmarks')
     }
   },
   beforeMount: function () {
@@ -192,6 +199,7 @@ export default {
         this.mousemoveStart = [event.screenX, event.screenY]
 
         if (event.shiftKey) {
+          return 
           this.rotatingIncoming = true
           this.rotateAbsoluteStart = this.viewerMousePosition
         } else {
@@ -249,11 +257,11 @@ export default {
       if (bool) {
         this.ngUserLayer.layer.opacity.restoreState(this.incomingColor[3])
         this.nehubaViewer.ngviewer.inputEventBindings.sliceView.bindings.delete('at:mousedown0')
-        this.nehubaViewer.ngviewer.inputEventBindings.sliceView.bindings.delete('at:shift+mousedown0')
+        // this.nehubaViewer.ngviewer.inputEventBindings.sliceView.bindings.delete('at:shift+mousedown0')
       } else {
         this.ngUserLayer.layer.opacity.restoreState(incomingTemplateActiveOpacity)
         this.nehubaViewer.ngviewer.inputEventBindings.sliceView.bindings.set('at:mousedown0', {stopPropagation: true})
-        this.nehubaViewer.ngviewer.inputEventBindings.sliceView.bindings.set('at:shift+mousedown0', {stopPropagation: true})
+        // this.nehubaViewer.ngviewer.inputEventBindings.sliceView.bindings.set('at:shift+mousedown0', {stopPropagation: true})
       }
     },
     updateState: function ({mouseOverUserlayer}) {
@@ -266,6 +274,12 @@ export default {
       this.nehubaViewer = window.export_nehuba.createNehubaViewer(this.testConfig, (e) => {
         console.log('nehuba throwing error')
       })
+
+      /**
+       * clear window.viewer object
+       */
+      window.primaryViewer = window.viewer
+      window.viewer = null
 
       /**
        * TODO

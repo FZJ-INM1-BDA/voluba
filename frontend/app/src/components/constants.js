@@ -187,6 +187,121 @@ exports.testBigbrainNoXform = {
   }
 }
 
+exports.getDefaultNehubaConfigLight = (sourceUrl) => {
+  return {
+    "configName": "BigBrain",
+    "globals": {
+      "hideNullImageValues": true,
+      "useNehubaLayout": {
+        "keepDefaultLayouts": false
+      },
+      "useNehubaMeshLayer": true,
+      "rightClickWithCtrlGlobal": false,
+      "zoomWithoutCtrlGlobal": false,
+      "useCustomSegmentColors": true
+    },
+    "zoomWithoutCtrl": true,
+    "hideNeuroglancerUI": true,
+    "rightClickWithCtrl": true,
+    "rotateAtViewCentre": true,
+    "enableMeshLoadingControl": true,
+    "zoomAtViewCentre": true,
+    "restrictUserNavigation": true,
+    "disableSegmentSelection": true,
+    "dataset": {
+      "imageBackground": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "initialNgState": {
+        "showDefaultAnnotations": true,
+        "layers": {
+          "default": {
+            "type": "image",
+            "source": `${sourceUrl}`,
+          }
+        }
+      }
+    },
+    "layout": {
+      "views": "hbp-neuro",
+      "planarSlicesBackground": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "useNehubaPerspective": {
+        "enableShiftDrag": false,
+        "doNotRestrictUserNavigation": false,
+        "perspectiveSlicesBackground": [
+          1,
+          1,
+          1,
+          1
+        ],
+        "removePerspectiveSlicesBackground": {
+          "color": [
+            1,
+            1,
+            1,
+            1
+          ],
+          "mode": "=="
+        },
+        "perspectiveBackground": [
+          1,
+          1,
+          1,
+          1
+        ],
+        "fixedZoomPerspectiveSlices": {
+          "sliceViewportWidth": 300,
+          "sliceViewportHeight": 300,
+          "sliceZoom": 563818.3562426177,
+          "sliceViewportSizeMultiplier": 2
+        },
+        "mesh": {
+          "backFaceColor": [
+            1,
+            1,
+            1,
+            1
+          ],
+          "removeBasedOnNavigation": true,
+          "flipRemovedOctant": true
+        },
+        "centerToOrigin": true,
+        "drawSubstrates": {
+          "color": [
+            0,
+            0,
+            0.5,
+            0.15
+          ]
+        },
+        "drawZoomLevels": {
+          "cutOff": 200000,
+          "color": [
+            0.5,
+            0,
+            0,
+            0.15
+          ]
+        },
+        "hideImages": false,
+        "waitForMesh": false,
+        "restrictZoomLevel": {
+          "minZoom": 1200000,
+          "maxZoom": 3500000
+        }
+      }
+    }
+  }
+}
+
 exports.testBigbrain = {
   "configName": "BigBrain",
   "globals": {
