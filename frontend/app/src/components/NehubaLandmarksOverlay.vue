@@ -2,10 +2,8 @@
   <div class="landmark-container">
     <div class="landmark-row">
       <div class="landmark-cell">
-        <!-- <div v-for = "lm in landmarks" :key = "lm.id">
-          {{ calcTransformStyle(0, lm) | stringify }}
-        </div> -->
         <LandmarkComponent
+          :zOffset = "calcZOffset(0, lm)"
           class = "landmark-unit"
           :style = "calcTransformStyle(0, lm)"
           v-for = "lm in landmarks"
@@ -14,6 +12,7 @@
       </div>
       <div class="landmark-cell">
         <LandmarkComponent
+          :zOffset = "calcZOffset(1, lm)"
           class = "landmark-unit"
           :style = "calcTransformStyle(1, lm)"
           v-for = "lm in landmarks"
@@ -24,6 +23,7 @@
     <div class="landmark-row">
       <div class="landmark-cell">
         <LandmarkComponent
+          :zOffset = "calcZOffset(2, lm)"
           class = "landmark-unit"
           :style = "calcTransformStyle(2, lm)"
           v-for = "lm in landmarks"
@@ -63,6 +63,9 @@ export default {
   computed: {
   },
   methods: {
+    calcZOffset: function (idx, lm) {
+      return this.dataToViewport[idx](lm)[2]
+    },
     calcTransformStyle: function (idx, lm) {
       if (this.dataToViewport[idx]) {
         /**

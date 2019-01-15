@@ -131,7 +131,9 @@ export default {
       const { quat, mat4 } = window.export_nehuba
       switch (type) {
         case 'redrawNehuba':
-          if (this.nehubaViewer) this.nehubaViewer.redraw()
+          if (this.nehubaViewer) 
+            this.nehubaViewer.redraw()
+          setTimeout(() => this.navigationChanged())
           break;
         case 'alignReference':
           this.nehubaViewer.ngviewer.navigationState.pose.orientation.restoreState([0, 0, 0, 1])
@@ -208,6 +210,14 @@ export default {
 
       const element = event.srcElement || event.originalTarget
       this.dataToViewport[determineElement(element)] = event.detail.nanometersToOffsetPixels
+
+      if (
+        this.dataToViewport[0] !== defaultXform && 
+        this.dataToViewport[1] !== defaultXform && 
+        this.dataToViewport[2] !== defaultXform
+      ) {
+        this.navigationChanged()
+      }
     },
     viewportToData: function (event) {
       if (this.viewportToDatas[0] && this.viewportToDatas[1] && this.viewportToDatas[2]) {

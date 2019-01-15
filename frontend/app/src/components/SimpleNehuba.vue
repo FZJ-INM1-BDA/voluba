@@ -51,6 +51,16 @@ export default {
   mounted() {
     if (this.config) {
       this.initNehuba()
+      this.$store.subscribeAction(({type}) => {
+        switch (type) {
+          case 'redrawNehuba':
+            if(this.nehubaViewer)
+              this.nehubaViewer.redraw()
+            setTimeout(() => this.navigationChanged())
+            break;
+          default:
+        }
+      })
     } else {
       this.errorMessage = `incoming dataset not set`
     }
@@ -77,6 +87,14 @@ export default {
 
       const element = event.srcElement || event.originalTarget
       this.dataToViewport[determineElement(element)] = event.detail.nanometersToOffsetPixels
+
+      if (
+        this.dataToViewport[0] !== defaultXform && 
+        this.dataToViewport[1] !== defaultXform && 
+        this.dataToViewport[2] !== defaultXform
+      ) {
+        this.navigationChanged()
+      }
     },
     navigationChanged: function () {
       this.$refs.lmOverlay.$forceUpdate()
