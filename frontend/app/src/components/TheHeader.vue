@@ -26,7 +26,7 @@
 </template>
 
 <script>
-import ProgressTracker from '@/views/ProgressTracker'
+import ProgressTracker from '@/components/ProgressTracker'
 
 export default {
   name: 'HeaderComponent',
