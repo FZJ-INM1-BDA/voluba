@@ -11,7 +11,7 @@ import 'bootstrap-vue/dist/bootstrap-vue.css'
 
 // Font awesome
 import { library } from '@fortawesome/fontawesome-svg-core'
-import { faAngleLeft, faAngleRight, faAngleDoubleRight, faAngleUp, faAngleDown, faEye, faBars, faPlayCircle, faUpload, faDownload, faFileExport, faQuestionCircle } from '@fortawesome/free-solid-svg-icons'
+import { faAngleLeft, faAngleRight, faAngleDoubleRight, faAngleUp, faAngleDown, faEye, faBars, faPlayCircle, faUpload, faDownload, faFileExport, faQuestionCircle, faTimes, faTrashAlt, faThumbtack, faPlus, faFileUpload, faFileDownload } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 
 // Vuex
@@ -20,7 +20,7 @@ import Vuex from 'vuex'
 Vue.use(BootstrapVue)
 Vue.use(Vuex)
 
-library.add(faAngleLeft, faAngleRight, faAngleDoubleRight, faAngleUp, faAngleDown, faEye, faBars, faPlayCircle, faUpload, faDownload, faFileExport, faQuestionCircle)
+library.add(faAngleLeft, faAngleRight, faAngleDoubleRight, faAngleUp, faAngleDown, faEye, faBars, faPlayCircle, faUpload, faDownload, faFileExport, faQuestionCircle, faTimes, faTrashAlt, faThumbtack, faPlus, faFileUpload, faFileDownload)
 Vue.component('font-awesome-icon', FontAwesomeIcon)
 
 Vue.config.productionTip = false

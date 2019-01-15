@@ -1,9 +1,46 @@
 <template>
+  <tr>
+    <td><input type="checkbox" v-model="active" /></td>
+    <td><font-awesome-icon icon="times" style="color: red;" :style="{'color': color}"/></td>
+    <td><input class="form-control-sm" type="text" style="max-width: 110px;" v-model="name"></td>
+    <td>
+      <button type="button" class="btn btn-sm btn-default">
+        <font-awesome-icon icon="eye"/>
+      </button>
+      <button type="button" class="btn btn-sm btn-warning">
+        <font-awesome-icon icon="thumbtack" style="color: white;"/>
+      </button>
+      <button type="button" class="btn btn-sm btn-danger">
+        <font-awesome-icon icon="trash-alt"/>
+      </button>
+    </td>
+  </tr>
 </template>
 
 <script>
 export default {
-  name: 'Landmark'
+  name: 'Landmark',
+  props: {
+    id: String,
+    name: String,
+    color: String
+  },
+  data: function () {
+    return {
+      active: true
+    }
+  },
+  watch: {
+    active: function () {
+      this.activeChanged()
+    },
+  },
+  methods: {
+    activeChanged: function () {
+      // TODO: implement
+    },
+  },
+  computed: {}
 }
 </script>
 
