@@ -48,9 +48,9 @@ const store = new Vuex.Store({
     selectedTransformationIndex: 0,
 
     steps: [
-      "Data Selection & 3D Anchoring",
-      "Entering Landmark-Pairs",
-      "Save & Export Results"
+      'Data Selection & 3D Anchoring',
+      'Entering Landmark-Pairs',
+      'Save & Export Results'
     ],
     activeStepIndex: 0,
     sidebarCollapse: false,
@@ -59,8 +59,9 @@ const store = new Vuex.Store({
     incomingTemplate: null,
     incomingTransformMatrix: null,
     incomingScale: [1, 1, 1],
-    incomingOpacity: 0.5,
-    overlayColor: '#FCDC00',
+    incomingColor: [252, 200, 0, 0.5],
+
+    defaultOverlayColor: '#FCDC00',
     // in nm
     viewerNavigationPosition: [0, 0, 0],
     viewerMousePosition: [0, 0, 0],
@@ -90,11 +91,19 @@ const store = new Vuex.Store({
     setIncomingTemplateScale (state, array) {
       state.incomingScale = array
     },
-    setIncomingTemplateOpacity (state, newOverlayColor) {
-      state.overlayColor = newOverlayColor
-    },
-    setOverlayColor (state, newOpacity) {
-      state.incomingOpacity = newOpacity
+    setIncomingTemplateRGBA (state, {color, opacity}) {
+      const oldColor = state.incomingColor
+      const oldRGB = [
+        oldColor[0],
+        oldColor[1],
+        oldColor[2]
+      ]
+      const oldOpacity = oldColor[3]
+      const newColor = [
+        ...(color ? color : oldRGB),
+        opacity ? opacity : oldOpacity
+      ]
+      state.incomingColor = newColor
     },
     setLayers (state, obj) {
       state.layers = obj
@@ -105,13 +114,16 @@ const store = new Vuex.Store({
     selectStep (state, index) {
       state.activeStepIndex = index
     },
-    toggleSidebar (state) {
-      state.sidebarCollapse = !state.sidebarCollapse
+    hideSidebar (state) {
+      state.sidebarCollapse = true
+    },
+    showSidebar (state) {
+      state.sidebarCollapse = false
     },
     selectMethodIndex (state, index) {
       state.selectedTransformationIndex = index
     },
-    changeSidebarWidth(state, size) {
+    changeSidebarWidth (state, size) {
       state.sidebarWidth = size
     }
   },
@@ -144,6 +156,12 @@ const store = new Vuex.Store({
        * required for vuex event dispatch
        */
     },
+    layoutChange () {
+      /**
+       * required for vuex event dispatch
+       * used for nehuba to lsiten to layout changes
+       */
+    },
     nextStep ({state, commit}) {
 
     },
@@ -153,8 +171,15 @@ const store = new Vuex.Store({
     selectStep ({commit}, index) {
       commit('selectStep', index)
     },
-    toggleSidebar ({commit}) {
-      commit('toggleSidebar')
+    toggleSidebar ({commit, state}) {
+      commit(state.sidebarCollapse
+        ? 'showSidebar'
+        : 'hideSidebar')
+    },
+    setSidebarCollapseState ({commit}, bool) {
+      commit(bool
+        ? 'hideSidebar'
+        : 'showSidebar')
     },
     changeSidebarWidth ({commit}, size) {
       commit('changeSidebarWidth', size)
@@ -165,11 +190,16 @@ const store = new Vuex.Store({
     changeScale ({commit}, newScale) {
       commit('setIncomingTemplateScale', newScale)
     },
-    changeOpacity ({commit}, newOpacity) {
-      commit('setIncomingTemplateOpacity', newOpacity)
+    changeOpacity ({commit}, opacity) {
+      commit('setIncomingTemplateRGBA', { opacity })
     },
     changeOverlayColor ({commit}, newOverlayColor) {
-      commit('setOverlayColor', newOverlayColor)
+      const color = [
+        newOverlayColor.r,
+        newOverlayColor.g,
+        newOverlayColor.b
+      ]
+      commit('setIncomingTemplateRGBA', { color })
     }
   }
 })

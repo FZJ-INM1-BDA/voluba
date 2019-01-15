@@ -42,8 +42,8 @@
         <div class="option-container">
           <label for="colorPicker" class="option-label">color</label>
           <div class="option-input">
-            <div :style = "{'background-color':overlayColor.hex}" style="max-width: 20px; min-height: 20px; border: 1px solid black;"></div>
-            <compact-picker v-model="overlayColor" />
+            <div @click.stop = "showOverlayColor = !showOverlayColor" :style = "{'background-color':overlayColor.hex}" style="max-width: 20px; min-height: 20px; border: 1px solid black;"></div>
+            <compact-picker v-if = "showOverlayColor" v-model="overlayColor" />
           </div>
         </div>
 
@@ -51,34 +51,32 @@
         <div class="option-container">
           <label for="opacitySlider" class="option-label">opacity</label>
           <div class = "option-input">
-
-            <input 
+            <input
               name = "opacitySlider"
-              id = "opacitySlider" 
-              class = "slider" 
-              type = "range" 
-              :min = "opacityMin" 
-              :max = "opacityMax" 
-              :step = "opacityStep" 
+              id = "opacitySlider"
+              class = "slider"
+              type = "range"
+              :min = "opacityMin"
+              :max = "opacityMax"
+              :step = "opacityStep"
               v-model = "opacity"/>
           </div>
           <div class="option-value">
             {{ Number(opacity).toFixed(2) }}
           </div>
         </div>
-        
         <!-- scale -->
         <div v-if = "isotropic" class="option-container">
           <label for="scaleSlider" class="option-label">scale</label>
           <div class="option-input">
-            <input 
+            <input
               name = "scaleSlider"
-              id = "scaleSlider" 
-              class = "slider" 
-              type = "range" 
-              :min = "scaleMin" 
-              :max = "scaleMax" 
-              :step = "scaleStep" 
+              id = "scaleSlider"
+              class = "slider"
+              type = "range"
+              :min = "scaleMin"
+              :max = "scaleMax"
+              :step = "scaleStep"
               v-model = "scale"/>
           </div>
           <div class="option-value">
@@ -90,14 +88,14 @@
         <div v-if = "!isotropic" class="option-container">
           <label for="scaleSlider" class="option-label">scale x</label>
           <div class="option-input">
-            <input 
+            <input
               name = "scaleSlider"
-              id = "scaleSlider" 
-              class = "slider" 
-              type = "range" 
-              :min = "scaleMin" 
-              :max = "scaleMax" 
-              :step = "scaleStep" 
+              id = "scaleSlider"
+              class = "slider"
+              type = "range"
+              :min = "scaleMin"
+              :max = "scaleMax"
+              :step = "scaleStep"
               v-model = "scaleX"/>
           </div>
           <div class="option-value">
@@ -107,14 +105,14 @@
         <div v-if = "!isotropic" class="option-container">
           <label for="scaleSlider" class="option-label">scale y</label>
           <div class="option-input">
-            <input 
+            <input
               name = "scaleSlider"
-              id = "scaleSlider" 
-              class = "slider" 
-              type = "range" 
-              :min = "scaleMin" 
-              :max = "scaleMax" 
-              :step = "scaleStep" 
+              id = "scaleSlider"
+              class = "slider"
+              type = "range"
+              :min = "scaleMin"
+              :max = "scaleMax"
+              :step = "scaleStep"
               v-model = "scaleY"/>
           </div>
           <div class="option-value">
@@ -124,21 +122,20 @@
         <div v-if = "!isotropic" class="option-container">
           <label for="scaleSlider" class="option-label">scale z</label>
           <div class="option-input">
-            <input 
+            <input
               name = "scaleSlider"
-              id = "scaleSlider" 
-              class = "slider" 
-              type = "range" 
-              :min = "scaleMin" 
-              :max = "scaleMax" 
-              :step = "scaleStep" 
+              id = "scaleSlider"
+              class = "slider"
+              type = "range"
+              :min = "scaleMin"
+              :max = "scaleMax"
+              :step = "scaleStep"
               v-model = "scaleZ"/>
           </div>
           <div class="option-value">
             {{ Number(scaleZ).toFixed(2) }}
           </div>
         </div>
-        
         <input type="checkbox" id = "isotropic" name="isotropic" v-model = "isotropic" />
         <label for = "isotropic">
           isotropic scale
@@ -167,8 +164,7 @@ export default {
   },
   data: function () {
     return {
-      isotropic:true,
-      
+      isotropic: true,
       scaleX: 1,
       scaleY: 1,
       scaleZ: 1,
@@ -176,16 +172,15 @@ export default {
       scaleMin: 0.1,
       scaleMax: 10,
       scaleStep: 0.01,
-
       opacity: 0.5,
       opacityMin: 0,
       opacityMax: 1.0,
       opacityStep: 0.01,
-
       selectTemplate: null,
       dummyIncomingTemplate: {id: null, text: '-- Please select a dataset --', value: null},
 
-      overlayColor: { hex: this.$store.state.overlayColor }
+      overlayColor: { hex: this.$store.state.defaultOverlayColor },
+      showOverlayColor: false
     }
   },
   computed: {
@@ -222,11 +217,9 @@ export default {
     },
     scaleX: function () {
       this.scaleChanged()
-
     },
     scaleY: function () {
       this.scaleChanged()
-
     },
     scaleZ: function () {
       this.scaleChanged()

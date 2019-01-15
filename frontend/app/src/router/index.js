@@ -7,8 +7,22 @@ export default new Router({
   routes: [
     {
       path: '/',
-      name: 'Home',
-      component: () => import('@/views/Home')
+      redirect: '/select'
+    },
+    {
+      path: '/select',
+      name: 'Data Selection',
+      component: () => import('@/components/toolbars/DataSelection')
+    },
+    {
+      path: '/landmarks',
+      name: 'Landmark Selection',
+      component: () => import('@/components/toolbars/LandmarkPairs')
+    },
+    {
+      path: '/export',
+      name: 'Save & Export',
+      component: () => import('@/components/toolbars/SaveExport')
     },
     {
       path: '*',

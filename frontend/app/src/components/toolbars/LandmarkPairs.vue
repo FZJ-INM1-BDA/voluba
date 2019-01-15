@@ -100,9 +100,7 @@ export default {
       return this.$store.state.selectedTransformationIndex
     },
     selectTransformation: function () {
-      const selectedTransform = this.$store.state.transformationTypes[
-        this.$store.state.selectedTransformationIndex
-      ]
+      const selectedTransform = this.$store.state.transformationTypes[this.$store.state.selectedTransformationIndex]
       return selectedTransform && selectedTransform.value
         ? selectedTransform.value
         : null
