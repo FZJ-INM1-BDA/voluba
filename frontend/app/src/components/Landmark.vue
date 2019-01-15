@@ -1,7 +1,9 @@
 <template>
   <tr>
     <td><input type="checkbox" v-model="active" /></td>
-    <td><font-awesome-icon icon="times" style="color: red;" :style="{'color': color}"/></td>
+    <td>
+      <div :style="{'background-color': color, 'min-width': '20px', 'max-width': '20px', 'min-height': '20px', 'border': '1px solid black'}"></div>
+    </td>
     <td><input class="form-control-sm" type="text" style="max-width: 110px;" v-model="name"></td>
     <td>
       <button type="button" class="btn btn-sm btn-default">

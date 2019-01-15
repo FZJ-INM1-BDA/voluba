@@ -3,7 +3,7 @@
     <thead>
       <tr>
         <th><input type="checkbox" id="check-all" v-model="checkAll" /></th>
-        <th><font-awesome-icon icon="times"/></th>
+        <th>Color</th>
         <th>Name</th>
         <th>Actions</th>
       </tr>
