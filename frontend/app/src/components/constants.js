@@ -393,3 +393,13 @@ exports.getRotationVec3 = (index) => {
 
 exports.incomingTemplateActiveOpacity = 0.8
 exports.incomingTemplateInactiveOpacity = 0.5
+
+
+exports.randomColor = () => {
+  var letters = '0123456789ABCDEF'.split('')
+  var color = '#'
+  for (var i = 0; i < 6; i++ ) {
+      color += letters[Math.round(Math.random() * 15)]
+  }
+  return color
+}

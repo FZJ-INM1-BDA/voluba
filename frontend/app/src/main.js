@@ -9,9 +9,11 @@ import BootstrapVue from 'bootstrap-vue'
 import 'bootstrap/dist/css/bootstrap.min.css'
 import 'bootstrap-vue/dist/bootstrap-vue.css'
 
+import { randomColor } from '@/components/constants'
+
 // Font awesome
 import { library } from '@fortawesome/fontawesome-svg-core'
-import {  faMapMarkerAlt, faAngleLeft, faAngleRight, faAngleDoubleRight, faAngleUp, faAngleDown, faEye, faBars, faPlayCircle, faUpload, faDownload, faFileExport, faQuestionCircle, faTimes, faTrashAlt, faThumbtack, faPlus, faFileUpload, faFileDownload } from '@fortawesome/free-solid-svg-icons'
+import { faEyeSlash, faMapMarkerAlt, faAngleLeft, faAngleRight, faAngleDoubleRight, faAngleUp, faAngleDown, faEye, faBars, faPlayCircle, faUpload, faDownload, faFileExport, faQuestionCircle, faTimes, faTrashAlt, faThumbtack, faPlus, faFileUpload, faFileDownload } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 
 // Vuex
@@ -20,7 +22,7 @@ import Vuex from 'vuex'
 Vue.use(BootstrapVue)
 Vue.use(Vuex)
 
-library.add(faMapMarkerAlt, faAngleLeft, faAngleRight, faAngleDoubleRight, faAngleUp, faAngleDown, faEye, faBars, faPlayCircle, faUpload, faDownload, faFileExport, faQuestionCircle, faTimes, faTrashAlt, faThumbtack, faPlus, faFileUpload, faFileDownload)
+library.add(faEyeSlash, faMapMarkerAlt, faAngleLeft, faAngleRight, faAngleDoubleRight, faAngleUp, faAngleDown, faEye, faBars, faPlayCircle, faUpload, faDownload, faFileExport, faQuestionCircle, faTimes, faTrashAlt, faThumbtack, faPlus, faFileUpload, faFileDownload)
 Vue.component('font-awesome-icon', FontAwesomeIcon)
 
 Vue.config.productionTip = false
@@ -90,7 +92,7 @@ const store = new Vuex.Store({
         0.325772375,
         -9.724908
       ]
-    }, {
+    },{
       id: 'uniqueIdRefLm2',
       name: 'Reference Point 2',
       coord: [
@@ -98,7 +100,7 @@ const store = new Vuex.Store({
         0.325772375,
         -16.609202
       ]
-    }, {
+    },{
       id: 'uniqueIdRefLm3',
       name: 'Reference Point 3',
       coord: [
@@ -116,7 +118,7 @@ const store = new Vuex.Store({
         6.56,
         9.320814
       ]
-    }, {
+    },{
       id: 'uniqueIdIncLm2',
       name: 'Incoming Point 2',
       coord: [
@@ -124,7 +126,7 @@ const store = new Vuex.Store({
         6.56,
         1.111573875
       ]
-    }, {
+    },{
       id: 'uniqueIdIncLm3',
       name: 'Incoming Point 3',
       coord: [
@@ -134,11 +136,31 @@ const store = new Vuex.Store({
       ]
     }],
 
-    pairs: [
-      [0, 0],
-      [1, 1],
-      [2, 2]
-    ],
+    landmarkPairs: [{
+      id: 'uniqueIdPair1',
+      refId: 'uniqueIdRefLm1',
+      incId: 'uniqueIdIncLm1',
+      color: randomColor(),
+      name: 'Land Mark Pair #1',
+      active: true,
+      visible: true
+    },{
+      id: 'uniqueIdPair2',
+      refId: 'uniqueIdRefLm2',
+      incId: 'uniqueIdIncLm2',
+      color: randomColor(),
+      name: 'Land Mark Pair #2',
+      active: true,
+      visible: true
+    }, {
+      id:'uniqueIdPair3',
+      refId: 'uniqueIdRefLm3',
+      incId: 'uniqueIdIncLm3',
+      color: randomColor(),
+      name: 'Land Mark Pair #3',
+      active: true,
+      visible: true
+    }], 
 
     backendURL: 'http://localhost:5000/api',
     landmarkTransformationMatrix: null,
@@ -214,6 +236,14 @@ const store = new Vuex.Store({
     },
     changeLandmarkRMSE (state, newRMSE) {
       state.landmarkRMSE = newRMSE
+    },
+    setLandmarkPairVisibility (state, {id, visibility}) {
+      const pair = state.landmarkPairs.find(pair => pair.id === id)
+      pair.visible = visibility
+    },
+    setLandmarkPairActive (state, {id, active}) {
+      const pair = state.landmarkPairs.find(pair => pair.id === id)
+      pair.active = active
     }
   },
   actions: {
@@ -303,6 +333,24 @@ const store = new Vuex.Store({
     },
     changeLandmarkRMSE ({commit}, newRMSE) {
       commit('changeLandmarkRMSE', newRMSE)
+    },
+    toggleLandmarkPairVisibility({commit, state}, {id}) {
+      const landmarkPair = state.landmarkPairs.find(pair => pair.id === id)
+      if (landmarkPair) {
+        commit('setLandmarkPairVisibility' , {
+          id,
+          visibility: !landmarkPair.visible
+        })
+      }
+    },
+    toggleLandmarkPairActive({commit, state}, {id}) {
+      const landmarkPair = state.landmarkPairs.find(pair => pair.id === id)
+      if (landmarkPair) {
+        commit('setLandmarkPairActive' , {
+          id,
+          active: !landmarkPair.active
+        })
+      }
     }
   }
 })

@@ -1,11 +1,19 @@
 <template>
-  <div class="icon-container">
-    <font-awesome-icon class = "icon" icon = "map-marker-alt" />
+  <div :style = "styleLandmark" class="icon-container">
+    <font-awesome-icon :style = "{ color }" class = "icon" icon = "map-marker-alt" />
   </div>
 </template>
 <script>
 export default {
   props: {
+    visible: {
+      type: Boolean,
+      default: true  
+    },
+    active: {
+      type :Boolean,
+      default: true
+    },
     zOffset: {
       type: Number,
       default: 0
@@ -15,8 +23,22 @@ export default {
       default: function () {
         return {}
       }
+    },
+    color: {
+      type: String | Object,
+      default: function () {
+        return 'yellow'
+      }
     }
-  }
+  },
+  computed: {
+    styleLandmark: function () {
+      return {
+        opacity: this.active ? '1.0' : '0.3',
+        display: this.visible ? 'block' : 'none'
+      }
+    }
+  },
 }
 </script>
 <style scoped>
@@ -30,7 +52,6 @@ export default {
 }
 .icon
 {
-  color: yellow;
   filter: drop-shadow(
     0 0 0.2em black
   )

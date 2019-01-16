@@ -3,17 +3,23 @@
     <div class="landmark-row">
       <div class="landmark-cell">
         <LandmarkComponent
-          :zOffset = "calcZOffset(0, lm)"
-          class = "landmark-unit"
-          :style = "calcTransformStyle(0, lm)"
           v-for = "lm in landmarks"
+          class = "landmark-unit"
+          :visible = "lm.visible"
+          :active = "lm.active"
+          :color = "lm.color"
+          :zOffset = "calcZOffset(0, lm)"
+          :style = "calcTransformStyle(0, lm)"
           :key = "lm.id"
           />
       </div>
       <div class="landmark-cell">
         <LandmarkComponent
+          :visible = "lm.visible"
+          :active = "lm.active"
           :zOffset = "calcZOffset(1, lm)"
           class = "landmark-unit"
+          :color = "lm.color"
           :style = "calcTransformStyle(1, lm)"
           v-for = "lm in landmarks"
           :key = "lm.id"
@@ -23,7 +29,10 @@
     <div class="landmark-row">
       <div class="landmark-cell">
         <LandmarkComponent
+          :visible = "lm.visible"
+          :active = "lm.active"
           :zOffset = "calcZOffset(2, lm)"
+          :color = "lm.color"
           class = "landmark-unit"
           :style = "calcTransformStyle(2, lm)"
           v-for = "lm in landmarks"

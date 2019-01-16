@@ -10,10 +10,13 @@
     </thead>
     <tbody>
       <LandmarkRow
-        :name = "landmark.name"
-        :key = "landmark.id"
-        v-for = "landmark in landmarks"
-        :color = "landmark.color" />
+        :id = "lm.id"
+        :active = "lm.active"
+        :visible = "lm.visible"
+        :name = "lm.name"
+        :key = "lm.id"
+        v-for = "lm in landmarks"
+        :color = "lm.color" />
     </tbody>
   </table>
 </template>
@@ -33,14 +36,6 @@ export default {
     LandmarkRow
   },
   methods: {
-    randomColor () {
-      var letters = '0123456789ABCDEF'.split('')
-      var color = '#'
-      for (var i = 0; i < 6; i++ ) {
-          color += letters[Math.round(Math.random() * 15)]
-      }
-      return color
-    }
   },
   computed: {
     landmarks: function () {
@@ -49,15 +44,8 @@ export default {
        * expect landmarks to be [{id: UNIQUE_ID, name: NAME, color: HEX}]
        */
 
-      const { referenceLandmarks, incomingLandmarks, pairs } = this.$store.state
-      return pairs.map(pair => {
-        return {
-          id: referenceLandmarks[pair[0]].id + '_' + incomingLandmarks[pair[1]].id,
-          name: referenceLandmarks[pair[0]].name + ' ' + incomingLandmarks[pair[1]].name,
-          color: this.randomColor()
-          // TODO: don't use the same color twice!
-        }
-      })
+      const { referenceLandmarks, incomingLandmarks, landmarkPairs } = this.$store.state
+      return landmarkPairs
     }
   }
 }

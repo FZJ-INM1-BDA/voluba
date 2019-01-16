@@ -41,33 +41,33 @@ export default {
       subscriptions: []
     }
   },
-  beforeMount() {
-    if (!this.config) {
-      this.errorMessage = 'config object not provided, simple  nehuba will not load'
-      return
-    }
-    this.cid = 'neuroglancer-container'
-  },
   mounted() {
+    this.$store.subscribeAction(({type}) => {
+      switch (type) {
+        case 'redrawNehuba':
+          if(this.nehubaViewer)
+            this.nehubaViewer.redraw()
+          setTimeout(() => this.navigationChanged())
+          break;
+        default:
+      }
+    })
     if (this.config) {
-      this.initNehuba()
-      this.$store.subscribeAction(({type}) => {
-        switch (type) {
-          case 'redrawNehuba':
-            if(this.nehubaViewer)
-              this.nehubaViewer.redraw()
-            setTimeout(() => this.navigationChanged())
-            break;
-          default:
-        }
-      })
     } else {
       this.errorMessage = `incoming dataset not set`
     }
   },
   computed: {
     incomingLandmarks: function () {
-      return this.$store.state.incomingLandmarks
+      return this.$store.state.incomingLandmarks.map(lm => {
+        const allPairs = this.$store.state.landmarkPairs.filter(pair => pair.incId === lm.id)
+        return {
+          ...lm,
+          active: allPairs.find(pair => pair.active) ? true : false,
+          visible: allPairs.find(pair => pair.visible) ? true : false,
+          color: allPairs[0].color
+        }
+      })
     },
     placeholderText: function () {
       return this.errorMessage
@@ -99,32 +99,62 @@ export default {
     navigationChanged: function () {
       this.$refs.lmOverlay.$forceUpdate()
     },
-    initNehuba: function () {
-      this.nehubaViewer = window.export_nehuba.createNehubaViewer(this.config, (err) => {
-        console.log(e)
+    preInit: function () {
+      return new Promise((resolve,reject) => {
+        this.cid = 'neuroglancer-container'
+        resolve()
       })
+    },
+    init: function () {
+      return new Promise((resolve, reject) => {
+        this.nehubaViewer = window.export_nehuba.createNehubaViewer(this.config, (err) => {
+          console.log(e)
+        })
 
-      this.subscriptions.push(
-        this.nehubaViewer.navigationState.full.subscribe(() => {
-          this.navigationChanged()
-        }) 
-      )
-      /**
-       * clear window.viewer object
-       */
-      window.secondaryViewer = window.viewer
-      window.viewer = null
+        this.subscriptions.push(
+          this.nehubaViewer.navigationState.full.subscribe(() => {
+            this.navigationChanged()
+          }) 
+        )
+
+        resolve()
+      })
+    },
+    postInit: function () {
+      return new Promise((resolve, reject) => {
+        this.cid = null
+        window.secondaryViewer = window.viewer
+        window.viewer = null
+        resolve()
+      })
+    },
+    initNehuba: function () {
+      this.preInit()
+        .then(this.init)
+        .then(this.postInit)
+        .catch(console.error)
     },
     onError: function (e) {
       this.errorMessage = e
+    },
+    destroyNehuba: function () {
+      if (window.secondaryViewer)
+        window.secondaryViewer = null
+      if (this.nehubaViewer)
+        this.nehubaViewer.dispose()
+      this.subscriptions.forEach(s => s.unsubscribe())
+    }
+  },
+  watch: {
+    config: function () {
+      this.destroyNehuba()
+      if (this.config) {
+        this.initNehuba()
+      }
     }
   },
   beforeDestroy() {
-    if (window.secondaryViewer)
-      window.secondaryViewer = null
-    if (this.nehubaViewer)
-      this.nehubaViewer.dispose()
-    this.subscriptions.forEach(s => s.unsubscribe())
+    this.destroyNehuba()
   },
 }
 </script>

@@ -487,7 +487,15 @@ export default {
       return this.$store.state.incomingScale
     },
     referenceLandmarks: function () {
-      return this.$store.state.referenceLandmarks
+      return this.$store.state.referenceLandmarks.map(lm => {
+        const allPairs = this.$store.state.landmarkPairs.filter(pair => pair.refId === lm.id)
+        return {
+          ...lm,
+          active: allPairs.find(pair => pair.active) ? true : false,
+          visible: allPairs.find(pair => pair.visible) ? true : false,
+          color: allPairs[0].color
+        }
+      })
     }
   },
   beforeDestroy () {

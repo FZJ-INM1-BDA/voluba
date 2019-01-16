@@ -12,7 +12,7 @@
             <SimpleNehubaComponent
               :config = "simpleNehubaConfig"
               ref = "incomingnehuba"
-              v-if = "showSecondNehuba && primaryNehubaReady" />
+              v-show = "showSecondNehuba && primaryNehubaReady" />
           </div>
           <div v-if = "sidebarCollapse" class = "sidebar-control mainside-main-item">
             <b-button @click.prevent = "expandSidebar" variant="secondary">
