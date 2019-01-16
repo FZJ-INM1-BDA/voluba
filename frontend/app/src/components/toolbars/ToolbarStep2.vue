@@ -41,7 +41,7 @@
           </option>
         </select>
         <br><br>
-        <b-button href="#" variant="secondary">
+        <b-button @click="computeTransformationMatrix" variant="secondary">
           <font-awesome-icon icon="play-circle"/>
           Compute transformation
         </b-button>
@@ -67,6 +67,7 @@
   </div>
 </template>
 <script>
+import axios from 'axios';
 import CardComponent from '@/components/Card'
 import LandmarkList from '@/components/LandmarkList'
 
@@ -116,6 +117,37 @@ export default {
     },
     addLandmarkPair: function () {
       
+    },
+    computeDeterminant: function (matrix) {
+      if(!matrix)
+        return null
+      if(matrix.length == 2) {
+        return matrix[0][0] * matrix[1][1] - matrix[0][1] * matrix[1][0];
+      } else {
+        var res = 0
+        for(var i = 0; i < matrix.length; i++) {
+          var minor = []
+          for(var j = 0; j < matrix.length - 1; j++) {
+            minor[j] = matrix[j + 1].slice(0, i).concat(matrix[j + 1].slice(i + 1, matrix.length))
+          }
+          var sign = 1 - 2 * (i % 2)
+          res += sign * matrix[0][i] * this.computeDeterminant(minor)
+        }
+        return res
+      }
+    },
+    computeTransformationMatrix: function () {
+      var data = {}  // TODO: fill variable
+      axios.post(this.$store.state.backendURL + "/least-squares", data)
+      .then((response)  =>  {
+        this.$store.dispatch('changeLandmarkTransformationMatrix', response.data.transformation_matrix)
+        this.$store.dispatch('changeLandmarkInverseMatrix', response.data.inverse_matrix)
+        this.$store.dispatch('changeLandmarkDeterminant', this.computeDeterminant(response.data.transformation_matrix))
+        this.$store.dispatch('changeLandmarkRMSE', response.data.RMSE)
+      }, (error)  =>  {
+        console.log(error)
+        // TODO: handle error!
+      })
     }
   },
 }

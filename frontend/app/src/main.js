@@ -138,7 +138,13 @@ const store = new Vuex.Store({
       [0, 0],
       [1, 1],
       [2, 2]
-    ]
+    ],
+
+    backendURL: 'http://localhost:5000/api',
+    landmarkTransformationMatrix: null,
+    landmarkInverseMatrix: null,
+    landmarkDeterminant: null,
+    landmarkRMSE: null
   },
   mutations: {
     selectReferenceTemplate (state, refTemplate) {
@@ -196,6 +202,18 @@ const store = new Vuex.Store({
     },
     changeSidebarWidth (state, size) {
       state.sidebarWidth = size
+    },
+    changeLandmarkTransformationMatrix (state, transformationMatrix) {
+      state.landmarkTransformationMatrix = transformationMatrix
+    },
+    changeLandmarkInverseMatrix (state, inverseMatrix) {
+      state.landmarkInverseMatrix = inverseMatrix
+    },
+    changeLandmarkDeterminant (state, determinant) {
+      state.landmarkDeterminant = determinant
+    },
+    changeLandmarkRMSE (state, newRMSE) {
+      state.landmarkRMSE = newRMSE
     }
   },
   actions: {
@@ -273,6 +291,18 @@ const store = new Vuex.Store({
         newOverlayColor.b
       ]
       commit('setIncomingTemplateRGBA', { color })
+    },
+    changeLandmarkTransformationMatrix ({commit}, transformationMatrix) {
+      commit('changeLandmarkTransformationMatrix', transformationMatrix)
+    },
+    changeLandmarkInverseMatrix ({commit}, inverseMatrix) {
+      commit('changeLandmarkInverseMatrix', inverseMatrix)
+    },
+    changeLandmarkDeterminant ({commit}, determinant) {
+      commit('changeLandmarkDeterminant', determinant)
+    },
+    changeLandmarkRMSE ({commit}, newRMSE) {
+      commit('changeLandmarkRMSE', newRMSE)
     }
   }
 })
