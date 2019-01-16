@@ -41,6 +41,10 @@ const store = new Vuex.Store({
       { id: '4', text: 'Similarity (allow reflection)', value: 'similarity+reflection' },
       { id: '5', text: 'Affine', value: 'affine' }
     ],
+
+    /**
+     * NYI. TODO, use reference url instead
+     */
     selectReference: 'precomputed://https://www.jubrain.fz-juelich.de/apps/neuroglancer/BigBrainRelease.2015/image',
 
     selectTemplate: null,
