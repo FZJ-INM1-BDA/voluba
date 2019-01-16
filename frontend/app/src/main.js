@@ -31,8 +31,17 @@ const store = new Vuex.Store({
       { id: '1', text: 'BigBrain (2015)', value: 'precomputed://https://www.jubrain.fz-juelich.de/apps/neuroglancer/BigBrainRelease.2015/image' }
     ],
     templateURLs: [
-      { id: '1', text: 'Nucleus subthalamicus (B20)', value: 'precomputed://https://neuroglancer-dev.humanbrainproject.org/precomputed/landmark-reg/B20_stn_l/v10' },
-      { id: '2', text: 'Hippocampus unmasked', value: 'precomputed://https://neuroglancer-dev.humanbrainproject.org/precomputed/landmark-reg/hippocampus-unmasked' }
+      { 
+        id: '1', 
+        text: 'Nucleus subthalamicus (B20)', 
+        value: 'precomputed://http://imedv02.ime.kfa-juelich.de:8287/precomputed/B20_stn_l/v10' 
+        // value: 'precomputed://https://neuroglancer-dev.humanbrainproject.org/precomputed/landmark-reg/B20_stn_l/v10' 
+      },
+      { 
+        id: '2', 
+        text: 'Hippocampus unmasked', 
+        value: 'precomputed://https://neuroglancer-dev.humanbrainproject.org/precomputed/landmark-reg/hippocampus-unmasked' 
+      }
     ],
     transformationTypes: [
       { id: '1', text: 'Rigid', value: 'rigid' },

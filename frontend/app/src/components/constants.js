@@ -192,7 +192,8 @@ exports.testBigbrain = {
       "layers": {
         " grey value: ": {
           "type": "image",
-          "source": "precomputed://https://neuroglancer.humanbrainproject.org/precomputed/BigBrainRelease.2015/8bit",
+          "source": "precomputed://http://imedv02.ime.kfa-juelich.de:8287/precomputed/BigBrainRelease.2015/8bit",
+          // "source": "precomputed://https://neuroglancer.humanbrainproject.org/precomputed/BigBrainRelease.2015/8bit",
           "transform": [
             [
               1,
@@ -222,7 +223,8 @@ exports.testBigbrain = {
         },
         " tissue type: ": {
           "type": "segmentation",
-          "source": "precomputed://https://neuroglancer.humanbrainproject.org/precomputed/BigBrainRelease.2015/classif",
+          "source": "precomputed://http://imedv02.ime.kfa-juelich.de:8287/precomputed/BigBrainRelease.2015/classif",
+          // "source": "precomputed://https://neuroglancer.humanbrainproject.org/precomputed/BigBrainRelease.2015/classif",
           "segments": [
             "0"
           ],
