@@ -32,12 +32,21 @@ export default {
   components: {
     LandmarkRow
   },
-  methods: {},
+  methods: {
+    randomColor () {
+      var letters = '0123456789ABCDEF'.split('')
+      var color = '#'
+      for (var i = 0; i < 6; i++ ) {
+          color += letters[Math.round(Math.random() * 15)]
+      }
+      return color
+    }
+  },
   computed: {
     landmarks: function () {
 
       /**
-       * expect landarmks to be [{id: UNIQUE_ID, name: NAME, color: HEX}]
+       * expect landmarks to be [{id: UNIQUE_ID, name: NAME, color: HEX}]
        */
 
       const { referenceLandmarks, incomingLandmarks, pairs } = this.$store.state
@@ -45,7 +54,8 @@ export default {
         return {
           id: referenceLandmarks[pair[0]].id + '_' + incomingLandmarks[pair[1]].id,
           name: referenceLandmarks[pair[0]].name + ' ' + incomingLandmarks[pair[1]].name,
-          color: this.color
+          color: this.randomColor()
+          // TODO: don't use the same color twice!
         }
       })
     }
