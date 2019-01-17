@@ -10,7 +10,11 @@
         <button :style = "{opacity: visible? '1.0' : '0.3'}" @click.stop.prevent = "toggleVisibility" type="button" class="btn btn-sm btn-primary" v-b-tooltip.hover title="Go to landmark-pair">
           <font-awesome-icon :icon = "visible ? 'eye' : 'eye-slash'"/>
         </button>
-        <button type="button" class="btn btn-sm btn-warning"  v-b-tooltip.hover title="Reset landmark-pair">
+        <button
+          v-b-tooltip.hover title="Reset landmark-pair"
+          @click.stop.prevent = "focusLandmark"
+          type="button"
+          class="btn btn-sm btn-warning">
           <font-awesome-icon icon="thumbtack" style="color: white;"/>
         </button>
         <button type="button" class="btn btn-sm btn-danger" v-b-tooltip.hover title="Remove landmark-pair">
@@ -41,6 +45,11 @@ export default {
     },
     toggleVisibility: function () {
       this.$store.dispatch('toggleLandmarkPairVisibility', {
+        id: this.id
+      })
+    },
+    focusLandmark: function () {
+      this.$store.dispatch('focusLandmarkPair', {
         id: this.id
       })
     }

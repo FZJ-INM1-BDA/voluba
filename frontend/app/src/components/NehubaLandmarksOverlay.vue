@@ -73,7 +73,7 @@ export default {
   },
   methods: {
     calcZOffset: function (idx, lm) {
-      return this.dataToViewport[idx](lm)[2]
+      return this.dataToViewport[idx](lm.coord.map(v => v * 1e6))[2]
     },
     calcTransformStyle: function (idx, lm) {
       if (this.dataToViewport[idx]) {
