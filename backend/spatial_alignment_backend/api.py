@@ -6,7 +6,7 @@ import flask_restful
 import numpy as np
 from flask_restful import Resource, request, url_for
 
-from . import lib
+from spatial_alignment_backend import lib
 
 # Standard codes
 HTTP_200_OK = 200
