@@ -43,7 +43,7 @@
         <div class="option-container">
           <label for="colorPicker" class="option-label">color</label>
           <div class="option-input">
-            <div @click.stop = "showOverlayColor = !showOverlayColor" :style="{'background-color': overlayColor.hex, 'min-width': '20px', 'max-width': '20px', 'min-height': '20px', 'border': '1px solid black'}"></div>
+            <div @click.stop = "showOverlayColor = !showOverlayColor" :style="{'background-color': overlayColor.hex, 'min-width': '20px', 'max-width': '20px', 'min-height': '20px', 'border': '1px solid black'}" v-b-tooltip.hover :title="overlayColor.hex"></div>
             <compact-picker v-if = "showOverlayColor" v-model="overlayColor" />
           </div>
         </div>
