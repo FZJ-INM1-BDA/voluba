@@ -44,12 +44,6 @@ export default {
     }
   },
   computed: {
-    computedSteps: function () {
-      return this.$store.state.steps
-    },
-    computedActiveStepIndex: function () {
-      return this.$store.state.activeStepIndex
-    },
     sidebarCollapse: function () {
       return this.$store.state.sidebarCollapse
     }

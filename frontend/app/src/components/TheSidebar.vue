@@ -24,12 +24,6 @@ export default {
     }
   },
   computed: {
-    activeStepIndex: function () {
-      return this.$store.state.activeStepIndex
-    },
-    activeStepName: function () {
-      return this.$store.state.steps[this.$store.state.activeStepIndex]
-    },
     controlText: function () {
       return this.$store.state.sidebarCollapse
         ? ''
