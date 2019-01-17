@@ -49,11 +49,11 @@
         <b-container fluid>
           <b-row>
             <b-col md="5"><label>Determinant:</label></b-col>
-            <b-col md="7"><input id="inputDeterminant" type="text" disabled/></b-col>
+            <b-col md="7"><label style="background-color: lightgray; width: 100%;">{{ this.$store.state.landmarkDeterminant ? this.$store.state.landmarkDeterminant : '---' }}</label></b-col>
           </b-row>
           <b-row>
             <b-col md="5"><label>RMSE:</label></b-col>
-            <b-col md="7"><input id="inputRMSE" type="text" disabled/></b-col>
+            <b-col md="7"><label style="background-color: lightgray; width: 100%;">{{ this.$store.state.landmarkRMSE ? this.$store.state.landmarkRMSE : '---' }}</label></b-col>
           </b-row>
         </b-container>
         <br>
@@ -61,7 +61,7 @@
           <font-awesome-icon icon="eye"/>
           Show transformation matrix
         </b-button>
-        <transformation-matrix-modal id="transformationMatrixModal" transformationMatrix="TODO"></transformation-matrix-modal>
+        <transformation-matrix-modal id="transformationMatrixModal" :transformationMatrix="this.$store.state.landmarkTransformationMatrix"></transformation-matrix-modal>
       </template>
     </card-component>
 
