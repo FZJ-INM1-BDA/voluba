@@ -10,5 +10,5 @@ First set up a virtual environment for the backend:
     
 Once this is done, you can use the following command to start the backend:
 
-    sh ./deploy/run_backend.sh
+    python run.py
     
