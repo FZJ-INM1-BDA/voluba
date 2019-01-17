@@ -192,8 +192,8 @@ exports.testBigbrain = {
       "layers": {
         " grey value: ": {
           "type": "image",
-          "source": "precomputed://http://imedv02.ime.kfa-juelich.de:8287/precomputed/BigBrainRelease.2015/8bit",
-          // "source": "precomputed://https://neuroglancer.humanbrainproject.org/precomputed/BigBrainRelease.2015/8bit",
+          // "source": "precomputed://http://imedv02.ime.kfa-juelich.de:8287/precomputed/BigBrainRelease.2015/8bit",
+          "source": "precomputed://https://neuroglancer.humanbrainproject.org/precomputed/BigBrainRelease.2015/8bit",
           "transform": [
             [
               1,
@@ -223,8 +223,8 @@ exports.testBigbrain = {
         },
         " tissue type: ": {
           "type": "segmentation",
-          "source": "precomputed://http://imedv02.ime.kfa-juelich.de:8287/precomputed/BigBrainRelease.2015/classif",
-          // "source": "precomputed://https://neuroglancer.humanbrainproject.org/precomputed/BigBrainRelease.2015/classif",
+          // "source": "precomputed://http://imedv02.ime.kfa-juelich.de:8287/precomputed/BigBrainRelease.2015/classif",
+          "source": "precomputed://https://neuroglancer.humanbrainproject.org/precomputed/BigBrainRelease.2015/classif",
           "segments": [
             "0"
           ],
@@ -403,3 +403,158 @@ exports.randomColor = () => {
   }
   return color
 }
+
+exports.testLandmarks = {
+  referenceLandmarks: [{
+    id: 'uniqueIdRefLm1',
+    name: 'Reference Point 1',
+    coord: [
+      12.282029,
+      0.325772375,
+      -9.724908
+    ]
+  },{
+    id: 'uniqueIdRefLm2',
+    name: 'Reference Point 2',
+    coord: [
+      6.4210755,
+      0.325772375,
+      -16.609202
+    ]
+  },{
+    id: 'uniqueIdRefLm3',
+    name: 'Reference Point 3',
+    coord: [
+      9.398068,
+      -2.74425175,
+      -14.748581
+    ]
+  }],
+
+  incomingLandmarks: [{
+    id: 'uniqueIdIncLm1',
+    name: 'Incoming Point 1',
+    coord: [
+      11.087669,
+      6.56,
+      9.320814
+    ]
+  },{
+    id: 'uniqueIdIncLm2',
+    name: 'Incoming Point 2',
+    coord: [
+      7.4451575,
+      6.56,
+      1.111573875
+    ]
+  },{
+    id: 'uniqueIdIncLm3',
+    name: 'Incoming Point 3',
+    coord: [
+      8.505292,
+      5.0921215,
+      5.6511205
+    ]
+  }],
+
+  landmarkPairs: [{
+      id: 'uniqueIdPair1',
+      refId: 'uniqueIdRefLm1',
+      incId: 'uniqueIdIncLm1',
+      name: 'Land Mark Pair #1',
+      active: true,
+      visible: true
+  },{
+    id: 'uniqueIdPair2',
+    refId: 'uniqueIdRefLm2',
+    incId: 'uniqueIdIncLm2',
+    name: 'Land Mark Pair #2',
+    active: true,
+    visible: true
+  }, {
+      id:'uniqueIdPair3',
+      refId: 'uniqueIdRefLm3',
+      incId: 'uniqueIdIncLm3',
+      name: 'Land Mark Pair #3',
+      active: true,
+      visible: true
+  }], 
+}
+
+exports.oldJson = [
+  {
+    "target_point": [
+      63.0988757879829,
+      74.72,
+      47.71491469268696
+    ],
+    "source_point": [
+      11.402186052260548,
+      8.618904583495219,
+      4.0600000000000005
+    ],
+    "active": true,
+    "name": "most medial, inferior point",
+    "colour": "#8dd3c7"
+  },
+  {
+    "target_point": [
+      56.5175473767443,
+      74.72,
+      52.38977784538801
+    ],
+    "source_point": [
+      4.080846718801228,
+      4.466383960830783,
+      4.0600000000000005
+    ],
+    "active": true,
+    "name": "most lateral, superior point",
+    "colour": "#ffffb3"
+  },
+  {
+    "target_point": [
+      62.169714975306725,
+      80,
+      49.472331399788615
+    ],
+    "source_point": [
+      10.224,
+      6.752,
+      9.74
+    ],
+    "active": true,
+    "name": "most anterior point",
+    "colour": "#bebada"
+  },
+  {
+    "target_point": [
+      58.082316918797304,
+      71.12,
+      50.44257820806931
+    ],
+    "source_point": [
+      7.534571293784262,
+      6.616700212660056,
+      0.3
+    ],
+    "active": true,
+    "name": "most posterior point",
+    "colour": "#fb8072"
+  },
+  {
+    "target_point": [
+      59.72876312018893,
+      75.5,
+      51.69494171858955
+    ],
+    "source_point": [
+      7.443257756953321,
+      4.854800116378677,
+      4.84
+    ],
+    "active": true,
+    "name": "point on superior internal edge",
+    "colour": "#80b1d3"
+  }
+]

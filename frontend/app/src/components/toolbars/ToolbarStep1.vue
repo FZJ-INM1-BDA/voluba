@@ -141,6 +141,8 @@
         <label for = "isotropic">
           isotropic scale
         </label>
+
+        <!-- align -->
         <div class="btn-group">
           <div @click = "alignReference" class="btn btn-primary">align reference</div>
           <div @click = "alignIncoming" class="btn btn-primary">align incoming</div>
@@ -193,6 +195,9 @@ export default {
     renderedTemplateURLs: function () {
       return [this.dummyIncomingTemplate].concat(this.$store.state.templateURLs)
     },
+    /**
+     * NYI, need deeper integration with backend on available template spaces
+     */
     selectReference: function () {
       return this.$store.state.selectReference
     },

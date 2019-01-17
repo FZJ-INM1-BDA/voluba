@@ -41,14 +41,15 @@ export default {
       subscriptions: []
     }
   },
-  mounted() {
+  mounted () {
     this.$store.subscribeAction(({type}) => {
       switch (type) {
         case 'redrawNehuba':
-          if(this.nehubaViewer)
+          if (this.nehubaViewer) {
             this.nehubaViewer.redraw()
+          }
           setTimeout(() => this.navigationChanged())
-          break;
+          break
         default:
       }
     })
@@ -78,8 +79,8 @@ export default {
   methods: {
     sliceRenderEvent: function (event) {
       if (
-        this.dataToViewport[0] !== defaultXform && 
-        this.dataToViewport[1] !== defaultXform && 
+        this.dataToViewport[0] !== defaultXform &&
+        this.dataToViewport[1] !== defaultXform &&
         this.dataToViewport[2] !== defaultXform
       ) {
         return
@@ -89,8 +90,8 @@ export default {
       this.dataToViewport[determineElement(element)] = event.detail.nanometersToOffsetPixels
 
       if (
-        this.dataToViewport[0] !== defaultXform && 
-        this.dataToViewport[1] !== defaultXform && 
+        this.dataToViewport[0] !== defaultXform &&
+        this.dataToViewport[1] !== defaultXform &&
         this.dataToViewport[2] !== defaultXform
       ) {
         this.navigationChanged()
@@ -100,7 +101,7 @@ export default {
       this.$refs.lmOverlay.$forceUpdate()
     },
     preInit: function () {
-      return new Promise((resolve,reject) => {
+      return new Promise((resolve, reject) => {
         this.cid = 'neuroglancer-container'
         resolve()
       })
@@ -108,15 +109,13 @@ export default {
     init: function () {
       return new Promise((resolve, reject) => {
         this.nehubaViewer = window.export_nehuba.createNehubaViewer(this.config, (err) => {
-          console.log(e)
+          console.log(err)
         })
-
         this.subscriptions.push(
           this.nehubaViewer.navigationState.full.subscribe(() => {
             this.navigationChanged()
-          }) 
+          })
         )
-
         resolve()
       })
     },
@@ -138,10 +137,12 @@ export default {
       this.errorMessage = e
     },
     destroyNehuba: function () {
-      if (window.secondaryViewer)
+      if (window.secondaryViewer) {
         window.secondaryViewer = null
-      if (this.nehubaViewer)
+      }
+      if (this.nehubaViewer) {
         this.nehubaViewer.dispose()
+      }
       this.subscriptions.forEach(s => s.unsubscribe())
     }
   },
@@ -153,9 +154,9 @@ export default {
       }
     }
   },
-  beforeDestroy() {
+  beforeDestroy () {
     this.destroyNehuba()
-  },
+  }
 }
 </script>
 <style scoped>
