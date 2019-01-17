@@ -162,6 +162,7 @@ export default {
     saveLandmarkPairs: function () {
     },
     clearList: function () {
+      this.$store.dispatch('removeLandmarkPairs')
     },
     addLandmarkPair: function () {
       this.$store.dispatch('addLandmarkPair')
