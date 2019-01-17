@@ -91,7 +91,7 @@ export default {
       }
     }
   },
-  mounted() {
+  mounted () {
   },
   components: {
     LandmarkComponent

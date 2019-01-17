@@ -9,10 +9,10 @@ export default {
   props: {
     visible: {
       type: Boolean,
-      default: true  
+      default: true
     },
     active: {
-      type :Boolean,
+      type: Boolean,
       default: true
     },
     zOffset: {
@@ -54,7 +54,7 @@ export default {
           : `0px`
       }
     }
-  },
+  }
 }
 </script>
 <style scoped>

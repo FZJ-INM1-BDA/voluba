@@ -68,7 +68,7 @@
   </div>
 </template>
 <script>
-import axios from 'axios';
+import axios from 'axios'
 import CardComponent from '@/components/Card'
 import LandmarkList from '@/components/LandmarkList'
 import TransformationMatrixModal from '../modals/TransformationMatrixModal'
@@ -87,7 +87,7 @@ export default {
   data: function () {
     return {
       synchronizeZoom: false,
-      checkAll: false,
+      checkAll: false
     }
   },
   watch: {},
@@ -112,31 +112,29 @@ export default {
     },
     loadLandmarkPairs: function () {
       this.$store.dispatch('loadOldJson', {
-        json:oldJson,
+        json: oldJson,
         config: {
           fixCenterTranslation: true
         }
       })
     },
     saveLandmarkPairs: function () {
-
     },
     clearList: function () {
-
     },
     addLandmarkPair: function () {
-      
     },
     computeDeterminant: function (matrix) {
-      if(!matrix)
+      if (!matrix) {
         return null
-      if(matrix.length == 2) {
-        return matrix[0][0] * matrix[1][1] - matrix[0][1] * matrix[1][0];
+      }
+      if (matrix.length === 2) {
+        return matrix[0][0] * matrix[1][1] - matrix[0][1] * matrix[1][0]
       } else {
         var res = 0
-        for(var i = 0; i < matrix.length; i++) {
+        for (var i = 0; i < matrix.length; i++) {
           var minor = []
-          for(var j = 0; j < matrix.length - 1; j++) {
+          for (var j = 0; j < matrix.length - 1; j++) {
             minor[j] = matrix[j + 1].slice(0, i).concat(matrix[j + 1].slice(i + 1, matrix.length))
           }
           var sign = 1 - 2 * (i % 2)
@@ -153,7 +151,7 @@ export default {
         'transformation_type': this.$store.state.transformationTypes[this.$store.state.selectedTransformationIndex].value
       }
 
-      for(var i = 0; i < this.$store.state.landmarkPairs.length; i++) {
+      for (var i = 0; i < this.$store.state.landmarkPairs.length; i++) {
         var landmark_pair = this.$store.state.landmarkPairs[i]
         var ref_landmarks = this.$store.state.referenceLandmarks.filter(p => p.id === landmark_pair.refId)
         var inc_landmarks = this.$store.state.incomingLandmarks.filter(p => p.id === landmark_pair.incId)
@@ -174,18 +172,18 @@ export default {
     computeTransformationMatrix: function () {
       var data = this.createBackendData()
       console.log(data)
-      axios.post(this.$store.state.backendURL + "/least-squares", data)
-      .then((response)  =>  {
-        this.$store.dispatch('changeLandmarkTransformationMatrix', response.data.transformation_matrix)
-        this.$store.dispatch('changeLandmarkInverseMatrix', response.data.inverse_matrix)
-        this.$store.dispatch('changeLandmarkDeterminant', this.computeDeterminant(response.data.transformation_matrix))
-        this.$store.dispatch('changeLandmarkRMSE', response.data.RMSE)
-      }, (error)  =>  {
-        console.log(error)
-        // TODO: handle error!
-      })
+      axios.post(this.$store.state.backendURL + '/least-squares', data)
+        .then(response => {
+          this.$store.dispatch('changeLandmarkTransformationMatrix', response.data.transformation_matrix)
+          this.$store.dispatch('changeLandmarkInverseMatrix', response.data.inverse_matrix)
+          this.$store.dispatch('changeLandmarkDeterminant', this.computeDeterminant(response.data.transformation_matrix))
+          this.$store.dispatch('changeLandmarkRMSE', response.data.RMSE)
+        }, error => {
+          console.log(error)
+          // TODO: handle error!
+        })
     }
-  },
+  }
 }
 </script>
 <style scoped>

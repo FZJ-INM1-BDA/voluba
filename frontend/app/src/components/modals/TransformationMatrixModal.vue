@@ -2,8 +2,8 @@
   <b-modal :id="id" title="Transformation Matrix" header-bg-variant="secondary" header-text-variant="light" ok-only>
     <table class="table table-hover">
       <tbody>
-        <tr v-for="row in transformationMatrix">
-          <td v-for="value in row">{{ (value).toFixed(4) }}</td>
+        <tr :key = "rowIndex" v-for = "(row, rowIndex) in transformationMatrix">
+          <td :key = "cellIndex" v-for = "(value, cellIndex) in row">{{ (value).toFixed(4) }}</td>
         </tr>
       </tbody>
     </table>

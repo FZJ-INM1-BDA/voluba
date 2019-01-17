@@ -131,10 +131,11 @@ export default {
       const { quat, mat4 } = window.export_nehuba
       switch (type) {
         case 'redrawNehuba':
-          if (this.nehubaViewer) 
+          if (this.nehubaViewer) {
             this.nehubaViewer.redraw()
+          }
           setTimeout(() => this.navigationChanged())
-          break;
+          break
         case 'alignReference':
           this.nehubaViewer.ngviewer.navigationState.pose.orientation.restoreState([0, 0, 0, 1])
           break
@@ -191,8 +192,9 @@ export default {
       this.ngUserLayer.layer.transform.changed.dispatch()
     },
     $route: function (from, to) {
-      if (this.ngUserLayer)
+      if (this.ngUserLayer) {
         this.ngUserLayer.setVisible(to.path === '/step2')
+      }
     }
   },
   beforeMount: function () {
@@ -201,8 +203,8 @@ export default {
   methods: {
     sliceRenderEvent: function (event) {
       if (
-        this.dataToViewport[0] !== defaultXform && 
-        this.dataToViewport[1] !== defaultXform && 
+        this.dataToViewport[0] !== defaultXform &&
+        this.dataToViewport[1] !== defaultXform &&
         this.dataToViewport[2] !== defaultXform
       ) {
         return
@@ -212,8 +214,8 @@ export default {
       this.dataToViewport[determineElement(element)] = event.detail.nanometersToOffsetPixels
 
       if (
-        this.dataToViewport[0] !== defaultXform && 
-        this.dataToViewport[1] !== defaultXform && 
+        this.dataToViewport[0] !== defaultXform &&
+        this.dataToViewport[1] !== defaultXform &&
         this.dataToViewport[2] !== defaultXform
       ) {
         this.navigationChanged()
@@ -244,7 +246,7 @@ export default {
         this.mousemoveStart = [event.screenX, event.screenY]
 
         if (event.shiftKey) {
-          return 
+          return
           this.rotatingIncoming = true
           this.rotateAbsoluteStart = this.viewerMousePosition
         } else {
@@ -371,7 +373,7 @@ export default {
       this.subscriptions.push(
         this.nehubaViewer.navigationState.full.subscribe(() => {
           this.navigationChanged()
-        }) 
+        })
       )
     },
     clearnUp: function () {

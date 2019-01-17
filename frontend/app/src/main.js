@@ -159,13 +159,13 @@ const store = new Vuex.Store({
     changeLandmarkRMSE (state, newRMSE) {
       state.landmarkRMSE = newRMSE
     },
-    commitReferenceLandmarks (state, { newReferenceLandmarks } ) {
+    commitReferenceLandmarks (state, { newReferenceLandmarks }) {
       state.referenceLandmarks = newReferenceLandmarks
     },
-    commitIncomingLandmarks (state, { newIncomingLandmarks } ) {
+    commitIncomingLandmarks (state, { newIncomingLandmarks }) {
       state.incomingLandmarks = newIncomingLandmarks
     },
-    commitLandmarkPairs (state, { newLandmarkPairs } ) {
+    commitLandmarkPairs (state, { newLandmarkPairs }) {
       state.landmarkPairs = newLandmarkPairs
     },
     setLandmarkPairVisibility (state, {id, visibility}) {
@@ -265,19 +265,19 @@ const store = new Vuex.Store({
     changeLandmarkRMSE ({commit}, newRMSE) {
       commit('changeLandmarkRMSE', newRMSE)
     },
-    toggleLandmarkPairVisibility({commit, state}, {id}) {
+    toggleLandmarkPairVisibility ({commit, state}, {id}) {
       const landmarkPair = state.landmarkPairs.find(pair => pair.id === id)
       if (landmarkPair) {
-        commit('setLandmarkPairVisibility' , {
+        commit('setLandmarkPairVisibility', {
           id,
           visibility: !landmarkPair.visible
         })
       }
     },
-    toggleLandmarkPairActive({commit, state}, {id}) {
+    toggleLandmarkPairActive ({commit, state}, {id}) {
       const landmarkPair = state.landmarkPairs.find(pair => pair.id === id)
       if (landmarkPair) {
-        commit('setLandmarkPairActive' , {
+        commit('setLandmarkPairActive', {
           id,
           active: !landmarkPair.active
         })
@@ -286,9 +286,7 @@ const store = new Vuex.Store({
     loadOldJson ({commit, state}, {json, config}) {
       const { fixCenterTranslation } = config
       const arrayMat4 = state.referenceTemplateTransform
-        ? state.referenceTemplateTransform.flatMap((arr, i) => 
-            arr.map((v, idx) => (i === 3 || idx !== 3) ? v : v / 1e6 )
-          )
+        ? state.referenceTemplateTransform.flatMap((arr, i) => arr.map((v, idx) => (i === 3 || idx !== 3) ? v : v / 1e6))
         : null
       const transformRef = (coord) => {
         if (fixCenterTranslation && arrayMat4) {
@@ -332,8 +330,8 @@ const store = new Vuex.Store({
       commit('commitIncomingLandmarks', { newIncomingLandmarks })
       commit('commitLandmarkPairs', { newLandmarkPairs })
     },
-    focusLandmarkPair({commit, state}, {id}) {
-    
+    // eslint-disable-next-llne
+    focusLandmarkPair ({commit, state}, {id}) {
     }
   }
 })

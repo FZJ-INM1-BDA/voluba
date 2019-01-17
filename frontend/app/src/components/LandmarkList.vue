@@ -39,11 +39,11 @@ export default {
   },
   computed: {
     landmarks: function () {
-
       /**
        * expect landmarks to be [{id: UNIQUE_ID, name: NAME, color: HEX}]
        */
 
+      // eslint-disable-next-line
       const { referenceLandmarks, incomingLandmarks, landmarkPairs } = this.$store.state
       return landmarkPairs
     }
