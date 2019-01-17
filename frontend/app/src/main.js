@@ -84,6 +84,9 @@ const store = new Vuex.Store({
     incomingLandmarks: [],
     landmarkPairs: [],
 
+    synchronizeZoom: false,
+    synchronizeCursor: false,
+    previewMode: false,
     backendURL: 'http://localhost:5000/api',
     landmarkTransformationMatrix: null,
     landmarkInverseMatrix: null,
@@ -146,6 +149,15 @@ const store = new Vuex.Store({
     },
     changeSidebarWidth (state, size) {
       state.sidebarWidth = size
+    },
+    enableSynchronizeZoom (state, synchronizeZoom) {
+      state.synchronizeZoom = synchronizeZoom
+    },
+    enableSynchronizeCursor (state, synchronizeCursor) {
+      state.synchronizeCursor = synchronizeCursor
+    },
+    enablePreviewMode (state, previewMode) {
+      state.previewMode = previewMode
     },
     changeLandmarkTransformationMatrix (state, transformationMatrix) {
       state.landmarkTransformationMatrix = transformationMatrix
@@ -252,6 +264,15 @@ const store = new Vuex.Store({
         newOverlayColor.b
       ]
       commit('setIncomingTemplateRGBA', { color })
+    },
+    enableSynchronizeZoom ({commit}, synchronizeZoom) {
+      commit('enableSynchronizeZoom', synchronizeZoom)
+    },
+    enableSynchronizeCursor ({commit}, synchronizeCursor) {
+      commit('enableSynchronizeCursor', synchronizeCursor)
+    },
+    enablePreviewMode ({commit}, previewMode) {
+      commit('enablePreviewMode', previewMode)
     },
     changeLandmarkTransformationMatrix ({commit}, transformationMatrix) {
       commit('changeLandmarkTransformationMatrix', transformationMatrix)

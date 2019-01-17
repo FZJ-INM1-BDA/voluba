@@ -7,8 +7,18 @@
         <h6><strong>Landmark-Pairs</strong></h6>
       </template>
       <template slot = "body">
-        <input type="checkbox" id="synchronize-zoom" name="synchronize-zoom" v-model="synchronizeZoom" />
-        <label for = "synchronize-zoom">Synchronize zoom</label>
+        <div>
+          <input type="checkbox" id="synchronize-zoom" name="synchronize-zoom" v-model="synchronizeZoom"/>
+          <label for="synchronize-zoom">Synchronize Zoom</label>
+        </div>
+        <div>
+          <input type="checkbox" id="synchronize-cursor" name="synchronize-cursor" v-model="synchronizeCursor"/>
+          <label for="synchronize-cursor">Synchronize Cursor</label>
+        </div>
+        <div>
+          <input type="checkbox" id="preview-mode" name="preview-mode" v-model="previewMode"/>
+          <label for="preview-mode">Preview Mode</label>
+        </div>
         <div>
           <button type="button" @click = "loadLandmarkPairs" class="btn btn-default"><font-awesome-icon icon="file-upload"/> Load</button>
           <button type="button" @click = "saveLandmarkPairs" class="btn btn-default"><font-awesome-icon icon="file-download"/> Save</button>
@@ -86,11 +96,26 @@ export default {
   },
   data: function () {
     return {
-      synchronizeZoom: false,
+      synchronizeZoom: this.$store.state.synchronizeZoom,
+      synchronizeCursor: this.$store.state.synchronizeCursor,
+      previewMode: this.$store.state.previewMode,
       checkAll: false
     }
   },
-  watch: {},
+  watch: {
+    synchronizeZoom: function () {
+      this.enableSynchronizeZoom()
+    },
+    synchronizeCursor: function () {
+      this.enableSynchronizeCursor()
+    },
+    previewMode: function () {
+      this.enablePreviewMode()
+    },
+    checkAll: function () {
+      this.checkAllPairs()
+    }
+  },
   computed: {
     transformationTypes: function () {
       return this.$store.state.transformationTypes
@@ -106,6 +131,18 @@ export default {
     }
   },
   methods: {
+    enableSynchronizeZoom: function () {
+      this.$store.dispatch('enableSynchronizeZoom', this.synchronizeZoom)
+    },
+    enableSynchronizeCursor: function () {
+      this.$store.dispatch('enableSynchronizeCursor', this.synchronizeCursor)
+    },
+    enablePreviewMode: function () {
+      this.$store.dispatch('enablePreviewMode', this.previewMode)
+    },
+    checkAllPairs: function () {
+      // TODO: implement
+    },
     selectMethod: function (event) {
       const index = event.target.selectedIndex
       this.$store.commit('selectMethodIndex', index)
