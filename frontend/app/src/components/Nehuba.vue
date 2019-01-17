@@ -15,6 +15,7 @@
 
     <NehubaLandmarksOverlay
       ref = "lmOverlay"
+      v-show = "!previewMode"
       v-if = "dataToViewport.length > 2"
       :dataToViewport = "dataToViewport"
       :landmarks = "referenceLandmarks"
@@ -31,9 +32,6 @@ import { defaultXform, getShader, patchSliceViewPanel, determineElement, testBig
 
 import NehubaLandmarksOverlay from '@/components/NehubaLandmarksOverlay'
 export default {
-  name: 'nehuba-component',
-  created: function () {
-  },
   data: function () {
     return {
       placeholderText: 'Loading nehuba ...',
@@ -161,9 +159,12 @@ export default {
         this.$emit('ready', null)
       }
     },
-    selectIncomingTemplate: function (val) {
+    selectedIncomingVolumeIndex: function (idx) {
       this.clearUserLayers()
-      this.addUserLayer(val)
+      if (idx !== null && idx >= 0) {
+        const url = this.$store.state.incomingVolumes[idx].value
+        this.addUserLayer(url)
+      }
     },
     mouseOverIncoming: function (val) {
       this.setNavigationActive(!val)
@@ -191,9 +192,14 @@ export default {
       }
       this.ngUserLayer.layer.transform.changed.dispatch()
     },
+    previewMode: function (val) {
+      if (this.ngUserLayer) {
+        this.ngUserLayer.setVisible(val)
+      }
+    },
     $route: function (from, to) {
       if (this.ngUserLayer) {
-        this.ngUserLayer.setVisible(to.path === '/step2')
+        this.ngUserLayer.setVisible(this.previewMode || to.path === '/step2')
       }
     }
   },
@@ -246,7 +252,6 @@ export default {
         this.mousemoveStart = [event.screenX, event.screenY]
 
         if (event.shiftKey) {
-          return
           this.rotatingIncoming = true
           this.rotateAbsoluteStart = this.viewerMousePosition
         } else {
@@ -258,19 +263,19 @@ export default {
       }
     },
     mousemove: function (event) {
-      if (this.movingIncoming || this.rotatingIncoming) {
+      if ((this.translationByDragEnabled && this.movingIncoming) || (this.rotationByDragEnabled && this.rotatingIncoming)) {
         const {vec3, quat} = window.export_nehuba
 
         const deltaX = event.screenX - this.mousemoveStart[0]
         const deltaY = event.screenY - this.mousemoveStart[1]
-        if (this.movingIncoming) {
+        if (this.translationByDragEnabled && this.movingIncoming) {
           let pos = vec3.fromValues(deltaX, deltaY, 0)
           vec3.transformMat4(pos, pos, this.viewportToDatas[this.movingIncomingIndex])
           vec3.subtract(pos, pos, vec3.fromValues(...this.viewerNavigationPosition))
           this.translation = Array.from(pos)
         }
 
-        if (this.rotatingIncoming) {
+        if (this.rotationByDragEnabled && this.rotatingIncoming) {
           let { vec31, vec32 } = getRotationVec3(this.movingIncomingIndex)
           if (vec31 === null || vec32 === null) {
             return
@@ -304,11 +309,15 @@ export default {
       if (bool) {
         this.ngUserLayer.layer.opacity.restoreState(this.incomingColor[3])
         this.nehubaViewer.ngviewer.inputEventBindings.sliceView.bindings.delete('at:mousedown0')
-        // this.nehubaViewer.ngviewer.inputEventBindings.sliceView.bindings.delete('at:shift+mousedown0')
+        this.nehubaViewer.ngviewer.inputEventBindings.sliceView.bindings.delete('at:shift+mousedown0')
       } else {
         this.ngUserLayer.layer.opacity.restoreState(incomingTemplateActiveOpacity)
-        this.nehubaViewer.ngviewer.inputEventBindings.sliceView.bindings.set('at:mousedown0', {stopPropagation: true})
-        // this.nehubaViewer.ngviewer.inputEventBindings.sliceView.bindings.set('at:shift+mousedown0', {stopPropagation: true})
+        if (this.translationByDragEnabled) {
+          this.nehubaViewer.ngviewer.inputEventBindings.sliceView.bindings.set('at:mousedown0', {stopPropagation: true})
+        }
+        if (this.rotationByDragEnabled) {
+          this.nehubaViewer.ngviewer.inputEventBindings.sliceView.bindings.set('at:shift+mousedown0', {stopPropagation: true})
+        }
       }
     },
     updateState: function ({mouseOverUserlayer}) {
@@ -386,7 +395,7 @@ export default {
        */
       window['nehubaViewer'] = this.nehubaViewer
       window['nehubaVue'] = this
-      // window['viewer'] = null
+      window['viewer'] = null
     },
     navigationChanged: function () {
       this.$refs.lmOverlay.$forceUpdate()
@@ -427,6 +436,12 @@ export default {
     }
   },
   computed: {
+    translationByDragEnabled: function () {
+      return !this.previewMode && true
+    },
+    rotationByDragEnabled: function () {
+      return false
+    },
     translationVec3: {
       get: function () {
         if (this.appendNehubaFlag) {
@@ -484,8 +499,8 @@ export default {
     incomingColor: function () {
       return this.$store.state.incomingColor.map((v, idx) => idx === 3 ? v : v / 255)
     },
-    selectIncomingTemplate: function () {
-      return this.$store.state.incomingTemplate
+    selectedIncomingVolumeIndex: function () {
+      return this.$store.state.selectedIncomingVolumeIndex
     },
     viewerIncomingScale: function () {
       return this.$store.state.incomingScale
@@ -500,6 +515,9 @@ export default {
           color: allPairs[0].color
         }
       })
+    },
+    previewMode: function () {
+      return this.$store.state.previewMode
     }
   },
   beforeDestroy () {

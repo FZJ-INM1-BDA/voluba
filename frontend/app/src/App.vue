@@ -8,15 +8,20 @@
         :collapse = "sidebarCollapse">
         <template slot = "mainside-main">
           <div class="mainside-main-item nehuba-container">
-            <nehuba-component @ready = "mainNehubaReady" ref = "templatenehuba" />
+            <nehuba-component
+              @ready = "mainNehubaReady"
+              ref = "templatenehuba" />
             <SimpleNehubaComponent
               :config = "simpleNehubaConfig"
               ref = "incomingnehuba"
-              v-show = "showSecondNehuba && primaryNehubaReady" />
+              v-show = "showSimpleNehuba" />
           </div>
           <div v-if = "sidebarCollapse" class = "sidebar-control mainside-main-item">
             <b-button @click.prevent = "expandSidebar" variant="secondary">
-              <font-awesome-icon icon = "angle-right"></font-awesome-icon>
+              <font-awesome-icon icon = "angle-right" />
+            </b-button>
+            <b-button @click.prevent = "exitPreviewMode" variant = "secondary">
+              <font-awesome-icon icon = "times-circle" />
             </b-button>
           </div>
         </template>
@@ -62,9 +67,14 @@ export default {
       return this.$store.state.sidebarWidth
     },
     simpleNehubaConfig: function () {
-      return this.$store.state.incomingTemplate
-        ? getDefaultNehubaConfigLight(this.$store.state.incomingTemplate)
+      const idx = this.$store.state.selectedIncomingVolumeIndex
+
+      return idx !== null && idx >= 0
+        ? getDefaultNehubaConfigLight(this.$store.state.incomingVolumes[idx].value)
         : null
+    },
+    showSimpleNehuba: function () {
+      return this.showSecondNehuba && this.primaryNehubaReady && !this.$store.state.previewMode
     }
   },
   methods: {
@@ -73,12 +83,17 @@ export default {
     },
     mainNehubaReady: function () {
       this.primaryNehubaReady = true
+    },
+    exitPreviewMode: function () {
+      this.$store.dispatch('enablePreviewMode', false)
     }
   },
   watch: {
+    showSimpleNehuba: function () {
+      this.$store.dispatch('redrawNehuba')
+    },
     $route (to, from) {
       this.showSecondNehuba = to.path === '/step2'
-      this.$store.dispatch('redrawNehuba')
     }
   }
 }
@@ -107,9 +122,18 @@ export default {
 
 .mainside-main-item.sidebar-control
 {
-  margin-top: -7em;
+  margin-top: -5em;
   margin-left: 1em;
   z-index: 5;
+  /* width: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column-reverse; */
+}
+
+.mainside-main-item.sidebar-control > *
+{
+  /* flex: 0 0 0; */
 }
 
 .mainside-main-item

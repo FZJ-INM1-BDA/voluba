@@ -11,7 +11,7 @@ import 'bootstrap-vue/dist/bootstrap-vue.css'
 
 // Font awesome
 import { library } from '@fortawesome/fontawesome-svg-core'
-import { faEyeSlash, faMapMarkerAlt, faAngleLeft, faAngleRight, faAngleDoubleRight, faAngleUp, faAngleDown, faEye, faBars, faPlayCircle, faUpload, faDownload, faFileExport, faQuestionCircle, faTimes, faTrashAlt, faThumbtack, faPlus, faFileUpload, faFileDownload } from '@fortawesome/free-solid-svg-icons'
+import { faTimesCircle, faSearch, faEyeSlash, faMapMarkerAlt, faAngleLeft, faAngleRight, faAngleDoubleRight, faAngleUp, faAngleDown, faEye, faBars, faPlayCircle, faUpload, faDownload, faFileExport, faQuestionCircle, faTimes, faTrashAlt, faThumbtack, faPlus, faFileUpload, faFileDownload } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 
 import { randomColor } from '@/components/constants'
@@ -22,7 +22,7 @@ import Vuex from 'vuex'
 Vue.use(BootstrapVue)
 Vue.use(Vuex)
 
-library.add(faEyeSlash, faMapMarkerAlt, faAngleLeft, faAngleRight, faAngleDoubleRight, faAngleUp, faAngleDown, faEye, faBars, faPlayCircle, faUpload, faDownload, faFileExport, faQuestionCircle, faTimes, faTrashAlt, faThumbtack, faPlus, faFileUpload, faFileDownload)
+library.add(faTimesCircle, faSearch, faEyeSlash, faMapMarkerAlt, faAngleLeft, faAngleRight, faAngleDoubleRight, faAngleUp, faAngleDown, faEye, faBars, faPlayCircle, faUpload, faDownload, faFileExport, faQuestionCircle, faTimes, faTrashAlt, faThumbtack, faPlus, faFileUpload, faFileDownload)
 Vue.component('font-awesome-icon', FontAwesomeIcon)
 
 Vue.config.productionTip = false
@@ -37,15 +37,17 @@ const store = new Vuex.Store({
       }
     ],
     referenceTemplateTransform: null,
-    templateURLs: [
+
+    selectedIncomingVolumeIndex: null,
+    incomingVolumes: [
       {
-        id: '1',
+        id: 'inc-1',
         text: 'Nucleus subthalamicus (B20)',
         // value: 'precomputed://http://imedv02.ime.kfa-juelich.de:8287/precomputed/B20_stn_l/v10'
         value: 'precomputed://https://neuroglancer-dev.humanbrainproject.org/precomputed/landmark-reg/B20_stn_l/v10'
       },
       {
-        id: '2',
+        id: 'inc-2',
         text: 'Hippocampus unmasked',
         value: 'precomputed://https://neuroglancer-dev.humanbrainproject.org/precomputed/landmark-reg/hippocampus-unmasked'
       }
@@ -102,8 +104,8 @@ const store = new Vuex.Store({
     setReferenceTemplateTransform (state, {transform}) {
       state.referenceTemplateTransform = transform
     },
-    selectIncomingTemplate (state, incomingTemplate) {
-      state.incomingTemplate = incomingTemplate
+    selectIncomingVolume (state, index) {
+      state.selectedIncomingVolumeIndex = index
     },
     setIncomingTransformMatrix (state, array) {
       state.incomingTransformMatrix = array
@@ -201,6 +203,12 @@ const store = new Vuex.Store({
     }
   },
   actions: {
+    selectIncomingVolume ({commit, state}, id) {
+      const index = id === null
+        ? null
+        : state.incomingVolumes.findIndex(v => v.id === id)
+      commit('selectIncomingVolume', index)
+    },
     viewerSliceOrientationChanged ({commit}, array) {
       commit('setViewerSliceOrientation', array)
     },
@@ -284,6 +292,9 @@ const store = new Vuex.Store({
     },
     enablePreviewMode ({commit}, previewMode) {
       commit('enablePreviewMode', previewMode)
+      commit(previewMode
+        ? 'hideSidebar'
+        : 'showSidebar')
     },
     changeLandmarkTransformationMatrix ({commit}, transformationMatrix) {
       commit('changeLandmarkTransformationMatrix', transformationMatrix)
