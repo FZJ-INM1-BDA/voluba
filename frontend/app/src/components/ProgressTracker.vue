@@ -10,7 +10,7 @@
         Step {{ index + 1 }}
       </strong>
       <p class="description">
-        {{ route.title }}
+        {{ route.displayName }}
       </p>
 
     </router-link>
@@ -18,18 +18,9 @@
 </template>
 <script>
 export default {
-  data: function () {
-    return {
-      routes: [{
-        name: 'Step 1',
-        title: 'Data Selection & 3D Anchoring'
-      }, {
-        name: 'Step 2',
-        title: 'Entering Landmark Pairs'
-      }, {
-        name: 'Step 3',
-        title: 'Save & Export Results'
-      }]
+  computed: {
+    routes: function () {
+      return this.$router.options.routes.filter(route => route.shown)
     }
   }
 }
