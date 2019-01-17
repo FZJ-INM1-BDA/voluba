@@ -49,11 +49,11 @@
         <b-container fluid>
           <b-row>
             <b-col md="5"><label>Determinant:</label></b-col>
-            <b-col md="7"><label style="background-color: lightgray; width: 100%;">{{ this.$store.state.landmarkDeterminant ? this.$store.state.landmarkDeterminant : '---' }}</label></b-col>
+            <b-col md="7"><label style="background-color: lightgray; width: 100%;">{{ this.$store.state.landmarkDeterminant ? (this.$store.state.landmarkDeterminant).toFixed(10) : '---' }}</label></b-col>
           </b-row>
           <b-row>
             <b-col md="5"><label>RMSE:</label></b-col>
-            <b-col md="7"><label style="background-color: lightgray; width: 100%;">{{ this.$store.state.landmarkRMSE ? this.$store.state.landmarkRMSE : '---' }}</label></b-col>
+            <b-col md="7"><label style="background-color: lightgray; width: 100%;">{{ this.$store.state.landmarkRMSE ? (this.$store.state.landmarkRMSE).toFixed(10) : '---' }}</label></b-col>
           </b-row>
         </b-container>
         <br>
@@ -139,8 +139,35 @@ export default {
         return res
       }
     },
+    createBackendData: function () {
+      var data = {
+        'landmark_pairs': [],
+        'source_image': this.$store.state.selectReference,
+        'target_image': this.$store.state.selectTemplate,
+        'transformation_type': this.$store.state.transformationTypes[this.$store.state.selectedTransformationIndex].value
+      }
+
+      for(var i = 0; i < this.$store.state.landmarkPairs.length; i++) {
+        var landmark_pair = this.$store.state.landmarkPairs[i]
+        var ref_landmarks = this.$store.state.referenceLandmarks.filter(p => p.id === landmark_pair.refId)
+        var inc_landmarks = this.$store.state.incomingLandmarks.filter(p => p.id === landmark_pair.incId)
+
+        if (ref_landmarks.length > 0 && inc_landmarks.length > 0) {
+          var obj = {
+            'active': landmark_pair.active,
+            'colour': landmark_pair.color,
+            'name': landmark_pair.name,
+            'source_point': ref_landmarks[0].coord,
+            'target_point': inc_landmarks[0].coord
+          }
+          data['landmark_pairs'].push(obj)
+        }
+      }
+      return data
+    },
     computeTransformationMatrix: function () {
-      var data = {}  // TODO: fill variable
+      var data = this.createBackendData()
+      console.log(data)
       axios.post(this.$store.state.backendURL + "/least-squares", data)
       .then((response)  =>  {
         this.$store.dispatch('changeLandmarkTransformationMatrix', response.data.transformation_matrix)
