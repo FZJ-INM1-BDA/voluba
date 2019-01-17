@@ -23,10 +23,11 @@
           </option>
         </select>
         <!-- <br><br> -->
-        <b-button href="#" variant="secondary">
+        <b-button variant="secondary" v-b-modal.uploadModal>
           <font-awesome-icon icon="upload"/>
           Upload
         </b-button>
+        <upload-modal id="uploadModal"></upload-modal>
         <!-- <br><br> -->
       </template>
     </card-component>
@@ -153,6 +154,7 @@
 </template>
 <script>
 import CardComponent from '../Card'
+import UploadModal from '../modals/UploadModal'
 
 // Vue-Color
 import { Compact } from 'vue-color'
@@ -160,6 +162,7 @@ import { Compact } from 'vue-color'
 export default {
   components: {
     CardComponent,
+    UploadModal,
     'compact-picker': Compact
   },
   data: function () {

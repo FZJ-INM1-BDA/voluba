@@ -57,10 +57,11 @@
           </b-row>
         </b-container>
         <br>
-        <b-button href="#" variant="secondary">
+        <b-button variant="secondary" v-b-modal.transformationMatrixModal>
           <font-awesome-icon icon="eye"/>
           Show transformation matrix
         </b-button>
+        <transformation-matrix-modal id="transformationMatrixModal" transformationMatrix="TODO"></transformation-matrix-modal>
       </template>
     </card-component>
 
@@ -70,6 +71,7 @@
 import axios from 'axios';
 import CardComponent from '@/components/Card'
 import LandmarkList from '@/components/LandmarkList'
+import TransformationMatrixModal from '../modals/TransformationMatrixModal'
 
 // Vue-Color
 import { Compact } from 'vue-color'
@@ -78,6 +80,7 @@ export default {
   components: {
     CardComponent,
     LandmarkList,
+    TransformationMatrixModal,
     'compact-picker': Compact
   },
   data: function () {
