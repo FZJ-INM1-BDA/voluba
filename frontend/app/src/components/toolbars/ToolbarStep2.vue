@@ -98,7 +98,6 @@ export default {
     return {
       synchronizeZoom: this.$store.state.synchronizeZoom,
       synchronizeCursor: this.$store.state.synchronizeCursor,
-      previewMode: this.$store.state.previewMode,
       checkAll: false
     }
   },
@@ -109,14 +108,19 @@ export default {
     synchronizeCursor: function () {
       this.enableSynchronizeCursor()
     },
-    previewMode: function () {
-      this.enablePreviewMode()
-    },
     checkAll: function () {
       this.checkAllPairs()
     }
   },
   computed: {
+    previewMode: {
+      set: function (val) {
+        this.$store.dispatch('enablePreviewMode', val)
+      },
+      get: function () {
+        return this.$store.state.previewMode
+      }
+    },
     transformationTypes: function () {
       return this.$store.state.transformationTypes
     },
@@ -128,6 +132,9 @@ export default {
       return selectedTransform && selectedTransform.value
         ? selectedTransform.value
         : null
+    },
+    computedTransformationAvailable: function () {
+      return this.$store.state.landmarkTransformationMatrix
     }
   },
   methods: {
@@ -136,9 +143,6 @@ export default {
     },
     enableSynchronizeCursor: function () {
       this.$store.dispatch('enableSynchronizeCursor', this.synchronizeCursor)
-    },
-    enablePreviewMode: function () {
-      this.$store.dispatch('enablePreviewMode', this.previewMode)
     },
     checkAllPairs: function () {
       // TODO: implement

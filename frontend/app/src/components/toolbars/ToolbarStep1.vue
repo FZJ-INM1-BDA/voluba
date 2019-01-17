@@ -9,17 +9,23 @@
       <template slot = "body">
         <label>Reference volume:</label>
         <!-- <br> -->
-        <select :id = "'data-selection'" :value = "selectReference">
+        <select
+          :id = "'data-selection'"
+          :value = "selectReference">
           <option v-for="referenceURL in referenceURLs" :key="referenceURL.id" :value="referenceURL.value">
             {{ referenceURL.text }}
           </option>
         </select>
+
         <hr>
         <label>Incoming volume: </label>
         <!-- <br> -->
         <select id="select-template" v-model = "selectTemplate">
-          <option v-for="templateURL in renderedTemplateURLs" :key="templateURL.id" :value="templateURL.value">
-            {{ templateURL.text }}
+          <option
+            v-for = "incomingVolume in renderedIncomingVolumes"
+            :key = "incomingVolume.id"
+            :value = "incomingVolume.id">
+            {{ incomingVolume.text }}
           </option>
         </select>
         <!-- <br><br> -->
@@ -181,19 +187,34 @@ export default {
       opacityMin: 0,
       opacityMax: 1.0,
       opacityStep: 0.01,
-      selectTemplate: null,
-      dummyIncomingTemplate: {id: null, text: '-- Please select a dataset --', value: null},
 
       overlayColor: { hex: this.$store.state.defaultOverlayColor },
       showOverlayColor: false
     }
   },
   computed: {
+    dummyIncomingTemplate: function () {
+      return {
+        id: 'placeholder',
+        text: '-- Please select a dataset --',
+        value: -1
+      }
+    },
+    selectTemplate: {
+      get: function () {
+        return this.$store.state.selectedIncomingVolumeIndex !== null
+          ? this.$store.state.incomingVolumes[this.$store.state.selectedIncomingVolumeIndex].id
+          : this.dummyIncomingTemplate.id
+      }, 
+      set: function (id) {
+        this.$store.dispatch('selectIncomingVolume', id === this.dummyIncomingTemplate.id ? null : id)
+      }
+    },
     referenceURLs: function () {
       return this.$store.state.referenceURLs
     },
-    renderedTemplateURLs: function () {
-      return [this.dummyIncomingTemplate].concat(this.$store.state.templateURLs)
+    renderedIncomingVolumes: function () {
+      return [this.dummyIncomingTemplate].concat(this.$store.state.incomingVolumes)
     },
     /**
      * NYI, need deeper integration with backend on available template spaces
@@ -214,9 +235,6 @@ export default {
     }
   },
   watch: {
-    selectTemplate: function (nst) {
-      this.$store.commit('selectIncomingTemplate', nst)
-    },
     opacity: function (opacityVal) {
       this.$store.dispatch('changeOpacity', Number(opacityVal))
     },
