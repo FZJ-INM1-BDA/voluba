@@ -14,6 +14,8 @@ import { library } from '@fortawesome/fontawesome-svg-core'
 import { faEyeSlash, faMapMarkerAlt, faAngleLeft, faAngleRight, faAngleDoubleRight, faAngleUp, faAngleDown, faEye, faBars, faPlayCircle, faUpload, faDownload, faFileExport, faQuestionCircle, faTimes, faTrashAlt, faThumbtack, faPlus, faFileUpload, faFileDownload } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 
+import { randomColor } from '@/components/constants'
+
 // Vuex
 import Vuex from 'vuex'
 
@@ -171,11 +173,20 @@ const store = new Vuex.Store({
     changeLandmarkRMSE (state, newRMSE) {
       state.landmarkRMSE = newRMSE
     },
+    commitReferenceLandmark (state, { newReferenceLandmark }) {
+      state.referenceLandmarks.push(newReferenceLandmark)
+    },
     commitReferenceLandmarks (state, { newReferenceLandmarks }) {
       state.referenceLandmarks = newReferenceLandmarks
     },
+    commitIncomingLandmark (state, { newIncomingLandmark }) {
+      state.incomingLandmarks.push(newIncomingLandmark)
+    },
     commitIncomingLandmarks (state, { newIncomingLandmarks }) {
       state.incomingLandmarks = newIncomingLandmarks
+    },
+    commitLandmarkPair (state, { newLandmarkPair }) {
+      state.landmarkPairs.push(newLandmarkPair)
     },
     commitLandmarkPairs (state, { newLandmarkPairs }) {
       state.landmarkPairs = newLandmarkPairs
@@ -285,6 +296,31 @@ const store = new Vuex.Store({
     },
     changeLandmarkRMSE ({commit}, newRMSE) {
       commit('changeLandmarkRMSE', newRMSE)
+    },
+    addLandmarkPair ({commit, state}) {
+      var newReferenceLandmark = {
+        id: state.referenceLandmarks.length + 1,
+        name: state.referenceLandmarks.length + 1,
+        coord: [0,0,0]
+      }
+      var newIncomingLandmark = {
+        id: state.incomingLandmarks.length + 1,
+        name: state.incomingLandmarks.length + 1,
+        coord: [0,0,0]
+      }
+      var newLandmarkPair = {
+        id: state.landmarkPairs.length + 1,
+        refId: newReferenceLandmark.id,
+        incId: newIncomingLandmark.id,
+        color: randomColor(),
+        name: state.landmarkPairs.length + 1,
+        active: true,
+        visible: true
+      }
+
+      commit('commitReferenceLandmark', { newReferenceLandmark })
+      commit('commitIncomingLandmark', { newIncomingLandmark })
+      commit('commitLandmarkPair', { newLandmarkPair })
     },
     toggleLandmarkPairVisibility ({commit, state}, {id}) {
       const landmarkPair = state.landmarkPairs.find(pair => pair.id === id)

@@ -160,6 +160,7 @@ export default {
     clearList: function () {
     },
     addLandmarkPair: function () {
+      this.$store.dispatch('addLandmarkPair')
     },
     computeDeterminant: function (matrix) {
       if (!matrix) {
