@@ -15,7 +15,7 @@ export default {
   name: 'TransformationMatrixModal',
   props: {
     id: String,
-    transformationMatrix: Object
+    transformationMatrix: Array
   },
   data: function () {
     return {
