@@ -325,6 +325,8 @@ export default {
        */
       window.primaryViewer = window.viewer
       window.viewer = null
+      const transform = window.primaryViewer.layerManager.managedLayers[0].layer.transform.toJSON()
+      this.$store.commit('setReferenceTemplateTransform', {transform})
 
       /**
        * TODO

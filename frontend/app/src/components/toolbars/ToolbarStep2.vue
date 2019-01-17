@@ -72,6 +72,7 @@ import axios from 'axios';
 import CardComponent from '@/components/Card'
 import LandmarkList from '@/components/LandmarkList'
 import TransformationMatrixModal from '../modals/TransformationMatrixModal'
+import { oldJson } from '@/components/constants'
 
 // Vue-Color
 import { Compact } from 'vue-color'
@@ -110,7 +111,12 @@ export default {
       this.$store.commit('selectMethodIndex', index)
     },
     loadLandmarkPairs: function () {
-
+      this.$store.dispatch('loadOldJson', {
+        json:oldJson,
+        config: {
+          fixCenterTranslation: true
+        }
+      })
     },
     saveLandmarkPairs: function () {
 

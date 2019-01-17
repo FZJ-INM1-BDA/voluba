@@ -9,8 +9,6 @@ import BootstrapVue from 'bootstrap-vue'
 import 'bootstrap/dist/css/bootstrap.min.css'
 import 'bootstrap-vue/dist/bootstrap-vue.css'
 
-import { randomColor } from '@/components/constants'
-
 // Font awesome
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { faEyeSlash, faMapMarkerAlt, faAngleLeft, faAngleRight, faAngleDoubleRight, faAngleUp, faAngleDown, faEye, faBars, faPlayCircle, faUpload, faDownload, faFileExport, faQuestionCircle, faTimes, faTrashAlt, faThumbtack, faPlus, faFileUpload, faFileDownload } from '@fortawesome/free-solid-svg-icons'
@@ -30,21 +28,28 @@ Vue.config.productionTip = false
 const store = new Vuex.Store({
   state: {
     referenceURLs: [
-      { id: '1', text: 'BigBrain (2015)', value: 'precomputed://https://www.jubrain.fz-juelich.de/apps/neuroglancer/BigBrainRelease.2015/image' }
-    ],
-    templateURLs: [
-      { 
-        id: '1', 
-        text: 'Nucleus subthalamicus (B20)', 
-        value: 'precomputed://http://imedv02.ime.kfa-juelich.de:8287/precomputed/B20_stn_l/v10' 
-        // value: 'precomputed://https://neuroglancer-dev.humanbrainproject.org/precomputed/landmark-reg/B20_stn_l/v10' 
-      },
-      { 
-        id: '2', 
-        text: 'Hippocampus unmasked', 
-        value: 'precomputed://https://neuroglancer-dev.humanbrainproject.org/precomputed/landmark-reg/hippocampus-unmasked' 
+      {
+        id: '1',
+        text: 'BigBrain (2015)',
+        value: 'precomputed://https://www.jubrain.fz-juelich.de/apps/neuroglancer/BigBrainRelease.2015/image'
       }
     ],
+    referenceTemplateTransform: null,
+    templateURLs: [
+      {
+        id: '1',
+        text: 'Nucleus subthalamicus (B20)',
+        // value: 'precomputed://http://imedv02.ime.kfa-juelich.de:8287/precomputed/B20_stn_l/v10'
+        value: 'precomputed://https://neuroglancer-dev.humanbrainproject.org/precomputed/landmark-reg/B20_stn_l/v10'
+      },
+      {
+        id: '2',
+        text: 'Hippocampus unmasked',
+        value: 'precomputed://https://neuroglancer-dev.humanbrainproject.org/precomputed/landmark-reg/hippocampus-unmasked'
+      }
+    ],
+
+    selectedTransformationIndex: 0,
     transformationTypes: [
       { id: '1', text: 'Rigid', value: 'rigid' },
       { id: '2', text: 'Rigid (allow reflection)', value: 'rigid+reflection' },
@@ -59,15 +64,7 @@ const store = new Vuex.Store({
     selectReference: 'precomputed://https://www.jubrain.fz-juelich.de/apps/neuroglancer/BigBrainRelease.2015/image',
 
     selectTemplate: null,
-    selectTransformation: 'rigid',
-    selectedTransformationIndex: 0,
 
-    steps: [
-      'Data Selection & 3D Anchoring',
-      'Entering Landmark-Pairs',
-      'Save & Export Results'
-    ],
-    activeStepIndex: 0,
     sidebarCollapse: false,
     sidebarWidth: 350,
     referenceTemplate: null,
@@ -81,86 +78,11 @@ const store = new Vuex.Store({
     viewerNavigationPosition: [0, 0, 0],
     viewerMousePosition: [0, 0, 0],
     viewerSliceOrientation: [0, 0, 0, 1],
-    layers: null,
     mouseoverUserlayer: null,
 
-    referenceLandmarks: [{
-      id: 'uniqueIdRefLm1',
-      name: 'Reference Point 1',
-      coord: [
-        12.282029,
-        0.325772375,
-        -9.724908
-      ]
-    },{
-      id: 'uniqueIdRefLm2',
-      name: 'Reference Point 2',
-      coord: [
-        6.4210755,
-        0.325772375,
-        -16.609202
-      ]
-    },{
-      id: 'uniqueIdRefLm3',
-      name: 'Reference Point 3',
-      coord: [
-        9.398068,
-        -2.74425175,
-        -14.748581
-      ]
-    }],
-
-    incomingLandmarks: [{
-      id: 'uniqueIdIncLm1',
-      name: 'Incoming Point 1',
-      coord: [
-        11.087669,
-        6.56,
-        9.320814
-      ]
-    },{
-      id: 'uniqueIdIncLm2',
-      name: 'Incoming Point 2',
-      coord: [
-        7.4451575,
-        6.56,
-        1.111573875
-      ]
-    },{
-      id: 'uniqueIdIncLm3',
-      name: 'Incoming Point 3',
-      coord: [
-        8.505292,
-        5.0921215,
-        5.6511205
-      ]
-    }],
-
-    landmarkPairs: [{
-      id: 'uniqueIdPair1',
-      refId: 'uniqueIdRefLm1',
-      incId: 'uniqueIdIncLm1',
-      color: randomColor(),
-      name: 'Land Mark Pair #1',
-      active: true,
-      visible: true
-    },{
-      id: 'uniqueIdPair2',
-      refId: 'uniqueIdRefLm2',
-      incId: 'uniqueIdIncLm2',
-      color: randomColor(),
-      name: 'Land Mark Pair #2',
-      active: true,
-      visible: true
-    }, {
-      id:'uniqueIdPair3',
-      refId: 'uniqueIdRefLm3',
-      incId: 'uniqueIdIncLm3',
-      color: randomColor(),
-      name: 'Land Mark Pair #3',
-      active: true,
-      visible: true
-    }], 
+    referenceLandmarks: [],
+    incomingLandmarks: [],
+    landmarkPairs: [],
 
     backendURL: 'http://localhost:5000/api',
     landmarkTransformationMatrix: null,
@@ -171,6 +93,9 @@ const store = new Vuex.Store({
   mutations: {
     selectReferenceTemplate (state, refTemplate) {
       state.referenceTemplate = refTemplate
+    },
+    setReferenceTemplateTransform (state, {transform}) {
+      state.referenceTemplateTransform = transform
     },
     selectIncomingTemplate (state, incomingTemplate) {
       state.incomingTemplate = incomingTemplate
@@ -204,9 +129,6 @@ const store = new Vuex.Store({
       ]
       state.incomingColor = newColor
     },
-    setLayers (state, obj) {
-      state.layers = obj
-    },
     setMouseoverUserlayer (state, bool) {
       state.mouseoverUserlayer = bool
     },
@@ -236,6 +158,15 @@ const store = new Vuex.Store({
     },
     changeLandmarkRMSE (state, newRMSE) {
       state.landmarkRMSE = newRMSE
+    },
+    commitReferenceLandmarks (state, { newReferenceLandmarks } ) {
+      state.referenceLandmarks = newReferenceLandmarks
+    },
+    commitIncomingLandmarks (state, { newIncomingLandmarks } ) {
+      state.incomingLandmarks = newIncomingLandmarks
+    },
+    commitLandmarkPairs (state, { newLandmarkPairs } ) {
+      state.landmarkPairs = newLandmarkPairs
     },
     setLandmarkPairVisibility (state, {id, visibility}) {
       const pair = state.landmarkPairs.find(pair => pair.id === id)
@@ -351,6 +282,58 @@ const store = new Vuex.Store({
           active: !landmarkPair.active
         })
       }
+    },
+    loadOldJson ({commit, state}, {json, config}) {
+      const { fixCenterTranslation } = config
+      const arrayMat4 = state.referenceTemplateTransform
+        ? state.referenceTemplateTransform.flatMap((arr, i) => 
+            arr.map((v, idx) => (i === 3 || idx !== 3) ? v : v / 1e6 )
+          )
+        : null
+      const transformRef = (coord) => {
+        if (fixCenterTranslation && arrayMat4) {
+          const { mat4, vec3 } = window.export_nehuba
+          const oldCoord = vec3.fromValues(...coord)
+          const transformMat4 = mat4.fromValues(...arrayMat4)
+          mat4.transpose(transformMat4, transformMat4)
+          vec3.transformMat4(oldCoord, oldCoord, transformMat4)
+          return Array.from(oldCoord)
+        } else {
+          return coord
+        }
+      }
+      const newReferenceLandmarks = json.map(pair => {
+        return {
+          id: `${pair.name}_ref`,
+          name: `${pair.name}`,
+          coord: transformRef(pair.target_point)
+        }
+      })
+      const newIncomingLandmarks = json.map(pair => {
+        return {
+          id: `${pair.name}_inc`,
+          name: `${pair.name}`,
+          coord: pair.source_point
+        }
+      })
+      const newLandmarkPairs = json.map(pair => {
+        return {
+          id: `${pair.name}_pair`,
+          refId: `${pair.name}_ref`,
+          incId: `${pair.name}_inc`,
+          color: pair.colour,
+          name: pair.name,
+          active: true,
+          visible: true
+        }
+      })
+
+      commit('commitReferenceLandmarks', { newReferenceLandmarks })
+      commit('commitIncomingLandmarks', { newIncomingLandmarks })
+      commit('commitLandmarkPairs', { newLandmarkPairs })
+    },
+    focusLandmarkPair({commit, state}, {id}) {
+    
     }
   }
 })
