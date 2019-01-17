@@ -24,7 +24,7 @@
           <button type="button" @click = "saveLandmarkPairs" class="btn btn-default"><font-awesome-icon icon="file-download"/> Save</button>
         </div>
         <div>
-          <button type="button" @click = "clearList" class="btn btn-danger"><font-awesome-icon icon="trash-alt"/> Remove all</button>
+          <button type="button" @click = "clearList" class="btn btn-danger" :disabled="this.$store.state.landmarkPairs.length == 0"><font-awesome-icon icon="trash-alt"/> Remove all</button>
           <button type="button" @click = "addLandmarkPair" class="btn btn-success"><font-awesome-icon icon="plus"/> Add</button>
         </div>
         <landmark-list />
@@ -51,7 +51,7 @@
           </option>
         </select>
         <br><br>
-        <b-button @click="computeTransformationMatrix" variant="secondary">
+        <b-button @click="computeTransformationMatrix" :disabled="this.$store.state.landmarkPairs.length < 3" variant="secondary">
           <font-awesome-icon icon="play-circle"/>
           Compute transformation
         </b-button>
@@ -67,7 +67,7 @@
           </b-row>
         </b-container>
         <br>
-        <b-button variant="secondary" v-b-modal.transformationMatrixModal>
+        <b-button variant="secondary" :disabled="!this.$store.state.landmarkTransformationMatrix" v-b-modal.transformationMatrixModal>
           <font-awesome-icon icon="eye"/>
           Show transformation matrix
         </b-button>
