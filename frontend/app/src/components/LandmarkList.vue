@@ -5,9 +5,11 @@
     <div class="btn-group mb-3">
       <button type="button" @click = "addLandmarkPair" class="btn btn-lg btn-success"><font-awesome-icon icon="plus"/> Add</button>
       <button type="button" @click = "loadLandmarkPairs" class="btn btn-lg btn-secondary"><font-awesome-icon icon="file-upload"/> Load</button>
-      <button type="button" @click = "saveLandmarkPairs" class="btn btn-lg btn-secondary"><font-awesome-icon icon="file-download"/> Save</button>
+      <button type="button" @click = "saveLandmarkPairs" class="btn btn-lg btn-secondary" :disabled="this.$store.state.landmarkPairs.filter(lp => lp.active === true).length === 0"><font-awesome-icon icon="file-download"/> Save</button>
     </div>
-    
+
+    <b-alert v-show="!landmarkIsEmpty">Please enter landmark-pairs!</b-alert>
+
     <!-- select all/ remove all -->
     <div v-show = "!landmarkIsEmpty" class="input-group mb-2">
       <div class="input-group-prepend">
@@ -42,6 +44,7 @@
 <script>
 import LandmarkRow from '@/components/Landmark'
 import { oldJson } from '@/components/constants'
+import { saveToFile } from '@/components/constants'
 
 export default {
   name: 'LandmarkList',
@@ -69,6 +72,16 @@ export default {
       this.$store.dispatch('enableLandmarkPairs', { enable: this.checkAll })
     },
     saveLandmarkPairs: function () {
+      var data = {
+        'reference_volume': this.$store.state.referenceURLs.length > 0 ? this.$store.state.referenceURLs[0].value : '',
+        'incoming_volume': (this.$store.state.selectedIncomingVolumeIndex !== null && this.$store.state.selectedIncomingVolumeIndex < this.$store.state.incomingVolumes.length) ? this.$store.state.incomingVolumes[this.$store.state.selectedIncomingVolumeIndex].value : '',
+        'reference_landmarks': this.$store.state.referenceLandmarks,
+        'incoming_landmarks': this.$store.state.incomingLandmarks,
+        'landmark_pairs': this.$store.state.landmarkPairs
+      }
+      console.log(data)
+      var jsonData = JSON.stringify(data, null, 4)
+      saveToFile(jsonData, 'application/json', 'landmark-pairs.json')
     },
     addLandmarkPair: function () {
       this.$store.dispatch('addLandmarkPair')

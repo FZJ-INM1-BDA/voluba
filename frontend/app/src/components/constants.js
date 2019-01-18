@@ -411,6 +411,20 @@ exports.generateId = (arr) => {
   return i
 }
 
+exports.saveToFile = (data, mimeType, filename) => {
+  var blob = new Blob([data], {type: mimeType})
+  var link = document.createElement('a')
+  var url = URL.createObjectURL(blob)
+
+  link.setAttribute('href', url)
+  link.setAttribute('download', filename)
+  link.style.visibility = 'hidden'
+
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+}
+
 exports.testLandmarks = {
   referenceLandmarks: [{
     id: 'uniqueIdRefLm1',
