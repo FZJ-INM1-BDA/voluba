@@ -41,8 +41,7 @@
 
 <script>
 import LandmarkRow from '@/components/Landmark'
-import { oldJson } from '@/components/constants'
-import { saveToFile } from '@/components/constants'
+import { oldJson, saveToFile } from '@/components/constants'
 
 export default {
   name: 'LandmarkList',
