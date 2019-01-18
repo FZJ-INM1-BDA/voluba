@@ -16,11 +16,11 @@
               ref = "incomingnehuba"
               v-show = "showSimpleNehuba" />
           </div>
-          <div v-if = "sidebarCollapse" class = "sidebar-control mainside-main-item">
-            <b-button @click.prevent = "expandSidebar" variant="secondary">
+          <div class = "sidebar-control mainside-main-item">
+            <b-button v-b-tooltip.hover title = "Expand Sidebar" v-if = "sidebarCollapse"  @click.prevent = "expandSidebar" variant="secondary">
               <font-awesome-icon icon = "angle-right" />
             </b-button>
-            <b-button @click.prevent = "exitPreviewMode" variant = "secondary">
+            <b-button v-b-tooltip.hover title = "Exit Preview Mode" v-if = "previewMode" @click.prevent = "exitPreviewMode" variant = "secondary">
               <font-awesome-icon icon = "times-circle" />
             </b-button>
           </div>
@@ -73,8 +73,11 @@ export default {
         ? getDefaultNehubaConfigLight(this.$store.state.incomingVolumes[idx].value)
         : null
     },
+    previewMode: function () {
+      return this.$store.state.previewMode
+    },
     showSimpleNehuba: function () {
-      return this.showSecondNehuba && this.primaryNehubaReady && !this.$store.state.previewMode
+      return this.showSecondNehuba && this.primaryNehubaReady && !this.previewMode
     }
   },
   methods: {

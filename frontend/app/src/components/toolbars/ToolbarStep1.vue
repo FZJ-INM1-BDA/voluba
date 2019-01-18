@@ -154,8 +154,7 @@
           <div @click = "alignIncoming" class="btn btn-primary">align incoming</div>
         </div>
         <br>
-        <label>Mouse position: {{ viewerMouse.join(', ') }} </label><br>
-        <label>Current viewport: {{ viewerNavigation.join(', ') }}</label>
+        <label>Mouse position: {{ viewerMouse.join(', ') }} </label>
       </template>
     </card-component>
   </div>
@@ -226,9 +225,6 @@ export default {
       return this.$store.state.incomingTemplate
         ? this.$store.state.incomingTemplate.text
         : this.dummyIncomingTemplate.text
-    },
-    viewerNavigation: function () {
-      return this.$store.state.viewerNavigationPosition
     },
     viewerMouse: function () {
       return this.$store.state.viewerMousePosition

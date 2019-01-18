@@ -1,28 +1,63 @@
 <template>
-  <tr :style = "{opacity: active ? '1.0' : '0.3'}">
-    <td><input type="checkbox" :checked = "active" @change = "toggleActive" /></td>
-    <td>
-      <div :style="{'background-color': color, 'min-width': '20px', 'max-width': '20px', 'min-height': '20px', 'border': '1px solid black'}"  v-b-tooltip.hover :title="color"></div>
-    </td>
-    <td><input class="form-control-sm" type="text" style="max-width: 110px;" v-model="name"></td>
-    <td>
-      <div class="btn-group">
-        <button :style = "{opacity: visible? '1.0' : '0.3'}" @click.stop.prevent = "toggleVisibility" type="button" class="btn btn-sm btn-primary" v-b-tooltip.hover title="Go to landmark-pair">
-          <font-awesome-icon :icon = "visible ? 'eye' : 'eye-slash'"/>
-        </button>
-        <button
-          v-b-tooltip.hover title="Reset landmark-pair"
-          @click.stop.prevent = "focusLandmark"
-          type="button"
-          class="btn btn-sm btn-warning">
-          <font-awesome-icon icon="thumbtack" style="color: white;"/>
-        </button>
-        <button type="button" class="btn btn-sm btn-danger" @click.stop.prevent = "removeLandmarkPair" v-b-tooltip.hover title="Remove landmark-pair">
-          <font-awesome-icon icon="trash-alt"/>
-        </button>
+  <div
+    :style = "{opacity: active ? '1.0' : '0.3'}"
+    class="input-group mb-1">
+    <div class="input-group-prepend">
+
+      <!-- select -->
+      <div @click = "toggleActive" class="input-group-text">
+        <input type="checkbox" :checked = "active" />
       </div>
-    </td>
-  </tr>
+
+      <!-- color -->
+      <div
+        :title = "color"
+        v-b-tooltip.hover
+        :style = "{backgroundColor : color}"
+        class="input-group-text color-container">
+        &nbsp;
+      </div>
+      
+    </div>
+
+    <!-- name -->
+    <input
+      class="form-control"
+      type="text"
+      :value = "name"
+      @change = "changeName">
+
+    <div class="input-group-append">
+
+      <!-- go to landmark -->
+      <button
+        @click.stop.prevent = "gotoLandmark"
+        type="button"
+        class="btn btn-sm btn-primary"
+        v-b-tooltip.hover title="Go to landmark-pair">
+        <font-awesome-icon icon = "map-marker-alt"/>
+      </button>
+
+      <!-- relocate landmark -->
+      <button
+        v-b-tooltip.hover
+        title="Reset landmark-pair to current location"
+        @click.stop.prevent = "focusLandmark"
+        type="button"
+        class="btn btn-sm btn-warning">
+        <font-awesome-icon icon="thumbtack" style="color: white;"/>
+      </button>
+
+      <!-- trash landmark -->
+      <button
+        @click.stop.prevent = "removeLandmarkPair"
+        type="button"
+        class="btn btn-sm btn-danger"
+        v-b-tooltip.hover title="Remove landmark-pair">
+        <font-awesome-icon icon="trash-alt"/>
+      </button>
+    </div>
+  </div>
 </template>
 
 <script>
@@ -38,6 +73,13 @@ export default {
   watch: {
   },
   methods: {
+    changeName: function (ev) {
+      const element = ev.srcElement || ev.originalTarget
+      this.$store.dispatch('changeLandmarkPairName', {
+        id: this.id,
+        name: element.value
+      })
+    },
     toggleActive: function () {
       this.$store.dispatch('toggleLandmarkPairActive', {
         id: this.id
@@ -46,6 +88,11 @@ export default {
     toggleVisibility: function () {
       this.$store.dispatch('toggleLandmarkPairVisibility', {
         id: this.id
+      })
+    },
+    gotoLandmark: function () {
+      this.$store.dispatch('gotoLandmark', {
+        pairId: this.id
       })
     },
     focusLandmark: function () {
@@ -64,4 +111,8 @@ export default {
 </script>
 
 <style scoped>
+.color-container:hover
+{
+  cursor: default;
+}
 </style>

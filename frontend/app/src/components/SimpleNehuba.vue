@@ -42,8 +42,12 @@ export default {
     }
   },
   mounted () {
-    this.$store.subscribeAction(({type}) => {
+    this.$store.subscribeAction(({type, payload}) => {
       switch (type) {
+        case 'setSecondaryNehubaNavigation':
+          const vec3 = window.export_nehuba.vec3
+          this.nehubaViewer.setPosition(vec3.fromValues(...payload.coord.map(v => v * 1e6)), true)
+          break
         case 'redrawNehuba':
           if (this.nehubaViewer) {
             this.nehubaViewer.redraw()
@@ -60,15 +64,18 @@ export default {
   },
   computed: {
     incomingLandmarks: function () {
-      return this.$store.state.incomingLandmarks.map(lm => {
-        const allPairs = this.$store.state.landmarkPairs.filter(pair => pair.incId === lm.id)
-        return {
-          ...lm,
-          active: allPairs.find(pair => pair.active) ? true : false,
-          visible: allPairs.find(pair => pair.visible) ? true : false,
-          color: allPairs[0].color
-        }
-      })
+      return this.$store.state.landmarkPairs
+        .map(lmp => {
+          const lm =  this.$store.state.incomingLandmarks.find(lm => lm.id === lmp.incId)
+          return lm
+            ? {
+                ...lm,
+                color: lmp.color,
+                active: lmp.active
+              } 
+            : null
+        })
+        .filter(incLm => incLm !== null)
     },
     placeholderText: function () {
       return this.errorMessage
@@ -115,6 +122,12 @@ export default {
           this.nehubaViewer.navigationState.full.subscribe(() => {
             this.navigationChanged()
           })
+        )
+        this.subscriptions.push(
+          this.nehubaViewer.navigationState.position.inRealSpace
+            .subscribe(fa => {
+              this.$store.dispatch('secondaryNehubaNavigationPositionChanged', Array.from(fa))
+            })
         )
         resolve()
       })

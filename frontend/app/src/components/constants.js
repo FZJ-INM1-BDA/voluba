@@ -89,7 +89,7 @@ exports.getDefaultNehubaConfigLight = (sourceUrl) => {
         1,
         1,
         1,
-        1
+        0
       ],
       "useNehubaPerspective": {
         "enableShiftDrag": false,
@@ -118,8 +118,8 @@ exports.getDefaultNehubaConfigLight = (sourceUrl) => {
         "fixedZoomPerspectiveSlices": {
           "sliceViewportWidth": 300,
           "sliceViewportHeight": 300,
-          "sliceZoom": 563818.3562426177,
-          "sliceViewportSizeMultiplier": 2
+          "sliceZoom": 63818.3562426177,
+          "sliceViewportSizeMultiplier": 1
         },
         "mesh": {
           "backFaceColor": [
@@ -131,17 +131,17 @@ exports.getDefaultNehubaConfigLight = (sourceUrl) => {
           "removeBasedOnNavigation": true,
           "flipRemovedOctant": true
         },
-        "centerToOrigin": true,
-        "drawSubstrates": {
-          "color": [
-            0,
-            0,
-            0.5,
-            0.15
-          ]
-        },
+        // "centerToOrigin": true,
+        // "drawSubstrates": {
+        //   "color": [
+        //     0,
+        //     0,
+        //     0.5,
+        //     0.15
+        //   ]
+        // },
         "drawZoomLevels": {
-          "cutOff": 200000,
+          "cutOff": 20000,
           "color": [
             0.5,
             0,
@@ -151,10 +151,10 @@ exports.getDefaultNehubaConfigLight = (sourceUrl) => {
         },
         "hideImages": false,
         "waitForMesh": false,
-        "restrictZoomLevel": {
-          "minZoom": 1200000,
-          "maxZoom": 3500000
-        }
+        // "restrictZoomLevel": {
+        //   "minZoom": 1200000,
+        //   "maxZoom": 3500000
+        // }
       }
     }
   }

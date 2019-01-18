@@ -124,10 +124,14 @@ export default {
         this.placeholderText = 'error loading nehuba'
       })
 
-    this.$store.subscribeAction(({type}) => {
+    this.$store.subscribeAction(({type, payload}) => {
       if (!this.appendNehubaFlag) return
       const { quat, mat4 } = window.export_nehuba
       switch (type) {
+        case 'setPrimaryNehubaNavigation':
+          const vec3 = window.export_nehuba.vec3
+          this.nehubaViewer.setPosition(vec3.fromValues(...payload.coord.map(v => v * 1e6)), true)
+          break
         case 'redrawNehuba':
           if (this.nehubaViewer) {
             this.nehubaViewer.redraw()
@@ -194,6 +198,9 @@ export default {
     },
     previewMode: function (val) {
       if (this.ngUserLayer) {
+        console.log(this.$store.state.landmarkInverseMatrix)
+        this.ngUserLayer.layer.transform.restoreState(this.calculatedTransformMatrix)
+        this.ngUserLayer.layer.transform.changed.dispatch()
         this.ngUserLayer.setVisible(val)
       }
     },
@@ -356,7 +363,7 @@ export default {
         this.nehubaViewer.navigationState.position.inRealSpace
           .subscribe(fa => {
             this.viewerNavigationPosition = Array.from(fa)
-            this.$store.dispatch('viewerNavigationPositionChanged', Array.from(fa))
+            this.$store.dispatch('primaryNehubaNavigationPositionChanged', Array.from(fa))
           })
       )
       this.subscriptions.push(
@@ -496,6 +503,9 @@ export default {
         return null
       }
     },
+    calculatedTransformMatrix: function () {
+      return this.$store.state.landmarkInverseMatrix.map((arr, i) => arr.map((v, idx) => i !== 3 && idx === 3 ? v * 1e6 : v))
+    },
     incomingColor: function () {
       return this.$store.state.incomingColor.map((v, idx) => idx === 3 ? v : v / 255)
     },
@@ -506,15 +516,18 @@ export default {
       return this.$store.state.incomingScale
     },
     referenceLandmarks: function () {
-      return this.$store.state.referenceLandmarks.map(lm => {
-        const allPairs = this.$store.state.landmarkPairs.filter(pair => pair.refId === lm.id)
-        return {
-          ...lm,
-          active: allPairs.find(pair => pair.active) ? true : false,
-          visible: allPairs.find(pair => pair.visible) ? true : false,
-          color: allPairs[0].color
-        }
-      })
+      return this.$store.state.landmarkPairs
+        .map(lmp => {
+          const lm =  this.$store.state.referenceLandmarks.find(lm => lm.id === lmp.refId)
+          return lm
+            ? {
+                ...lm,
+                color: lmp.color,
+                active: lmp.active
+              } 
+            : null
+        })
+        .filter(refLm => refLm !== null)
     },
     previewMode: function () {
       return this.$store.state.previewMode

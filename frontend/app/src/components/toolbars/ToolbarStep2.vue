@@ -19,14 +19,6 @@
           <input type="checkbox" id="preview-mode" name="preview-mode" v-model="previewMode"/>
           <label for="preview-mode">Preview Mode</label>
         </div>
-        <div>
-          <button type="button" @click = "loadLandmarkPairs" class="btn btn-default"><font-awesome-icon icon="file-upload"/> Load</button>
-          <button type="button" @click = "saveLandmarkPairs" class="btn btn-default"><font-awesome-icon icon="file-download"/> Save</button>
-        </div>
-        <div>
-          <button type="button" @click = "clearList" class="btn btn-danger" :disabled="this.$store.state.landmarkPairs.length == 0"><font-awesome-icon icon="trash-alt"/> Remove all</button>
-          <button type="button" @click = "addLandmarkPair" class="btn btn-success"><font-awesome-icon icon="plus"/> Add</button>
-        </div>
         <landmark-list />
       </template>
     </card-component>
@@ -81,8 +73,7 @@
 import axios from 'axios'
 import CardComponent from '@/components/Card'
 import LandmarkList from '@/components/LandmarkList'
-import TransformationMatrixModal from '../modals/TransformationMatrixModal'
-import { oldJson } from '@/components/constants'
+import TransformationMatrixModal from '@/components/modals/TransformationMatrixModal'
 
 // Vue-Color
 import { Compact } from 'vue-color'
@@ -143,22 +134,6 @@ export default {
     selectMethod: function (event) {
       const index = event.target.selectedIndex
       this.$store.commit('selectMethodIndex', index)
-    },
-    loadLandmarkPairs: function () {
-      this.$store.dispatch('loadOldJson', {
-        json: oldJson,
-        config: {
-          fixCenterTranslation: true
-        }
-      })
-    },
-    saveLandmarkPairs: function () {
-    },
-    clearList: function () {
-      this.$store.dispatch('removeLandmarkPairs')
-    },
-    addLandmarkPair: function () {
-      this.$store.dispatch('addLandmarkPair')
     },
     computeDeterminant: function (matrix) {
       if (!matrix) {
