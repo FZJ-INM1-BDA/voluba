@@ -1,6 +1,18 @@
 <template>
-  <b-modal :id="id" title="Load Landmark-Pairs" header-bg-variant="secondary" header-text-variant="light" cancel-only>
-    <button type="button" @click="loadLandmarkPairs" class="btn btn-secondary">Load old JSON</button>
+  <b-modal
+    :id = "id"
+    ref = "modal"
+    title="Load Landmark-Pairs"
+    header-bg-variant="secondary"
+    header-text-variant="light"
+    cancel-only>
+    
+    <button
+      type="button"
+      @click="loadLandmarkPairs"
+      class="btn btn-secondary">
+      Load old JSON
+    </button>
   </b-modal>
 </template>
 
@@ -17,8 +29,12 @@ export default {
     }
   },
   methods: {
+    hide: function () {
+      this.$refs.modal.hide()
+    },
     loadLandmarkPairs: function () {
-      console.log(this.$refs)
+      this.hide()
+      
       this.$store.dispatch('loadOldJson', {
         json: oldJson,
         config: {
