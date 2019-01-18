@@ -4,9 +4,10 @@
     <!-- add load save -->
     <div class="btn-group mb-3">
       <button type="button" @click = "addLandmarkPair" class="btn btn-lg btn-success"><font-awesome-icon icon="plus"/> Add</button>
-      <button type="button" @click = "loadLandmarkPairs" class="btn btn-lg btn-secondary"><font-awesome-icon icon="file-upload"/> Load</button>
+      <button type="button" class="btn btn-lg btn-secondary" v-b-modal.loadLandmarkPairsModal><font-awesome-icon icon="file-upload"/> Load</button>
       <button type="button" @click = "saveLandmarkPairs" class="btn btn-lg btn-secondary" :disabled="this.$store.state.landmarkPairs.filter(lp => lp.active === true).length === 0"><font-awesome-icon icon="file-download"/> Save</button>
     </div>
+    <load-landmark-pairs-modal id="loadLandmarkPairsModal" ok-disabled="true"></load-landmark-pairs-modal>
 
     <!-- select all/ remove all -->
     <div v-show = "!landmarkIsEmpty" class="input-group mb-2">
@@ -41,15 +42,15 @@
 
 <script>
 import LandmarkRow from '@/components/Landmark'
-import { oldJson, saveToFile } from '@/components/constants'
+import LoadLandmarkPairsModal from '@/components/modals/LoadLandmarkPairsModal'
+import { oldJson } from '@/components/constants'
 
 export default {
   name: 'LandmarkList',
   props: {},
   data: function () {
     return {
-      checkAll: true,
-      color: '#FCDC00'
+      checkAll: true
     }
   },
   watch: {
@@ -58,7 +59,8 @@ export default {
     }
   },
   components: {
-    LandmarkRow
+    LandmarkRow,
+    LoadLandmarkPairsModal
   },
   methods: {
     toggleCheckAll: function () {
@@ -82,14 +84,6 @@ export default {
     },
     addLandmarkPair: function () {
       this.$store.dispatch('addLandmarkPair')
-    },
-    loadLandmarkPairs: function () {
-      this.$store.dispatch('loadOldJson', {
-        json: oldJson,
-        config: {
-          fixCenterTranslation: true
-        }
-      })
     },
     clearList: function () {
       this.$store.dispatch('removeLandmarkPairs')
