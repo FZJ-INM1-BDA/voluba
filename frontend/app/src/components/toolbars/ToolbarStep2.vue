@@ -51,7 +51,7 @@
           </option>
         </select>
         <br><br>
-        <b-button @click="computeTransformationMatrix" :disabled="this.$store.state.landmarkPairs.length < 3" variant="secondary">
+        <b-button @click="computeTransformationMatrix" :disabled="this.$store.state.landmarkPairs.filter(lp => lp.active === true).length < 3" variant="secondary">
           <font-awesome-icon icon="play-circle"/>
           Compute transformation
         </b-button>
