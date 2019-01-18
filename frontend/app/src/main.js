@@ -223,6 +223,14 @@ const store = new Vuex.Store({
         }
       })
     },
+    resetReferenceLandmark (state, { id }) {
+      const lm = state.referenceLandmarks.find(lm => lm.id === id)
+      lm.coord = state.primaryNehubaNavigationPosition.map(v => v/1e6)
+    },
+    resetIncomingLandmark (state, { id }) {
+      const lm = state.incomingLandmarks.find(lm => lm.id === id)
+      lm.coord = state.secondaryNehubaNavigationPosition.map(v => v/1e6)
+    },
     setLandmarkPairName(state, {id, name}) {
       const pair = state.landmarkPairs.find(pair => pair.id === id)
       pair.name = name
@@ -452,9 +460,12 @@ const store = new Vuex.Store({
       commit('commitIncomingLandmarks', { newIncomingLandmarks })
       commit('commitLandmarkPairs', { newLandmarkPairs })
     },
-
-    // eslint-disable-next-llne
-    focusLandmarkPair({ commit, state }, { id }) {
+    resetLandmark({ commit, state }, { id }) {
+      const pair = state.landmarkPairs.find(pair => pair.id === id)
+      if (pair) {
+        commit ('resetReferenceLandmark', { id: pair.refId })
+        commit ('resetIncomingLandmark', { id: pair.incId })
+      }
     },
     gotoLandmark({ dispatch, state }, { pairId }) {
       const pair = state.landmarkPairs.find(pair => pair.id === pairId)

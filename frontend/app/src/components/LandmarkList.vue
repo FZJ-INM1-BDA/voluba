@@ -11,8 +11,8 @@
     <!-- select all/ remove all -->
     <div v-show = "!landmarkIsEmpty" class="input-group mb-2">
       <div class="input-group-prepend">
-        <div class="btn btn-secondary">
-          <input v-model = "checkAll" type = "checkbox" />
+        <div @click.stop.prevent = "toggleCheckAll" class="btn btn-secondary">
+          <input id = "checkAll" name = "checkAll" v-model = "checkAll" type = "checkbox" />
           select all
         </div>
       </div>
@@ -61,9 +61,10 @@ export default {
     LandmarkRow
   },
   methods: {
-    /**
-     * TODO
-     */
+    toggleCheckAll: function () {
+      this.checkAll = !this.checkAll
+      this.checkAllPairs()
+    },
     checkAllPairs: function () {
       this.$store.dispatch('enableLandmarkPairs', { enable: this.checkAll })
     },
