@@ -80,7 +80,14 @@ exports.getDefaultNehubaConfigLight = (sourceUrl) => {
             "type": "image",
             "source": `${sourceUrl}`,
           }
-        }
+        },
+        "perspectiveOrientation": [
+          0.3140767216682434,
+          -0.7418519854545593,
+          0.4988985061645508,
+          -0.3195493221282959
+        ],
+        "perspectiveZoom": 5e5
       }
     },
     "layout": {
