@@ -180,8 +180,8 @@ const store = new Vuex.Store({
     },
     removeReferenceLandmark (state, { id }) {
       for (var i = 0; i < state.referenceLandmarks.length; i++) {
-        var landmark_pair = state.referenceLandmarks[i]
-        if (landmark_pair.id == id) {
+        var landmarkPair = state.referenceLandmarks[i]
+        if (landmarkPair.id == id) {
           state.referenceLandmarks.splice(i, 1)
           break
         }
@@ -198,8 +198,8 @@ const store = new Vuex.Store({
     },
     removeIncomingLandmark (state, { id }) {
       for (var i = 0; i < state.incomingLandmarks.length; i++) {
-        var landmark_pair = state.incomingLandmarks[i]
-        if (landmark_pair.id == id) {
+        var landmarkPair = state.incomingLandmarks[i]
+        if (landmarkPair.id == id) {
           state.incomingLandmarks.splice(i, 1)
           break
         }
@@ -216,8 +216,8 @@ const store = new Vuex.Store({
     },
     removeLandmarkPair (state, { id }) {
       for (var i = 0; i < state.landmarkPairs.length; i++) {
-        var landmark_pair = state.landmarkPairs[i]
-        if (landmark_pair.id == id) {
+        var landmarkPair = state.landmarkPairs[i]
+        if (landmarkPair.id == id) {
           state.landmarkPairs.splice(i, 1)
           break
         }
