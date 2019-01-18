@@ -67,8 +67,7 @@ export default {
     id: String,
     name: String,
     color: String,
-    active: Boolean,
-    visible: Boolean
+    active: Boolean
   },
   watch: {
   },
@@ -82,11 +81,6 @@ export default {
     },
     toggleActive: function () {
       this.$store.dispatch('toggleLandmarkPairActive', {
-        id: this.id
-      })
-    },
-    toggleVisibility: function () {
-      this.$store.dispatch('toggleLandmarkPairVisibility', {
         id: this.id
       })
     },

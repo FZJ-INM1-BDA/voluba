@@ -12,7 +12,7 @@
     <div v-show = "!landmarkIsEmpty" class="input-group mb-2">
       <div class="input-group-prepend">
         <div class="btn btn-secondary">
-          <input type = "checkbox" />
+          <input v-model = "checkAll" type = "checkbox" />
           select all
         </div>
       </div>
@@ -32,7 +32,6 @@
     <LandmarkRow
       :id = "lm.id"
       :active = "lm.active"
-      :visible = "lm.visible"
       :name = "lm.name"
       :key = "lm.id"
       v-for = "lm in landmarks"
@@ -49,7 +48,7 @@ export default {
   props: {},
   data: function () {
     return {
-      checkAll: false,
+      checkAll: true,
       color: '#FCDC00'
     }
   },

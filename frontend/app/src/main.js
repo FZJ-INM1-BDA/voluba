@@ -216,15 +216,12 @@ const store = new Vuex.Store({
       state.landmarkPairs = []
     },
     enableLandmarkPairs (state, { enable }) {
-      
-      for (var i = 0; i < state.landmarkPairs.length; i++) {
-        var landmarkPair = state.landmarkPairs[i]
-        landmarkPair.active = enable
-      }
-    },
-    setLandmarkPairVisibility (state, {id, visibility}) {
-      const pair = state.landmarkPairs.find(pair => pair.id === id)
-      pair.visible = visibility
+      state.landmarkPairs = state.landmarkPairs.map(lmp => {
+        return {
+          ...lmp,
+          active: enable
+        }
+      })
     },
     setLandmarkPairName(state, {id, name}) {
       const pair = state.landmarkPairs.find(pair => pair.id === id)
@@ -364,8 +361,7 @@ const store = new Vuex.Store({
         incId: newIncomingLandmark.id,
         color: randomColor(),
         name: (state.landmarkPairs.length + 1).toString(),
-        active: true,
-        visible: true
+        active: true
       }
 
       commit('commitReferenceLandmark', { newReferenceLandmark })
@@ -382,21 +378,12 @@ const store = new Vuex.Store({
       commit('removeLandmarkPair', { id })
     },
     removeLandmarkPairs ({commit, state}) {
-      commit('removeReferenceLandmarks')
-      commit('removeIncomingLandmarks')
-      commit('removeLandmarkPairs')
+      commit('removeAllReferenceLandmarks')
+      commit('removeAllIncomingLandmarks')
+      commit('removeAllLandmarkPairs')
     },
     enableLandmarkPairs ({commit, state}, {enable}) {
       commit('enableLandmarkPairs', { enable })
-    },
-    toggleLandmarkPairVisibility ({commit, state}, {id}) {
-      const landmarkPair = state.landmarkPairs.find(pair => pair.id === id)
-      if (landmarkPair) {
-        commit('setLandmarkPairVisibility', {
-          id,
-          visibility: !landmarkPair.visible
-        })
-      }
     },
     toggleLandmarkPairActive({ commit, state }, { id }) {
       const landmarkPair = state.landmarkPairs.find(pair => pair.id === id)
@@ -454,8 +441,7 @@ const store = new Vuex.Store({
           incId: `${pair.name}_inc`,
           color: pair.colour,
           name: pair.name,
-          active: true,
-          visible: true
+          active: true
         }
       })
 

@@ -5,7 +5,6 @@
         <LandmarkComponent
           v-for = "lm in landmarks"
           class = "landmark-unit"
-          :visible = "lm.visible"
           :active = "lm.active"
           :color = "lm.color"
           :zOffset = "calcZOffset(0, lm)"
@@ -15,7 +14,6 @@
       </div>
       <div class="landmark-cell">
         <LandmarkComponent
-          :visible = "lm.visible"
           :active = "lm.active"
           :zOffset = "calcZOffset(1, lm)"
           class = "landmark-unit"
@@ -29,7 +27,6 @@
     <div class="landmark-row">
       <div class="landmark-cell">
         <LandmarkComponent
-          :visible = "lm.visible"
           :active = "lm.active"
           :zOffset = "calcZOffset(2, lm)"
           :color = "lm.color"

@@ -470,21 +470,18 @@ exports.testLandmarks = {
       incId: 'uniqueIdIncLm1',
       name: 'Land Mark Pair #1',
       active: true,
-      visible: true
   },{
     id: 'uniqueIdPair2',
     refId: 'uniqueIdRefLm2',
     incId: 'uniqueIdIncLm2',
     name: 'Land Mark Pair #2',
     active: true,
-    visible: true
   }, {
       id:'uniqueIdPair3',
       refId: 'uniqueIdRefLm3',
       incId: 'uniqueIdIncLm3',
       name: 'Land Mark Pair #3',
       active: true,
-      visible: true
   }], 
 }
 

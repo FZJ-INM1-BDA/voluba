@@ -7,10 +7,6 @@
 <script>
 export default {
   props: {
-    visible: {
-      type: Boolean,
-      default: true
-    },
     active: {
       type: Boolean,
       default: true
@@ -36,7 +32,6 @@ export default {
     styleLandmark: function () {
       return {
         opacity: this.active ? '1.0' : '0.3',
-        display: this.visible ? 'block' : 'none',
         color: this.color
       }
     },
