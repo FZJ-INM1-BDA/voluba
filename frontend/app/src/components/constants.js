@@ -404,6 +404,13 @@ exports.randomColor = () => {
   return color
 }
 
+exports.generateId = (arr) => {
+  var i = 1
+  while(arr.find(obj => obj.id === i.toString()))
+    i++
+  return i
+}
+
 exports.testLandmarks = {
   referenceLandmarks: [{
     id: 'uniqueIdRefLm1',

@@ -17,7 +17,7 @@
           class="btn btn-sm btn-warning">
           <font-awesome-icon icon="thumbtack" style="color: white;"/>
         </button>
-        <button type="button" class="btn btn-sm btn-danger" v-b-tooltip.hover title="Remove landmark-pair">
+        <button type="button" class="btn btn-sm btn-danger" @click.stop.prevent = "removeLandmarkPair" v-b-tooltip.hover title="Remove landmark-pair">
           <font-awesome-icon icon="trash-alt"/>
         </button>
       </div>
@@ -52,7 +52,12 @@ export default {
       this.$store.dispatch('focusLandmarkPair', {
         id: this.id
       })
-    }
+    },
+    removeLandmarkPair: function () {
+      this.$store.dispatch('removeLandmarkPair', { id: this.id })
+      this.$store.dispatch('removeReferenceLandmark', { id: this.refId })
+      this.$store.dispatch('removeIncomingLandmark', { id: this.incId })
+    },
   },
   computed: {}
 }

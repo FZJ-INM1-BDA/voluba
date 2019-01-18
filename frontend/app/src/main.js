@@ -14,7 +14,7 @@ import { library } from '@fortawesome/fontawesome-svg-core'
 import { faTimesCircle, faSearch, faEyeSlash, faMapMarkerAlt, faAngleLeft, faAngleRight, faAngleDoubleRight, faAngleUp, faAngleDown, faEye, faBars, faPlayCircle, faUpload, faDownload, faFileExport, faQuestionCircle, faTimes, faTrashAlt, faThumbtack, faPlus, faFileUpload, faFileDownload } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 
-import { randomColor } from '@/components/constants'
+import { randomColor, generateId } from '@/components/constants'
 
 // Vuex
 import Vuex from 'vuex'
@@ -178,6 +178,15 @@ const store = new Vuex.Store({
     commitReferenceLandmark (state, { newReferenceLandmark }) {
       state.referenceLandmarks.push(newReferenceLandmark)
     },
+    removeReferenceLandmark (state, { id }) {
+      for (var i = 0; i < state.referenceLandmarks.length; i++) {
+        var landmark_pair = state.referenceLandmarks[i]
+        if (landmark_pair.id == id) {
+          state.referenceLandmarks.splice(i, 1)
+          break
+        }
+      }
+    },
     commitReferenceLandmarks (state, { newReferenceLandmarks }) {
       state.referenceLandmarks = newReferenceLandmarks
     },
@@ -187,6 +196,15 @@ const store = new Vuex.Store({
     commitIncomingLandmark (state, { newIncomingLandmark }) {
       state.incomingLandmarks.push(newIncomingLandmark)
     },
+    removeIncomingLandmark (state, { id }) {
+      for (var i = 0; i < state.incomingLandmarks.length; i++) {
+        var landmark_pair = state.incomingLandmarks[i]
+        if (landmark_pair.id == id) {
+          state.incomingLandmarks.splice(i, 1)
+          break
+        }
+      }
+    },
     commitIncomingLandmarks (state, { newIncomingLandmarks }) {
       state.incomingLandmarks = newIncomingLandmarks
     },
@@ -195,6 +213,15 @@ const store = new Vuex.Store({
     },
     commitLandmarkPair (state, { newLandmarkPair }) {
       state.landmarkPairs.push(newLandmarkPair)
+    },
+    removeLandmarkPair (state, { id }) {
+      for (var i = 0; i < state.landmarkPairs.length; i++) {
+        var landmark_pair = state.landmarkPairs[i]
+        if (landmark_pair.id == id) {
+          state.landmarkPairs.splice(i, 1)
+          break
+        }
+      }
     },
     commitLandmarkPairs (state, { newLandmarkPairs }) {
       state.landmarkPairs = newLandmarkPairs
@@ -318,22 +345,25 @@ const store = new Vuex.Store({
       commit('changeLandmarkRMSE', newRMSE)
     },
     addLandmarkPair ({commit, state}) {
+      var refId = generateId(state.referenceLandmarks).toString()
       var newReferenceLandmark = {
-        id: state.referenceLandmarks.length + 1,
-        name: state.referenceLandmarks.length + 1,
+        id: refId,
+        name: refId,
         coord: [0,0,0]
       }
+      var incId = generateId(state.incomingLandmarks).toString()
       var newIncomingLandmark = {
-        id: state.incomingLandmarks.length + 1,
-        name: state.incomingLandmarks.length + 1,
+        id: incId,
+        name: incId,
         coord: [0,0,0]
       }
+      var lpId = generateId(state.landmarkPairs).toString()
       var newLandmarkPair = {
-        id: state.landmarkPairs.length + 1,
-        refId: newReferenceLandmark.id,
-        incId: newIncomingLandmark.id,
+        id: lpId,
+        refId: refId,
+        incId: incId,
         color: randomColor(),
-        name: state.landmarkPairs.length + 1,
+        name: lpId,
         active: true,
         visible: true
       }
@@ -341,6 +371,15 @@ const store = new Vuex.Store({
       commit('commitReferenceLandmark', { newReferenceLandmark })
       commit('commitIncomingLandmark', { newIncomingLandmark })
       commit('commitLandmarkPair', { newLandmarkPair })
+    },
+    removeReferenceLandmark ({commit, state}, {id}) {
+      commit('removeReferenceLandmark', { id })
+    },
+    removeIncomingLandmark ({commit, state}, {id}) {
+      commit('removeIncomingLandmark', { id })
+    },
+    removeLandmarkPair ({commit, state}, {id}) {
+      commit('removeLandmarkPair', { id })
     },
     removeLandmarkPairs ({commit, state}) {
       commit('removeReferenceLandmarks')
