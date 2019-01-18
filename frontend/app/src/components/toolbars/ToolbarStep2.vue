@@ -98,7 +98,6 @@ export default {
     return {
       synchronizeZoom: this.$store.state.synchronizeZoom,
       synchronizeCursor: this.$store.state.synchronizeCursor,
-      checkAll: false
     }
   },
   watch: {
@@ -107,9 +106,6 @@ export default {
     },
     synchronizeCursor: function () {
       this.enableSynchronizeCursor()
-    },
-    checkAll: function () {
-      this.checkAllPairs()
     }
   },
   computed: {
@@ -143,9 +139,6 @@ export default {
     },
     enableSynchronizeCursor: function () {
       this.$store.dispatch('enableSynchronizeCursor', this.synchronizeCursor)
-    },
-    checkAllPairs: function () {
-      // TODO: implement
     },
     selectMethod: function (event) {
       const index = event.target.selectedIndex

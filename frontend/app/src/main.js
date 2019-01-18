@@ -229,6 +229,12 @@ const store = new Vuex.Store({
     removeLandmarkPairs (state) {
       state.landmarkPairs = []
     },
+    enableLandmarkPairs (state, { enable }) {
+      for (var i = 0; i < state.landmarkPairs.length; i++) {
+        var landmarkPair = state.landmarkPairs[i]
+        landmarkPair.active = enable
+      }
+    },
     setLandmarkPairVisibility (state, {id, visibility}) {
       const pair = state.landmarkPairs.find(pair => pair.id === id)
       pair.visible = visibility
@@ -385,6 +391,9 @@ const store = new Vuex.Store({
       commit('removeReferenceLandmarks')
       commit('removeIncomingLandmarks')
       commit('removeLandmarkPairs')
+    },
+    enableLandmarkPairs ({commit, state}, {enable}) {
+      commit('enableLandmarkPairs', { enable })
     },
     toggleLandmarkPairVisibility ({commit, state}, {id}) {
       const landmarkPair = state.landmarkPairs.find(pair => pair.id === id)

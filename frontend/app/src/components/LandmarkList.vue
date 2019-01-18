@@ -2,7 +2,7 @@
   <table class="table">
     <thead>
       <tr>
-        <th><input type="checkbox" id="check-all" /></th>
+        <th><input type="checkbox" v-model="checkAll" /></th>
         <th>Color</th>
         <th>Name</th>
         <th>Actions</th>
@@ -29,13 +29,22 @@ export default {
   props: {},
   data: function () {
     return {
+      checkAll: false,
       color: '#FCDC00'
+    }
+  },
+  watch: {
+    checkAll: function () {
+      this.checkAllPairs()
     }
   },
   components: {
     LandmarkRow
   },
   methods: {
+    checkAllPairs: function () {
+      this.$store.dispatch('enableLandmarkPairs', { enable: this.checkAll })
+    },
   },
   computed: {
     landmarks: function () {
