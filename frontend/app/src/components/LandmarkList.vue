@@ -8,8 +8,6 @@
       <button type="button" @click = "saveLandmarkPairs" class="btn btn-lg btn-secondary" :disabled="this.$store.state.landmarkPairs.filter(lp => lp.active === true).length === 0"><font-awesome-icon icon="file-download"/> Save</button>
     </div>
 
-    <b-alert v-show="!landmarkIsEmpty">Please enter landmark-pairs!</b-alert>
-
     <!-- select all/ remove all -->
     <div v-show = "!landmarkIsEmpty" class="input-group mb-2">
       <div class="input-group-prepend">
@@ -96,7 +94,7 @@ export default {
     },
     clearList: function () {
       this.$store.dispatch('removeLandmarkPairs')
-    },
+    }
   },
   computed: {
     landmarkIsEmpty: function () {

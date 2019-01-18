@@ -6,7 +6,11 @@
         position = "left"
         :sidebarSize = "sidebarWidth"
         :collapse = "sidebarCollapse">
+
+        <!-- main -->
         <template slot = "mainside-main">
+
+          <!-- main container -->
           <div class="mainside-main-item nehuba-container">
             <nehuba-component
               @ready = "mainNehubaReady"
@@ -16,6 +20,8 @@
               ref = "incomingnehuba"
               v-show = "showSimpleNehuba" />
           </div>
+
+          <!-- floating icon -->
           <div class = "sidebar-control mainside-main-item">
             <b-button v-b-tooltip.hover title = "Expand Sidebar" v-if = "sidebarCollapse"  @click.prevent = "expandSidebar" variant="secondary">
               <font-awesome-icon icon = "angle-right" />
@@ -25,9 +31,12 @@
             </b-button>
           </div>
         </template>
+
+        <!-- side -->
         <template slot = "mainside-side">
           <sidebar-component id="sidebar"/>
         </template>
+
       </main-side>
     </main>
     <!--<footer-component/>-->
@@ -132,11 +141,6 @@ export default {
   height: 100%;
   display: flex;
   flex-direction: column-reverse; */
-}
-
-.mainside-main-item.sidebar-control > *
-{
-  /* flex: 0 0 0; */
 }
 
 .mainside-main-item

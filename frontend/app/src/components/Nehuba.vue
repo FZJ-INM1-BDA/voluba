@@ -518,13 +518,13 @@ export default {
     referenceLandmarks: function () {
       return this.$store.state.landmarkPairs
         .map(lmp => {
-          const lm =  this.$store.state.referenceLandmarks.find(lm => lm.id === lmp.refId)
+          const lm = this.$store.state.referenceLandmarks.find(lm => lm.id === lmp.refId)
           return lm
             ? {
-                ...lm,
-                color: lmp.color,
-                active: lmp.active
-              } 
+              ...lm,
+              color: lmp.color,
+              active: lmp.active
+            }
             : null
         })
         .filter(refLm => refLm !== null)

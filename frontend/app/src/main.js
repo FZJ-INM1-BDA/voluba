@@ -99,34 +99,34 @@ const store = new Vuex.Store({
     landmarkRMSE: null
   },
   mutations: {
-    selectReferenceTemplate(state, refTemplate) {
+    selectReferenceTemplate (state, refTemplate) {
       state.referenceTemplate = refTemplate
     },
-    setReferenceTemplateTransform(state, { transform }) {
+    setReferenceTemplateTransform (state, { transform }) {
       state.referenceTemplateTransform = transform
     },
-    selectIncomingVolume(state, index) {
+    selectIncomingVolume (state, index) {
       state.selectedIncomingVolumeIndex = index
     },
-    setIncomingTransformMatrix(state, array) {
+    setIncomingTransformMatrix (state, array) {
       state.incomingTransformMatrix = array
     },
-    setPrimaryNehubaNavigationPosition(state, array) {
+    setPrimaryNehubaNavigationPosition (state, array) {
       state.primaryNehubaNavigationPosition = array
     },
-    setSecondaryNehubaNavigationPosition(state, array) {
+    setSecondaryNehubaNavigationPosition (state, array) {
       state.secondaryNehubaNavigationPosition = array
     },
-    setViewerMousePosition(state, array) {
+    setViewerMousePosition (state, array) {
       state.viewerMousePosition = array
     },
-    setViewerSliceOrientation(state, array) {
+    setViewerSliceOrientation (state, array) {
       state.viewerSliceOrientation = array
     },
-    setIncomingTemplateScale(state, array) {
+    setIncomingTemplateScale (state, array) {
       state.incomingScale = array
     },
-    setIncomingTemplateRGBA(state, { color, opacity }) {
+    setIncomingTemplateRGBA (state, { color, opacity }) {
       const oldColor = state.incomingColor
       const oldRGB = [
         oldColor[0],
@@ -140,70 +140,70 @@ const store = new Vuex.Store({
       ]
       state.incomingColor = newColor
     },
-    setMouseoverUserlayer(state, bool) {
+    setMouseoverUserlayer (state, bool) {
       state.mouseoverUserlayer = bool
     },
-    selectStep(state, index) {
+    selectStep (state, index) {
       state.activeStepIndex = index
     },
-    hideSidebar(state) {
+    hideSidebar (state) {
       state.sidebarCollapse = true
     },
-    showSidebar(state) {
+    showSidebar (state) {
       state.sidebarCollapse = false
     },
-    selectMethodIndex(state, index) {
+    selectMethodIndex (state, index) {
       state.selectedTransformationIndex = index
     },
-    changeSidebarWidth(state, size) {
+    changeSidebarWidth (state, size) {
       state.sidebarWidth = size
     },
-    enableSynchronizeZoom(state, synchronizeZoom) {
+    enableSynchronizeZoom (state, synchronizeZoom) {
       state.synchronizeZoom = synchronizeZoom
     },
-    enableSynchronizeCursor(state, synchronizeCursor) {
+    enableSynchronizeCursor (state, synchronizeCursor) {
       state.synchronizeCursor = synchronizeCursor
     },
-    enablePreviewMode(state, previewMode) {
+    enablePreviewMode (state, previewMode) {
       state.previewMode = previewMode
     },
-    changeLandmarkTransformationMatrix(state, transformationMatrix) {
+    changeLandmarkTransformationMatrix (state, transformationMatrix) {
       state.landmarkTransformationMatrix = transformationMatrix
     },
-    changeLandmarkInverseMatrix(state, inverseMatrix) {
+    changeLandmarkInverseMatrix (state, inverseMatrix) {
       state.landmarkInverseMatrix = inverseMatrix
     },
-    changeLandmarkDeterminant(state, determinant) {
+    changeLandmarkDeterminant (state, determinant) {
       state.landmarkDeterminant = determinant
     },
-    changeLandmarkRMSE(state, newRMSE) {
+    changeLandmarkRMSE (state, newRMSE) {
       state.landmarkRMSE = newRMSE
     },
-    commitReferenceLandmark(state, { newReferenceLandmark }) {
+    commitReferenceLandmark (state, { newReferenceLandmark }) {
       state.referenceLandmarks.push(newReferenceLandmark)
     },
-    removeReferenceLandmark (state, { id }) {
+    removeReferenceLandmark  (state, { id }) {
       state.referenceLandmarks = state.referenceLandmarks.filter(lm => lm.id !== id)
     },
-    commitReferenceLandmarks (state, { newReferenceLandmarks }) {
+    commitReferenceLandmarks  (state, { newReferenceLandmarks }) {
       state.referenceLandmarks = newReferenceLandmarks
     },
-    removeAllReferenceLandmarks(state) {
+    removeAllReferenceLandmarks (state) {
       state.referenceLandmarks = []
     },
-    commitIncomingLandmark(state, { newIncomingLandmark }) {
+    commitIncomingLandmark (state, { newIncomingLandmark }) {
       state.incomingLandmarks.push(newIncomingLandmark)
     },
-    removeIncomingLandmark (state, { id }) {
+    removeIncomingLandmark  (state, { id }) {
       state.incomingLandmarks = state.incomingLandmarks.filter(lm => lm.id !== id)
     },
-    commitIncomingLandmarks (state, { newIncomingLandmarks }) {
+    commitIncomingLandmarks  (state, { newIncomingLandmarks }) {
       state.incomingLandmarks = newIncomingLandmarks
     },
-    removeAllIncomingLandmarks(state) {
+    removeAllIncomingLandmarks (state) {
       state.incomingLandmarks = []
     },
-    commitLandmarkPair(state, { newLandmarkPair }) {
+    commitLandmarkPair (state, { newLandmarkPair }) {
       state.landmarkPairs.push(newLandmarkPair)
     },
     removeLandmarkPair (state, { id }) {
@@ -212,7 +212,7 @@ const store = new Vuex.Store({
     commitLandmarkPairs (state, { newLandmarkPairs }) {
       state.landmarkPairs = newLandmarkPairs
     },
-    removeAllLandmarkPairs(state) {
+    removeAllLandmarkPairs (state) {
       state.landmarkPairs = []
     },
     enableLandmarkPairs (state, { enable }) {
@@ -225,99 +225,99 @@ const store = new Vuex.Store({
     },
     resetReferenceLandmark (state, { id }) {
       const lm = state.referenceLandmarks.find(lm => lm.id === id)
-      lm.coord = state.primaryNehubaNavigationPosition.map(v => v/1e6)
+      lm.coord = state.primaryNehubaNavigationPosition.map(v => v / 1e6)
     },
     resetIncomingLandmark (state, { id }) {
       const lm = state.incomingLandmarks.find(lm => lm.id === id)
-      lm.coord = state.secondaryNehubaNavigationPosition.map(v => v/1e6)
+      lm.coord = state.secondaryNehubaNavigationPosition.map(v => v / 1e6)
     },
-    setLandmarkPairName(state, {id, name}) {
+    setLandmarkPairName (state, {id, name}) {
       const pair = state.landmarkPairs.find(pair => pair.id === id)
       pair.name = name
     },
-    setLandmarkPairActive(state, { id, active }) {
+    setLandmarkPairActive (state, { id, active }) {
       const pair = state.landmarkPairs.find(pair => pair.id === id)
       pair.active = active
     }
   },
   actions: {
-    selectIncomingVolume({ commit, state }, id) {
+    selectIncomingVolume ({ commit, state }, id) {
       const index = id === null
         ? null
         : state.incomingVolumes.findIndex(v => v.id === id)
       commit('selectIncomingVolume', index)
     },
-    viewerSliceOrientationChanged({ commit }, array) {
+    viewerSliceOrientationChanged ({ commit }, array) {
       commit('setViewerSliceOrientation', array)
     },
-    incomingTransformMatrixChanged({ commit }, array) {
+    incomingTransformMatrixChanged ({ commit }, array) {
       commit('setIncomingTransformMatrix', array)
     },
-    mouseOverIncmoingLayer({ commit }) {
+    mouseOverIncmoingLayer ({ commit }) {
       commit('setMouseoverUserlayer', true)
     },
-    mouseOutIncomingLayer({ commit }) {
+    mouseOutIncomingLayer ({ commit }) {
       commit('setMouseoverUserlayer', false)
     },
-    primaryNehubaNavigationPositionChanged({ commit }, array) {
+    primaryNehubaNavigationPositionChanged ({ commit }, array) {
       commit('setPrimaryNehubaNavigationPosition', array)
     },
-    secondaryNehubaNavigationPositionChanged({ commit }, array) {
+    secondaryNehubaNavigationPositionChanged ({ commit }, array) {
       commit('setSecondaryNehubaNavigationPosition', array)
     },
-    viewerMousePositionChanged({ commit }, array) {
+    viewerMousePositionChanged ({ commit }, array) {
       commit('setViewerMousePosition', array)
     },
-    alignReference() {
+    alignReference () {
       /**
        * required for vuex event dispatch
        */
     },
-    alignIncoming() {
+    alignIncoming () {
       /**
        * required for vuex event dispatch
        */
     },
-    redrawNehuba() {
+    redrawNehuba () {
       /**
        * required for vuex event dispatch
        * used for nehuba to lsiten to layout changes
        */
     },
-    nextStep({ state, commit }) {
+    nextStep ({ state, commit }) {
 
     },
-    previousStep({ state, commit }) {
+    previousStep ({ state, commit }) {
 
     },
-    selectStep({ commit }, index) {
+    selectStep ({ commit }, index) {
       commit('selectStep', index)
     },
-    toggleSidebar({ dispatch, commit, state }) {
+    toggleSidebar ({ dispatch, commit, state }) {
       commit(state.sidebarCollapse
         ? 'showSidebar'
         : 'hideSidebar')
       setTimeout(() => dispatch('redrawNehuba'))
     },
-    setSidebarCollapseState({ dispatch, commit }, bool) {
+    setSidebarCollapseState ({ dispatch, commit }, bool) {
       commit(bool
         ? 'hideSidebar'
         : 'showSidebar')
       setTimeout(() => dispatch('redrawNehuba'))
     },
-    changeSidebarWidth({ commit }, size) {
+    changeSidebarWidth ({ commit }, size) {
       commit('changeSidebarWidth', size)
     },
-    selectMethodIndex(store, index) {
+    selectMethodIndex (store, index) {
       store.commit('selectMethodIndex', index)
     },
-    changeScale({ commit }, newScale) {
+    changeScale ({ commit }, newScale) {
       commit('setIncomingTemplateScale', newScale)
     },
-    changeOpacity({ commit }, opacity) {
+    changeOpacity ({ commit }, opacity) {
       commit('setIncomingTemplateRGBA', { opacity })
     },
-    changeOverlayColor({ commit }, newOverlayColor) {
+    changeOverlayColor ({ commit }, newOverlayColor) {
       const color = [
         newOverlayColor.r,
         newOverlayColor.g,
@@ -325,31 +325,31 @@ const store = new Vuex.Store({
       ]
       commit('setIncomingTemplateRGBA', { color })
     },
-    enableSynchronizeZoom({ commit }, synchronizeZoom) {
+    enableSynchronizeZoom ({ commit }, synchronizeZoom) {
       commit('enableSynchronizeZoom', synchronizeZoom)
     },
-    enableSynchronizeCursor({ commit }, synchronizeCursor) {
+    enableSynchronizeCursor ({ commit }, synchronizeCursor) {
       commit('enableSynchronizeCursor', synchronizeCursor)
     },
-    enablePreviewMode({ commit }, previewMode) {
+    enablePreviewMode ({ commit }, previewMode) {
       commit('enablePreviewMode', previewMode)
       commit(previewMode
         ? 'hideSidebar'
         : 'showSidebar')
     },
-    changeLandmarkTransformationMatrix({ commit }, transformationMatrix) {
+    changeLandmarkTransformationMatrix ({ commit }, transformationMatrix) {
       commit('changeLandmarkTransformationMatrix', transformationMatrix)
     },
-    changeLandmarkInverseMatrix({ commit }, inverseMatrix) {
+    changeLandmarkInverseMatrix ({ commit }, inverseMatrix) {
       commit('changeLandmarkInverseMatrix', inverseMatrix)
     },
-    changeLandmarkDeterminant({ commit }, determinant) {
+    changeLandmarkDeterminant ({ commit }, determinant) {
       commit('changeLandmarkDeterminant', determinant)
     },
-    changeLandmarkRMSE({ commit }, newRMSE) {
+    changeLandmarkRMSE ({ commit }, newRMSE) {
       commit('changeLandmarkRMSE', newRMSE)
     },
-    addLandmarkPair({ commit, state }) {
+    addLandmarkPair ({ commit, state }) {
       const refId = generateId(state.referenceLandmarks).toString()
       const newReferenceLandmark = {
         id: refId,
@@ -396,7 +396,7 @@ const store = new Vuex.Store({
     enableLandmarkPairs ({commit, state}, {enable}) {
       commit('enableLandmarkPairs', { enable })
     },
-    toggleLandmarkPairActive({ commit, state }, { id }) {
+    toggleLandmarkPairActive ({ commit, state }, { id }) {
       const landmarkPair = state.landmarkPairs.find(pair => pair.id === id)
       if (landmarkPair) {
         commit('setLandmarkPairActive', {
@@ -405,7 +405,7 @@ const store = new Vuex.Store({
         })
       }
     },
-    changeLandmarkPairName({commit, state}, { id, name }) {
+    changeLandmarkPairName ({commit, state}, { id, name }) {
       const landmarkPair = state.landmarkPairs.find(pair => pair.id === id)
       if (landmarkPair) {
         commit('setLandmarkPairName', {
@@ -414,7 +414,7 @@ const store = new Vuex.Store({
         })
       }
     },
-    loadOldJson({ commit, state }, { json, config }) {
+    loadOldJson ({ commit, state }, { json, config }) {
       const { fixCenterTranslation } = config
       const arrayMat4 = state.referenceTemplateTransform
         ? state.referenceTemplateTransform.flatMap((arr, i) => arr.map((v, idx) => (i === 3 || idx !== 3) ? v : v / 1e6))
@@ -460,14 +460,14 @@ const store = new Vuex.Store({
       commit('commitIncomingLandmarks', { newIncomingLandmarks })
       commit('commitLandmarkPairs', { newLandmarkPairs })
     },
-    resetLandmark({ commit, state }, { id }) {
+    resetLandmark ({ commit, state }, { id }) {
       const pair = state.landmarkPairs.find(pair => pair.id === id)
       if (pair) {
-        commit ('resetReferenceLandmark', { id: pair.refId })
-        commit ('resetIncomingLandmark', { id: pair.incId })
+        commit('resetReferenceLandmark', { id: pair.refId })
+        commit('resetIncomingLandmark', { id: pair.incId })
       }
     },
-    gotoLandmark({ dispatch, state }, { pairId }) {
+    gotoLandmark ({ dispatch, state }, { pairId }) {
       const pair = state.landmarkPairs.find(pair => pair.id === pairId)
       if (pair) {
         const inc = state.incomingLandmarks.find(incLm => incLm.id === pair.incId)
@@ -476,12 +476,12 @@ const store = new Vuex.Store({
         dispatch('setSecondaryNehubaNavigation', inc)
       }
     },
-    setPrimaryNehubaNavigation() {
+    setPrimaryNehubaNavigation () {
       /**
        * required for subscribe action
        */
     },
-    setSecondaryNehubaNavigation() {
+    setSecondaryNehubaNavigation () {
       /**
        * required for subscribe action
        */

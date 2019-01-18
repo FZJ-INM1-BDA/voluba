@@ -155,28 +155,27 @@ export default {
       }
     },
     createBackendData: function () {
-      var data = {
-        'landmark_pairs': [],
+      const lmPairs = this.$store.state.landmarkPairs
+        .map(pair => {
+          const refLm = this.$store.state.referenceLandmarks.find(rLm => rLm.id === pair.refId)
+          const incLm = this.$store.state.incomingLandmarks.find(iLm => iLm.id === pair.incId)
+          return refLm && incLm
+            ? {
+              active: pair.active,
+              colour: pair.active,
+              name: pair.name,
+              'source_point': refLm.coord,
+              'target_point': incLm.coord
+            }
+            : null
+        })
+        .filter(lm => lm !== null)
+
+      const data = {
         'source_image': this.$store.state.selectReference,
         'target_image': this.$store.state.selectTemplate,
-        'transformation_type': this.$store.state.transformationTypes[this.$store.state.selectedTransformationIndex].value
-      }
-
-      for (var i = 0; i < this.$store.state.landmarkPairs.length; i++) {
-        var landmark_pair = this.$store.state.landmarkPairs[i]
-        var ref_landmarks = this.$store.state.referenceLandmarks.filter(p => p.id === landmark_pair.refId)
-        var inc_landmarks = this.$store.state.incomingLandmarks.filter(p => p.id === landmark_pair.incId)
-
-        if (ref_landmarks.length > 0 && inc_landmarks.length > 0) {
-          var obj = {
-            'active': landmark_pair.active,
-            'colour': landmark_pair.color,
-            'name': landmark_pair.name,
-            'source_point': ref_landmarks[0].coord,
-            'target_point': inc_landmarks[0].coord
-          }
-          data['landmark_pairs'].push(obj)
-        }
+        'transformation_type': this.$store.state.transformationTypes[this.$store.state.selectedTransformationIndex].value,
+        'landmark_pairs': lmPairs
       }
       return data
     },
