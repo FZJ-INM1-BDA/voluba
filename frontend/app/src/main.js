@@ -342,25 +342,28 @@ const store = new Vuex.Store({
       commit('changeLandmarkRMSE', newRMSE)
     },
     addLandmarkPair({ commit, state }) {
+      const refId = generateId(state.referenceLandmarks).toString()
       const newReferenceLandmark = {
-        id: state.referenceLandmarks.length + 1,
-        name: state.referenceLandmarks.length + 1,
+        id: refId,
+        name: refId,
         /**
          * position in nm
          */
         coord: state.primaryNehubaNavigationPosition.map(v => v / 1e6)
       }
+      const incId = generateId(state.incomingLandmarks).toString()
       const newIncomingLandmark = {
-        id: state.incomingLandmarks.length + 1,
-        name: state.incomingLandmarks.length + 1,
+        id: incId,
+        name: incId,
         coord: state.secondaryNehubaNavigationPosition.map(v => v / 1e6)
       }
+      const lpId = generateId(state.landmarkPairs).toString()
       const newLandmarkPair = {
-        id: (state.landmarkPairs.length + 1).toString(),
-        refId: newReferenceLandmark.id,
-        incId: newIncomingLandmark.id,
+        id: lpId,
+        refId: refId,
+        incId: incId,
         color: randomColor(),
-        name: (state.landmarkPairs.length + 1).toString(),
+        name: lpId,
         active: true
       }
 

@@ -42,7 +42,7 @@
       <button
         v-b-tooltip.hover
         title="Reset landmark-pair to current location"
-        @click.stop.prevent = "focusLandmark"
+        @click.stop.prevent = "resetLandmark"
         type="button"
         class="btn btn-sm btn-warning">
         <font-awesome-icon icon="thumbtack" style="color: white;"/>
@@ -89,8 +89,8 @@ export default {
         pairId: this.id
       })
     },
-    focusLandmark: function () {
-      this.$store.dispatch('focusLandmarkPair', {
+    resetLandmark: function () {
+      this.$store.dispatch('resetLandmark', {
         id: this.id
       })
     },
