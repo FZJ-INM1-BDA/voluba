@@ -5,7 +5,9 @@
     title="Load Landmark-Pairs"
     header-bg-variant="secondary"
     header-text-variant="light"
-    cancel-only>
+    ok-variant = "secondary"
+    ok-title = "Cancel"
+    ok-only>
     
     <button
       type="button"
@@ -34,7 +36,7 @@ export default {
     },
     loadLandmarkPairs: function () {
       this.hide()
-      
+
       this.$store.dispatch('loadOldJson', {
         json: oldJson,
         config: {
