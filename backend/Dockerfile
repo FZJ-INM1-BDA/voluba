@@ -14,5 +14,7 @@ ENV PORT_ENV 5000
 ENV DEBUG_ENV False
 ENV THREADED_ENV True
 
+EXPOSE 5000
+
 # Run the application
 ENTRYPOINT ["python","./spatial_alignment_backend/run.py"]

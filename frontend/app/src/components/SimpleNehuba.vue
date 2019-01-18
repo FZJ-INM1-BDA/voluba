@@ -66,13 +66,13 @@ export default {
     incomingLandmarks: function () {
       return this.$store.state.landmarkPairs
         .map(lmp => {
-          const lm =  this.$store.state.incomingLandmarks.find(lm => lm.id === lmp.incId)
+          const lm = this.$store.state.incomingLandmarks.find(lm => lm.id === lmp.incId)
           return lm
             ? {
-                ...lm,
-                color: lmp.color,
-                active: lmp.active
-              } 
+              ...lm,
+              color: lmp.color,
+              active: lmp.active
+            }
             : null
         })
         .filter(incLm => incLm !== null)

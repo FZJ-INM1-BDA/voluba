@@ -143,11 +143,6 @@ export default {
   flex-direction: column-reverse; */
 }
 
-.mainside-main-item.sidebar-control > *
-{
-  /* flex: 0 0 0; */
-}
-
 .mainside-main-item
 {
   position: relative;

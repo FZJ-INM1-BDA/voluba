@@ -17,7 +17,6 @@
         class="input-group-text color-container">
         &nbsp;
       </div>
-      
     </div>
 
     <!-- name -->
@@ -98,7 +97,7 @@ export default {
       this.$store.dispatch('removeLandmarkPair', { id: this.id })
       this.$store.dispatch('removeReferenceLandmark', { id: this.refId })
       this.$store.dispatch('removeIncomingLandmark', { id: this.incId })
-    },
+    }
   },
   computed: {}
 }

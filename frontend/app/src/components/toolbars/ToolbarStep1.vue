@@ -204,7 +204,7 @@ export default {
         return this.$store.state.selectedIncomingVolumeIndex !== null
           ? this.$store.state.incomingVolumes[this.$store.state.selectedIncomingVolumeIndex].id
           : this.dummyIncomingTemplate.id
-      }, 
+      },
       set: function (id) {
         this.$store.dispatch('selectIncomingVolume', id === this.dummyIncomingTemplate.id ? null : id)
       }

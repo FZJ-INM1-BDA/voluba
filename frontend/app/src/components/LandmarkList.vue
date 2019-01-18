@@ -7,7 +7,6 @@
       <button type="button" @click = "loadLandmarkPairs" class="btn btn-lg btn-secondary"><font-awesome-icon icon="file-upload"/> Load</button>
       <button type="button" @click = "saveLandmarkPairs" class="btn btn-lg btn-secondary"><font-awesome-icon icon="file-download"/> Save</button>
     </div>
-    
     <!-- select all/ remove all -->
     <div v-show = "!landmarkIsEmpty" class="input-group mb-2">
       <div class="input-group-prepend">
@@ -83,7 +82,7 @@ export default {
     },
     clearList: function () {
       this.$store.dispatch('removeLandmarkPairs')
-    },
+    }
   },
   computed: {
     landmarkIsEmpty: function () {
