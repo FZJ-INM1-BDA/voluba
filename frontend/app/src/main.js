@@ -77,7 +77,7 @@ const store = new Vuex.Store({
     incomingScale: [1, 1, 1],
     incomingColor: [252, 200, 0, 0.5],
 
-    defaultOverlayColor: '#FCDC00',
+    overlayColor: {hex: '#FCDC00', rgba: {r: 252, g: 220, b: 0, a: 1}},
     // in nm
     primaryNehubaNavigationPosition: [0, 0, 0],
     secondaryNehubaNavigationPosition: [0, 0, 0],
@@ -157,6 +157,9 @@ const store = new Vuex.Store({
     },
     changeSidebarWidth (state, size) {
       state.sidebarWidth = size
+    },
+    updateOverlayColor (state, newOverlayColor) {
+      state.overlayColor = newOverlayColor
     },
     enableSynchronizeZoom (state, synchronizeZoom) {
       state.synchronizeZoom = synchronizeZoom
@@ -319,11 +322,12 @@ const store = new Vuex.Store({
     },
     changeOverlayColor ({ commit }, newOverlayColor) {
       const color = [
-        newOverlayColor.r,
-        newOverlayColor.g,
-        newOverlayColor.b
+        newOverlayColor.rgba.r,
+        newOverlayColor.rgba.g,
+        newOverlayColor.rgba.b
       ]
       commit('setIncomingTemplateRGBA', { color })
+      commit('updateOverlayColor', newOverlayColor)
     },
     enableSynchronizeZoom ({ commit }, synchronizeZoom) {
       commit('enableSynchronizeZoom', synchronizeZoom)

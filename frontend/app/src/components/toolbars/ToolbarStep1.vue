@@ -187,7 +187,7 @@ export default {
       opacityMax: 1.0,
       opacityStep: 0.01,
 
-      overlayColor: { hex: this.$store.state.defaultOverlayColor },
+      overlayColor: this.$store.state.overlayColor,
       showOverlayColor: false
     }
   },
@@ -267,8 +267,7 @@ export default {
       )
     },
     overlayColorChanged: function () {
-      var rgb = {r: this.overlayColor.rgba.r, g: this.overlayColor.rgba.g, b: this.overlayColor.rgba.b}
-      this.$store.dispatch('changeOverlayColor', rgb)
+      this.$store.dispatch('changeOverlayColor', this.overlayColor)
     }
   }
 }
