@@ -432,6 +432,39 @@ exports.saveToFile = (data, mimeType, filename) => {
   document.body.removeChild(link)
 }
 
+exports.openFileDialog = (type, acceptedMimeType, fileHandler = null, contentHandler = null) => {
+  var file_selector = document.createElement('input')
+  file_selector.setAttribute('type', type)
+  file_selector.setAttribute('accept', acceptedMimeType)
+  file_selector.setAttribute('display', 'none')
+
+  file_selector.onchange = function () {
+    var selectedFile = file_selector.files[0]
+    document.body.removeChild(file_selector)
+
+    if (fileHandler !== null) {
+      fileHandler(selectedFile)
+    }
+
+    if (contentHandler !== null) {
+      exports.loadFromFile(selectedFile, contentHandler)
+    }
+  }
+
+  document.body.appendChild(file_selector)
+  file_selector.click()
+}
+
+exports.loadFromFile = (file, contentHandler) => {
+  var reader = new FileReader()
+  reader.onload = function (event) {
+    var fileContent = event.target.result;
+    contentHandler(fileContent)
+  }
+
+  reader.readAsText(file, 'UTF-8')
+}
+
 exports.testLandmarks = {
   referenceLandmarks: [{
     id: 'uniqueIdRefLm1',
