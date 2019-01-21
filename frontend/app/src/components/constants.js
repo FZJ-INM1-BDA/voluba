@@ -433,7 +433,17 @@ export const saveToFile = (data, mimeType, filename) => {
   document.body.removeChild(link)
 }
 
-exports.openFileDialog = (type, acceptedMimeType, fileHandler = null, contentHandler = null) => {
+export const loadFromFile = (file, contentHandler) => {
+  var reader = new FileReader()
+  reader.onload = function (event) {
+    var fileContent = event.target.result;
+    contentHandler(fileContent)
+  }
+
+  reader.readAsText(file, 'UTF-8')
+}
+
+export const openFileDialog = (type, acceptedMimeType, fileHandler = null, contentHandler = null) => {
   var file_selector = document.createElement('input')
   file_selector.setAttribute('type', type)
   file_selector.setAttribute('accept', acceptedMimeType)
@@ -448,7 +458,7 @@ exports.openFileDialog = (type, acceptedMimeType, fileHandler = null, contentHan
     }
 
     if (contentHandler !== null) {
-      exports.loadFromFile(selectedFile, contentHandler)
+      loadFromFile(selectedFile, contentHandler)
     }
   }
 
@@ -456,17 +466,8 @@ exports.openFileDialog = (type, acceptedMimeType, fileHandler = null, contentHan
   file_selector.click()
 }
 
-exports.loadFromFile = (file, contentHandler) => {
-  var reader = new FileReader()
-  reader.onload = function (event) {
-    var fileContent = event.target.result;
-    contentHandler(fileContent)
-  }
 
-  reader.readAsText(file, 'UTF-8')
-}
-
-exports.testLandmarks = {
+export const testLandmarks = {
   referenceLandmarks: [{
     id: 'uniqueIdRefLm1',
     name: 'Reference Point 1',
