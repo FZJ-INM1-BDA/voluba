@@ -5,9 +5,6 @@
       <img id="logo" src="../assets/HBP.png" width="32" height="32" alt="">
       <span>Spatial Registration</span>
     </b-navbar-brand>
-    <!-- sidebar control -->
-    <a href = "#" @click = "toggleSidebar">toggle</a>
-    <input min = "100" max = "1000" v-model = "sizebarSize" type="range">
 
     <progress-tracker />
 
