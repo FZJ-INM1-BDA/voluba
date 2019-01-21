@@ -26,9 +26,7 @@
 
 <script>
 
-import 'third_party/export_nehuba/main.bundle.js'
-import 'third_party/export_nehuba/chunk_worker.bundle.js'
-import { defaultXform, getShader, patchSliceViewPanel, determineElement, testBigbrain, getRotationVec3, incomingTemplateActiveOpacity } from './constants'
+import { defaultXform, getShader, testBigbrain, patchSliceViewPanel, determineElement, getRotationVec3, incomingTemplateActiveOpacity } from '@/components/constants'
 
 import NehubaLandmarksOverlay from '@/components/NehubaLandmarksOverlay'
 export default {

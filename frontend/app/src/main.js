@@ -92,7 +92,7 @@ const store = new Vuex.Store({
     synchronizeZoom: false,
     synchronizeCursor: false,
     previewMode: false,
-    backendURL: 'http://localhost:5000/api',
+    backendURL: process.env.VUE_APP_BACKEND_URL || 'http://localhost:5000/api',
     landmarkTransformationMatrix: null,
     landmarkInverseMatrix: null,
     landmarkDeterminant: null,
@@ -490,10 +490,16 @@ const store = new Vuex.Store({
 })
 
 /* eslint-disable no-new */
+// new Vue({
+//   store,
+//   el: '#app',
+//   router,
+//   components: { App },
+//   template: '<App/>'
+// })
+
 new Vue({
-  store,
-  el: '#app',
   router,
-  components: { App },
-  template: '<App/>'
-})
+  store,
+  render: h => h(App),
+}).$mount('#app')
