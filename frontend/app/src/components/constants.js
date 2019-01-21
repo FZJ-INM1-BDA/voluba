@@ -1,11 +1,12 @@
 /* eslint-disable */
 
-exports.getShader = (rgb) => `void main() {
+
+export const getShader = (rgb) => `void main() {
   float x = toNormalized(getDataValue());
   emitRGB(vec3(x * ${rgb[0].toFixed(1)}, x * ${rgb[1].toFixed(1)}, x * ${rgb[2].toFixed(1)} ));
 }`
 
-exports.patchSliceViewPanel = function (sliceViewPanel) {
+export const patchSliceViewPanel = function (sliceViewPanel) {
   const originalDraw = sliceViewPanel.draw
   sliceViewPanel.draw = function () {
     if (this.sliceView) {
@@ -22,14 +23,14 @@ exports.patchSliceViewPanel = function (sliceViewPanel) {
   }
 }
 
-exports.defaultXform = function (array) {
+export const defaultXform = function (array) {
   return array
 }
 
 /**
  * Assuming 2 x 2 panel
  */
-exports.determineElement = function (element) {
+export const determineElement = function (element) {
   if (element.offsetTop < 5 && element.offsetLeft < 5) {
     return 0
   }
@@ -45,7 +46,7 @@ exports.determineElement = function (element) {
   return null
 }
 
-exports.getDefaultNehubaConfigLight = (sourceUrl) => {
+export const getDefaultNehubaConfigLight = (sourceUrl) => {
   return {
     "configName": "BigBrain",
     "globals": {
@@ -167,7 +168,7 @@ exports.getDefaultNehubaConfigLight = (sourceUrl) => {
   }
 }
 
-exports.testBigbrain = {
+export const testBigbrain = {
   "configName": "BigBrain",
   "globals": {
     "hideNullImageValues": true,
@@ -367,7 +368,7 @@ exports.testBigbrain = {
   }
 }
 
-exports.getRotationVec3 = (index) => {
+export const getRotationVec3 = (index) => {
   if ('export_nehuba' in window) {
     return index === 0
     ? {
@@ -398,11 +399,11 @@ exports.getRotationVec3 = (index) => {
   }
 }
 
-exports.incomingTemplateActiveOpacity = 0.8
-exports.incomingTemplateInactiveOpacity = 0.5
+export const incomingTemplateActiveOpacity = 0.8
+export const incomingTemplateInactiveOpacity = 0.5
 
 
-exports.randomColor = () => {
+export const randomColor = () => {
   var letters = '0123456789ABCDEF'.split('')
   var color = '#'
   for (var i = 0; i < 6; i++ ) {
@@ -411,14 +412,14 @@ exports.randomColor = () => {
   return color
 }
 
-exports.generateId = (arr) => {
+export const generateId = (arr) => {
   var i = 1
   while(arr.find(obj => obj.id === i.toString()))
     i++
   return i
 }
 
-exports.saveToFile = (data, mimeType, filename) => {
+export const saveToFile = (data, mimeType, filename) => {
   var blob = new Blob([data], {type: mimeType})
   var link = document.createElement('a')
   var url = URL.createObjectURL(blob)
@@ -432,7 +433,17 @@ exports.saveToFile = (data, mimeType, filename) => {
   document.body.removeChild(link)
 }
 
-exports.openFileDialog = (type, acceptedMimeType, fileHandler = null, contentHandler = null) => {
+export const loadFromFile = (file, contentHandler) => {
+  var reader = new FileReader()
+  reader.onload = function (event) {
+    var fileContent = event.target.result;
+    contentHandler(fileContent)
+  }
+
+  reader.readAsText(file, 'UTF-8')
+}
+
+export const openFileDialog = (type, acceptedMimeType, fileHandler = null, contentHandler = null) => {
   var file_selector = document.createElement('input')
   file_selector.setAttribute('type', type)
   file_selector.setAttribute('accept', acceptedMimeType)
@@ -447,7 +458,7 @@ exports.openFileDialog = (type, acceptedMimeType, fileHandler = null, contentHan
     }
 
     if (contentHandler !== null) {
-      exports.loadFromFile(selectedFile, contentHandler)
+      loadFromFile(selectedFile, contentHandler)
     }
   }
 
@@ -455,17 +466,8 @@ exports.openFileDialog = (type, acceptedMimeType, fileHandler = null, contentHan
   file_selector.click()
 }
 
-exports.loadFromFile = (file, contentHandler) => {
-  var reader = new FileReader()
-  reader.onload = function (event) {
-    var fileContent = event.target.result;
-    contentHandler(fileContent)
-  }
 
-  reader.readAsText(file, 'UTF-8')
-}
-
-exports.testLandmarks = {
+export const testLandmarks = {
   referenceLandmarks: [{
     id: 'uniqueIdRefLm1',
     name: 'Reference Point 1',
@@ -539,7 +541,7 @@ exports.testLandmarks = {
   }], 
 }
 
-exports.oldJson = [
+export const oldJson = [
   {
     "target_point": [
       63.0988757879829,
