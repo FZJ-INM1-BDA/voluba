@@ -24,8 +24,6 @@
     </button>
 
     <b-alert :show="showAlert" variant="danger" dismissible>{{ errorMessage }}</b-alert>
-
-    </div>
   </b-modal>
 
 </template>

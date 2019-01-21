@@ -11,9 +11,9 @@ from spatial_alignment_backend import app
 @click.option("-d", "--debug", envvar='DEBUG_ENV', default=False, type=bool)
 @click.option("-c", "--cors", envvar='CORS_ENV', default=True, type=bool)
 def main(host, port, threaded, debug, cors):
-    app.run(host=host, port=port, threaded=threaded, debug=debug)
     if cors:
         CORS(app)
+    app.run(host=host, port=port, threaded=threaded, debug=debug)
 
 
 if __name__ == "__main__":
