@@ -158,6 +158,18 @@ const store = new Vuex.Store({
     changeSidebarWidth (state, size) {
       state.sidebarWidth = size
     },
+    flipLeftRight (state) {
+      // TODO: implement
+      console.log('flip l/r')
+    },
+    flipInferiorSuperior (state) {
+      // TODO: implement
+      console.log('flip i/s')
+    },
+    flipAnteriorPosterior (state) {
+      // TODO: implement
+      console.log('flip a/p')
+    },
     updateOverlayColor (state, newOverlayColor) {
       state.overlayColor = newOverlayColor
     },
@@ -316,6 +328,15 @@ const store = new Vuex.Store({
     },
     changeScale ({ commit }, newScale) {
       commit('setIncomingTemplateScale', newScale)
+    },
+    flipLeftRight ({ commit }) {
+      commit('flipLeftRight')
+    },
+    flipInferiorSuperior ({ commit }) {
+      commit('flipInferiorSuperior')
+    },
+    flipAnteriorPosterior ({ commit }) {
+      commit('flipAnteriorPosterior')
     },
     changeOpacity ({ commit }, opacity) {
       commit('setIncomingTemplateRGBA', { opacity })

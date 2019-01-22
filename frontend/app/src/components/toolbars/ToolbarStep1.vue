@@ -148,6 +148,21 @@
           isotropic scale
         </label>
 
+        <!-- flip left/right -->
+        <div class="option-container">
+          <b-button @click="flipLeftRight" variant="secondary">flip left/right</b-button>
+        </div>
+
+        <!-- flip inferior/superio -->
+        <div class="option-container">
+          <b-button @click="flipInferiorSuperior" variant="secondary">flip inferior/superior</b-button>
+        </div>
+
+        <!-- flip anterior/posterior -->
+        <div class="option-container">
+          <b-button @click="flipAnteriorPosterior" variant="secondary">flip anterior/posterior</b-button>
+        </div>
+
         <!-- align -->
         <div class="btn-group">
           <div @click = "alignReference" class="btn btn-primary">align reference</div>
@@ -268,6 +283,15 @@ export default {
     },
     overlayColorChanged: function () {
       this.$store.dispatch('changeOverlayColor', this.overlayColor)
+    },
+    flipLeftRight: function () {
+      this.$store.dispatch('flipLeftRight')
+    },
+    flipInferiorSuperior: function () {
+      this.$store.dispatch('flipInferiorSuperior')
+    },
+    flipAnteriorPosterior: function () {
+      this.$store.dispatch('flipAnteriorPosterior')
     }
   }
 }
