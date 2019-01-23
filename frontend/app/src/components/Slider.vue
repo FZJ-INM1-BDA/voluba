@@ -1,40 +1,47 @@
 <template>
-  <div class="input-group input-group-sm">
+  <div>
+    <!-- label -->
+    <label class = "mb-0">{{ name }}</label> 
+    <div class = "input-group input-group-sm">
 
-    <div class="input-group-prepend">
-      <span class="input-group-text">{{ name }}</span>
-      <div
-        @click="$emit('minus')"
-        class="btn btn-sm btn-outline-secondary">
-        <font-awesome-icon icon="minus"/>
+      <div class = "input-group-prepend">
+        <div
+          @click = "$emit('minus')"
+          class = "btn btn-sm btn-outline-secondary">
+          <font-awesome-icon icon = "minus"/>
+        </div>
       </div>
-    </div>
 
-    <input
-      style = "height: 100%;"
-      v-model="sliderValue"
-      :step="step"
-      :max="max"
-      :min="min"
-      class="form-control"
-      type="range" />
-    
-    <div class="input-group-append">
-      <div
-        @click="$emit('plus')"
-        class="btn btn-sm btn-outline-secondary">
-        <font-awesome-icon icon="plus" />
+      <input
+        style = "height: 100%;"
+        v-model = "sliderValue"
+        :step = "step"
+        :max = "max"
+        :min = "min"
+        class = "form-control"
+        type = "range" />
+      
+      <div class="input-group-append">
+        <div
+          @click = "$emit('plus')"
+          class = "btn btn-sm btn-outline-secondary">
+          <font-awesome-icon icon = "plus" />
+        </div>
       </div>
-    </div>
-    <input v-model="sliderValue" type="text" class="form-control">
+      <input
+        style = "flex: 0 0 4em;"
+        v-model = "sliderValue"
+        type = "text"
+        class = "form-control">
 
-    <div
-      v-if = "unit"
-      class="input-group-append">
-      <span
-        class="input-group-text">
-        {{ unit }}
-      </span>
+      <div
+        v-if = "unit"
+        class = "input-group-append">
+        <span
+          class = "input-group-text">
+          {{ unit }}
+        </span>
+      </div>
     </div>
   </div>
 </template>
