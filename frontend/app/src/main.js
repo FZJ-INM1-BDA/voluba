@@ -76,6 +76,7 @@ const store = new Vuex.Store({
     incomingTransformMatrix: null,
     incomingScale: [1, 1, 1],
     incomingColor: [252, 200, 0, 0.5],
+    incomingVolumeSelected: false,
 
     overlayColor: {hex: '#FCDC00', rgba: {r: 252, g: 220, b: 0, a: 1}},
     // in nm
@@ -125,6 +126,9 @@ const store = new Vuex.Store({
     },
     setIncomingTemplateScale (state, array) {
       state.incomingScale = array
+    },
+    setIncomingVolumeHighlighted (state, bool) {
+      state.incomingVolumeSelected = bool
     },
     setIncomingTemplateRGBA (state, { color, opacity }) {
       const oldColor = state.incomingColor
@@ -263,17 +267,20 @@ const store = new Vuex.Store({
       commit('selectIncomingVolume', index)
     },
     viewerSliceOrientationChanged ({ commit }, array) {
+      /**
+       * TODO probably should combine mutations into viewerNavigationStateChanged
+       */
       commit('setViewerSliceOrientation', array)
     },
-    incomingTransformMatrixChanged ({ commit }, array) {
-      commit('setIncomingTransformMatrix', array)
-    },
-    mouseOverIncmoingLayer ({ commit }) {
+    mouseOverIncomingLayer ({ commit }) {
       commit('setMouseoverUserlayer', true)
     },
     mouseOutIncomingLayer ({ commit }) {
       commit('setMouseoverUserlayer', false)
     },
+    highlightIncomingVolume ({ commit }, bool) {
+      commit('setIncomingVolumeHighlighted', bool)
+    }, 
     primaryNehubaNavigationPositionChanged ({ commit }, array) {
       commit('setPrimaryNehubaNavigationPosition', array)
     },
@@ -298,12 +305,6 @@ const store = new Vuex.Store({
        * required for vuex event dispatch
        * used for nehuba to lsiten to layout changes
        */
-    },
-    nextStep ({ state, commit }) {
-
-    },
-    previousStep ({ state, commit }) {
-
     },
     selectStep ({ commit }, index) {
       commit('selectStep', index)

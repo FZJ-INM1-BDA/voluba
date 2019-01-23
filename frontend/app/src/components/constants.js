@@ -197,6 +197,7 @@ export const testBigbrain = {
     ],
     "initialNgState": {
       "showDefaultAnnotations": true,
+      "defaultAnnotationColor": "white",
       "layers": {
         " grey value: ": {
           "type": "image",
@@ -618,3 +619,6 @@ export const oldJson = [
     "colour": "#80b1d3"
   }
 ]
+
+export const annotationColorBlur = `grey`
+export const annotationColorFocus = `yellow`

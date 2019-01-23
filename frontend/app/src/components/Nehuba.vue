@@ -26,7 +26,7 @@
 
 <script>
 
-import { defaultXform, getShader, testBigbrain, patchSliceViewPanel, determineElement, getRotationVec3, incomingTemplateActiveOpacity } from '@/components/constants'
+import { annotationColorBlur, annotationColorFocus, defaultXform, getShader, testBigbrain, patchSliceViewPanel, determineElement, getRotationVec3, incomingTemplateActiveOpacity } from '@/components/constants'
 
 import NehubaLandmarksOverlay from '@/components/NehubaLandmarksOverlay'
 export default {
@@ -53,6 +53,7 @@ export default {
         defaultXform
       ],
       viewportToDatas: [],
+      incomingVolumeSelected: false,
 
       /**
        * all managed layers
@@ -99,7 +100,6 @@ export default {
           document.head.appendChild(el)
         }
       }),
-      userlayerSubscription$: null,
 
       /**
        * temporary. need to retrieve config separately
@@ -144,6 +144,11 @@ export default {
     })
   },
   watch: {
+    incomingVolumeSelected: function (bool) {
+      this.$options.nonReactiveData.managedLayers.forEach(layer => layer.layer.annotationColor.restoreState(bool ? annotationColorBlur : annotationColorFocus))
+      this.$options.nonReactiveData.ngUserLayer.layer.annotationColor.restoreState(bool ? annotationColorFocus : annotationColorBlur)
+      this.$store.dispatch('highlightIncomingVolume', bool)
+    },
     incomingColor: function (rgba) {
       if (this.$options.nonReactiveData.ngUserLayer) {
         this.$options.nonReactiveData.ngUserLayer.layer.fragmentMain.restoreState(getShader(rgba))
@@ -208,6 +213,7 @@ export default {
   nonReactiveData: {
     subscriptions: [],
     ngUserLayer: null,
+    managedLayers: [],
     nehubaViewer: null
   },
   methods: {
@@ -253,6 +259,8 @@ export default {
     },
     mousedown: function (event) {
       if (this.mouseOverIncoming) {
+        this.incomingVolumeSelected = true
+
         this.mousemoveStart = [event.screenX, event.screenY]
 
         if (event.shiftKey) {
@@ -264,6 +272,8 @@ export default {
 
         const element = event.srcElement || event.originalTarget
         this.movingIncomingIndex = determineElement(element)
+      } else {
+        this.incomingVolumeSelected = false
       }
     },
     mousemove: function (event) {
@@ -327,7 +337,7 @@ export default {
     updateState: function ({mouseOverUserlayer}) {
       this.mouseOverIncoming = mouseOverUserlayer
       this.$store.dispatch(this.mouseOverIncoming
-        ? 'mouseOverIncmoingLayer'
+        ? 'mouseOverIncomingLayer'
         : 'mouseOutIncomingLayer')
     },
     initNehuba: function () {
@@ -394,6 +404,7 @@ export default {
       this.cid = null
       setTimeout(() => {
         this.$options.nonReactiveData.nehubaViewer.ngviewer.display.panels.forEach(patchSliceViewPanel)
+        this.$options.nonReactiveData.managedLayers = this.$options.nonReactiveData.nehubaViewer.ngviewer.layerManager.managedLayers
       })
       /**
        * TODO remove window.nehubaViewer in prod
@@ -427,25 +438,28 @@ export default {
       const viewer = this.$options.nonReactiveData.nehubaViewer.ngviewer
       const name = `userlayer-0`
       const newLayer = {
+        annotationColor: '#CCCCCC',
         source: uri,
         opacity: this.incomingColor[3],
         shader: getShader(this.incomingColor)
       }
       const newNgLayer = viewer.layerSpecification.getLayer(name, newLayer)
-      this.$options.nonReactiveData.ngUserLayer = viewer.layerManager.addManagedLayer(newNgLayer)
+      const ngUserLayer = viewer.layerManager.addManagedLayer(newNgLayer)
       this.userLayers.push(
         Object.assign({}, newLayer, {
           name
         })
       )
+      this.$options.nonReactiveData.ngUserLayer = ngUserLayer
     }
   },
   computed: {
     translationByDragEnabled: function () {
-      return !this.previewMode && true
+      return !this.previewMode
     },
     rotationByDragEnabled: function () {
-      return false
+      // return false
+      return !this.previewMode
     },
     translationVec3: {
       get: function () {
