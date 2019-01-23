@@ -29,7 +29,6 @@ export default {
     return {
       loadingText: 'Loading simple nehuba ...',
       cid: null,
-      nehubaViewer: null,
       errorMessage: null,
 
       dataToViewport: [
@@ -46,11 +45,11 @@ export default {
       switch (type) {
         case 'setSecondaryNehubaNavigation':
           const vec3 = window.export_nehuba.vec3
-          this.nehubaViewer.setPosition(vec3.fromValues(...payload.coord.map(v => v * 1e6)), true)
+          window.secondaryNehubaViewer.setPosition(vec3.fromValues(...payload.coord.map(v => v * 1e6)), true)
           break
         case 'redrawNehuba':
-          if (this.nehubaViewer) {
-            this.nehubaViewer.redraw()
+          if (window.secondaryNehubaViewer) {
+            window.secondaryNehubaViewer.redraw()
           }
           setTimeout(() => this.navigationChanged())
           break
@@ -115,16 +114,16 @@ export default {
     },
     init: function () {
       return new Promise((resolve, reject) => {
-        this.nehubaViewer = window.export_nehuba.createNehubaViewer(this.config, (err) => {
+        window.secondaryNehubaViewer = window.export_nehuba.createNehubaViewer(this.config, (err) => {
           console.log(err)
         })
         this.subscriptions.push(
-          this.nehubaViewer.navigationState.full.subscribe(() => {
+          window.secondaryNehubaViewer.navigationState.full.subscribe(() => {
             this.navigationChanged()
           })
         )
         this.subscriptions.push(
-          this.nehubaViewer.navigationState.position.inRealSpace
+          window.secondaryNehubaViewer.navigationState.position.inRealSpace
             .subscribe(fa => {
               this.$store.dispatch('secondaryNehubaNavigationPositionChanged', Array.from(fa))
             })
@@ -153,8 +152,8 @@ export default {
       if (window.secondaryViewer) {
         window.secondaryViewer = null
       }
-      if (this.nehubaViewer) {
-        this.nehubaViewer.dispose()
+      if (window.secondaryNehubaViewer) {
+        window.secondaryNehubaViewer.dispose()
       }
       this.subscriptions.forEach(s => s.unsubscribe())
     }
