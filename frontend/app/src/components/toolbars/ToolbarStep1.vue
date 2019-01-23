@@ -45,6 +45,18 @@
       </template>
       <template slot = "body">
 
+        <SliderComponent
+          @minus = "testValue = testValue - 0.05 < 0 ? 0 : testValue - 0.05"
+          @plus = "testValue = testValue + 0.05 > 1 ? 1 : testValue + 0.05"
+          @textInput = "testValue = $event"
+          @sliderInput = "testValue = $event"
+          name = "test"
+          :min = "0"
+          :max = "1"
+          :step = "0.01"
+          unit = "nm"
+          :value = "testValue" />
+
         <!-- color -->
         <div class="option-container">
           <label for="colorPicker" class="option-label">color</label>
@@ -177,6 +189,7 @@
 <script>
 import CardComponent from '../Card'
 import UploadModal from '../modals/UploadModal'
+import SliderComponent from '@/components/Slider'
 
 // Vue-Color
 import { Compact } from 'vue-color'
@@ -185,10 +198,14 @@ export default {
   components: {
     CardComponent,
     UploadModal,
-    'compact-picker': Compact
+    'compact-picker': Compact,
+    SliderComponent
   },
   data: function () {
     return {
+
+      testValue: 0.5,
+
       isotropic: true,
       scaleX: 1,
       scaleY: 1,
@@ -269,6 +286,9 @@ export default {
     }
   },
   methods: {
+    test: function (event) {
+      console.log(event)
+    },
     alignReference: function () {
       this.$store.dispatch('alignReference')
     },
