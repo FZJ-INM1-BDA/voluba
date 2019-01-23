@@ -38,152 +38,163 @@
       </template>
     </card-component>
 
-    <!-- Options -->
-    <card-component id = "options">
-      <template slot = "header">
-        <h6><strong>Anchoring Options</strong></h6>
-      </template>
-      <template slot = "body">
+    <div
+      v-if = "!incomingVolumeSelected"
+      class="card card-body bg-light">
 
-        <SliderComponent
-          @minus = "testValue = testValue - 0.05 < 0 ? 0 : testValue - 0.05"
-          @plus = "testValue = testValue + 0.05 > 1 ? 1 : testValue + 0.05"
-          @textInput = "testValue = $event"
-          @sliderInput = "testValue = $event"
-          name = "test"
-          :min = "0"
-          :max = "1"
-          :step = "0.01"
-          unit = "nm"
-          :value = "testValue" />
+      <h5>
+        
+      </h5>
+      information about reference template
+    </div>
 
-        <!-- color -->
-        <div class="option-container">
-          <label for="colorPicker" class="option-label">color</label>
-          <div class="option-input">
-            <div @click.stop = "showOverlayColor = !showOverlayColor" :style="{'background-color': overlayColor.hex, 'min-width': '20px', 'max-width': '20px', 'min-height': '20px', 'border': '1px solid black'}" v-b-tooltip.hover :title="overlayColor.hex"></div>
-            <compact-picker v-if = "showOverlayColor" v-model="overlayColor" />
-          </div>
-        </div>
+    <!-- incoming volume card -->
+    <div
+      v-if = "incomingVolumeSelected"
+      class="card card-body bg-light">
 
-        <!-- opacity -->
-        <div class="option-container">
-          <label for="opacitySlider" class="option-label">opacity</label>
-          <div class = "option-input">
-            <input
-              name = "opacitySlider"
-              id = "opacitySlider"
-              class = "slider"
-              type = "range"
-              :min = "opacityMin"
-              :max = "opacityMax"
-              :step = "opacityStep"
-              v-model = "opacity"/>
-          </div>
-          <div class="option-value">
-            {{ Number(opacity).toFixed(2) }}
-          </div>
-        </div>
-        <!-- scale -->
-        <div v-if = "isotropic" class="option-container">
-          <label for="scaleSlider" class="option-label">scale</label>
-          <div class="option-input">
-            <input
-              name = "scaleSlider"
-              id = "scaleSlider"
-              class = "slider"
-              type = "range"
-              :min = "scaleMin"
-              :max = "scaleMax"
-              :step = "scaleStep"
-              v-model = "scale"/>
-          </div>
-          <div class="option-value">
-            {{ Number(scale).toFixed(2) }}
-          </div>
-        </div>
+      <h5>
+        {{ selectedIncomingVolumeName }}
+      </h5>
+      <hr />
+      <SliderComponent
+        @minus = "testValue = testValue - 0.05 < 0 ? 0 : testValue - 0.05"
+        @plus = "testValue = testValue + 0.05 > 1 ? 1 : testValue + 0.05"
+        @textInput = "testValue = $event"
+        @sliderInput = "testValue = $event"
+        name = "test"
+        :min = "0"
+        :max = "1"
+        :step = "0.01"
+        unit = "nm"
+        :value = "testValue" />
 
-        <!-- non-isotropic scale -->
-        <div v-if = "!isotropic" class="option-container">
-          <label for="scaleSlider" class="option-label">scale x</label>
-          <div class="option-input">
-            <input
-              name = "scaleSlider"
-              id = "scaleSlider"
-              class = "slider"
-              type = "range"
-              :min = "scaleMin"
-              :max = "scaleMax"
-              :step = "scaleStep"
-              v-model = "scaleX"/>
-          </div>
-          <div class="option-value">
-            {{ Number(scaleX).toFixed(2) }}
-          </div>
+      <!-- color -->
+      <div class="option-container">
+        <label for="colorPicker" class="option-label">color</label>
+        <div class="option-input">
+          <div @click.stop = "showOverlayColor = !showOverlayColor" :style="{'background-color': overlayColor.hex, 'min-width': '20px', 'max-width': '20px', 'min-height': '20px', 'border': '1px solid black'}" v-b-tooltip.hover :title="overlayColor.hex"></div>
+          <compact-picker v-if = "showOverlayColor" v-model="overlayColor" />
         </div>
-        <div v-if = "!isotropic" class="option-container">
-          <label for="scaleSlider" class="option-label">scale y</label>
-          <div class="option-input">
-            <input
-              name = "scaleSlider"
-              id = "scaleSlider"
-              class = "slider"
-              type = "range"
-              :min = "scaleMin"
-              :max = "scaleMax"
-              :step = "scaleStep"
-              v-model = "scaleY"/>
-          </div>
-          <div class="option-value">
-            {{ Number(scaleY).toFixed(2) }}
-          </div>
-        </div>
-        <div v-if = "!isotropic" class="option-container">
-          <label for="scaleSlider" class="option-label">scale z</label>
-          <div class="option-input">
-            <input
-              name = "scaleSlider"
-              id = "scaleSlider"
-              class = "slider"
-              type = "range"
-              :min = "scaleMin"
-              :max = "scaleMax"
-              :step = "scaleStep"
-              v-model = "scaleZ"/>
-          </div>
-          <div class="option-value">
-            {{ Number(scaleZ).toFixed(2) }}
-          </div>
-        </div>
-        <input type="checkbox" id = "isotropic" name="isotropic" v-model = "isotropic" />
-        <label for = "isotropic">
-          isotropic scale
-        </label>
+      </div>
 
-        <!-- flip left/right -->
-        <div class="option-container">
-          <b-button @click="flipLeftRight" variant="secondary">flip left/right</b-button>
+      <!-- opacity -->
+      <div class="option-container">
+        <label for="opacitySlider" class="option-label">opacity</label>
+        <div class = "option-input">
+          <input
+            name = "opacitySlider"
+            id = "opacitySlider"
+            class = "slider"
+            type = "range"
+            :min = "opacityMin"
+            :max = "opacityMax"
+            :step = "opacityStep"
+            v-model = "opacity"/>
         </div>
+        <div class="option-value">
+          {{ Number(opacity).toFixed(2) }}
+        </div>
+      </div>
+      <!-- scale -->
+      <div v-if = "isotropic" class="option-container">
+        <label for="scaleSlider" class="option-label">scale</label>
+        <div class="option-input">
+          <input
+            name = "scaleSlider"
+            id = "scaleSlider"
+            class = "slider"
+            type = "range"
+            :min = "scaleMin"
+            :max = "scaleMax"
+            :step = "scaleStep"
+            v-model = "scale"/>
+        </div>
+        <div class="option-value">
+          {{ Number(scale).toFixed(2) }}
+        </div>
+      </div>
 
-        <!-- flip inferior/superio -->
-        <div class="option-container">
-          <b-button @click="flipInferiorSuperior" variant="secondary">flip inferior/superior</b-button>
+      <!-- non-isotropic scale -->
+      <div v-if = "!isotropic" class="option-container">
+        <label for="scaleSlider" class="option-label">scale x</label>
+        <div class="option-input">
+          <input
+            name = "scaleSlider"
+            id = "scaleSlider"
+            class = "slider"
+            type = "range"
+            :min = "scaleMin"
+            :max = "scaleMax"
+            :step = "scaleStep"
+            v-model = "scaleX"/>
         </div>
+        <div class="option-value">
+          {{ Number(scaleX).toFixed(2) }}
+        </div>
+      </div>
+      <div v-if = "!isotropic" class="option-container">
+        <label for="scaleSlider" class="option-label">scale y</label>
+        <div class="option-input">
+          <input
+            name = "scaleSlider"
+            id = "scaleSlider"
+            class = "slider"
+            type = "range"
+            :min = "scaleMin"
+            :max = "scaleMax"
+            :step = "scaleStep"
+            v-model = "scaleY"/>
+        </div>
+        <div class="option-value">
+          {{ Number(scaleY).toFixed(2) }}
+        </div>
+      </div>
+      <div v-if = "!isotropic" class="option-container">
+        <label for="scaleSlider" class="option-label">scale z</label>
+        <div class="option-input">
+          <input
+            name = "scaleSlider"
+            id = "scaleSlider"
+            class = "slider"
+            type = "range"
+            :min = "scaleMin"
+            :max = "scaleMax"
+            :step = "scaleStep"
+            v-model = "scaleZ"/>
+        </div>
+        <div class="option-value">
+          {{ Number(scaleZ).toFixed(2) }}
+        </div>
+      </div>
+      <input type="checkbox" id = "isotropic" name="isotropic" v-model = "isotropic" />
+      <label for = "isotropic">
+        isotropic scale
+      </label>
 
-        <!-- flip anterior/posterior -->
-        <div class="option-container">
-          <b-button @click="flipAnteriorPosterior" variant="secondary">flip anterior/posterior</b-button>
-        </div>
+      <!-- flip left/right -->
+      <div class="option-container">
+        <b-button @click="flipLeftRight" variant="secondary">flip left/right</b-button>
+      </div>
 
-        <!-- align -->
-        <div class="btn-group">
-          <div @click = "alignReference" class="btn btn-primary">align reference</div>
-          <div @click = "alignIncoming" class="btn btn-primary">align incoming</div>
-        </div>
-        <br>
-        <label>Mouse position: {{ viewerMouse.join(', ') }} </label>
-      </template>
-    </card-component>
+      <!-- flip inferior/superio -->
+      <div class="option-container">
+        <b-button @click="flipInferiorSuperior" variant="secondary">flip inferior/superior</b-button>
+      </div>
+
+      <!-- flip anterior/posterior -->
+      <div class="option-container">
+        <b-button @click="flipAnteriorPosterior" variant="secondary">flip anterior/posterior</b-button>
+      </div>
+
+      <!-- align -->
+      <div class="btn-group">
+        <div @click = "alignReference" class="btn btn-primary">align reference</div>
+        <div @click = "alignIncoming" class="btn btn-primary">align incoming</div>
+      </div>
+      <br>
+      <label>Mouse position: {{ viewerMouse.join(', ') }} </label>
+    </div>
   </div>
 </template>
 <script>
@@ -230,6 +241,14 @@ export default {
         text: '-- Please select a dataset --',
         value: -1
       }
+    },
+    incomingVolumeSelected: function () {
+      return this.$store.state.incomingVolumeSelected
+    },
+    selectedIncomingVolumeName: function () {
+      return this.$store.state.selectedIncomingVolumeIndex !== null
+        ? this.$store.state.incomingVolumes[this.$store.state.selectedIncomingVolumeIndex].text
+        : `No incoming volume selected`
     },
     selectTemplate: {
       get: function () {
