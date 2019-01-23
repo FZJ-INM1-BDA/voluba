@@ -45,21 +45,9 @@
       </template>
       <template slot = "body">
 
-        <SliderComponent
-          @minus = "testValue = testValue - 0.05 < 0 ? 0 : testValue - 0.05"
-          @plus = "testValue = testValue + 0.05 > 1 ? 1 : testValue + 0.05"
-          @textInput = "testValue = $event"
-          @sliderInput = "testValue = $event"
-          name = "test"
-          :min = "0"
-          :max = "1"
-          :step = "0.01"
-          unit = "nm"
-          :value = "testValue" />
-
         <!-- color -->
         <div class="option-container">
-          <label for="colorPicker" class="option-label">color</label>
+          <label class="option-label">Color:</label>
           <div class="option-input">
             <div @click.stop = "showOverlayColor = !showOverlayColor" :style="{'background-color': overlayColor.hex, 'min-width': '20px', 'max-width': '20px', 'min-height': '20px', 'border': '1px solid black'}" v-b-tooltip.hover :title="overlayColor.hex"></div>
             <compact-picker v-if = "showOverlayColor" v-model="overlayColor" />
@@ -67,8 +55,8 @@
         </div>
 
         <!-- opacity -->
-        <div class="option-container">
-          <label for="opacitySlider" class="option-label">opacity</label>
+        <div class="option-container" style="margin-top: 5px;">
+          <label for="opacitySlider" class="option-label">Opacity:</label>
           <div class = "option-input">
             <input
               name = "opacitySlider"
@@ -84,6 +72,23 @@
             {{ Number(opacity).toFixed(2) }}
           </div>
         </div>
+
+        <section-component title="Scale" :showContent="true" style="margin-top: 5px;">
+          <template slot="body">
+            <SliderComponent
+              @minus = "testValue = testValue - 0.05 < 0 ? 0 : testValue - 0.05"
+              @plus = "testValue = testValue + 0.05 > 1 ? 1 : testValue + 0.05"
+              @textInput = "testValue = $event"
+              @sliderInput = "testValue = $event"
+              name = "test"
+              :min = "0"
+              :max = "1"
+              :step = "0.01"
+              unit = "nm"
+              :value = "testValue" />
+          </template>
+        </section-component>
+
         <!-- scale -->
         <div v-if = "isotropic" class="option-container">
           <label for="scaleSlider" class="option-label">scale</label>
@@ -188,6 +193,7 @@
 </template>
 <script>
 import CardComponent from '../Card'
+import SectionComponent from '../Section'
 import UploadModal from '../modals/UploadModal'
 import SliderComponent from '@/components/Slider'
 
@@ -197,6 +203,7 @@ import { Compact } from 'vue-color'
 export default {
   components: {
     CardComponent,
+    SectionComponent,
     UploadModal,
     'compact-picker': Compact,
     SliderComponent
