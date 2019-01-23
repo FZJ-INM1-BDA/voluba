@@ -122,22 +122,22 @@ export default {
       switch (type) {
         case 'setPrimaryNehubaNavigation':
           const vec3 = window.export_nehuba.vec3
-          window.primaryNehubaViewer.setPosition(vec3.fromValues(...payload.coord.map(v => v * 1e6)), true)
+          this.$options.nonReactiveData.nehubaViewer.setPosition(vec3.fromValues(...payload.coord.map(v => v * 1e6)), true)
           break
         case 'redrawNehuba':
-          if (window.primaryNehubaViewer) {
-            window.primaryNehubaViewer.redraw()
+          if (this.$options.nonReactiveData.nehubaViewer) {
+            this.$options.nonReactiveData.nehubaViewer.redraw()
           }
           setTimeout(() => this.navigationChanged())
           break
         case 'alignReference':
-          window.primaryNehubaViewer.ngviewer.navigationState.pose.orientation.restoreState([0, 0, 0, 1])
+          this.$options.nonReactiveData.nehubaViewer.ngviewer.navigationState.pose.orientation.restoreState([0, 0, 0, 1])
           break
         case 'alignIncoming':
           if (!this.committedTransform) return
           const newQuat = mat4.getRotation(quat.create(), mat4.fromValues(...this.committedTransform))
           // quat.invert(newQuat, newQuat)
-          window.primaryNehubaViewer.ngviewer.navigationState.pose.orientation.restoreState(Array.from(newQuat))
+          this.$options.nonReactiveData.nehubaViewer.ngviewer.navigationState.pose.orientation.restoreState(Array.from(newQuat))
           break
         default:
       }
@@ -145,9 +145,9 @@ export default {
   },
   watch: {
     incomingColor: function (rgba) {
-      if (window.primaryNehubaNgUserLayer) {
-        window.primaryNehubaNgUserLayer.layer.fragmentMain.restoreState(getShader(rgba))
-        window.primaryNehubaNgUserLayer.layer.opacity.restoreState(rgba[3])
+      if (this.$options.nonReactiveData.ngUserLayer) {
+        this.$options.nonReactiveData.ngUserLayer.layer.fragmentMain.restoreState(getShader(rgba))
+        this.$options.nonReactiveData.ngUserLayer.layer.opacity.restoreState(rgba[3])
       }
     },
     cid: function (val) {
@@ -166,7 +166,7 @@ export default {
       this.setNavigationActive(!val)
     },
     incomingTransformMatrix: function (mat) {
-      if (!window.primaryNehubaNgUserLayer) return
+      if (!this.$options.nonReactiveData.ngUserLayer) return
       if (!this.appendNehubaFlag) return
       if (!mat) return
 
@@ -182,28 +182,33 @@ export default {
          * apply commitedTransformMat first, then undo scaling
          */
         mat4.mul(finalMat, commitedScalingMat4, committedTransformMat)
-        mat4.mul(window.primaryNehubaNgUserLayer.layer.transform.transform, mat, finalMat)
+        mat4.mul(this.$options.nonReactiveData.ngUserLayer.layer.transform.transform, mat, finalMat)
       } else {
-        window.primaryNehubaNgUserLayer.layer.transform.transform = mat
+        this.$options.nonReactiveData.ngUserLayer.layer.transform.transform = mat
       }
-      window.primaryNehubaNgUserLayer.layer.transform.changed.dispatch()
+      this.$options.nonReactiveData.ngUserLayer.layer.transform.changed.dispatch()
     },
     previewMode: function (val) {
-      if (window.primaryNehubaNgUserLayer) {
+      if (this.$options.nonReactiveData.ngUserLayer) {
         console.log(this.$store.state.landmarkInverseMatrix)
-        window.primaryNehubaNgUserLayer.layer.transform.restoreState(this.calculatedTransformMatrix)
-        window.primaryNehubaNgUserLayer.layer.transform.changed.dispatch()
-        window.primaryNehubaNgUserLayer.setVisible(val)
+        this.$options.nonReactiveData.ngUserLayer.layer.transform.restoreState(this.calculatedTransformMatrix)
+        this.$options.nonReactiveData.ngUserLayer.layer.transform.changed.dispatch()
+        this.$options.nonReactiveData.ngUserLayer.setVisible(val)
       }
     },
     $route: function (from, to) {
-      if (window.primaryNehubaNgUserLayer) {
-        window.primaryNehubaNgUserLayer.setVisible(this.previewMode || to.path === '/step2')
+      if (this.$options.nonReactiveData.ngUserLayer) {
+        this.$options.nonReactiveData.ngUserLayer.setVisible(this.previewMode || to.path === '/step2')
       }
     }
   },
   beforeMount: function () {
     this.cid = 'neuroglancer-container'
+  },
+  nonReactiveData: {
+    subscriptions: [],
+    ngUserLayer: null,
+    nehubaViewer: null
   },
   methods: {
     sliceRenderEvent: function (event) {
@@ -235,7 +240,7 @@ export default {
     },
     mouseup: function () {
       if (this.movingIncoming || this.rotatingIncoming) {
-        this.committedTransform = Array.from(window.primaryNehubaNgUserLayer.layer.transform.transform)
+        this.committedTransform = Array.from(this.$options.nonReactiveData.ngUserLayer.layer.transform.transform)
       }
       this.rotatingIncoming = false
       this.movingIncoming = false
@@ -306,16 +311,16 @@ export default {
      */
     setNavigationActive: function (bool) {
       if (bool) {
-        window.primaryNehubaNgUserLayer.layer.opacity.restoreState(this.incomingColor[3])
-        window.primaryNehubaViewer.ngviewer.inputEventBindings.sliceView.bindings.delete('at:mousedown0')
-        window.primaryNehubaViewer.ngviewer.inputEventBindings.sliceView.bindings.delete('at:shift+mousedown0')
+        this.$options.nonReactiveData.ngUserLayer.layer.opacity.restoreState(this.incomingColor[3])
+        this.$options.nonReactiveData.nehubaViewer.ngviewer.inputEventBindings.sliceView.bindings.delete('at:mousedown0')
+        this.$options.nonReactiveData.nehubaViewer.ngviewer.inputEventBindings.sliceView.bindings.delete('at:shift+mousedown0')
       } else {
-        window.primaryNehubaNgUserLayer.layer.opacity.restoreState(incomingTemplateActiveOpacity)
+        this.$options.nonReactiveData.ngUserLayer.layer.opacity.restoreState(incomingTemplateActiveOpacity)
         if (this.translationByDragEnabled) {
-          window.primaryNehubaViewer.ngviewer.inputEventBindings.sliceView.bindings.set('at:mousedown0', {stopPropagation: true})
+          this.$options.nonReactiveData.nehubaViewer.ngviewer.inputEventBindings.sliceView.bindings.set('at:mousedown0', {stopPropagation: true})
         }
         if (this.rotationByDragEnabled) {
-          window.primaryNehubaViewer.ngviewer.inputEventBindings.sliceView.bindings.set('at:shift+mousedown0', {stopPropagation: true})
+          this.$options.nonReactiveData.nehubaViewer.ngviewer.inputEventBindings.sliceView.bindings.set('at:shift+mousedown0', {stopPropagation: true})
         }
       }
     },
@@ -326,7 +331,7 @@ export default {
         : 'mouseOutIncomingLayer')
     },
     initNehuba: function () {
-      window.primaryNehubaViewer = window.export_nehuba.createNehubaViewer(this.testConfig, (e) => {
+      this.$options.nonReactiveData.nehubaViewer = window.export_nehuba.createNehubaViewer(this.testConfig, (e) => {
         console.log('nehuba throwing error')
       })
 
@@ -334,6 +339,7 @@ export default {
        * clear window.viewer object
        */
       window.primaryViewer = window.viewer
+      window.primaryNehubaViewer = this.$options.nonReactiveData.nehubaViewer
       window.viewer = null
       const transform = window.primaryViewer.layerManager.managedLayers[0].layer.transform.toJSON()
       this.$store.commit('setReferenceTemplateTransform', {transform})
@@ -341,9 +347,9 @@ export default {
       /**
        * TODO
        */
-      window.primaryNehubaViewer.setMeshesToLoad([100, 200])
-      this.subscriptions.push(
-        window.primaryNehubaViewer.mouseOver.image
+      this.$options.nonReactiveData.nehubaViewer.setMeshesToLoad([100, 200])
+      this.$options.nonReactiveData.subscriptions.push(
+        this.$options.nonReactiveData.nehubaViewer.mouseOver.image
           .filter(v => v.layer.name === 'userlayer-0')
           .filter(v => typeof v !== 'undefined')
           .map(ev => ev.value !== null)
@@ -351,15 +357,15 @@ export default {
           .map(bool => ({mouseOverUserlayer: bool}))
           .subscribe(this.updateState)
       )
-      this.subscriptions.push(
-        window.primaryNehubaViewer.navigationState.position.inRealSpace
+      this.$options.nonReactiveData.subscriptions.push(
+        this.$options.nonReactiveData.nehubaViewer.navigationState.position.inRealSpace
           .subscribe(fa => {
             this.viewerNavigationPosition = Array.from(fa)
             this.$store.dispatch('primaryNehubaNavigationPositionChanged', Array.from(fa))
           })
       )
-      this.subscriptions.push(
-        window.primaryNehubaViewer.mousePosition.inRealSpace
+      this.$options.nonReactiveData.subscriptions.push(
+        this.$options.nonReactiveData.nehubaViewer.mousePosition.inRealSpace
           .subscribe(fa => {
             const array = fa === null
               ? [0, 0, 0]
@@ -368,8 +374,8 @@ export default {
             this.$store.dispatch('viewerMousePositionChanged', array)
           })
       )
-      this.subscriptions.push(
-        window.primaryNehubaViewer.navigationState.orientation
+      this.$options.nonReactiveData.subscriptions.push(
+        this.$options.nonReactiveData.nehubaViewer.navigationState.orientation
           .subscribe(fa => {
             const array = fa === null
               ? [0, 0, 0, 1]
@@ -378,8 +384,8 @@ export default {
             this.$store.dispatch('viewerSliceOrientationChanged', array)
           })
       )
-      this.subscriptions.push(
-        window.primaryNehubaViewer.navigationState.full.subscribe(() => {
+      this.$options.nonReactiveData.subscriptions.push(
+        this.$options.nonReactiveData.nehubaViewer.navigationState.full.subscribe(() => {
           this.navigationChanged()
         })
       )
@@ -387,12 +393,12 @@ export default {
     clearnUp: function () {
       this.cid = null
       setTimeout(() => {
-        window.primaryNehubaViewer.ngviewer.display.panels.forEach(patchSliceViewPanel)
+        this.$options.nonReactiveData.nehubaViewer.ngviewer.display.panels.forEach(patchSliceViewPanel)
       })
       /**
        * TODO remove window.nehubaViewer in prod
        */
-      window['nehubaViewer'] = window.primaryNehubaViewer
+      window['nehubaViewer'] = this.$options.nonReactiveData.nehubaViewer
       window['nehubaVue'] = this
       window['viewer'] = null
     },
@@ -400,11 +406,11 @@ export default {
       this.$refs.lmOverlay.$forceUpdate()
     },
     clearUserLayers: function () {
-      if (!window.primaryNehubaViewer) {
+      if (!this.$options.nonReactiveData.nehubaViewer) {
         return
       }
-      window.primaryNehubaNgUserLayer = null
-      const lm = window.primaryNehubaViewer.ngviewer.layerManager
+      this.$options.nonReactiveData.ngUserLayer = null
+      const lm = this.$options.nonReactiveData.nehubaViewer.ngviewer.layerManager
       this.userLayers
         .map(ul => ul.name)
         .map(layerName => lm.getLayerByName(layerName))
@@ -412,13 +418,13 @@ export default {
       this.userLayers = []
     },
     addUserLayer: function (uri) {
-      if (!window.primaryNehubaViewer) {
+      if (!this.$options.nonReactiveData.nehubaViewer) {
         return
       }
       if (!uri) {
         return
       }
-      const viewer = window.primaryNehubaViewer.ngviewer
+      const viewer = this.$options.nonReactiveData.nehubaViewer.ngviewer
       const name = `userlayer-0`
       const newLayer = {
         source: uri,
@@ -426,7 +432,7 @@ export default {
         shader: getShader(this.incomingColor)
       }
       const newNgLayer = viewer.layerSpecification.getLayer(name, newLayer)
-      window.primaryNehubaNgUserLayer = viewer.layerManager.addManagedLayer(newNgLayer)
+      this.$options.nonReactiveData.ngUserLayer = viewer.layerManager.addManagedLayer(newNgLayer)
       this.userLayers.push(
         Object.assign({}, newLayer, {
           name
@@ -526,7 +532,7 @@ export default {
     }
   },
   beforeDestroy () {
-    this.subscriptions.forEach(s => s.unsubscribe())
+    this.$options.nonReactiveData.subscriptions.forEach(s => s.unsubscribe())
   },
   components: {
     NehubaLandmarksOverlay
