@@ -86,5 +86,6 @@ export default {
 .body
 {
   padding-left: 11px;
+  margin-top: 5px;
 }
 </style>
