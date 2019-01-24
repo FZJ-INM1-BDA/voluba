@@ -55,6 +55,7 @@ export default {
 <style scoped>
 .icon-container
 {
+  pointer-events: none;
   width: 0px;
   height: 0px;
   overflow: visible;

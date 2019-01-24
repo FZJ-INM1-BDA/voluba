@@ -1,11 +1,13 @@
 <template>
   <div :id="id">
     <div @click="toggle" class="header">
-      <font-awesome-icon icon="caret-right" :class="transformIcon" pull="left"/>
+      <font-awesome-icon
+        icon="caret-right"
+        :class="transformIcon" pull="left"/>
       <span><strong> {{ title }}</strong></span>
       <slot name="header"></slot>
     </div>
-    <b-collapse :visible="opened" class="body">
+    <b-collapse :id = "id + '-body'" :visible="opened" class="body">
       <slot name="body"></slot>
     </b-collapse>
   </div>
@@ -23,7 +25,6 @@ export default {
     }
   },
   data: function () {
-    console.log(this.showContent)
     return {
       opened: this.showContent
     }

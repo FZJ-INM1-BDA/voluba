@@ -129,7 +129,7 @@ export default {
 
 .landmark-unit
 {
-  pointer-events: all;
+  pointer-events: none;
   position: absolute;
 }
 

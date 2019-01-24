@@ -1,52 +1,6 @@
 <template>
   <div id = "accordion" rol = "tablist">
 
-    <!-- Data Selection -->
-    <card-component :id = "'data-selection'" :initialVisibility = "true">
-      <template slot = "header">
-        <h6><strong>Data Selection</strong></h6>
-      </template>
-      <template slot = "body">
-        <label>Reference volume:</label>
-        <!-- <br> -->
-        <select
-          :id = "'data-selection'"
-          :value = "selectReference">
-          <option v-for="referenceURL in referenceURLs" :key="referenceURL.id" :value="referenceURL.value">
-            {{ referenceURL.text }}
-          </option>
-        </select>
-
-        <hr>
-        <label>Incoming volume: </label>
-        <!-- <br> -->
-        <select id="select-template" v-model = "selectTemplate">
-          <option
-            v-for = "incomingVolume in renderedIncomingVolumes"
-            :key = "incomingVolume.id"
-            :value = "incomingVolume.id">
-            {{ incomingVolume.text }}
-          </option>
-        </select>
-        <!-- <br><br> -->
-        <b-button variant="secondary" v-b-modal.uploadModal>
-          <font-awesome-icon icon="upload"/>
-          Upload
-        </b-button>
-        <upload-modal id="uploadModal"></upload-modal>
-        <!-- <br><br> -->
-      </template>
-    </card-component>
-
-    <div
-      v-if = "!incomingVolumeSelected"
-      class="card card-body bg-light">
-
-      <h5>
-        
-      </h5>
-      information about reference template
-    </div>
 
     <!-- incoming volume card -->
     <div
@@ -57,6 +11,7 @@
         {{ selectedIncomingVolumeName }}
       </h5>
       <hr />
+
 
       <!-- color -->
       <div class="option-container">
@@ -86,112 +41,175 @@
         </div>
       </div>
 
-      <section-component :id="'scale-section'" title="Scale" :showContent="true" style="margin-top: 5px;">
-          <template slot = "body">
-            <SliderComponent
-              @minus = "testValue = testValue - 0.05 < 0 ? 0 : testValue - 0.05"
-              @plus = "testValue = testValue + 0.05 > 1 ? 1 : testValue + 0.05"
-              @textInput = "testValue = $event"
-              @sliderInput = "testValue = $event"
-              name = "test"
-              :min = "0"
-              :max = "1"
-              :step = "0.01"
-              unit = "nm"
-              :value = "testValue" />
-          </template>
+      <!-- scale -->
+      <section-component
+        class = "mb-2"
+        id="scale-section"
+        title="Scale"
+        style="margin-top: 5px;">
+        <template slot = "body">
+          <SliderComponent
+            @minus = "testScaleX = testScaleX - 0.05 < 0 ? 0 : testScaleX - 0.05"
+            @plus = "testScaleX = testScaleX + 0.05 > 1 ? 1 : testScaleX + 0.05"
+            @textInput = "testScaleX = $event"
+            @sliderInput = "testScaleX = $event"
+            name = "Scale X"
+            :min = "0.1"
+            :max = "10"
+            :step = "0.01"
+            :value = "testScaleX" />
+          <SliderComponent
+            @minus = "testScaleY = testScaleY - 0.05 < 0 ? 0 : testScaleY - 0.05"
+            @plus = "testScaleY = testScaleY + 0.05 > 1 ? 1 : testScaleY + 0.05"
+            @textInput = "testScaleY = $event"
+            @sliderInput = "testScaleY = $event"
+            name = "Scale Y"
+            :min = "0.1"
+            :max = "10"
+            :step = "0.01"
+            :value = "testScaleY" />
+          <SliderComponent
+            @minus = "testScaleZ = testScaleZ - 0.05 < 0 ? 0 : testScaleZ - 0.05"
+            @plus = "testScaleZ = testScaleZ + 0.05 > 1 ? 1 : testScaleZ + 0.05"
+            @textInput = "testScaleZ = $event"
+            @sliderInput = "testScaleZ = $event"
+            name = "Scale Z"
+            :min = "0.1"
+            :max = "10"
+            :step = "0.01"
+            :value = "testScaleZ" />
+        </template>
       </section-component>
 
-      <!-- scale -->
-      <div v-if = "isotropic" class="option-container" style="margin-top: 5px;">
-        <label for="scaleSlider" class="option-label">scale</label>
-        <div class="option-input">
-          <input
-            name = "scaleSlider"
-            id = "scaleSlider"
-            class = "slider"
-            type = "range"
-            :min = "scaleMin"
-            :max = "scaleMax"
-            :step = "scaleStep"
-            v-model = "scale"/>
-        </div>
-        <div class="option-value">
-          {{ Number(scale).toFixed(2) }}
-        </div>
-      </div>
+      <!-- translation -->
+      <section-component
+        class="mb-2"
+        title="Translation"
+        id="translation-component">
+        <template slot = "body">
+          <SliderComponent
+            @minus = "testTranslX = testTranslX - 0.1 < translMin ? translMin : testTranslX - 0.1"
+            @plus = "testTranslX = testTranslX + 0.1 > translMax ? translMax : testTranslX + 0.1"
+            @textInput = "testTranslX = $event"
+            @sliderInput = "testTranslX = $event"
+            name = "X-axis"
+            :min = "translMin"
+            :max = "translMax"
+            :step = "0.1"
+            unit = "mm"
+            :value = "testTranslX" />
+          <SliderComponent
+            @minus = "testTranslY = testTranslY - 0.1 < translMin ? translMin : testTranslY - 0.1"
+            @plus = "testTranslY = testTranslY + 0.1 > translMax ? translMax : testTranslY + 0.1"
+            @textInput = "testTranslY = $event"
+            @sliderInput = "testTranslY = $event"
+            name = "Y-axis"
+            :min = "translMin"
+            :max = "translMax"
+            :step = "0.1"
+            unit = "mm"
+            :value = "testTranslY" />
+          <SliderComponent
+            @minus = "testTranslZ = testTranslZ - 0.1 < translMin ? translMin : testTranslZ - 0.1"
+            @plus = "testTranslZ = testTranslZ + 0.1 > translMax ? translMax : testTranslZ + 0.1"
+            @textInput = "testTranslZ = $event"
+            @sliderInput = "testTranslZ = $event"
+            name = "Z-axis"
+            :min = "translMin"
+            :max = "translMax"
+            :step = "0.1"
+            unit = "mm"
+            :value = "testTranslZ" />
+        </template>
+      </section-component>
 
-      <!-- non-isotropic scale -->
-      <div v-if = "!isotropic" class="option-container">
-        <label for="scaleSlider" class="option-label">scale x</label>
-        <div class="option-input">
-          <input
-            name = "scaleSlider"
-            id = "scaleSlider"
-            class = "slider"
-            type = "range"
-            :min = "scaleMin"
-            :max = "scaleMax"
-            :step = "scaleStep"
-            v-model = "scaleX"/>
-        </div>
-        <div class="option-value">
-          {{ Number(scaleX).toFixed(2) }}
-        </div>
-      </div>
-      <div v-if = "!isotropic" class="option-container">
-        <label for="scaleSlider" class="option-label">scale y</label>
-        <div class="option-input">
-          <input
-            name = "scaleSlider"
-            id = "scaleSlider"
-            class = "slider"
-            type = "range"
-            :min = "scaleMin"
-            :max = "scaleMax"
-            :step = "scaleStep"
-            v-model = "scaleY"/>
-        </div>
-        <div class="option-value">
-          {{ Number(scaleY).toFixed(2) }}
-        </div>
-      </div>
-      <div v-if = "!isotropic" class="option-container">
-        <label for="scaleSlider" class="option-label">scale z</label>
-        <div class="option-input">
-          <input
-            name = "scaleSlider"
-            id = "scaleSlider"
-            class = "slider"
-            type = "range"
-            :min = "scaleMin"
-            :max = "scaleMax"
-            :step = "scaleStep"
-            v-model = "scaleZ"/>
-        </div>
-        <div class="option-value">
-          {{ Number(scaleZ).toFixed(2) }}
-        </div>
-      </div>
-      <input type="checkbox" id = "isotropic" name="isotropic" v-model = "isotropic" />
-      <label for = "isotropic">
-        isotropic scale
-      </label>
+      <!-- rotation -->
+      <section-component
+        class = "mb-2"
+        title = "Rotation"
+        id = "rotation-component">
+        <template slot = "body">
+          <SliderComponent
+            @minus = "testRotateX = testRotateX - 0.1 < rotateMin ? rotateMin : testRotateX - 0.1"
+            @plus = "testRotateX = testRotateX + 0.1 > rotateMax ? rotateMax : testRotateX + 0.1"
+            @textInput = "testRotateX = $event"
+            @sliderInput = "testRotateX = $event"
+            name = "X-axis"
+            :min = "rotateMin"
+            :max = "rotateMax"
+            :step = "0.1"
+            unit = "deg"
+            :value = "testRotateX" />
+          <SliderComponent
+            @minus = "testRotateY = testRotateY - 0.1 < rotateMin ? rotateMin : testRotateY - 0.1"
+            @plus = "testRotateY = testRotateY + 0.1 > rotateMax ? rotateMax : testRotateY + 0.1"
+            @textInput = "testRotateY = $event"
+            @sliderInput = "testRotateY = $event"
+            name = "Y-axis"
+            :min = "rotateMin"
+            :max = "rotateMax"
+            :step = "0.1"
+            unit = "deg"
+            :value = "testRotateY" />
+          <SliderComponent
+            @minus = "testRotateZ = testRotateZ - 0.1 < rotateMin ? rotateMin : testRotateZ - 0.1"
+            @plus = "testRotateZ = testRotateZ + 0.1 > rotateMax ? rotateMax : testRotateZ + 0.1"
+            @textInput = "testRotateZ = $event"
+            @sliderInput = "testRotateZ = $event"
+            name = "Z-axis"
+            :min = "rotateMin"
+            :max = "rotateMax"
+            :step = "0.1"
+            unit = "deg"
+            :value = "testRotateZ" />
 
-      <!-- flip left/right -->
-      <div class="option-container">
-        <b-button @click="flipLeftRight" variant="secondary">flip left/right</b-button>
-      </div>
+          <div class="mb-1"></div>
 
-      <!-- flip inferior/superio -->
-      <div class="option-container">
-        <b-button @click="flipInferiorSuperior" variant="secondary">flip inferior/superior</b-button>
-      </div>
+          <!-- rotation options -->
+          <div class="btn-group">
 
-      <!-- flip anterior/posterior -->
-      <div class="option-container">
-        <b-button @click="flipAnteriorPosterior" variant="secondary">flip anterior/posterior</b-button>
-      </div>
+            <!-- flip x -->
+            <div
+              @click.stop.prevent="flipXFlag = !flipXFlag"
+              :class="flipXFlag ? 'btn-primary' : 'btn-light'"
+              class="flip-btn btn btn-sm">
+              <input
+                :checked="flipXFlag"
+                type="checkbox" />
+              <span>
+                flip x axis
+              </span>
+            </div>
+
+            <!-- flip y -->
+            <div
+              @click.stop.prevent="flipYFlag = !flipYFlag"
+              :class="flipYFlag ? 'btn-primary' : 'btn-light'"
+              class="flip-btn btn btn-sm">
+              <input
+                :checked="flipYFlag"
+                type="checkbox" />
+              <span>
+                flip y axis
+              </span>
+            </div>
+
+            <!-- flip z -->
+            <div
+              @click.stop.prevent="flipZFlag = !flipZFlag"
+              :class="flipZFlag ? 'btn-primary' : 'btn-light'"
+              class="flip-btn btn btn-sm">
+              <input
+                :checked="flipYFlag"
+                type="checkbox" />
+              <span>
+                flip z axis
+              </span>
+            </div>
+          </div>
+        </template>
+      </section-component>
+
 
       <!-- align -->
       <div class="btn-group">
@@ -206,7 +224,6 @@
 <script>
 import CardComponent from '../Card'
 import SectionComponent from '../Section'
-import UploadModal from '../modals/UploadModal'
 import SliderComponent from '@/components/Slider'
 
 // Vue-Color
@@ -216,14 +233,22 @@ export default {
   components: {
     CardComponent,
     SectionComponent,
-    UploadModal,
     'compact-picker': Compact,
     SliderComponent
   },
   data: function () {
     return {
 
-      testValue: 0.5,
+      radToDegFactor: 180 / Math.PI,
+      rotateMin: -180,
+      rotateMax: 180,
+
+      translMin: -100,
+      translMax: 100,
+
+      flipXFlag: false,
+      flipYFlag: false,
+      flipZFlag: false,
 
       isotropic: true,
       scaleX: 1,
@@ -239,10 +264,185 @@ export default {
       opacityStep: 0.01,
 
       overlayColor: this.$store.state.overlayColor,
-      showOverlayColor: false
+      showOverlayColor: false,
+
+      testValue: 0
     }
   },
   computed: {
+    testScaleX: {
+      get: function () {
+        return this.testScale[0]
+      },
+      set: function (value) {
+        this.$store.dispatch('setScaleInc', {
+          axis: 'x',
+          value
+        })
+      }
+    },
+    testScaleY: {
+      get: function () {
+        return this.testScale[1]
+      },
+      set: function (value) {
+        this.$store.dispatch('setScaleInc', {
+          axis: 'y',
+          value
+        })
+      }
+    },
+    testScaleZ: {
+      get: function () {
+        return this.testScale[2]
+      },
+      set: function (value) {
+        this.$store.dispatch('setScaleInc', {
+          axis: 'z',
+          value
+        })
+      }
+    },
+    testScale: {
+      get: function () {
+        const { mat4, vec3 } = window.export_nehuba
+        const xformMat = mat4.fromValues(...this.incTransformMatrix)
+        const scaleVec = mat4.getScaling(vec3.create(), xformMat)
+        return Array.from(scaleVec)
+      }
+    },
+    testRotateValue: function (){
+      return this.radToDegFactor * Math.asin(-2.0*(this.testRot[1]*this.testRot[3] - this.testRot[0]*this.testRot[2]))
+    },
+    testRotateX: {
+      get: function () {
+        // let v = this.radToDegFactor * Math.asin(-2.0*(this.testRot[1]*this.testRot[3] - this.testRot[0]*this.testRot[2]))
+        // while (v < this.rotateMin) {
+        //   v += 360
+        // }
+        // while (v > this.rotateMax) {
+        //   v -= 360
+        // }
+
+        // -0 -> -180 180 -> 0
+        let v = this.radToDegFactor * Math.atan2(
+          2.0*(this.testRot[1]*this.testRot[2] + this.testRot[0]*this.testRot[3]),
+          this.testRot[0]*this.testRot[0] + this.testRot[1]*this.testRot[1] - this.testRot[2]*this.testRot[2] - this.testRot[3]*this.testRot[3]
+          )
+        v += 180
+        v *= -1
+        while (v < this.rotateMin) {
+          v += 360
+        }
+        while (v > this.rotateMax) {
+          v -= 360
+        }
+        // let v = this.radToDegFactor * Math.atan2(2.0*(this.testRot[2]*this.testRot[3] + this.testRot[0]*this.testRot[1]), this.testRot[0]*this.testRot[0] - this.testRot[1]*this.testRot[1] - this.testRot[2]*this.testRot[2] + this.testRot[3]*this.testRot[3])
+        return v
+      },
+      set: function (value) {
+        this.$store.dispatch('setRotateInc', {
+          axis: 'xyz',
+          value: [value, this.testRotateY, this.testRotateZ]
+        })
+      }
+    },
+    testRotateY: {
+      get: function () {
+        
+        /**
+         * dependency on z may become an issue later
+         */
+        // 0    -> 90   -> 0 -> -90 -> 0
+        // -180 -> -90  -> 0 -> 90  -> 180
+        // 180          0       180
+        let v = this.radToDegFactor * Math.asin(-2.0*(this.testRot[1]*this.testRot[3] - this.testRot[0]*this.testRot[2]))
+        v *= -1
+        return v
+      },
+      set: function (value) {
+        if (value > 90 || value < -90) {
+          return
+        }
+        this.$store.dispatch('setRotateInc', {
+          axis: 'xyz',
+          value: [this.testRotateX, value, this.testRotateZ ]
+        })
+      }
+    },
+    testRotateZ: {
+      get: function () {
+        let v = this.radToDegFactor * Math.atan2(
+          2.0*(this.testRot[2]*this.testRot[3] + this.testRot[0]*this.testRot[1]),
+          this.testRot[0]*this.testRot[0] - this.testRot[1]*this.testRot[1] - this.testRot[2]*this.testRot[2] + this.testRot[3]*this.testRot[3])
+        while (v < this.rotateMin) {
+          v += 360
+        }
+        while (v > this.rotateMax) {
+          v -= 360
+        }
+        return v
+      },
+      set: function (value) {
+        this.$store.dispatch('setRotateInc', {
+          axis: 'xyz',
+          value: [this.testRotateX, this.testRotateY, value]
+        })
+      }
+    },
+    testRot: {
+      get: function () {
+        const {quat, mat4} = window.export_nehuba
+        const xformMat = mat4.fromValues(...this.incTransformMatrix)
+        const rotQuat = mat4.getRotation(quat.create(), xformMat)
+        return Array.from(rotQuat)
+      }
+    },
+    testTranslX: {
+      get: function () {
+        console.log(this.testTransl[0])
+        return this.testTransl[0] / 1e6
+      },
+      set: function (value) {
+        this.$store.dispatch('setTranslInc', {
+          axis: 'x', 
+          value: value * 1e6
+        })
+      }
+    },
+    testTranslY: {
+      get: function () {
+        return this.testTransl[1] / 1e6
+      },
+      set: function (value) {
+        this.$store.dispatch('setTranslInc', {
+          axis: 'y', 
+          value: value * 1e6
+        })
+      }
+    },
+    testTranslZ: {
+      get: function () {
+        return this.testTransl[2] / 1e6
+      },
+      set: function (value) {
+        this.$store.dispatch('setTranslInc', {
+          axis: 'z', 
+          value: value * 1e6
+        })
+      }
+    },
+    testTransl: {
+      get: function () {
+        const {vec3, mat4} = window.export_nehuba
+        const xformMat = mat4.fromValues(...this.incTransformMatrix)
+        const translVec = mat4.getTranslation(vec3.create(), xformMat)
+        return Array.from(translVec)
+      }
+    },
+    incTransformMatrix: function () {
+      return this.$store.state.incTransformMatrix
+    },
     dummyIncomingTemplate: function () {
       return {
         id: 'placeholder',
@@ -290,6 +490,9 @@ export default {
     }
   },
   watch: {
+    incTransformMatrix: function (array) {
+
+    },
     opacity: function (opacityVal) {
       this.$store.dispatch('changeOpacity', Number(opacityVal))
     },
@@ -360,5 +563,9 @@ export default {
 .option-value
 {
   flex: 0 0 10%;
+}
+.flip-btn:not(.disabled):hover
+{
+  cursor: default;
 }
 </style>

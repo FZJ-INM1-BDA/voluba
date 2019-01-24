@@ -1,7 +1,16 @@
 <template>
   <div id="app">
+
+    <!-- header -->
     <header-component class = "app-header"/>
-    <main id = "main" class = "app-main">
+
+    <!-- splash screen -->
+    <main v-if = "showSplashScreen" class="app-main">
+      <router-view />
+    </main>
+    
+    <!-- main -->
+    <main v-if = "!showSplashScreen" class = "app-main">
       <main-side
         position = "left"
         :sidebarSize = "sidebarWidth"
@@ -69,6 +78,10 @@ export default {
     }
   },
   computed: {
+    showSplashScreen: function () {
+      console.log(this.$route)
+      return true
+    },
     sidebarCollapse: function () {
       return this.$store.state.sidebarCollapse
     },

@@ -29,11 +29,11 @@ Vue.config.productionTip = false
 
 const store = new Vuex.Store({
   state: {
-    referenceURLs: [
+    referenceVolumes: [
       {
-        id: '1',
-        text: 'BigBrain (2015)',
-        value: 'precomputed://https://www.jubrain.fz-juelich.de/apps/neuroglancer/BigBrainRelease.2015/image'
+        id: 'ref-1',
+        name: 'BigBrain (2015)',
+        imageSource: 'precomputed://https://www.jubrain.fz-juelich.de/apps/neuroglancer/BigBrainRelease.2015/image'
       }
     ],
     referenceTemplateTransform: null,
@@ -42,14 +42,14 @@ const store = new Vuex.Store({
     incomingVolumes: [
       {
         id: 'inc-1',
-        text: 'Nucleus subthalamicus (B20)',
+        name: 'Nucleus subthalamicus (B20)',
         // value: 'precomputed://http://imedv02.ime.kfa-juelich.de:8287/precomputed/B20_stn_l/v10'
-        value: 'precomputed://https://neuroglancer-dev.humanbrainproject.org/precomputed/landmark-reg/B20_stn_l/v10'
+        imageSource: 'precomputed://https://neuroglancer-dev.humanbrainproject.org/precomputed/landmark-reg/B20_stn_l/v10'
       },
       {
         id: 'inc-2',
-        text: 'Hippocampus unmasked',
-        value: 'precomputed://https://neuroglancer-dev.humanbrainproject.org/precomputed/landmark-reg/hippocampus-unmasked'
+        name: 'Hippocampus unmasked',
+        imageSource: 'precomputed://https://neuroglancer-dev.humanbrainproject.org/precomputed/landmark-reg/hippocampus-unmasked'
       }
     ],
 
@@ -77,6 +77,12 @@ const store = new Vuex.Store({
     incomingScale: [1, 1, 1],
     incomingColor: [252, 200, 0, 0.5],
     incomingVolumeSelected: false,
+    incTransformMatrix: [
+      1.0,  0,    0,    0,
+      0,    1.0,  0,    0,
+      0,    0,    1.0,  0,
+      0,    0,    0,    1.0
+    ],
 
     overlayColor: {hex: '#FCDC00', rgba: {r: 252, g: 220, b: 0, a: 1}},
     // in nm
@@ -94,6 +100,10 @@ const store = new Vuex.Store({
     synchronizeCursor: false,
     previewMode: false,
     backendURL: process.env.VUE_APP_BACKEND_URL || 'http://localhost:5000/api',
+
+    /**
+     * response from landmark-reg server
+     */
     landmarkTransformationMatrix: null,
     landmarkInverseMatrix: null,
     landmarkDeterminant: null,
@@ -257,6 +267,9 @@ const store = new Vuex.Store({
     setLandmarkPairActive (state, { id, active }) {
       const pair = state.landmarkPairs.find(pair => pair.id === id)
       pair.active = active
+    },
+    setIncTransformMatrix (state, matrix) {
+      state.incTransformMatrix = matrix
     }
   },
   actions: {
@@ -442,12 +455,12 @@ const store = new Vuex.Store({
     },
     loadOldJson ({ commit, state }, { json, config }) {
       const { fixCenterTranslation } = config
+      const { vec3, mat4 } = window.export_nehuba
       const arrayMat4 = state.referenceTemplateTransform
         ? state.referenceTemplateTransform.flatMap((arr, i) => arr.map((v, idx) => (i === 3 || idx !== 3) ? v : v / 1e6))
         : null
       const transformRef = (coord) => {
         if (fixCenterTranslation && arrayMat4) {
-          const { mat4, vec3 } = window.export_nehuba
           const oldCoord = vec3.fromValues(...coord)
           const transformMat4 = mat4.fromValues(...arrayMat4)
           mat4.transpose(transformMat4, transformMat4)
@@ -511,18 +524,77 @@ const store = new Vuex.Store({
       /**
        * required for subscribe action
        */
+    },
+    setTranslateInc ({coommit, state} , {axis, value}) {
+
+    },
+    setRotateInc ({commit, state}, {axis, value}) {
+      if (axis !== 'xyz') {
+        return
+      }
+
+      const {mat4, quat, vec3} = window.export_nehuba
+
+      const xformMat = mat4.fromValues(...state.incTransformMatrix)
+      const oldQuat = mat4.getRotation(quat.create(), xformMat)
+      const axisVec = vec3.create()
+      const angleNum = quat.getAxisAngle(axisVec, oldQuat)
+      mat4.rotate(xformMat, xformMat, -1 * angleNum, axisVec)
+
+      const eulerArr = value
+      const rotationQuat = quat.create()
+      quat.fromEuler(rotationQuat, ...eulerArr)
+      const newAxisVec = vec3.create()
+      const newAngleNum = quat.getAxisAngle(newAxisVec, rotationQuat)
+      mat4.rotate(xformMat, xformMat, newAngleNum, rotationQuat)
+
+      commit('setIncTransformMatrix', Array.from(xformMat))
+    },
+    setScaleInc ({commit, state}, {axis, value}) {
+      if (axis !== 'x' && axis !== 'y' && axis !== 'z') {
+        return
+      }
+      if (Number.isNaN(value) || !(value > 0)) {
+        return
+      }
+      const idx = axis === 'x'
+        ? 0
+        : axis === 'y'
+          ? 1
+          : 2
+
+      const { mat4, vec3 } = window.export_nehuba
+      const xformMat = mat4.fromValues(...state.incTransformMatrix)
+      const scaleVec = mat4.getScaling(vec3.create(), xformMat)
+      const inverseVec = vec3.inverse(vec3.create(), scaleVec)
+      scaleVec[idx] = value
+      mat4.scale(xformMat, xformMat, inverseVec)
+      mat4.scale(xformMat, xformMat, scaleVec)
+      commit('setIncTransformMatrix', Array.from(xformMat))
+    },
+    setTranslInc ({commit, state}, {axis, value}) {
+      if (axis !== 'x' && axis !== 'y' && axis !== 'z') {
+        return
+      }
+      if (Number.isNaN(value)) {
+        return
+      }
+      const idx = axis === 'x'
+        ? 0
+        : axis === 'y'
+          ? 1
+          : 2
+      const {mat4, vec3} = window.export_nehuba
+      const xformMat = mat4.fromValues(...state.incTransformMatrix)
+      const translVec = mat4.getTranslation(vec3.create(), xformMat)
+      const inverseVec = vec3.negate(vec3.create(), translVec)
+      translVec[idx] = value
+      mat4.translate(xformMat, xformMat, inverseVec)
+      mat4.translate(xformMat, xformMat, translVec)
+      commit('setIncTransformMatrix', Array.from(xformMat))
     }
   }
 })
-
-/* eslint-disable no-new */
-// new Vue({
-//   store,
-//   el: '#app',
-//   router,
-//   components: { App },
-//   template: '<App/>'
-// })
 
 new Vue({
   router,

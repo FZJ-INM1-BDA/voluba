@@ -6,7 +6,7 @@
       <span>Spatial Registration</span>
     </b-navbar-brand>
 
-    <progress-tracker />
+    <progress-tracker v-if = "showProgressTracker" />
 
     <b-collapse is-nav id="nav_collapse">
 
@@ -41,6 +41,9 @@ export default {
     }
   },
   computed: {
+    showProgressTracker: function () {
+      return this.$route.shown
+    },
     sidebarCollapse: function () {
       return this.$store.state.sidebarCollapse
     }

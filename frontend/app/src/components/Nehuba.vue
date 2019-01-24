@@ -144,6 +144,13 @@ export default {
     })
   },
   watch: {
+    incTransformMatrix: function (array) {
+      const { mat4 } = window.export_nehuba
+      const matrix = mat4.fromValues(...array)
+      // mat4.invert(matrix, matrix)
+      this.$options.nonReactiveData.ngUserLayer.layer.transform.transform = matrix
+      this.$options.nonReactiveData.ngUserLayer.layer.transform.changed.dispatch()
+    },
     incomingVolumeSelected: function (bool) {
       this.$options.nonReactiveData.managedLayers.forEach(layer => layer.layer.annotationColor.restoreState(bool ? annotationColorBlur : annotationColorFocus))
       this.$options.nonReactiveData.ngUserLayer.layer.annotationColor.restoreState(bool ? annotationColorFocus : annotationColorBlur)
@@ -454,6 +461,9 @@ export default {
     }
   },
   computed: {
+    incTransformMatrix: function () {
+      return this.$store.state.incTransformMatrix
+    },
     translationByDragEnabled: function () {
       return !this.previewMode
     },

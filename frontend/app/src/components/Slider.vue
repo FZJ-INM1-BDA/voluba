@@ -6,6 +6,7 @@
 
       <div class = "input-group-prepend">
         <div
+          :disabled = "disabled"
           @click = "$emit('minus')"
           class = "btn btn-sm btn-outline-secondary">
           <font-awesome-icon icon = "minus"/>
@@ -15,6 +16,7 @@
       <input
         style = "height: 100%;"
         v-model = "sliderValue"
+        :disabled = "disabled"
         :step = "step"
         :max = "max"
         :min = "min"
@@ -23,6 +25,7 @@
       
       <div class="input-group-append">
         <div
+          :disabled = "disabled"
           @click = "$emit('plus')"
           class = "btn btn-sm btn-outline-secondary">
           <font-awesome-icon icon = "plus" />
@@ -32,6 +35,7 @@
         style = "flex: 0 0 4em;"
         v-model = "sliderValue"
         type = "text"
+        :disabled = "disabled"
         class = "form-control">
 
       <div
@@ -53,7 +57,8 @@ export default {
     max: Number,
     step: Number,
     value: Number,
-    unit: String
+    unit: String,
+    disabled: Boolean
   },
   computed: {
     sliderValue: {

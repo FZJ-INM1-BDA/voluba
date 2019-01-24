@@ -13,10 +13,6 @@
 </template>
 
 <script>
-import CardComponent from '@/components/Card'
-import ToolbarStep1 from '@/components/toolbars/ToolbarStep1'
-import ToolbarStep2 from '@/components/toolbars/ToolbarStep2'
-import ToolbarStep3 from '@/components/toolbars/ToolbarStep3'
 export default {
   name: 'SidebarComponent',
   data () {
@@ -40,16 +36,6 @@ export default {
     collapseSidebar: function () {
       this.$store.dispatch('setSidebarCollapseState', true)
     }
-  },
-  watch: {
-  },
-  filters: {
-  },
-  components: {
-    CardComponent,
-    ToolbarStep1,
-    ToolbarStep2,
-    ToolbarStep3
   }
 }
 </script>

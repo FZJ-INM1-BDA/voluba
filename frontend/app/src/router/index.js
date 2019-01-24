@@ -4,6 +4,7 @@ import Router from 'vue-router'
 import Step1 from '@/components/toolbars/ToolbarStep1'
 import Step2 from '@/components/toolbars/ToolbarStep2'
 import Step3 from '@/components/toolbars/ToolbarStep3'
+import SplashScreen from '@/components/SplashScreen'
 import NotFound from '@/views/NotFound'
 
 Vue.use(Router)
@@ -12,7 +13,7 @@ export default new Router({
   routes: [
     {
       path: '/',
-      redirect: '/step1'
+      component: SplashScreen
     },
     {
       path: '/step1',
