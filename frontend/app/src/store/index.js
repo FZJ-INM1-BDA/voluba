@@ -43,7 +43,7 @@ const store = new Vuex.Store({
     activeStepIndex: 0,
 
     selectReferenceVolumeIdx: null,
-    selectedReferenceVolumeId: null,
+    selectedReferenceVolumeId: 'ref-1',
     referenceVolumes: [
       {
         id: 'ref-1',

@@ -1,10 +1,10 @@
 <template>
   <div>
-    <DataSelectionModal ref = "dataselectionModal" />
+    <DataSelectionModal />
   </div>  
 </template>
 <script>
-import DataSelectionModal from '@/components/modals/SelectVolumes'
+import DataSelectionModal from '@/components/modals/SelectVolumesModal'
 export default {
   mounted() {
     

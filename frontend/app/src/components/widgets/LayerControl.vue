@@ -1,213 +1,218 @@
 <template>
   
-    <div
-      v-if = "incomingVolumeSelected"
-      class="card card-body bg-light">
+    <div>
 
       <!-- title -->
-      <h5>
-        {{ selectedIncomingVolumeName }}
-      </h5>
+      <div
+        @mousedown="$emit('header-mosuedown', $event)"
+        class="card bg-light">
 
-      <hr />
-
-      <!-- color -->
-      <div class="option-container">
-        <label class="option-label">Color:</label>
-        <div class="option-input">
-          <div @click.stop = "showOverlayColor = !showOverlayColor" :style="{'background-color': overlayColor.hex, 'min-width': '20px', 'max-width': '20px', 'min-height': '20px', 'border': '1px solid black'}" v-b-tooltip.hover :title="overlayColor.hex"></div>
-          <compact-picker v-if = "showOverlayColor" v-model="overlayColor" />
-        </div>
+        <h5 class="title">
+          {{ selectedIncomingVolumeName }}
+        </h5>
       </div>
+      <div
+        v-if = "incomingVolumeSelected"
+        class="card card-body bg-light">
 
-      <!-- opacity -->
-      <div class="option-container" style="margin-top: 5px;">
-        <label for="opacitySlider" class="option-label">Opacity:</label>
-        <div class = "option-input">
-          <input
-            name = "opacitySlider"
-            id = "opacitySlider"
-            class = "slider"
-            type = "range"
-            :min = "opacityMin"
-            :max = "opacityMax"
-            :step = "opacityStep"
-            v-model = "opacity"/>
-        </div>
-        <div class="option-value">
-          {{ Number(opacity).toFixed(2) }}
-        </div>
-      </div>
-
-      <!-- scale -->
-      <section-component
-        class = "mb-2"
-        id="scale-section"
-        title="Scale"
-        style="margin-top: 5px;">
-        <template slot = "body">
-          <SliderComponent
-            @minus = "testScaleX = testScaleX - 0.05 < 0 ? 0 : testScaleX - 0.05"
-            @plus = "testScaleX = testScaleX + 0.05 > 1 ? 1 : testScaleX + 0.05"
-            @textInput = "testScaleX = $event"
-            @sliderInput = "testScaleX = $event"
-            name = "Scale X"
-            :min = "0.1"
-            :max = "10"
-            :step = "0.01"
-            :value = "testScaleX" />
-          <SliderComponent
-            @minus = "testScaleY = testScaleY - 0.05 < 0 ? 0 : testScaleY - 0.05"
-            @plus = "testScaleY = testScaleY + 0.05 > 1 ? 1 : testScaleY + 0.05"
-            @textInput = "testScaleY = $event"
-            @sliderInput = "testScaleY = $event"
-            name = "Scale Y"
-            :min = "0.1"
-            :max = "10"
-            :step = "0.01"
-            :value = "testScaleY" />
-          <SliderComponent
-            @minus = "testScaleZ = testScaleZ - 0.05 < 0 ? 0 : testScaleZ - 0.05"
-            @plus = "testScaleZ = testScaleZ + 0.05 > 1 ? 1 : testScaleZ + 0.05"
-            @textInput = "testScaleZ = $event"
-            @sliderInput = "testScaleZ = $event"
-            name = "Scale Z"
-            :min = "0.1"
-            :max = "10"
-            :step = "0.01"
-            :value = "testScaleZ" />
-        </template>
-      </section-component>
-
-      <!-- translation -->
-      <section-component
-        class="mb-2"
-        title="Translation"
-        id="translation-component">
-        <template slot = "body">
-          <SliderComponent
-            @minus = "testTranslX = testTranslX - 0.1 < translMin ? translMin : testTranslX - 0.1"
-            @plus = "testTranslX = testTranslX + 0.1 > translMax ? translMax : testTranslX + 0.1"
-            @textInput = "testTranslX = $event"
-            @sliderInput = "testTranslX = $event"
-            name = "X-axis"
-            :min = "translMin"
-            :max = "translMax"
-            :step = "0.1"
-            unit = "mm"
-            :value = "testTranslX" />
-          <SliderComponent
-            @minus = "testTranslY = testTranslY - 0.1 < translMin ? translMin : testTranslY - 0.1"
-            @plus = "testTranslY = testTranslY + 0.1 > translMax ? translMax : testTranslY + 0.1"
-            @textInput = "testTranslY = $event"
-            @sliderInput = "testTranslY = $event"
-            name = "Y-axis"
-            :min = "translMin"
-            :max = "translMax"
-            :step = "0.1"
-            unit = "mm"
-            :value = "testTranslY" />
-          <SliderComponent
-            @minus = "testTranslZ = testTranslZ - 0.1 < translMin ? translMin : testTranslZ - 0.1"
-            @plus = "testTranslZ = testTranslZ + 0.1 > translMax ? translMax : testTranslZ + 0.1"
-            @textInput = "testTranslZ = $event"
-            @sliderInput = "testTranslZ = $event"
-            name = "Z-axis"
-            :min = "translMin"
-            :max = "translMax"
-            :step = "0.1"
-            unit = "mm"
-            :value = "testTranslZ" />
-        </template>
-      </section-component>
-
-      <!-- rotation -->
-      <section-component
-        class = "mb-2"
-        title = "Rotation"
-        id = "rotation-component">
-        <template slot = "body">
-          <SliderComponent
-            @minus = "testRotateX = testRotateX - 0.1 < rotateMin ? rotateMin : testRotateX - 0.1"
-            @plus = "testRotateX = testRotateX + 0.1 > rotateMax ? rotateMax : testRotateX + 0.1"
-            @textInput = "testRotateX = $event"
-            @sliderInput = "testRotateX = $event"
-            name = "X-axis"
-            :min = "rotateMin"
-            :max = "rotateMax"
-            :step = "0.1"
-            unit = "deg"
-            :value = "testRotateX" />
-          <SliderComponent
-            @minus = "testRotateY = testRotateY - 0.1 < rotateMin ? rotateMin : testRotateY - 0.1"
-            @plus = "testRotateY = testRotateY + 0.1 > rotateMax ? rotateMax : testRotateY + 0.1"
-            @textInput = "testRotateY = $event"
-            @sliderInput = "testRotateY = $event"
-            name = "Y-axis"
-            :min = "rotateMin"
-            :max = "rotateMax"
-            :step = "0.1"
-            unit = "deg"
-            :value = "testRotateY" />
-          <SliderComponent
-            @minus = "testRotateZ = testRotateZ - 0.1 < rotateMin ? rotateMin : testRotateZ - 0.1"
-            @plus = "testRotateZ = testRotateZ + 0.1 > rotateMax ? rotateMax : testRotateZ + 0.1"
-            @textInput = "testRotateZ = $event"
-            @sliderInput = "testRotateZ = $event"
-            name = "Z-axis"
-            :min = "rotateMin"
-            :max = "rotateMax"
-            :step = "0.1"
-            unit = "deg"
-            :value = "testRotateZ" />
-
-          <div class="mb-1"></div>
-
-          <!-- rotation options -->
-          <div class="btn-group">
-
-            <!-- flip x -->
-            <div
-              @click.stop.prevent="flipXFlag = !flipXFlag"
-              :class="flipXFlag ? 'btn-primary' : 'btn-light'"
-              class="flip-btn btn btn-sm">
-              <input
-                :checked="flipXFlag"
-                type="checkbox" />
-              <span>
-                flip x axis
-              </span>
-            </div>
-
-            <!-- flip y -->
-            <div
-              @click.stop.prevent="flipYFlag = !flipYFlag"
-              :class="flipYFlag ? 'btn-primary' : 'btn-light'"
-              class="flip-btn btn btn-sm">
-              <input
-                :checked="flipYFlag"
-                type="checkbox" />
-              <span>
-                flip y axis
-              </span>
-            </div>
-
-            <!-- flip z -->
-            <div
-              @click.stop.prevent="flipZFlag = !flipZFlag"
-              :class="flipZFlag ? 'btn-primary' : 'btn-light'"
-              class="flip-btn btn btn-sm">
-              <input
-                :checked="flipZFlag"
-                type="checkbox" />
-              <span>
-                flip z axis
-              </span>
-            </div>
+        <!-- color -->
+        <div class="option-container">
+          <label class="option-label">Color:</label>
+          <div class="option-input">
+            <div @click.stop = "showOverlayColor = !showOverlayColor" :style="{'background-color': overlayColor.hex, 'min-width': '20px', 'max-width': '20px', 'min-height': '20px', 'border': '1px solid black'}" v-b-tooltip.hover :title="overlayColor.hex"></div>
+            <compact-picker v-if = "showOverlayColor" v-model="overlayColor" />
           </div>
-        </template>
-      </section-component>
+        </div>
 
+        <!-- opacity -->
+        <div class="option-container" style="margin-top: 5px;">
+          <label for="opacitySlider" class="option-label">Opacity:</label>
+          <div class = "option-input">
+            <input
+              name = "opacitySlider"
+              id = "opacitySlider"
+              class = "slider"
+              type = "range"
+              :min = "opacityMin"
+              :max = "opacityMax"
+              :step = "opacityStep"
+              v-model = "opacity"/>
+          </div>
+          <div class="option-value">
+            {{ Number(opacity).toFixed(2) }}
+          </div>
+        </div>
+
+        <!-- scale -->
+        <section-component
+          class = "mb-2"
+          id="scale-section"
+          title="Scale"
+          style="margin-top: 5px;">
+          <template slot = "body">
+            <SliderComponent
+              @minus = "testScaleX = testScaleX - 0.05 < 0 ? 0 : testScaleX - 0.05"
+              @plus = "testScaleX = testScaleX + 0.05 > 1 ? 1 : testScaleX + 0.05"
+              @textInput = "testScaleX = $event"
+              @sliderInput = "testScaleX = $event"
+              name = "Scale X"
+              :min = "0.1"
+              :max = "10"
+              :step = "0.01"
+              :value = "testScaleX" />
+            <SliderComponent
+              @minus = "testScaleY = testScaleY - 0.05 < 0 ? 0 : testScaleY - 0.05"
+              @plus = "testScaleY = testScaleY + 0.05 > 1 ? 1 : testScaleY + 0.05"
+              @textInput = "testScaleY = $event"
+              @sliderInput = "testScaleY = $event"
+              name = "Scale Y"
+              :min = "0.1"
+              :max = "10"
+              :step = "0.01"
+              :value = "testScaleY" />
+            <SliderComponent
+              @minus = "testScaleZ = testScaleZ - 0.05 < 0 ? 0 : testScaleZ - 0.05"
+              @plus = "testScaleZ = testScaleZ + 0.05 > 1 ? 1 : testScaleZ + 0.05"
+              @textInput = "testScaleZ = $event"
+              @sliderInput = "testScaleZ = $event"
+              name = "Scale Z"
+              :min = "0.1"
+              :max = "10"
+              :step = "0.01"
+              :value = "testScaleZ" />
+          </template>
+        </section-component>
+
+        <!-- translation -->
+        <section-component
+          class="mb-2"
+          title="Translation"
+          id="translation-component">
+          <template slot = "body">
+            <SliderComponent
+              @minus = "testTranslX = testTranslX - 0.1 < translMin ? translMin : testTranslX - 0.1"
+              @plus = "testTranslX = testTranslX + 0.1 > translMax ? translMax : testTranslX + 0.1"
+              @textInput = "testTranslX = $event"
+              @sliderInput = "testTranslX = $event"
+              name = "X-axis"
+              :min = "translMin"
+              :max = "translMax"
+              :step = "0.1"
+              unit = "mm"
+              :value = "testTranslX" />
+            <SliderComponent
+              @minus = "testTranslY = testTranslY - 0.1 < translMin ? translMin : testTranslY - 0.1"
+              @plus = "testTranslY = testTranslY + 0.1 > translMax ? translMax : testTranslY + 0.1"
+              @textInput = "testTranslY = $event"
+              @sliderInput = "testTranslY = $event"
+              name = "Y-axis"
+              :min = "translMin"
+              :max = "translMax"
+              :step = "0.1"
+              unit = "mm"
+              :value = "testTranslY" />
+            <SliderComponent
+              @minus = "testTranslZ = testTranslZ - 0.1 < translMin ? translMin : testTranslZ - 0.1"
+              @plus = "testTranslZ = testTranslZ + 0.1 > translMax ? translMax : testTranslZ + 0.1"
+              @textInput = "testTranslZ = $event"
+              @sliderInput = "testTranslZ = $event"
+              name = "Z-axis"
+              :min = "translMin"
+              :max = "translMax"
+              :step = "0.1"
+              unit = "mm"
+              :value = "testTranslZ" />
+          </template>
+        </section-component>
+
+        <!-- rotation -->
+        <section-component
+          class = "mb-2"
+          title = "Rotation"
+          id = "rotation-component">
+          <template slot = "body">
+            <SliderComponent
+              @minus = "testRotateX = testRotateX - 0.1 < rotateMin ? rotateMin : testRotateX - 0.1"
+              @plus = "testRotateX = testRotateX + 0.1 > rotateMax ? rotateMax : testRotateX + 0.1"
+              @textInput = "testRotateX = $event"
+              @sliderInput = "testRotateX = $event"
+              name = "X-axis"
+              :min = "rotateMin"
+              :max = "rotateMax"
+              :step = "0.1"
+              unit = "deg"
+              :value = "testRotateX" />
+            <SliderComponent
+              @minus = "testRotateY = testRotateY - 0.1 < rotateMin ? rotateMin : testRotateY - 0.1"
+              @plus = "testRotateY = testRotateY + 0.1 > rotateMax ? rotateMax : testRotateY + 0.1"
+              @textInput = "testRotateY = $event"
+              @sliderInput = "testRotateY = $event"
+              name = "Y-axis"
+              :min = "rotateMin"
+              :max = "rotateMax"
+              :step = "0.1"
+              unit = "deg"
+              :value = "testRotateY" />
+            <SliderComponent
+              @minus = "testRotateZ = testRotateZ - 0.1 < rotateMin ? rotateMin : testRotateZ - 0.1"
+              @plus = "testRotateZ = testRotateZ + 0.1 > rotateMax ? rotateMax : testRotateZ + 0.1"
+              @textInput = "testRotateZ = $event"
+              @sliderInput = "testRotateZ = $event"
+              name = "Z-axis"
+              :min = "rotateMin"
+              :max = "rotateMax"
+              :step = "0.1"
+              unit = "deg"
+              :value = "testRotateZ" />
+
+            <div class="mb-1"></div>
+
+            <!-- rotation options -->
+            <div class="btn-group">
+
+              <!-- flip x -->
+              <div
+                @click.stop.prevent="flipXFlag = !flipXFlag"
+                :class="flipXFlag ? 'btn-primary' : 'btn-light'"
+                class="flip-btn btn btn-sm">
+                <input
+                  :checked="flipXFlag"
+                  type="checkbox" />
+                <span>
+                  flip x axis
+                </span>
+              </div>
+
+              <!-- flip y -->
+              <div
+                @click.stop.prevent="flipYFlag = !flipYFlag"
+                :class="flipYFlag ? 'btn-primary' : 'btn-light'"
+                class="flip-btn btn btn-sm">
+                <input
+                  :checked="flipYFlag"
+                  type="checkbox" />
+                <span>
+                  flip y axis
+                </span>
+              </div>
+
+              <!-- flip z -->
+              <div
+                @click.stop.prevent="flipZFlag = !flipZFlag"
+                :class="flipZFlag ? 'btn-primary' : 'btn-light'"
+                class="flip-btn btn btn-sm">
+                <input
+                  :checked="flipZFlag"
+                  type="checkbox" />
+                <span>
+                  flip z axis
+                </span>
+              </div>
+            </div>
+          </template>
+        </section-component>
+
+      </div>
     </div>
 </template>
 <script>
@@ -549,5 +554,20 @@ export default {
 .flip-btn:not(.disabled):hover
 {
   cursor: default;
+}
+.title
+{
+  padding-left: 1em;
+  padding-right: 1.5em;
+  padding-top: 3em;
+  padding-bottom:0.5em;
+  margin-bottom:0;
+
+  transition: linear 150ms all;
+}
+.title:hover
+{
+  background-color: rgba(125,125,125,0.15);
+  cursor: move;
 }
 </style>

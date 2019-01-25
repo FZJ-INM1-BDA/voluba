@@ -48,6 +48,7 @@
           v-model = "selectedIncomingVolumeId">
           <option
             v-for = "incomingVolume in incomingVolumes"
+            :disabled = "incomingVolume.disabled"
             :key = "incomingVolume.id"
             :value = "incomingVolume.id">
             {{ incomingVolume.name }}
@@ -82,7 +83,11 @@ import UploadModal from '@/components/modals/UploadModal'
 export default {
   data: function () {
     return {
-      
+      dummyIncomingVolume: {
+        id: null,
+        name: '-- Please select an incoming volume --',
+        disabled: true
+      }
     }
   },
   computed: {
@@ -106,7 +111,7 @@ export default {
       get: function () {
         const id = this.$store.state.selectedIncomingVolumeId
         const selIncVol = this.$store.state.incomingVolumes.find(v => v.id === id)
-        return selIncVol && selIncVol.id
+        return (selIncVol && selIncVol.id) || null
       },
       set: function (id) {
         this.$store.dispatch('selectIncomingVolumeWithId', id)
@@ -118,17 +123,13 @@ export default {
         : 'btn-secondary disabled'
     },
     bothSelected: function () {
-      console.log(
-        this.selectReferenceVolumeId,
-        this.selectedIncomingVolumeId
-      )
       return this.selectReferenceVolumeId && this.selectedIncomingVolumeId
     },
     referenceVolumes: function () {
       return this.$store.state.referenceVolumes
     },
     incomingVolumes: function () {
-      return this.$store.state.incomingVolumes
+      return [this.dummyIncomingVolume, ...this.$store.state.incomingVolumes]
     }
   },
   beforeRouteLeave: function (to, from, next) {
