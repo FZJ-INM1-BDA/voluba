@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class = "splashscreen-container">
     <div class="jumbotron jumbotron-fluid">
       <div class="container">
         <h1>
@@ -22,7 +22,7 @@
 
       <select
         class = "form-control"
-        v-model = "selectReferenceIdx">
+        v-model = "selectReferenceVolumeId">
         <option
           v-for="referenceVolume in referenceVolumes"
           :key="referenceVolume.id"
@@ -31,14 +31,15 @@
         </option>
       </select>
     </div>
+
+    <!-- incoming voluems -->
     <div class="input-group">
       <div class="input-group-prepend">
         <span class="input-group-text">Incoming Volume</span>
       </div>
-
       <select
         class = "form-control"
-        v-model = "selectedIncomingIdx">
+        v-model = "selectedIncomingVolumeId">
         <option
           v-for = "incomingVolume in incomingVolumes"
           :key = "incomingVolume.id"
@@ -56,13 +57,14 @@
     </div>
 
     <hr />
-    <div
-      :disabled="bothSelected"
-      :class = "nextStepClass"
-      class="btn">
-      next step
-    </div>
-
+    <router-link to = "/step1">
+      <div
+        :disabled="bothSelected"
+        :class = "nextStepClass"
+        class="btn">
+        next step
+      </div>
+    </router-link>
     <upload-modal id="uploadModal" />
     </div>
   </div>
@@ -73,18 +75,43 @@ import UploadModal from '@/components/modals/UploadModal'
 export default {
   data: function () {
     return {
-      selectReferenceIdx: null,
-      selectedIncomingIdx: null
+      
     }
   },
   computed: {
+    selectReferenceVolumeIdx: {
+      get: function () {
+        return this.$store.state.selectReferenceVolumeIdx
+      },
+      set: function (idx) {
+        this.$store.dispatch('selectReferenceVolumeWithIndex', idx)
+      }
+    },
+    selectReferenceVolumeId: {
+      get: function () {
+        return this.$store.state.selectedReferenceVolumeId
+      },
+      set: function (id) {
+        this.$store.dispatch('selectReferenceVolumeWithId', id)
+      }
+    },
+    selectedIncomingVolumeId: {
+      get: function () {
+        const id = this.$store.state.selectedIncomingVolumeId
+        const selIncVol = this.$store.state.incomingVolumes.find(v => v.id === id)
+        return selIncVol && selIncVol.id
+      },
+      set: function (id) {
+        this.$store.dispatch('selectIncomingVolumeWithId', id)
+      }
+    },
     nextStepClass: function () {
       return this.bothSelected
         ? 'btn-primary'
         : 'btn-secondary disabled'
     },
     bothSelected: function () {
-      return this.selectReferenceIdx !== null && this.selectedIncomingIdx !== null
+      return this.selectReferenceVolumeId !== null && this.selectedIncomingVolumeId !== null
     },
     referenceVolumes: function () {
       return this.$store.state.referenceVolumes
@@ -93,16 +120,27 @@ export default {
       return this.$store.state.incomingVolumes
     }
   },
-  watch: {
-    selectReference: function (val) {
-      console.log(val)
+  beforeRouteLeave: function (to, from, next) {
+    if (!this.bothSelected) {
+      next(false)
+    } else {
+      next()
     }
   },
   components: {
     UploadModal
-  }
+  },
+  methods: {
+    nextStep: function () {
+      this.$store.dispatch('nextStep')
+    }
+  },
 }
 </script>
 
 <style scoped>
+.splashscreen-container
+{
+  pointer-events: all;
+}
 </style>

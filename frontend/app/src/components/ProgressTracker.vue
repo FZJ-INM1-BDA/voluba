@@ -1,19 +1,19 @@
 <template>
   <div class = "progress-tracker-container">
-    <router-link
-      class = "progress-tracker-item"
-      :key = "route.name"
-      :to = "route"
-      v-for = "(route, index) in routes">
 
+    <div
+      :class = "activeRouteIndex === index ? 'router-link-active' : ''"
+      class = "progress-tracker-item"
+      :key="index"
+      v-for="(route, index) in routes">
       <strong>
         Step {{ index + 1 }}
       </strong>
       <p class="description">
         {{ route.displayName }}
       </p>
+    </div>
 
-    </router-link>
   </div>
 </template>
 <script>
@@ -21,6 +21,9 @@ export default {
   computed: {
     routes: function () {
       return this.$router.options.routes.filter(route => route.shown)
+    },
+    activeRouteIndex: function () {
+      return this.routes.findIndex(r => r.path === this.$route.path)
     }
   }
 }
@@ -44,8 +47,7 @@ export default {
 
 .progress-tracker-item:hover
 {
-  text-decoration: none;
-  color: rgba(255, 255, 255, 0.8);
+  cursor: default;
 }
 
 .progress-tracker-item.router-link-active

@@ -1,11 +1,27 @@
 import Vue from 'vue'
 import Router from 'vue-router'
 
+import store from '@/store'
+
 import Step1 from '@/components/toolbars/ToolbarStep1'
 import Step2 from '@/components/toolbars/ToolbarStep2'
 import Step3 from '@/components/toolbars/ToolbarStep3'
 import SplashScreen from '@/components/SplashScreen'
 import NotFound from '@/views/NotFound'
+
+const checkIncVolSet = (to, from, next) => {
+  console.log(store.state.selectedReferenceVolumeId, store.state.selectedIncomingVolumeId)
+  if (store.state.selectedIncomingVolumeId && store.state.selectedReferenceVolumeId) {
+    next()
+  } else {
+    console.log('please check that your inc volume and reference volumes are selected')
+    /**
+     * TODO: better UI temporary measure
+     */
+    alert('please check that your inc volume and reference volumes are selected')
+    next('/')
+  }
+}
 
 Vue.use(Router)
 
@@ -16,25 +32,40 @@ export default new Router({
       component: SplashScreen
     },
     {
+      meta: {
+        shownInProgress: true,
+        displayName: '3D Anchoring',
+      },
       path: '/step1',
       name: 'Step 1',
+      displayName: '3D Anchoring',
       shown: true,
-      displayName: 'Data Selection & 3D Anchoring',
-      component: Step1
+      component: Step1,
+      beforeEnter: checkIncVolSet
     },
     {
+      meta: {
+        shownInProgress: true,
+        displayName: 'Entering Landmark-Pairs',
+      },
       path: '/step2',
       name: 'Step 2',
-      shown: true,
       displayName: 'Entering Landmark-Pairs',
-      component: Step2
+      shown: true,
+      component: Step2,
+      beforeEnter: checkIncVolSet
     },
     {
+      meta: {
+        shownInProgress: true,
+        displayName: 'Save & Export Results',
+      },
       path: '/step3',
       name: 'Step 3',
-      shown: true,
       displayName: 'Save & Export Results',
-      component: Step3
+      shown: true,
+      component: Step3,
+      beforeEnter: checkIncVolSet
     },
     {
       path: '*',

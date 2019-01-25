@@ -4,49 +4,23 @@
     <!-- header -->
     <header-component class = "app-header"/>
 
-    <!-- splash screen -->
-    <main v-if = "showSplashScreen" class="app-main">
-      <router-view />
-    </main>
-    
-    <!-- main -->
-    <main v-if = "!showSplashScreen" class = "app-main">
-      <main-side
-        position = "left"
-        :sidebarSize = "sidebarWidth"
-        :collapse = "sidebarCollapse">
+    <main class="app-main">
 
-        <!-- main -->
-        <template slot = "mainside-main">
+      <!-- main container -->
+      <div class="underlay">
+        <nehuba-component
+          @ready = "mainNehubaReady"
+          ref = "templatenehuba" />
+        <SimpleNehubaComponent
+          :config = "simpleNehubaConfig"
+          ref = "incomingnehuba"
+          v-show = "showSimpleNehuba" />
+      </div>
 
-          <!-- main container -->
-          <div class="mainside-main-item nehuba-container">
-            <nehuba-component
-              @ready = "mainNehubaReady"
-              ref = "templatenehuba" />
-            <SimpleNehubaComponent
-              :config = "simpleNehubaConfig"
-              ref = "incomingnehuba"
-              v-show = "showSimpleNehuba" />
-          </div>
-
-          <!-- floating icon -->
-          <div class = "sidebar-control mainside-main-item">
-            <b-button v-b-tooltip.hover title = "Expand Sidebar" v-if = "sidebarCollapse"  @click.prevent = "expandSidebar" variant="secondary">
-              <font-awesome-icon icon = "angle-right" />
-            </b-button>
-            <b-button v-b-tooltip.hover title = "Exit Preview Mode" v-if = "previewMode" @click.prevent = "exitPreviewMode" variant = "secondary">
-              <font-awesome-icon icon = "times-circle" />
-            </b-button>
-          </div>
-        </template>
-
-        <!-- side -->
-        <template slot = "mainside-side">
-          <sidebar-component id="sidebar"/>
-        </template>
-
-      </main-side>
+      <!-- floating layer -->
+      <div class = "overlay">
+        <router-view />
+      </div>
     </main>
     <!--<footer-component/>-->
   </div>
@@ -79,11 +53,8 @@ export default {
   },
   computed: {
     showSplashScreen: function () {
-      console.log(this.$route)
-      return true
-    },
-    sidebarCollapse: function () {
-      return this.$store.state.sidebarCollapse
+      const obj = this.$router.options.routes.find(r => r.path === this.$route.path)
+      return !(obj && obj.shown)
     },
     sidebarWidth: function () {
       return this.$store.state.sidebarWidth
@@ -94,9 +65,6 @@ export default {
       return idx !== null && idx >= 0
         ? getDefaultNehubaConfigLight(this.$store.state.incomingVolumes[idx].value)
         : null
-    },
-    previewMode: function () {
-      return this.$store.state.previewMode
     },
     showSimpleNehuba: function () {
       return this.showSecondNehuba && this.primaryNehubaReady && !this.previewMode
@@ -138,11 +106,7 @@ export default {
 {
   overflow:hidden;
   flex: 1 1 0;
-}
-#sidebar
-{
-  width: 100%;
-  height: 100%;
+  position:relative;
 }
 
 .mainside-main-item.sidebar-control
@@ -156,10 +120,23 @@ export default {
   flex-direction: column-reverse; */
 }
 
-.mainside-main-item
+.underlay
 {
   position: relative;
-  z-index: 4;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+}
+
+.overlay
+{
+  position:absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 2;
+  pointer-events: none;
 }
 
 .nehuba-container

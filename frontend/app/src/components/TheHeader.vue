@@ -42,7 +42,8 @@ export default {
   },
   computed: {
     showProgressTracker: function () {
-      return this.$route.shown
+      const obj = this.$router.options.routes.find(r => r.path === this.$route.path)
+      return obj && obj.shown
     },
     sidebarCollapse: function () {
       return this.$store.state.sidebarCollapse

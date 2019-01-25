@@ -67,39 +67,6 @@ export default {
       viewerMousePosition: [0, 0, 0],
       viewerSliceOrientation: [0, 0, 0, 1],
       appendNehubaFlag: false,
-      appendNehubaPromise: new Promise((resolve, reject) => {
-        if ('export_nehuba' in window) {
-          resolve()
-        } else {
-          const el = document.createElement('script')
-          el.src = 'main.bundle.js'
-          el.onload = () => {
-            this.appendNehubaFlag = true
-            /**
-             * patching nehuba/neuroglancer default behaviour of altering hash
-             */
-            const { UrlHashBinding } = window['export_nehuba'].getNgPatchableObj()
-            UrlHashBinding.prototype.setUrlHash = () => {
-              // console.log('seturl hash')
-              // console.log('setting url hash')
-            }
-            UrlHashBinding.prototype.updateFromUrlHash = () => {
-              // console.log('update hash binding')
-            }
-            /* TODO find a more permanent fix to disable double click */
-            // LayerManager.prototype.invokeAction = (arg) => {
-            //   const region = this.regionsLabelIndexMap.get(this.mouseOverSegment)
-            //   if (arg === 'select' && region) {
-            //     this.regionSelectionEmitter.emit(region)
-            //   }
-            // }
-
-            resolve()
-          }
-          el.onerror = reject
-          document.head.appendChild(el)
-        }
-      }),
 
       /**
        * temporary. need to retrieve config separately
@@ -108,9 +75,19 @@ export default {
     }
   },
   mounted: function () {
-    this.appendNehubaPromise
+    this.$store.state.appendNehubaPromise
+      .then(() => this.appendNehubaFlag = true)
       .then(this.initNehuba)
       .then(this.clearnUp)
+      .then(() => {
+        if (this.selectedIncomingVolumeId) {
+          const incVol = id && this.$store.state.incomingVolumes.find(v => v.id === id)
+          if (incVol) {
+            const url = incVol.imageSource
+            this.addUserLayer(url)
+          }
+        }
+      })
       .catch(e => {
         console.error('e', e)
         this.placeholderText = 'error loading nehuba'
@@ -147,7 +124,9 @@ export default {
     incTransformMatrix: function (array) {
       const { mat4 } = window.export_nehuba
       const matrix = mat4.fromValues(...array)
-      // mat4.invert(matrix, matrix)
+      /**
+       * xform matrix sometimes a bit wonky
+       */
       this.$options.nonReactiveData.ngUserLayer.layer.transform.transform = matrix
       this.$options.nonReactiveData.ngUserLayer.layer.transform.changed.dispatch()
     },
@@ -167,10 +146,12 @@ export default {
         this.$emit('ready', null)
       }
     },
-    selectedIncomingVolumeIndex: function (idx) {
+    selectedIncomingVolumeId: function (id) {
+      console.log('selectedincoming volume id', id)
       this.clearUserLayers()
-      if (idx !== null && idx >= 0) {
-        const url = this.$store.state.incomingVolumes[idx].value
+      const incVol = id && this.$store.state.incomingVolumes.find(v => v.id === id)
+      if (incVol) {
+        const url = incVol.imageSource
         this.addUserLayer(url)
       }
     },
@@ -202,15 +183,15 @@ export default {
     },
     previewMode: function (val) {
       if (this.$options.nonReactiveData.ngUserLayer) {
-        console.log(this.$store.state.landmarkInverseMatrix)
         this.$options.nonReactiveData.ngUserLayer.layer.transform.restoreState(this.calculatedTransformMatrix)
         this.$options.nonReactiveData.ngUserLayer.layer.transform.changed.dispatch()
-        this.$options.nonReactiveData.ngUserLayer.setVisible(val)
+        // this.$options.nonReactiveData.ngUserLayer.setVisible(val)
       }
     },
     $route: function (from, to) {
       if (this.$options.nonReactiveData.ngUserLayer) {
-        this.$options.nonReactiveData.ngUserLayer.setVisible(this.previewMode || to.path === '/step2')
+        // console.log('setVisible', this.previewMode || to.path === '/step2')
+        // this.$options.nonReactiveData.ngUserLayer.setVisible(this.previewMode || to.path === '/step2')
       }
     }
   },
@@ -436,6 +417,7 @@ export default {
       this.userLayers = []
     },
     addUserLayer: function (uri) {
+      console.log('uri', uri)
       if (!this.$options.nonReactiveData.nehubaViewer) {
         return
       }
@@ -531,8 +513,11 @@ export default {
     incomingColor: function () {
       return this.$store.state.incomingColor.map((v, idx) => idx === 3 ? v : v / 255)
     },
-    selectedIncomingVolumeIndex: function () {
+    selectedIncomingVolume: function () {
       return this.$store.state.selectedIncomingVolumeIndex
+    },
+    selectedIncomingVolumeId: function () {
+      return this.$store.state.selectedIncomingVolumeId
     },
     viewerIncomingScale: function () {
       return this.$store.state.incomingScale
