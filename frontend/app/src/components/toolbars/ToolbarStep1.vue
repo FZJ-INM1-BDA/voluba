@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div :style="layerControllerTransform" class="layerController">
+    <div :style="draggingMixin__Style" class="layerController">
       <div
         v-b-tooltip.right.hover
         :title="configureIncVolTooltip"
@@ -10,15 +10,19 @@
         <font-awesome-icon :icon="icon"/>
       </div>
       <layer-control
-        @header-mosuedown="headerMousedown($event)"
+        @header-mosuedown="draggingMixin__StartDragging($event)"
         class="layer-control" v-if="computedShowLayerControl"/>
     </div>
   </div>
 </template>
 <script>
 import LayerControl from "@/components/widgets/LayerControl";
+import DraggableMixin from '@/mixins/DraggableMixin'
 
 export default {
+  mixins: [
+    DraggableMixin
+  ],
   components: {
     LayerControl
   },
@@ -26,32 +30,10 @@ export default {
     return {
       nehubaAppended: false,
       showLayerControl: false,
-      transformX: 0,
-      transformY: 0,
-
-      mousedownX: null,
-      mousedownY: null,
-      mousemoveX: null,
-      mousemoveY: null
+      
     };
   },
-  nonReactiveData: {
-  },
   computed: {
-    layerControllerTransform: function () {
-      if ( this.mousedownX === null || this.mousedownY === null || this.mousemoveX === null || this.mousemoveY === null) {
-        return {
-          transform: `translate(${this.transformX}px, ${this.transformY}px)`
-        }
-      } else {
-        const deltaX = this.mousemoveX - this.mousedownX
-        const deltaY = this.mousemoveY - this.mousedownY
-
-        return {
-          transform: `translate(${this.transformX + deltaX}px, ${this.transformY + deltaY}px)`
-        }
-      }
-    },
     incVolSelected: function () {
       return this.$store.state.incomingVolumeSelected
     },
@@ -68,31 +50,6 @@ export default {
     }
   },
   methods: {
-    headerMousedown: function (event) {
-      this.mousedownX = event.clientX
-      this.mousedownY = event.clientY
-
-      const mousemoveHandler = event => {
-        this.mousemoveX = event.clientX
-        this.mousemoveY = event.clientY
-      }
-      
-      document.addEventListener('mousemove', mousemoveHandler)
-      document.addEventListener('mouseup', () => {
-
-        this.transformX += this.mousemoveX - this.mousedownX
-        this.transformY += this.mousemoveY - this.mousedownY
-
-        this.mousemoveX = null
-        this.mousemoveY = null
-        this.mousedownX = null
-        this.mousedownY = null
-
-        document.removeEventListener('mousemove', mousemoveHandler)
-      }, {
-        once: true
-      })
-    }
   },
   mounted() {
     this.$store.state.appendNehubaPromise
