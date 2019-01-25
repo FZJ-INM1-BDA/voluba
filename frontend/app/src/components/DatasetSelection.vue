@@ -1,6 +1,6 @@
 <template>
   <div class = "splashscreen-container">
-    <div class="jumbotron jumbotron-fluid">
+    <div v-if = "false" class="jumbotron jumbotron-fluid">
       <div class="container">
         <h1>
           Spatial Registration
@@ -10,45 +10,52 @@
         </span>
       </div>
     </div>
+
     <div class = "container">
 
     <!-- select reference volumes -->
-    <div class="mb-1 input-group">
-      <div class="input-group-prepend">
-        <span class="input-group-text">
-          Reference Volume
-        </span>
+    <div id="referenceDataset" class="mb-5">
+      <div class="title">
+        <strong>
+          Reference Volume:
+        </strong>
       </div>
+      <div class="mb-1 input-group">
 
-      <select
-        class = "form-control"
-        v-model = "selectReferenceVolumeId">
-        <option
-          v-for="referenceVolume in referenceVolumes"
-          :key="referenceVolume.id"
-          :value="referenceVolume.id">
-          {{ referenceVolume.name }}
-        </option>
-      </select>
+        <select
+          class = "form-control"
+          v-model = "selectReferenceVolumeId">
+          <option
+            v-for="referenceVolume in referenceVolumes"
+            :key="referenceVolume.id"
+            :value="referenceVolume.id">
+            {{ referenceVolume.name }}
+          </option>
+        </select>
+      </div>
     </div>
 
     <!-- incoming voluems -->
-    <div class="input-group">
-      <div class="input-group-prepend">
-        <span class="input-group-text">Incoming Volume</span>
+    <div>
+      <div class = "title">
+        <strong>
+          Incoming Volume
+        </strong>
       </div>
-      <select
-        class = "form-control"
-        v-model = "selectedIncomingVolumeId">
-        <option
-          v-for = "incomingVolume in incomingVolumes"
-          :key = "incomingVolume.id"
-          :value = "incomingVolume.id">
-          {{ incomingVolume.name }}
-        </option>
-      </select>
+      <div class="input-group">
+        <select
+          class = "form-control"
+          v-model = "selectedIncomingVolumeId">
+          <option
+            v-for = "incomingVolume in incomingVolumes"
+            :key = "incomingVolume.id"
+            :value = "incomingVolume.id">
+            {{ incomingVolume.name }}
+          </option>
+        </select>
 
-      <div class="input-group-append">
+      </div>
+      <div>
         <b-button variant="secondary" v-b-modal.uploadModal>
           <font-awesome-icon icon="upload"/>
           <span>Upload</span>
@@ -61,8 +68,8 @@
       <div
         :disabled="bothSelected"
         :class = "nextStepClass"
-        class="btn">
-        next step
+        class="float-sm-right btn">
+        Start registration!
       </div>
     </router-link>
     <upload-modal id="uploadModal" />
@@ -111,7 +118,11 @@ export default {
         : 'btn-secondary disabled'
     },
     bothSelected: function () {
-      return this.selectReferenceVolumeId !== null && this.selectedIncomingVolumeId !== null
+      console.log(
+        this.selectReferenceVolumeId,
+        this.selectedIncomingVolumeId
+      )
+      return this.selectReferenceVolumeId && this.selectedIncomingVolumeId
     },
     referenceVolumes: function () {
       return this.$store.state.referenceVolumes
@@ -142,5 +153,9 @@ export default {
 .splashscreen-container
 {
   pointer-events: all;
+}
+.title
+{
+  margin-bottom: 1em;
 }
 </style>

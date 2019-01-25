@@ -3,10 +3,10 @@ import Router from 'vue-router'
 
 import store from '@/store'
 
+import Step0 from '@/components/toolbars/ToolbarStep0'
 import Step1 from '@/components/toolbars/ToolbarStep1'
 import Step2 from '@/components/toolbars/ToolbarStep2'
 import Step3 from '@/components/toolbars/ToolbarStep3'
-import SplashScreen from '@/components/SplashScreen'
 import NotFound from '@/views/NotFound'
 
 const checkRefVolIncVolSet = (to, from, next) => {
@@ -29,7 +29,7 @@ export default new Router({
   routes: [
     {
       path: '/',
-      component: SplashScreen
+      component: Step0
     },
     {
       meta: {
