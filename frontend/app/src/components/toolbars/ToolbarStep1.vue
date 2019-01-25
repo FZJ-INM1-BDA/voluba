@@ -2,51 +2,55 @@
   <div>
     <div class="layerController">
       <div
-        :class = "showLayerControl ? '' : 'btn-shadow'"
-        @click = "showLayerControl = !showLayerControl"
-        class="layer-control-toggle btn btn-sm btn-secondary">
-        <font-awesome-icon :icon = "icon" />
+        v-b-tooltip.right.hover
+        :title="configureIncVolTooltip"
+        :class="showLayerControl ? '' : 'btn-shadow'"
+        @click="showLayerControl = !showLayerControl"
+        class="rounded-circle layer-control-toggle btn btn-sm btn-secondary">
+        <font-awesome-icon :icon="icon"/>
       </div>
-      <layer-control
-        class = "layer-control"
-        v-if = "commputedShowLayerControl" />
+      <layer-control class="layer-control" v-if="computedShowLayerControl"/>
     </div>
   </div>
 </template>
 <script>
-import LayerControl from '@/components/widgets/LayerControl'
-
+import LayerControl from "@/components/widgets/LayerControl";
 
 export default {
   components: {
     LayerControl
   },
-  data: function () {
+  data: function() {
     return {
       nehubaAppended: false,
       showLayerControl: false
-    }
+    };
   },
   computed: {
-    commputedShowLayerControl: function () {
+    incVolSelected: function () {
+      return this.$store.state.incomingVolumeSelected
+    },
+    configureIncVolTooltip: function() {
+      return `configure incoming volume`
+    },
+    computedShowLayerControl: function() {
       return this.nehubaAppended && this.showLayerControl
     },
-    icon: function () {
+    icon: function() {
       return this.showLayerControl
-        ? 'times'
-        : 'sliders-h'
+        ? "sliders-h" // 'times'
+        : "sliders-h"
     }
   },
   mounted() {
     this.$store.state.appendNehubaPromise
       .then(() => this.nehubaAppended = true)
       .catch(console.error)
-  },
-}
+  }
+};
 </script>
 <style scoped>
-.layerController
-{
+.layerController {
   pointer-events: all;
   width: 22em;
   margin-left: 1em;
@@ -54,29 +58,24 @@ export default {
   position: relative;
 }
 .layer-control,
-.layer-control-toggle
-{
-  position:absolute;
-  top:0;
-  left:0;
+.layer-control-toggle {
+  position: absolute;
+  top: 0;
+  left: 0;
 }
-.layer-control
-{
+.layer-control {
   z-index: 0;
   box-shadow: 0 0.4em 0.4em -0.2em rgba(50, 50, 50, 0.2);
 }
-.layer-control-toggle
-{
+.layer-control-toggle {
   z-index: 1;
   margin: 1em;
 }
 
-.btn-shadow
-{
+.btn-shadow {
   box-shadow: 0 0.4em 0.4em -0.1em rgba(50, 50, 50, 0.2);
 }
-.btn-shadow:hover
-{
+.btn-shadow:hover {
   box-shadow: 0 0.6em 0.6em -0.2em rgba(50, 50, 50, 0.2);
 }
 </style>

@@ -9,7 +9,7 @@ import Step3 from '@/components/toolbars/ToolbarStep3'
 import SplashScreen from '@/components/SplashScreen'
 import NotFound from '@/views/NotFound'
 
-const checkIncVolSet = (to, from, next) => {
+const checkRefVolIncVolSet = (to, from, next) => {
   console.log(store.state.selectedReferenceVolumeId, store.state.selectedIncomingVolumeId)
   if (store.state.selectedIncomingVolumeId && store.state.selectedReferenceVolumeId) {
     next()
@@ -33,7 +33,9 @@ export default new Router({
     },
     {
       meta: {
+        index: 0,
         shownInProgress: true,
+        firstStep: true,
         displayName: '3D Anchoring',
       },
       path: '/step1',
@@ -41,10 +43,11 @@ export default new Router({
       displayName: '3D Anchoring',
       shown: true,
       component: Step1,
-      beforeEnter: checkIncVolSet
+      beforeEnter: checkRefVolIncVolSet
     },
     {
       meta: {
+        index: 1,
         shownInProgress: true,
         displayName: 'Entering Landmark-Pairs',
       },
@@ -53,11 +56,13 @@ export default new Router({
       displayName: 'Entering Landmark-Pairs',
       shown: true,
       component: Step2,
-      beforeEnter: checkIncVolSet
+      beforeEnter: checkRefVolIncVolSet
     },
     {
       meta: {
+        index: 2,
         shownInProgress: true,
+        lastStep: true,
         displayName: 'Save & Export Results',
       },
       path: '/step3',
@@ -65,7 +70,7 @@ export default new Router({
       displayName: 'Save & Export Results',
       shown: true,
       component: Step3,
-      beforeEnter: checkIncVolSet
+      beforeEnter: checkRefVolIncVolSet
     },
     {
       path: '*',
