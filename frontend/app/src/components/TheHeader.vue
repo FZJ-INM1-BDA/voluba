@@ -1,5 +1,5 @@
 <template>
-  <b-navbar toggleable="md" type="dark" variant="dark">
+  <b-navbar id = "nav" toggleable="md" type="dark" variant="dark">
     <b-navbar-toggle target="nav_collapse"></b-navbar-toggle>
     <b-navbar-brand href="#">
       <img id="logo" src="../assets/HBP.png" width="32" height="32" alt="">
@@ -61,6 +61,10 @@ export default {
 </script>
 
 <style scoped>
+#nav
+{
+  z-index: 1060;
+}
   #logo {
     margin-right: 5px;
   }

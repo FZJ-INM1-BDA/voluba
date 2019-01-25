@@ -2,7 +2,8 @@
   <b-modal
     :hide-header-close	="true"
     :hide-footer="true"
-    modalPrevent
+    :no-close-on-esc= "true"
+    centered
     ref="modal"
     header-bg-variant="secondary"
     header-text-variant="light"
