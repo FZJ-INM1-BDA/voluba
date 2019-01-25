@@ -23,7 +23,8 @@ export default {
       
       document.addEventListener('mousemove', mousemoveHandler)
       document.addEventListener('mouseup', () => {
-
+        this.draggingMixin__mousemoveX = this.draggingMixin__mousemoveX || this.draggingMixin__mousedownX
+        this.draggingMixin__mousemoveY = this.draggingMixin__mousemoveY || this.draggingMixin__mousedownY
         this.draggingMixin__transformX += this.draggingMixin__mousemoveX - this.draggingMixin__mousedownX
         this.draggingMixin__transformY += this.draggingMixin__mousemoveY - this.draggingMixin__mousedownY
 
