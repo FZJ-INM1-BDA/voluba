@@ -89,10 +89,10 @@
           id="translation-component">
           <template slot = "body">
             <SliderComponent
-              @minus = "testTranslX = testTranslX - 0.1 < translMin ? translMin : testTranslX - 0.1"
-              @plus = "testTranslX = testTranslX + 0.1 > translMax ? translMax : testTranslX + 0.1"
-              @textInput = "testTranslX = $event"
-              @sliderInput = "testTranslX = $event"
+              @minus = "translationEvent({ axis: 'x', event:$event, delta: testTranslX - 0.1 < translMin ? 0 :  - 0.1 })"
+              @plus = "translationEvent({ axis: 'x', event:$event, delta: testTranslX + 0.1 > translMax ? 0 : 0.1 })"
+              @textInput = "translationEvent({axis: 'x', event:$event, delta: $event - testTranslX})"
+              @sliderInput = "translationEvent({axis: 'x', event:$event, delta: $event - testTranslX})"
               name = "X-axis"
               :min = "translMin"
               :max = "translMax"
@@ -100,10 +100,10 @@
               unit = "mm"
               :value = "testTranslX" />
             <SliderComponent
-              @minus = "testTranslY = testTranslY - 0.1 < translMin ? translMin : testTranslY - 0.1"
-              @plus = "testTranslY = testTranslY + 0.1 > translMax ? translMax : testTranslY + 0.1"
-              @textInput = "testTranslY = $event"
-              @sliderInput = "testTranslY = $event"
+              @minus = "translationEvent({axis: 'y', event:$event, delta: testTranslY - 0.1 < translMin ? 0 : - 0.1 }) "
+              @plus = "translationEvent({axis: 'y', event:$event, delta: testTranslY + 0.1 > translMax ? 0 : 0.1 }) "
+              @textInput = "translationEvent({axis: 'y', event:$event, delta: $event - testTranslY})"
+              @sliderInput = "translationEvent({axis: 'y', event:$event, delta: $event - testTranslY})"
               name = "Y-axis"
               :min = "translMin"
               :max = "translMax"
@@ -111,10 +111,10 @@
               unit = "mm"
               :value = "testTranslY" />
             <SliderComponent
-              @minus = "testTranslZ = testTranslZ - 0.1 < translMin ? translMin : testTranslZ - 0.1"
-              @plus = "testTranslZ = testTranslZ + 0.1 > translMax ? translMax : testTranslZ + 0.1"
-              @textInput = "testTranslZ = $event"
-              @sliderInput = "testTranslZ = $event"
+              @minus = "translationEvent({axis: 'z', event:$event, delta: testTranslZ - 0.1 < translMin ? 0 : - 0.1})"
+              @plus = "translationEvent({axis: 'z', event:$event, delta: testTranslZ + 0.1 > translMax ? 0 : 0.1})"
+              @textInput = "translationEvent({axis: 'z', event:$event, delta: $event - testTranslZ})"
+              @sliderInput = "translationEvent({axis: 'z', event:$event, delta: $event - testTranslZ})"
               name = "Z-axis"
               :min = "translMin"
               :max = "translMax"
@@ -251,7 +251,6 @@ export default {
         return this.testScale[0]
       },
       set: function (value) {
-        console.log(value)
         this.$store.dispatch('setScaleInc', {
           axis: 'x',
           value
@@ -378,34 +377,16 @@ export default {
     testTranslX: {
       get: function () {
         return this.testTransl[0] / 1e6
-      },
-      set: function (value) {
-        this.$store.dispatch('setTranslInc', {
-          axis: 'x', 
-          value: value * 1e6
-        })
       }
     },
     testTranslY: {
       get: function () {
         return this.testTransl[1] / 1e6
-      },
-      set: function (value) {
-        this.$store.dispatch('setTranslInc', {
-          axis: 'y', 
-          value: value * 1e6
-        })
       }
     },
     testTranslZ: {
       get: function () {
         return this.testTransl[2] / 1e6
-      },
-      set: function (value) {
-        this.$store.dispatch('setTranslInc', {
-          axis: 'z', 
-          value: value * 1e6
-        })
       }
     },
     testTransl: {
@@ -413,8 +394,6 @@ export default {
         const {vec3, mat4} = window.export_nehuba
         const xformMat = mat4.fromValues(...this.incTransformMatrix)
         const translVec = mat4.getTranslation(vec3.create(), xformMat)
-        const scaleVec = mat4.getScaling(vec3.create(), xformMat)
-        vec3.divide(translVec, translVec, scaleVec)
         return Array.from(translVec)
       }
     },
@@ -459,9 +438,6 @@ export default {
     }
   },
   watch: {
-    incTransformMatrix: function (array) {
-
-    },
     opacity: function (opacityVal) {
       this.$store.dispatch('changeOpacity', Number(opacityVal))
     },
@@ -485,6 +461,38 @@ export default {
     }
   },
   methods: {
+    translationEvent: function ({axis, delta}) {
+      const {mat4, quat, vec3} = window.export_nehuba
+      const pos = vec3.create()
+      const idx = axis === 'x' ? 0 : axis === 'y' ? 1 : axis === 'z' ? 2 : null
+
+      if (idx === null) {
+        return
+      }
+      
+      pos[idx] = delta
+
+      const incXM = mat4.fromValues(...this.incTransformMatrix)
+
+      /**
+       * account for internal scaling
+       */
+      const incScale = mat4.getScaling(vec3.create(), incXM)
+      vec3.inverse(incScale, incScale)
+      vec3.mul(pos, pos, incScale)
+      
+      /**
+       * account for internal rotation of inc volume
+       */
+      const incRot = mat4.getRotation(quat.create(), incXM)
+      quat.invert(incRot, incRot)
+      vec3.transformQuat(pos, pos, incRot)
+
+      this.$store.dispatch('translIncBy', {
+        axis: 'xyz',
+        value: Array.from(pos)
+      })
+    },
     flipAxis: function (axis) {
       this.$store.dispatch('flipAxis', { axis })
     },

@@ -176,10 +176,33 @@ export default {
         // this.$options.nonReactiveData.ngUserLayer.setVisible(val)
       }
     },
-    $route: function (from, to) {
-      if (this.$options.nonReactiveData.ngUserLayer) {
-        // console.log('setVisible', this.previewMode || to.path === '/step2')
-        // this.$options.nonReactiveData.ngUserLayer.setVisible(this.previewMode || to.path === '/step2')
+    $route: function (to, from) {
+      if (this.$options.nonReactiveData.ngUserLayer && to.path === '/step2') {
+        const { lower, upper } = this.$options.nonReactiveData.ngUserLayer.layer.renderLayer.boundingBox
+        const { vec3, mat4 } = window.export_nehuba
+        const boundingVec3 = vec3.subtract(vec3.create(), upper, lower)
+        const incXM = mat4.fromValues(...this.incTransformMatrix)
+
+        const translVec3 = mat4.getTranslation(vec3.create(), incXM)
+        const scalingVec3 = mat4.getScaling(vec3.create(), incXM)
+        /**
+         * TODO can scaling ever be genative?
+         */
+        const actualDimVec3 = vec3.mul(vec3.create(), boundingVec3, scalingVec3)
+
+        const centerVec3 = vec3.scaleAndAdd(vec3.create(), translVec3, actualDimVec3, 0.5)
+        const nm = Math.min(...actualDimVec3)
+
+        /**
+         * set viewer center
+         */
+        this.$options.nonReactiveData.nehubaViewer.setPosition(centerVec3, true)
+        
+        /**
+         * set viewer zoomlevel
+         */
+        const viewportMin = Math.min(window.innerHeight, window.innerWidth /2 )
+        this.$options.nonReactiveData.nehubaViewer.ngviewer.navigationState.zoomFactor.restoreState(nm / viewportMin)
       }
     }
   },
@@ -206,13 +229,6 @@ export default {
       // if (this.movingIncoming || this.rotatingIncoming) {
       //   this.committedTransform = Array.from(this.$options.nonReactiveData.ngUserLayer.layer.transform.transform)
       // }
-      this.rotatingIncoming = false
-      this.movingIncoming = false
-      this.mousemoveStart = null
-      this.movingIncomingIndex = null
-      this.rotateAbsoluteStart = null
-
-      this.$options.nonReactiveData.mousedownMatrix = null
     },
     mousedown: function (event) {
       if (this.mouseOverIncoming) {
@@ -230,6 +246,24 @@ export default {
 
         const element = event.srcElement || event.originalTarget
         this.movingIncomingIndex = determineElement(element)
+
+        document.addEventListener('mouseup', ev => {
+
+          /**
+           * instead of attaching mouseup listener to this element, attach to the whole body
+           * so when user mousedown on nehuba, then mouseover other elements, things don't break
+           */
+          this.rotatingIncoming = false
+          this.movingIncoming = false
+          this.mousemoveStart = null
+          this.movingIncomingIndex = null
+          this.rotateAbsoluteStart = null
+
+          this.$options.nonReactiveData.mousedownMatrix = null
+        }, {
+          once: true,
+          capture: true
+        })
       } else {
 
         /**
@@ -252,8 +286,9 @@ export default {
       if ((this.translationByDragEnabled && this.movingIncoming) || (this.rotationByDragEnabled && this.rotatingIncoming)) {
         const {vec3, mat4, quat} = window.export_nehuba
 
-        const deltaX = event.screenX - this.mousemoveStart[0]
-        const deltaY = event.screenY - this.mousemoveStart[1]
+        const deltaX = event.movementX
+        const deltaY = event.movementY
+
         if (this.translationByDragEnabled && this.movingIncoming) {
           /**
            * first, translation mouse delta into 3d delta
@@ -272,21 +307,21 @@ export default {
           const xformOnMousedown = mat4.fromValues(...this.$options.nonReactiveData.mousedownMatrix)
           
           /**
-           * scale delta pos
+           * apply scale to delta pos
            */
           const scaleOnMousedown = mat4.getScaling(vec3.create(), xformOnMousedown)
           vec3.divide(pos, pos, scaleOnMousedown)
-          
+
           /**
-           * account for xform prior to mousedown
+           * account for the internal rotation of inc volume
            */
-          const translOnMousedown = mat4.getTranslation(vec3.create(), xformOnMousedown)
-          vec3.divide(translOnMousedown, translOnMousedown, scaleOnMousedown)
-          vec3.add(pos, pos, translOnMousedown)
+          const incRot = mat4.getRotation(quat.create(), mat4.fromValues(...this.incTransformMatrix))
+          quat.invert(incRot, incRot)
+          vec3.transformQuat(pos, pos, incRot)
           
-          this.$store.dispatch('setTranslInc', {
+          this.$store.dispatch('translIncBy', {
             axis: 'xyz',
-            value: Array.from(pos)
+            value: Array.from(pos).map(v => v / 1e6)
           })
         }
 
@@ -313,8 +348,8 @@ export default {
               deltaY * Math.PI / 180
             )
           )
-          this.$store.dispatch('setRotateIncByQuat', { quaternion: Array.from(finalRotation) })
-          // this.rotation = Array.from(finalRotation)
+          // this.$store.dispatch('setRotateIncByQuat', { quaternion: Array.from(finalRotation) })
+          this.$store.dispatch('rotIncBy', {quaternion: Array.from(finalRotation)})
         }
       }
     },
@@ -500,6 +535,7 @@ export default {
   },
   beforeDestroy () {
     this.$options.nonReactiveData.subscriptions.forEach(s => s.unsubscribe())
+    this.$options.nonReactiveData.nehubaViewer.dispose()
   },
   components: {
     NehubaLandmarksOverlay

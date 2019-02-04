@@ -92,7 +92,6 @@ const store = new Vuex.Store({
 
     referenceTemplate: null,
     incomingTemplate: null,
-    incomingTransformMatrix: null,
     incomingScale: [1, 1, 1],
     incomingColor: [252, 200, 0, 0.5],
     incomingVolumeSelected: false,
@@ -145,9 +144,6 @@ const store = new Vuex.Store({
     },
     setSelectedIncomingVolumeId (state, id) {
       state.selectedIncomingVolumeId = id
-    },
-    setIncomingTransformMatrix (state, array) {
-      state.incomingTransformMatrix = array
     },
     setPrimaryNehubaNavigationPosition (state, array) {
       state.primaryNehubaNavigationPosition = array
@@ -277,7 +273,6 @@ const store = new Vuex.Store({
       const mulM = mat4.fromValues(...matrix)
       mat4.mul(incM, incM, mulM)
       const det = mat4.determinant(incM)
-      console.log({det})
       state.incTransformMatrix = Array.from(incM)
     }
   },
@@ -706,6 +701,45 @@ const store = new Vuex.Store({
        */
       mat4.translate(xformMat, xformMat, vec3.fromValues(...newTranslArray))
       commit('setIncTransformMatrix', Array.from(xformMat))
+    },
+    translIncBy ({commit}, {axis, value}) {
+      const idx = axis === 'x'
+        ? 0
+        : axis === 'y'
+          ? 1
+          : axis === 'z'
+            ? 2
+            : axis === 'xyz'
+              ? -1
+              : null
+      if (idx === null) {
+        return
+      }
+
+      const {mat4, vec3} = window.export_nehuba
+      const translVec = vec3.create()
+      if (idx >= 0) {
+        translVec[idx] = value * 1e6
+      } else {
+        translVec[0] = value[0] * 1e6
+        translVec[1] = value[1] * 1e6
+        translVec[2] = value[2] * 1e6
+      }
+      const translM = mat4.fromTranslation(mat4.create(), translVec)
+
+      commit('multiplyIncTransmMatrix', Array.from(translM))
+    },
+    rotIncBy ({commit}, { quaternion }) {
+      if (!quaternion) {
+        return
+      }
+      const {quat, vec3, mat4} = window.export_nehuba
+      const axis = vec3.create()
+      const rotQuat = quat.fromValues(...quaternion)
+      const angle = quat.getAxisAngle(axis, rotQuat)
+
+      const xformMat = mat4.fromRotation(mat4.create(), angle, rotQuat)
+      commit('multiplyIncTransmMatrix', xformMat)
     }
   }
 })
