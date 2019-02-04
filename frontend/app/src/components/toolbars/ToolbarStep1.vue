@@ -1,22 +1,32 @@
 <template>
   <div>
-    <div :style="draggingMixin__Style" class="layerController">
-      <div
-        v-b-tooltip.right.hover
-        :title="configureIncVolTooltip"
-        :class="showLayerControl ? '' : 'btn-shadow'"
-        @click="showLayerControl = !showLayerControl"
-        class="rounded-circle layer-control-toggle btn btn-sm btn-secondary">
-        <font-awesome-icon :icon="icon"/>
-      </div>
-      <layer-control
-        @header-mosuedown="draggingMixin__StartDragging($event)"
-        class="layer-control" v-if="computedShowLayerControl"/>
-    </div>
+    <nib-component :style="draggingMixin__Style">
+
+      <!-- icon -->
+      <template slot="icon">
+        <div
+          v-b-tooltip.right.hover
+          :title="configureIncVolTooltip"
+          :class="showLayerControl ? '' : 'btn-shadow'"
+          @click="toggleShowLayerControl"
+          class="rounded-circle layer-control-toggle btn btn-sm btn-secondary point-events">
+          <font-awesome-icon :icon="icon"/>
+        </div>
+      </template>
+
+      <!-- body -->
+      <template slot="body">
+        <layer-control
+          @header-mousedown="draggingMixin__StartDragging"
+          class="point-events layer-control"
+          v-if="computedShowLayerControl"/>
+      </template>
+    </nib-component>
   </div>
 </template>
 <script>
-import LayerControl from "@/components/widgets/LayerControl";
+import LayerControl from "@/components/LayerControl"
+import NibComponent from '@/components/NibComponent'
 import DraggableMixin from '@/mixins/DraggableMixin'
 
 export default {
@@ -24,13 +34,13 @@ export default {
     DraggableMixin
   ],
   components: {
-    LayerControl
+    LayerControl,
+    NibComponent
   },
   data: function() {
     return {
       nehubaAppended: false,
       showLayerControl: false,
-      
     };
   },
   computed: {
@@ -50,6 +60,12 @@ export default {
     }
   },
   methods: {
+    toggleShowLayerControl: function () {
+      this.showLayerControl = !this.showLayerControl
+      if (!this.showLayerControl) {
+        this.draggingMixin__ResetPosition()
+      }
+    }
   },
   mounted() {
     this.$store.state.appendNehubaPromise
@@ -66,25 +82,10 @@ export default {
   margin-top: 1em;
   position: relative;
 }
-.layer-control,
-.layer-control-toggle {
-  position: absolute;
-  top: 0;
-  left: 0;
-}
-.layer-control {
-  z-index: 0;
-  box-shadow: 0 0.4em 0.4em -0.2em rgba(50, 50, 50, 0.2);
-}
-.layer-control-toggle {
-  z-index: 1;
-  margin: 1em;
-}
 
-.btn-shadow {
-  box-shadow: 0 0.4em 0.4em -0.1em rgba(50, 50, 50, 0.2);
-}
-.btn-shadow:hover {
-  box-shadow: 0 0.6em 0.6em -0.2em rgba(50, 50, 50, 0.2);
+
+.point-events
+{
+  pointer-events: all;
 }
 </style>

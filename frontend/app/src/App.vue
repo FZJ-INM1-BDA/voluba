@@ -22,28 +22,48 @@
         <router-view />
       </div>
     </main>
+
+    <!-- modals -->
+    <div>
+      <load-landmark-pairs-modal
+        ref="loadLandmarkPairsModal"
+        id="loadLandmarkPairsModal"
+        ok-disabled="true" />
+      <transformation-matrix-modal
+        ref="transformationMatrixModal"
+        id="transformationMatrixModal"
+        :transformationMatrix="this.$store.state.landmarkTransformationMatrix" />
+      <upload-modal
+        ref="uploadModal"
+        id="uploadModal" />
+    </div>
     <!--<footer-component/>-->
   </div>
 </template>
 
 <script>
 import HeaderComponent from '@/components/TheHeader'
-import SidebarComponent from '@/components/TheSidebar'
 import NehubaComponent from '@/components/Nehuba'
 import SimpleNehubaComponent from '@/components/SimpleNehuba'
 // import FooterComponent from '@/components/TheFooter'
-import { MainSide } from 'vue-components'
-import { getDefaultNehubaConfigLight } from '@/components/constants'
+import { getDefaultNehubaConfigLight } from '@/constants'
+
+// modals
+import LoadLandmarkPairsModal from '@/components/modals/LoadLandmarkPairsModal'
+import TransformationMatrixModal from '@/components/modals/TransformationMatrixModal'
+import UploadModal from '@/components/modals/UploadModal'
 
 export default {
   name: 'App',
   components: {
     HeaderComponent,
-    SidebarComponent,
-    MainSide,
     NehubaComponent,
-    SimpleNehubaComponent
-    // FooterComponent
+    SimpleNehubaComponent,
+
+    // modals
+    TransformationMatrixModal,
+    LoadLandmarkPairsModal,
+    UploadModal
   },
   data: function () {
     return {
@@ -51,34 +71,36 @@ export default {
       primaryNehubaReady: false
     }
   },
+  mounted: function () {
+    this.$store.subscribeAction(({ type, payload }) => {
+      switch (type) {
+        case 'openModal':
+          const modalId = payload && payload.modalId
+          const modal = modalId && this.$refs[modalId]
+          if (modal) {
+            modal.showModal()
+          }
+          break;
+        default:
+      }
+    })
+  },
   computed: {
-    showSplashScreen: function () {
-      const obj = this.$router.options.routes.find(r => r.path === this.$route.path)
-      return !(obj && obj.shown)
-    },
     sidebarWidth: function () {
       return this.$store.state.sidebarWidth
     },
     simpleNehubaConfig: function () {
-      const idx = this.$store.state.selectedIncomingVolumeIndex
-
-      return idx !== null && idx >= 0
-        ? getDefaultNehubaConfigLight(this.$store.state.incomingVolumes[idx].value)
-        : null
+      const id = this.$store.state.selectedIncomingVolumeId
+      const incVol = id && this.$store.state.incomingVolumes.find(v => v.id === id)
+      return incVol && incVol.imageSource && getDefaultNehubaConfigLight(incVol.imageSource)
     },
     showSimpleNehuba: function () {
-      return this.showSecondNehuba && this.primaryNehubaReady && !this.previewMode
+      return this.showSecondNehuba && this.primaryNehubaReady
     }
   },
   methods: {
-    expandSidebar: function () {
-      this.$store.dispatch('setSidebarCollapseState', false)
-    },
     mainNehubaReady: function () {
       this.primaryNehubaReady = true
-    },
-    exitPreviewMode: function () {
-      this.$store.dispatch('enablePreviewMode', false)
     }
   },
   watch: {
@@ -109,23 +131,13 @@ export default {
   position:relative;
 }
 
-.mainside-main-item.sidebar-control
-{
-  margin-top: -5em;
-  margin-left: 1em;
-  z-index: 5;
-  /* width: 0;
-  height: 100%;
-  display: flex;
-  flex-direction: column-reverse; */
-}
-
 .underlay
 {
   position: relative;
   z-index: 1;
   width: 100%;
   height: 100%;
+  display: flex;
 }
 
 .overlay

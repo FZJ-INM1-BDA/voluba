@@ -60,6 +60,7 @@ export default {
       }
     },
     startFromScratch: function () {
+      this.$store.dispatch('removeLandmarkPairs')
       this.$router.push({path: '/'})
     }
   },

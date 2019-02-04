@@ -31,7 +31,11 @@ export default {
   computed: {
     styleLandmark: function () {
       return {
-        opacity: this.active ? '1.0' : '0.3',
+        opacity: this.active ?
+          this.zOffset > 0
+            ? '1.0'
+            : '0.5'
+          : '0.05',
         color: this.color
       }
     },

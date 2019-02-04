@@ -1,17 +1,5 @@
 <template>
-  <div class = "splashscreen-container">
-    <div v-if = "false" class="jumbotron jumbotron-fluid">
-      <div class="container">
-        <h1>
-          Spatial Registration
-        </h1>
-        <span>
-          Select a reference volume and an incoming volume to get started.
-        </span>
-      </div>
-    </div>
-
-    <div class = "container">
+  <div class = "container">
 
     <!-- select reference volumes -->
     <div id="referenceDataset" class="mb-5">
@@ -24,7 +12,7 @@
 
         <select
           class = "form-control"
-          v-model = "selectReferenceVolumeId">
+          v-model = "selectedReferenceVolumeId">
           <option
             v-for="referenceVolume in referenceVolumes"
             :key="referenceVolume.id"
@@ -55,15 +43,39 @@
           </option>
         </select>
 
+        <!-- incoming volume control -->
+        <!-- currently only supports delete -->
+        <div v-if="selectedIncomingVolumeId" class="input-group-append">
+          <!-- wrapper required because .disabled has pointer-events: none -->
+          <!-- relevant SO issue: -->
+          <!-- https://github.com/twbs/bootstrap/issues/10049 -->
+          <!-- https://github.com/twbs/bootstrap/pull/11094 -->
+          <div
+            :title="deleteBtnTooltipText"
+            v-b-tooltip.hover.right>
+            <div
+              @click="removeSelectedIncVolume()"
+              :class="deleteBtnClass"
+              class="input-group-btn btn">
+              <font-awesome-icon icon="trash-alt" />
+              Delete
+            </div>
+          </div>
+        </div>
       </div>
-      <div>
-        <b-button variant="secondary" v-b-modal.uploadModal>
-          <font-awesome-icon icon="upload"/>
-          <span>Upload</span>
-        </b-button>
+
+      <!-- deletion feedback -->
+      <div
+        v-if="showAlert"
+        :class="alertClass"
+        class="alert">
+        {{ deletionError }}
+        {{ deletionMessage }}
       </div>
+
     </div>
 
+    <upload-volume-component />
     <hr />
     <router-link to = "/step1">
       <div
@@ -73,33 +85,53 @@
         Start registration!
       </div>
     </router-link>
-    <upload-modal id="uploadModal" />
-    </div>
   </div>
 </template>
 
 <script>
-import UploadModal from '@/components/modals/UploadModal'
+import UploadVolumeComponent from '@/components/UploadVolume'
 export default {
+  components: {
+    UploadVolumeComponent
+  },
   data: function () {
     return {
       dummyIncomingVolume: {
         id: null,
         name: '-- Please select an incoming volume --',
         disabled: true
-      }
+      },
+      deletionInProgress: false,
+      deletionError: null,
+      deletionMessage: null,
+      timeoutId:null
     }
   },
   computed: {
-    selectReferenceVolumeIdx: {
-      get: function () {
-        return this.$store.state.selectReferenceVolumeIdx
-      },
-      set: function (idx) {
-        this.$store.dispatch('selectReferenceVolumeWithIndex', idx)
-      }
+    showAlert: function () {
+      return this.deletionError || this.deletionMessage
     },
-    selectReferenceVolumeId: {
+    alertClass: function () {
+      return this.deletionError
+        ? 'alert-danger'
+        : this.deletionMessage
+          ? 'alert-success'
+            : 'alert-info'
+    },
+    deleteBtnClass: function () {
+      return this.incomingVolumeCanBeDeleted
+        ? `btn-danger ${this.deletionInProgress ? 'disabled' : ''}`
+        : 'btn-secondary disabled'
+    },
+    deleteBtnTooltipText: function() {
+      return this.incomingVolumeCanBeDeleted
+        ? 'Delete this incoming volume.'
+        : 'This volume cannot be deleted.'
+    },
+    incomingVolumeCanBeDeleted: function () {
+      return this.selectedIncomingVolumeId && /^user-/.test(this.selectedIncomingVolumeId)
+    },
+    selectedReferenceVolumeId: {
       get: function () {
         return this.$store.state.selectedReferenceVolumeId
       },
@@ -123,7 +155,7 @@ export default {
         : 'btn-secondary disabled'
     },
     bothSelected: function () {
-      return this.selectReferenceVolumeId && this.selectedIncomingVolumeId
+      return this.selectedReferenceVolumeId && this.selectedIncomingVolumeId
     },
     referenceVolumes: function () {
       return this.$store.state.referenceVolumes
@@ -139,10 +171,42 @@ export default {
       next()
     }
   },
-  components: {
-    UploadModal
+  mounted() {
+    this.$store.subscribeAction(({type, payload}) => {
+      if (type === 'updateIncVolumesResult') {
+        const {message, error} = payload
+
+        if (!message || !/^Delete/.test(message)) {
+          return
+        }
+
+        if (this.timeoutId) {
+          clearTimeout(this.timeoutId)
+        }
+
+        if (error) {
+          this.deletionError = message
+        } else {
+          this.deletionMessage = message
+        }
+        this.timeoutId = setTimeout(() => {
+          this.deletionError = null
+          this.deletionMessage = null
+        }, 5000)
+      }
+    })
   },
   methods: {
+    removeSelectedIncVolume: function () {
+      const confirm = window.confirm(`Are you sure you would like to delete the incoming volume: ${this.selectedIncomingVolumeId}?
+      
+      Please note, this action is non-reversible`)
+      if (!confirm) {
+        return
+      }
+      this.deletionInProgress = true
+      this.$store.dispatch('deleteIncomingVolume', { id: this.selectedIncomingVolumeId })
+    },
     nextStep: function () {
       this.$store.dispatch('nextStep')
     }
@@ -151,7 +215,7 @@ export default {
 </script>
 
 <style scoped>
-.splashscreen-container
+.container
 {
   pointer-events: all;
 }

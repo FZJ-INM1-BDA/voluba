@@ -1,5 +1,10 @@
 <template>
-  <b-modal :id="id" title="Upload" header-bg-variant="secondary" header-text-variant="light">
+  <b-modal
+    ref="modal"
+    :id="id"
+    title="Upload"
+    header-bg-variant="secondary"
+    header-text-variant="light">
     <p>Text</p>
   </b-modal>
 </template>

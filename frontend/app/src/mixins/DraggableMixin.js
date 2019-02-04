@@ -11,6 +11,10 @@ export default {
     }
   },
   methods: {
+    draggingMixin__ResetPosition: function () {
+      this.draggingMixin__transformX = 0
+      this.draggingMixin__transformY = 0
+    },
     draggingMixin__StartDragging: function (event) {
 
       this.draggingMixin__mousedownX = event.clientX

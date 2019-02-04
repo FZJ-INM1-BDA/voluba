@@ -1,6 +1,7 @@
 <template>
   <b-modal
     :id = "id"
+    centered
     ref = "modal"
     title="Load Landmark-Pairs"
     header-bg-variant="secondary"
@@ -29,7 +30,7 @@
 </template>
 
 <script>
-import { oldJson, openFileDialog, loadFromFile } from '@/components/constants'
+import { oldJson, openFileDialog, loadFromFile } from '@//constants'
 
 export default {
   name: 'UploadModal',
@@ -45,6 +46,9 @@ export default {
   methods: {
     hideModal: function () {
       this.$refs.modal.hide()
+    },
+    showModal: function () {
+      this.$refs.modal.show()
     },
     loadDefaultLandmarkPairs: function () {
       this.errorMessage = ''

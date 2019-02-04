@@ -1,6 +1,10 @@
 <template>
   <div class="nehuba-container">
-    <div @sliceRenderEvent = "sliceRenderEvent" class = "nehubaElement" :id = "cid">
+    <div
+      v-if="vif"
+      @sliceRenderEvent="sliceRenderEvent"
+      class = "nehubaElement"
+      :id = "cid">
       {{ placeholderText }}
     </div>
     <nehuba-landmarks-overlay
@@ -14,9 +18,12 @@
 </template>
 <script>
 import NehubaLandmarksOverlay from '@/components/NehubaLandmarksOverlay'
-import { defaultXform, determineElement } from './constants'
+import NehubaBaseMixin from '@/mixins/NehubaBase'
 
 export default {
+  mixins: [
+    NehubaBaseMixin
+  ],
   components: {
     NehubaLandmarksOverlay
   },
@@ -34,12 +41,7 @@ export default {
       loadingText: 'Loading simple nehuba ...',
       cid: null,
       errorMessage: null,
-
-      dataToViewport: [
-        defaultXform,
-        defaultXform,
-        defaultXform
-      ],
+      vif: true,
 
       subscriptions: []
     }
@@ -50,12 +52,6 @@ export default {
         case 'setSecondaryNehubaNavigation':
           const vec3 = window.export_nehuba.vec3
           this.$options.nonReactiveData.nehubaViewer.setPosition(vec3.fromValues(...payload.coord.map(v => v * 1e6)), true)
-          break
-        case 'redrawNehuba':
-          if (this.$options.nonReactiveData.nehubaViewer) {
-            this.$options.nonReactiveData.nehubaViewer.redraw()
-          }
-          setTimeout(() => this.navigationChanged())
           break
         default:
       }
@@ -87,31 +83,9 @@ export default {
     }
   },
   methods: {
-    sliceRenderEvent: function (event) {
-      if (
-        this.dataToViewport[0] !== defaultXform &&
-        this.dataToViewport[1] !== defaultXform &&
-        this.dataToViewport[2] !== defaultXform
-      ) {
-        return
-      }
-
-      const element = event.srcElement || event.originalTarget
-      this.dataToViewport[determineElement(element)] = event.detail.nanometersToOffsetPixels
-
-      if (
-        this.dataToViewport[0] !== defaultXform &&
-        this.dataToViewport[1] !== defaultXform &&
-        this.dataToViewport[2] !== defaultXform
-      ) {
-        this.navigationChanged()
-      }
-    },
-    navigationChanged: function () {
-      this.$refs.lmOverlay.$forceUpdate()
-    },
     preInit: function () {
       return new Promise((resolve, reject) => {
+        this.vif = true
         this.cid = 'neuroglancer-container'
         resolve()
       })
@@ -154,25 +128,37 @@ export default {
       this.errorMessage = e
     },
     destroyNehuba: function () {
-      if (window.secondaryViewer) {
-        window.secondaryViewer = null
-      }
-      if (window.secondaryNehubaViewer) {
-        window.secondaryNehubaViewer = null
-      }
-      if (this.$options.nonReactiveData.nehubaViewer) {
-        this.$options.nonReactiveData.nehubaViewer.dispose()
-        this.$options.nonReactiveData.nehubaViewer = null
-      }
-      this.$options.nonReactiveData.subscriptions.forEach(s => s.unsubscribe())
+      return new Promise((resolve, reject) => {
+
+        if (window.secondaryViewer) {
+          window.secondaryViewer = null
+        }
+        if (window.secondaryNehubaViewer) {
+          window.secondaryNehubaViewer = null
+        }
+        if (this.$options.nonReactiveData.nehubaViewer) {
+          this.$options.nonReactiveData.nehubaViewer.dispose()
+          this.$options.nonReactiveData.nehubaViewer = null
+        }
+        this.$options.nonReactiveData.subscriptions.forEach(s => s.unsubscribe())
+
+        if (this.nehubaBaseDestroyHook) {
+          this.nehubaBaseDestroyHook()
+        }
+        this.vif = false
+        resolve()
+      })
     }
   },
   watch: {
     config: function () {
       this.destroyNehuba()
-      if (this.config) {
-        this.initNehuba()
-      }
+        .then(() => {
+          if (this.config) {
+            this.initNehuba()
+          }
+        })
+        .catch(console.error)
     }
   },
   beforeDestroy () {

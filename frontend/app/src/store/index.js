@@ -1,7 +1,8 @@
 
-import { randomColor, generateId } from '@/components/constants'
+import { randomColor, generateId, UPLOAD_URL } from '@//constants'
 import Vuex from 'vuex'
 import Vue from 'vue'
+import axios from 'axios'
 
 Vue.use(Vuex)
 
@@ -11,6 +12,11 @@ const store = new Vuex.Store({
       if ('export_nehuba' in window) {
         resolve()
       } else {
+        
+        /**
+         * TODO need to check browser compatibility
+         */
+
         const el = document.createElement('script')
         el.src = 'main.bundle.js'
         el.onload = () => {
@@ -84,8 +90,6 @@ const store = new Vuex.Store({
 
     selectTemplate: null,
 
-    sidebarCollapse: false,
-    sidebarWidth: 350,
     referenceTemplate: null,
     incomingTemplate: null,
     incomingTransformMatrix: null,
@@ -113,7 +117,6 @@ const store = new Vuex.Store({
 
     synchronizeZoom: false,
     synchronizeCursor: false,
-    previewMode: false,
     backendURL: process.env.VUE_APP_BACKEND_URL || 'http://localhost:5000/api',
 
     /**
@@ -125,6 +128,9 @@ const store = new Vuex.Store({
     landmarkRMSE: null
   },
   mutations: {
+    setIncomingVolumes (state, { volumes }) {
+      state.incomingVolumes = volumes
+    },
     selectReferenceTemplate (state, refTemplate) {
       state.referenceTemplate = refTemplate
     },
@@ -155,9 +161,6 @@ const store = new Vuex.Store({
     setViewerSliceOrientation (state, array) {
       state.viewerSliceOrientation = array
     },
-    setIncomingTemplateScale (state, array) {
-      state.incomingScale = array
-    },
     setIncomingVolumeHighlighted (state, bool) {
       state.incomingVolumeSelected = bool
     },
@@ -181,29 +184,8 @@ const store = new Vuex.Store({
     selectStep (state, index) {
       state.activeStepIndex = index
     },
-    hideSidebar (state) {
-      state.sidebarCollapse = true
-    },
-    showSidebar (state) {
-      state.sidebarCollapse = false
-    },
     selectMethodIndex (state, index) {
       state.selectedTransformationIndex = index
-    },
-    changeSidebarWidth (state, size) {
-      state.sidebarWidth = size
-    },
-    flipLeftRight (state) {
-      // TODO: implement
-      console.log('flip l/r')
-    },
-    flipInferiorSuperior (state) {
-      // TODO: implement
-      console.log('flip i/s')
-    },
-    flipAnteriorPosterior (state) {
-      // TODO: implement
-      console.log('flip a/p')
     },
     updateOverlayColor (state, newOverlayColor) {
       state.overlayColor = newOverlayColor
@@ -213,9 +195,6 @@ const store = new Vuex.Store({
     },
     enableSynchronizeCursor (state, synchronizeCursor) {
       state.synchronizeCursor = synchronizeCursor
-    },
-    enablePreviewMode (state, previewMode) {
-      state.previewMode = previewMode
     },
     changeLandmarkTransformationMatrix (state, transformationMatrix) {
       state.landmarkTransformationMatrix = transformationMatrix
@@ -291,20 +270,102 @@ const store = new Vuex.Store({
     },
     setIncTransformMatrix (state, matrix) {
       state.incTransformMatrix = matrix
+    },
+    multiplyIncTransmMatrix (state, matrix) {
+      const { mat4 } = window.export_nehuba
+      const incM = mat4.fromValues(...state.incTransformMatrix)
+      const mulM = mat4.fromValues(...matrix)
+      mat4.mul(incM, incM, mulM)
+      const det = mat4.determinant(incM)
+      console.log({det})
+      state.incTransformMatrix = Array.from(incM)
     }
   },
   actions: {
+    deleteIncomingVolume ({ dispatch }, {id}) {
+      if (!/^user-/.test(id)) {
+        return
+      }
+      const actualId = /^user-(.*?)$/.exec(id)[1]
+      axios(`${UPLOAD_URL}/user/nifti/${actualId}`, {
+        method: 'DELETE'
+      }).then(res => {
+        /**
+         * successful delete
+         */
+        dispatch('updateIncVolumes', {
+          message: 'Delete incoming volume complete.'
+        })
+      }).catch(error => {
+        /**
+         * error during delete (?)
+         */
+        dispatch('updateIncVolumes', {
+          error,
+          message: 'Delete incoming volume error.'
+        })
+      })
+    },
+    updateIncVolumesResult (store, {error, message}) {
+      /**
+       * required for subscribe action
+       */
+    },
+    updateIncVolumes ({ commit, state, dispatch }, {error, message} = {error:null, message: null}) {
+      axios(`${UPLOAD_URL}/user/list`)
+        .then(({data}) => {
+          const volumes = data.map(url => {
+            return {
+              name: url,
+              imageSource: `precomputed://${UPLOAD_URL}/user/nifti/${url}`,
+              id: `user-${url}`
+            }
+          })
+          const newVolumes = state.incomingVolumes
+            .filter(v => !/^user-/.test(v.id))
+            .concat(volumes)
+
+          commit('setIncomingVolumes', {volumes: newVolumes})
+          dispatch('updateIncVolumesResult', {
+            error: error ? error : null,
+            message: message ? message : 'Incoming volumes updated'
+          })
+        })
+        .catch(e => {
+          dispatch('updateIncVolumesResult', {
+            error: error ? error : e,
+            message: error ? message : 'GET /user/list error'
+          })
+          /**
+           * should the available inc volumes be re-updated?
+           */
+        })
+    },
+    uploadVolume ({ dispatch }) {
+      dispatch('openModal', {modalId: 'uploadModal'})
+    },
+    loadLandmarks ({ dispatch }) {
+      dispatch('openModal', {modalId: 'loadLandmarkPairsModal'})
+    },
+    openModal (store, { modalId }) {
+      /**
+       * required for subscribe action
+       */
+    },
+    flipAxis ({ commit }, { axis }) {
+      const { mat4 } = window.export_nehuba
+      const mulM = mat4.create()
+      mulM[
+        axis === 0
+          ? 0
+          : axis === 1
+            ? 5
+            : 10
+      ] = -1
+      commit('multiplyIncTransmMatrix', Array.from(mulM))
+    },
     selectReferenceVolumeWithId ({commit}, id) {
       commit('setSelectedReferenceVolumeWithId', id)
-    },
-    selectReferenceVolumeWithIndex ({commit}, index) {
-      commit('setReferenceIncomingVolume', index)
-    },
-    selectIncomingVolume ({ commit, state }, id) {
-      const index = id === null
-        ? null
-        : state.incomingVolumes.findIndex(v => v.id === id)
-      commit('setIncomingVolume', index)
     },
     selectIncomingVolumeWithId ({ commit }, id) {
       commit('setSelectedIncomingVolumeId', id)
@@ -353,42 +414,13 @@ const store = new Vuex.Store({
       commit('selectStep', index)
     },
     prevStep ({ commit, state }) {
-
       commit('selectStep', state.activeStepIndex - 1)
     },
     nextStep ({ commit, state, ...rest }) {
-      console.log(rest)
       commit('selectStep', state.activeStepIndex + 1)
-    },
-    toggleSidebar ({ dispatch, commit, state }) {
-      commit(state.sidebarCollapse
-        ? 'showSidebar'
-        : 'hideSidebar')
-      setTimeout(() => dispatch('redrawNehuba'))
-    },
-    setSidebarCollapseState ({ dispatch, commit }, bool) {
-      commit(bool
-        ? 'hideSidebar'
-        : 'showSidebar')
-      setTimeout(() => dispatch('redrawNehuba'))
-    },
-    changeSidebarWidth ({ commit }, size) {
-      commit('changeSidebarWidth', size)
     },
     selectMethodIndex (store, index) {
       store.commit('selectMethodIndex', index)
-    },
-    changeScale ({ commit }, newScale) {
-      commit('setIncomingTemplateScale', newScale)
-    },
-    flipLeftRight ({ commit }) {
-      commit('flipLeftRight')
-    },
-    flipInferiorSuperior ({ commit }) {
-      commit('flipInferiorSuperior')
-    },
-    flipAnteriorPosterior ({ commit }) {
-      commit('flipAnteriorPosterior')
     },
     changeOpacity ({ commit }, opacity) {
       commit('setIncomingTemplateRGBA', { opacity })
@@ -407,12 +439,6 @@ const store = new Vuex.Store({
     },
     enableSynchronizeCursor ({ commit }, synchronizeCursor) {
       commit('enableSynchronizeCursor', synchronizeCursor)
-    },
-    enablePreviewMode ({ commit }, previewMode) {
-      commit('enablePreviewMode', previewMode)
-      commit(previewMode
-        ? 'hideSidebar'
-        : 'showSidebar')
     },
     changeLandmarkTransformationMatrix ({ commit }, transformationMatrix) {
       commit('changeLandmarkTransformationMatrix', transformationMatrix)
@@ -465,12 +491,12 @@ const store = new Vuex.Store({
     removeLandmarkPair ({commit, state}, {id}) {
       commit('removeLandmarkPair', { id })
     },
-    removeLandmarkPairs ({commit, state}) {
+    removeLandmarkPairs ({commit}) {
       commit('removeAllReferenceLandmarks')
       commit('removeAllIncomingLandmarks')
       commit('removeAllLandmarkPairs')
     },
-    enableLandmarkPairs ({commit, state}, {enable}) {
+    enableLandmarkPairs ({commit}, {enable}) {
       commit('enableLandmarkPairs', { enable })
     },
     toggleLandmarkPairActive ({ commit, state }, { id }) {
@@ -563,6 +589,32 @@ const store = new Vuex.Store({
        * required for subscribe action
        */
     },
+
+    /**
+     * primary nehuba control
+     */
+    setRotateIncByQuat ({commit, state}, { quaternion }) {
+      const {mat4, quat, vec3} = window.export_nehuba
+
+      /**
+       * undo existing rotation
+       */
+      const xformMat = mat4.fromValues(...state.incTransformMatrix)
+      const oldRotQuat = mat4.getRotation(quat.create(), xformMat)
+      const oldAxisVec3 = vec3.create()
+      const oldRotDeg = quat.getAxisAngle(oldAxisVec3, oldRotQuat)
+      mat4.rotate(xformMat, xformMat, -1 * oldRotDeg, oldAxisVec3)
+
+      /**
+       * apply the new rotation
+       */
+      const newRotQuat = quat.fromValues(...quaternion)
+      const newAxisVec3 = vec3.create()
+      const newRotDeg = quat.getAxisAngle(newAxisVec3, newRotQuat)
+      mat4.rotate(xformMat, xformMat, newRotDeg, newAxisVec3)
+
+      commit('setIncTransformMatrix', Array.from(xformMat))
+    },
     setRotateInc ({commit, state}, {axis, value}) {
       if (axis !== 'xyz') {
         return
@@ -601,6 +653,7 @@ const store = new Vuex.Store({
       const { mat4, vec3 } = window.export_nehuba
       const xformMat = mat4.fromValues(...state.incTransformMatrix)
       const scaleVec = mat4.getScaling(vec3.create(), xformMat)
+      
       const inverseVec = vec3.inverse(vec3.create(), scaleVec)
       scaleVec[idx] = value
       mat4.scale(xformMat, xformMat, inverseVec)
@@ -608,7 +661,7 @@ const store = new Vuex.Store({
       commit('setIncTransformMatrix', Array.from(xformMat))
     },
     setTranslInc ({commit, state}, {axis, value}) {
-      if (axis !== 'x' && axis !== 'y' && axis !== 'z') {
+      if (axis !== 'x' && axis !== 'y' && axis !== 'z' && axis !== 'xyz') {
         return
       }
       if (Number.isNaN(value)) {
@@ -618,14 +671,40 @@ const store = new Vuex.Store({
         ? 0
         : axis === 'y'
           ? 1
-          : 2
+          : axis === 'z'
+            ? 2
+            : null
       const {mat4, vec3} = window.export_nehuba
+
+      /**
+       * first get current transformation matrix
+       */
       const xformMat = mat4.fromValues(...state.incTransformMatrix)
+
+      /**
+       * get current translate, and calculate scaled inverse to undo translate
+       */
       const translVec = mat4.getTranslation(vec3.create(), xformMat)
       const inverseVec = vec3.negate(vec3.create(), translVec)
-      translVec[idx] = value
+      const scaleVec = mat4.getScaling(vec3.create(), xformMat)
+      vec3.divide(inverseVec, inverseVec, scaleVec)
+
+      /**
+       * set new translation array
+       */
+      const newTranslArray = idx === null
+        ? value
+        : Array.from(translVec).map((v, i) => i === idx ? value : v)
+
+      /**
+       * undo translation first
+       */
       mat4.translate(xformMat, xformMat, inverseVec)
-      mat4.translate(xformMat, xformMat, translVec)
+
+      /**
+       * apply new translation
+       */
+      mat4.translate(xformMat, xformMat, vec3.fromValues(...newTranslArray))
       commit('setIncTransformMatrix', Array.from(xformMat))
     }
   }

@@ -30,31 +30,10 @@ export default {
   components: {
     ProgressTracker
   },
-  data () {
-    return {
-      sizebarSize: 350
-    }
-  },
-  watch: {
-    sizebarSize: function (val) {
-      this.$store.dispatch('changeSidebarWidth', val)
-    }
-  },
   computed: {
     showProgressTracker: function () {
       const obj = this.$router.options.routes.find(r => r.path === this.$route.path)
       return obj && obj.shown
-    },
-    sidebarCollapse: function () {
-      return this.$store.state.sidebarCollapse
-    }
-  },
-  methods: {
-    gotoStep (stepIndex) {
-      this.$store.dispatch('selectStep', stepIndex)
-    },
-    toggleSidebar () {
-      this.$store.dispatch('toggleSidebar')
     }
   }
 }

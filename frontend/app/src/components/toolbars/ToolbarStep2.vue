@@ -1,92 +1,100 @@
 <template>
-  <div id = "accordion" rol = "tablist">
+  <div>
 
-    <!-- Landmark-Pairs -->
-    <card-component :id = "'landmark-pairs'" :initialVisibility = "true">
-      <template slot = "header">
-        <h6><strong>Landmark-Pairs</strong></h6>
+    <!-- landmark controls -->
+    <nib-component :style="draggingMixin__Style">
+      <template slot="icon">
+        <div
+          v-b-tooltip.right.hover
+          :title="landmarkTooltip"
+          @click="toggleLandmarksControl"
+          id="icon"
+          class="point-events rounded-circle landmarks-control-toggle btn-shadow btn-sm btn btn-secondary">
+          <font-awesome-icon :icon="icon"/>
+        </div>
       </template>
-      <template slot = "body">
-        <div>
-          <input type="checkbox" id="synchronize-zoom" name="synchronize-zoom" v-model="synchronizeZoom"/>
-          <label for="synchronize-zoom">Synchronize Zoom</label>
-        </div>
-        <div>
-          <input type="checkbox" id="synchronize-cursor" name="synchronize-cursor" v-model="synchronizeCursor"/>
-          <label for="synchronize-cursor">Synchronize Cursor</label>
-        </div>
-        <div>
-          <input type="checkbox" id="preview-mode" name="preview-mode" v-model="previewMode"/>
-          <label for="preview-mode">Preview Mode</label>
-        </div>
-        <landmark-list />
+      <template slot="body">
+        <LandmarkControl
+          id="content"
+          class="point-events landmarks-control"
+          @header-mousedown="draggingMixin__StartDragging"
+          v-if="showLandmarksControl" />
+        <TransformationComponent class="point-events" />
       </template>
-    </card-component>
 
-    <!-- Transformation -->
-    <card-component :id = "'transformation'">
-      <template slot = "header">
-        <h6><strong>Transformation</strong></h6>
-      </template>
-      <template slot = "body">
-        <label>Transformation type: </label>
-        <br>
-        <select
-          @change = "selectMethod"
-          id="select-transformation"
-          :value = "selectTransformation">
-          <option
-            v-for = "transformationType in transformationTypes"
-            :key = "transformationType.id"
-            :value = "transformationType.value">
-            {{ transformationType.text }}
-          </option>
-        </select>
-        <br><br>
-        <b-button @click="computeTransformationMatrix" :disabled="this.$store.state.landmarkPairs.filter(lp => lp.active === true).length < 3" variant="secondary">
-          <font-awesome-icon icon="play-circle"/>
-          Compute transformation
-        </b-button>
-        <hr>
-        <b-container fluid>
-          <b-row>
-            <b-col md="5"><label>Determinant:</label></b-col>
-            <b-col md="7"><label style="background-color: lightgray; width: 100%;">{{ this.$store.state.landmarkDeterminant ? (this.$store.state.landmarkDeterminant).toFixed(10) : '---' }}</label></b-col>
-          </b-row>
-          <b-row>
-            <b-col md="5"><label>RMSE:</label></b-col>
-            <b-col md="7"><label style="background-color: lightgray; width: 100%;">{{ this.$store.state.landmarkRMSE ? (this.$store.state.landmarkRMSE).toFixed(10) : '---' }}</label></b-col>
-          </b-row>
-        </b-container>
-        <br>
-        <b-button variant="secondary" :disabled="!this.$store.state.landmarkTransformationMatrix" v-b-modal.transformationMatrixModal>
-          <font-awesome-icon icon="eye"/>
-          Show transformation matrix
-        </b-button>
-        <transformation-matrix-modal id="transformationMatrixModal" :transformationMatrix="this.$store.state.landmarkTransformationMatrix"></transformation-matrix-modal>
-      </template>
-    </card-component>
+      <!-- not being displayed  -->
+      <template>
+        
+        <div v-show = "false" id = "accordion" rol = "tablist">
 
+          <!-- Landmark-Pairs -->
+          <card-component :id = "'landmark-pairs'" :initialVisibility = "true">
+            <template slot = "header">
+              <h6><strong>Landmark-Pairs</strong></h6>
+            </template>
+            <template slot = "body">
+              <div>
+                <input type="checkbox" id="synchronize-zoom" name="synchronize-zoom" v-model="synchronizeZoom"/>
+                <label for="synchronize-zoom">Synchronize Zoom</label>
+              </div>
+              <div>
+                <input type="checkbox" id="synchronize-cursor" name="synchronize-cursor" v-model="synchronizeCursor"/>
+                <label for="synchronize-cursor">Synchronize Cursor</label>
+              </div>
+              <div>
+                <input type="checkbox" id="preview-mode" name="preview-mode" />
+                <label for="preview-mode">Preview Mode</label>
+              </div>
+              <landmark-list />
+            </template>
+          </card-component>
+
+        </div>
+      </template>
+    </nib-component>
+
+    <!-- add btn -->
+    <div
+      :style="addBtnStyle">
+      <div
+        v-if="!showLandmarksControl"
+        @click="$store.dispatch('addLandmarkPair')"
+        class="point-events rounded-circle btn btn-sm btn-success"
+        v-b-tooltip.right.hover
+        title="Add Landmark Pair">
+        <font-awesome-icon icon="plus" />
+      </div>
+    </div>
+    
   </div>
 </template>
 <script>
 import axios from 'axios'
 import CardComponent from '@/components/Card'
 import LandmarkList from '@/components/LandmarkList'
-import TransformationMatrixModal from '@/components/modals/TransformationMatrixModal'
+import LandmarkControl from '@/components/LandmarkControl'
+import DraggableMixin from '@/mixins/DraggableMixin'
+import NibComponent from '@/components/NibComponent'
+import TransformationComponent from '@/components/TransformationComponent'
 
 // Vue-Color
 import { Compact } from 'vue-color'
 
 export default {
+  mixins: [
+    DraggableMixin
+  ],
   components: {
+    TransformationComponent,
     CardComponent,
     LandmarkList,
-    TransformationMatrixModal,
-    'compact-picker': Compact
+    'compact-picker': Compact,
+    LandmarkControl,
+    NibComponent
   },
   data: function () {
     return {
+      showLandmarksControl: false,
       synchronizeZoom: this.$store.state.synchronizeZoom,
       synchronizeCursor: this.$store.state.synchronizeCursor,
     }
@@ -100,105 +108,49 @@ export default {
     }
   },
   computed: {
-    previewMode: {
-      set: function (val) {
-        this.$store.dispatch('enablePreviewMode', val)
-      },
-      get: function () {
-        return this.$store.state.previewMode
+    addBtnStyle: function () {
+      return {
+        display: 'inline-block',
+        margin: '1em',
+        transform: 'translateY(2.5em)'
       }
     },
-    transformationTypes: function () {
-      return this.$store.state.transformationTypes
+    landmarkTooltip: function () {
+      return `Edit Landmarks`
     },
-    selectedTransformationIndex: function () {
-      return this.$store.state.selectedTransformationIndex
-    },
-    selectTransformation: function () {
-      const selectedTransform = this.$store.state.transformationTypes[this.$store.state.selectedTransformationIndex]
-      return selectedTransform && selectedTransform.value
-        ? selectedTransform.value
-        : null
+    icon: function () {
+      return `map-marker-alt`
     },
     computedTransformationAvailable: function () {
       return this.$store.state.landmarkTransformationMatrix
     }
   },
   methods: {
+    toggleLandmarksControl: function () {
+      this.showLandmarksControl = !this.showLandmarksControl
+      if (!this.showLandmarksControl) {
+        this.draggingMixin__ResetPosition()
+      }
+    },
     enableSynchronizeZoom: function () {
       this.$store.dispatch('enableSynchronizeZoom', this.synchronizeZoom)
     },
     enableSynchronizeCursor: function () {
       this.$store.dispatch('enableSynchronizeCursor', this.synchronizeCursor)
-    },
-    selectMethod: function (event) {
-      const index = event.target.selectedIndex
-      this.$store.commit('selectMethodIndex', index)
-    },
-    computeDeterminant: function (matrix) {
-      if (!matrix) {
-        return null
-      }
-      if (matrix.length === 2) {
-        return matrix[0][0] * matrix[1][1] - matrix[0][1] * matrix[1][0]
-      } else {
-        var res = 0
-        for (var i = 0; i < matrix.length; i++) {
-          var minor = []
-          for (var j = 0; j < matrix.length - 1; j++) {
-            minor[j] = matrix[j + 1].slice(0, i).concat(matrix[j + 1].slice(i + 1, matrix.length))
-          }
-          var sign = 1 - 2 * (i % 2)
-          res += sign * matrix[0][i] * this.computeDeterminant(minor)
-        }
-        return res
-      }
-    },
-    createBackendData: function () {
-      const lmPairs = this.$store.state.landmarkPairs
-        .map(pair => {
-          const refLm = this.$store.state.referenceLandmarks.find(rLm => rLm.id === pair.refId)
-          const incLm = this.$store.state.incomingLandmarks.find(iLm => iLm.id === pair.incId)
-          return refLm && incLm
-            ? {
-              active: pair.active,
-              colour: pair.active,
-              name: pair.name,
-              'source_point': refLm.coord,
-              'target_point': incLm.coord
-            }
-            : null
-        })
-        .filter(lm => lm !== null)
-
-      const data = {
-        'source_image': this.$store.state.selectReference,
-        'target_image': this.$store.state.selectTemplate,
-        'transformation_type': this.$store.state.transformationTypes[this.$store.state.selectedTransformationIndex].value,
-        'landmark_pairs': lmPairs
-      }
-      return data
-    },
-    computeTransformationMatrix: function () {
-      var data = this.createBackendData()
-      console.log(data)
-      axios.post(this.$store.state.backendURL + '/least-squares', data)
-        .then(response => {
-          this.$store.dispatch('changeLandmarkTransformationMatrix', response.data.transformation_matrix)
-          this.$store.dispatch('changeLandmarkInverseMatrix', response.data.inverse_matrix)
-          this.$store.dispatch('changeLandmarkDeterminant', this.computeDeterminant(response.data.transformation_matrix))
-          this.$store.dispatch('changeLandmarkRMSE', response.data.RMSE)
-        }, error => {
-          console.log(error)
-          // TODO: handle error!
-        })
     }
   }
 }
 </script>
 <style scoped>
-.landmark-container
+.point-events
 {
-  background-color: white;
+  pointer-events: all;
+}
+
+.btn-shadow {
+  box-shadow: 0 0.4em 0.4em -0.1em rgba(50, 50, 50, 0.2);
+}
+.btn-shadow:hover {
+  box-shadow: 0 0.6em 0.6em -0.2em rgba(50, 50, 50, 0.2);
 }
 </style>

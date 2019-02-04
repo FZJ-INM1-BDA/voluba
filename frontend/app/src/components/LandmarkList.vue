@@ -1,13 +1,31 @@
 <template>
-  <div>
+  <div id="container" class="card bg-light">
 
     <!-- add load save -->
     <div class="btn-group mb-3">
-      <button type="button" @click = "addLandmarkPair" class="btn btn-lg btn-success"><font-awesome-icon icon="plus"/> Add</button>
-      <button type="button" class="btn btn-lg btn-secondary" v-b-modal.loadLandmarkPairsModal><font-awesome-icon icon="file-upload"/> Load</button>
-      <button type="button" @click = "saveLandmarkPairs" class="btn btn-lg btn-secondary" :disabled="this.$store.state.landmarkPairs.filter(lp => lp.active === true).length === 0"><font-awesome-icon icon="file-download"/> Save</button>
+      <button
+        type="button"
+        @click="$store.dispatch('addLandmarkPair')"
+        class="btn btn-lg btn-success">
+        <font-awesome-icon icon="plus"/>
+        Add
+      </button>
+      <button
+        type="button"
+        @click="$store.dispatch('loadLandmarks')"
+        class="btn btn-lg btn-secondary">
+        <font-awesome-icon icon="file-upload"/>
+        Load
+      </button>
+      <button
+        type="button"
+        @click="saveLandmarkPairs"
+        class="btn btn-lg btn-secondary"
+        :disabled="this.$store.state.landmarkPairs.filter(lp => lp.active === true).length === 0">
+        <font-awesome-icon icon="file-download"/>
+        Save
+      </button>
     </div>
-    <load-landmark-pairs-modal id="loadLandmarkPairsModal" ok-disabled="true"></load-landmark-pairs-modal>
 
     <!-- select all/ remove all -->
     <div v-show = "!landmarkIsEmpty" class="input-group mb-2">
@@ -42,8 +60,7 @@
 
 <script>
 import LandmarkRow from '@/components/Landmark'
-import LoadLandmarkPairsModal from '@/components/modals/LoadLandmarkPairsModal'
-import { oldJson } from '@/components/constants'
+import { oldJson } from '@//constants'
 
 export default {
   name: 'LandmarkList',
@@ -59,8 +76,7 @@ export default {
     }
   },
   components: {
-    LandmarkRow,
-    LoadLandmarkPairsModal
+    LandmarkRow
   },
   methods: {
     toggleCheckAll: function () {
@@ -81,9 +97,6 @@ export default {
       console.log(data)
       var jsonData = JSON.stringify(data, null, 4)
       saveToFile(jsonData, 'application/json', 'landmark-pairs.json')
-    },
-    addLandmarkPair: function () {
-      this.$store.dispatch('addLandmarkPair')
     },
     clearList: function () {
       this.$store.dispatch('removeLandmarkPairs')
@@ -107,4 +120,8 @@ export default {
 </script>
 
 <style scoped>
+#container
+{
+  padding: 0.5em;
+}
 </style>

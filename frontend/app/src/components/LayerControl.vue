@@ -1,16 +1,15 @@
 <template>
-  
     <div>
-
       <!-- title -->
       <div
-        @mousedown="$emit('header-mosuedown', $event)"
+        @mousedown="$emit('header-mousedown', $event)"
         class="card bg-light">
 
         <h5 class="title">
           {{ selectedIncomingVolumeName }}
         </h5>
       </div>
+      
       <div
         v-if = "incomingVolumeSelected"
         class="card card-body bg-light">
@@ -51,8 +50,8 @@
           style="margin-top: 5px;">
           <template slot = "body">
             <SliderComponent
-              @minus = "testScaleX = testScaleX - 0.05 < 0 ? 0 : testScaleX - 0.05"
-              @plus = "testScaleX = testScaleX + 0.05 > 1 ? 1 : testScaleX + 0.05"
+              @minus = "testScaleX = testScaleX - 0.05 < scaleMin ? scaleMin : testScaleX - 0.05"
+              @plus = "testScaleX = testScaleX + 0.05 > scaleMax ? scaleMax : testScaleX + 0.05"
               @textInput = "testScaleX = $event"
               @sliderInput = "testScaleX = $event"
               name = "Scale X"
@@ -61,8 +60,8 @@
               :step = "0.01"
               :value = "testScaleX" />
             <SliderComponent
-              @minus = "testScaleY = testScaleY - 0.05 < 0 ? 0 : testScaleY - 0.05"
-              @plus = "testScaleY = testScaleY + 0.05 > 1 ? 1 : testScaleY + 0.05"
+              @minus = "testScaleY = testScaleY - 0.05 < scaleMin ? scaleMin : testScaleY - 0.05"
+              @plus = "testScaleY = testScaleY + 0.05 > scaleMax ? scaleMax : testScaleY + 0.05"
               @textInput = "testScaleY = $event"
               @sliderInput = "testScaleY = $event"
               name = "Scale Y"
@@ -71,8 +70,8 @@
               :step = "0.01"
               :value = "testScaleY" />
             <SliderComponent
-              @minus = "testScaleZ = testScaleZ - 0.05 < 0 ? 0 : testScaleZ - 0.05"
-              @plus = "testScaleZ = testScaleZ + 0.05 > 1 ? 1 : testScaleZ + 0.05"
+              @minus = "testScaleZ = testScaleZ - 0.05 < scaleMin ? scaleMin : testScaleZ - 0.05"
+              @plus = "testScaleZ = testScaleZ + 0.05 > scaleMax ? scaleMax : testScaleZ + 0.05"
               @textInput = "testScaleZ = $event"
               @sliderInput = "testScaleZ = $event"
               name = "Scale Z"
@@ -172,12 +171,8 @@
 
               <!-- flip x -->
               <div
-                @click.stop.prevent="flipXFlag = !flipXFlag"
-                :class="flipXFlag ? 'btn-primary' : 'btn-light'"
-                class="flip-btn btn btn-sm">
-                <input
-                  :checked="flipXFlag"
-                  type="checkbox" />
+                @click.stop.prevent="flipAxis(0)"
+                class="flip-btn btn btn-sm btn-outline-secondary">
                 <span>
                   flip x axis
                 </span>
@@ -185,12 +180,8 @@
 
               <!-- flip y -->
               <div
-                @click.stop.prevent="flipYFlag = !flipYFlag"
-                :class="flipYFlag ? 'btn-primary' : 'btn-light'"
-                class="flip-btn btn btn-sm">
-                <input
-                  :checked="flipYFlag"
-                  type="checkbox" />
+                @click.stop.prevent="flipAxis(1)"
+                class="flip-btn btn btn-sm btn-outline-secondary">
                 <span>
                   flip y axis
                 </span>
@@ -198,12 +189,8 @@
 
               <!-- flip z -->
               <div
-                @click.stop.prevent="flipZFlag = !flipZFlag"
-                :class="flipZFlag ? 'btn-primary' : 'btn-light'"
-                class="flip-btn btn btn-sm">
-                <input
-                  :checked="flipZFlag"
-                  type="checkbox" />
+                @click.stop.prevent="flipAxis(2)"
+                class="flip-btn btn btn-sm btn-outline-secondary">
                 <span>
                   flip z axis
                 </span>
@@ -239,10 +226,6 @@ export default {
       translMin: -100,
       translMax: 100,
 
-      flipXFlag: false,
-      flipYFlag: false,
-      flipZFlag: false,
-
       isotropic: true,
       scaleX: 1,
       scaleY: 1,
@@ -268,6 +251,7 @@ export default {
         return this.testScale[0]
       },
       set: function (value) {
+        console.log(value)
         this.$store.dispatch('setScaleInc', {
           axis: 'x',
           value
@@ -429,6 +413,8 @@ export default {
         const {vec3, mat4} = window.export_nehuba
         const xformMat = mat4.fromValues(...this.incTransformMatrix)
         const translVec = mat4.getTranslation(vec3.create(), xformMat)
+        const scaleVec = mat4.getScaling(vec3.create(), xformMat)
+        vec3.divide(translVec, translVec, scaleVec)
         return Array.from(translVec)
       }
     },
@@ -453,16 +439,6 @@ export default {
       return this.selectedIncomingVolume
         ? this.selectedIncomingVolume.name
         : 'No incoming volume selected'
-    },
-    selectTemplate: {
-      get: function () {
-        return this.$store.state.selectedIncomingVolumeIndex !== null
-          ? this.$store.state.incomingVolumes[this.$store.state.selectedIncomingVolumeIndex].id
-          : this.dummyIncomingTemplate.id
-      },
-      set: function (id) {
-        this.$store.dispatch('selectIncomingVolume', id === this.dummyIncomingTemplate.id ? null : id)
-      }
     },
     referenceURLs: function () {
       return this.$store.state.referenceURLs
@@ -509,8 +485,8 @@ export default {
     }
   },
   methods: {
-    test: function (event) {
-      console.log(event)
+    flipAxis: function (axis) {
+      this.$store.dispatch('flipAxis', { axis })
     },
     scaleChanged: function () {
       this.$store.dispatch('changeScale', this.isotropic

@@ -26,10 +26,15 @@
 
 <script>
 
-import { annotationColorBlur, annotationColorFocus, defaultXform, getShader, testBigbrain, patchSliceViewPanel, determineElement, getRotationVec3, incomingTemplateActiveOpacity } from '@/components/constants'
+import { annotationColorBlur, annotationColorFocus, getShader, testBigbrain, patchSliceViewPanel, determineElement, getRotationVec3, incomingTemplateActiveOpacity } from '@//constants'
 
+import NehubaBaseMixin from '@/mixins/NehubaBase'
 import NehubaLandmarksOverlay from '@/components/NehubaLandmarksOverlay'
+
 export default {
+  mixins: [
+    NehubaBaseMixin
+  ],
   data: function () {
     return {
       placeholderText: 'Loading nehuba ...',
@@ -47,11 +52,6 @@ export default {
       rotateAbsoluteStart: null,
       activeViewportToData: null,
       subscriptions: [],
-      dataToViewport: [
-        defaultXform,
-        defaultXform,
-        defaultXform
-      ],
       viewportToDatas: [],
       incomingVolumeSelected: false,
 
@@ -81,7 +81,7 @@ export default {
       .then(this.clearnUp)
       .then(() => {
         if (this.selectedIncomingVolumeId) {
-          const incVol = id && this.$store.state.incomingVolumes.find(v => v.id === id)
+          const incVol = this.selectedIncomingVolumeId && this.$store.state.incomingVolumes.find(v => v && (v.id === this.selectedIncomingVolumeId))
           if (incVol) {
             const url = incVol.imageSource
             this.addUserLayer(url)
@@ -100,12 +100,6 @@ export default {
         case 'setPrimaryNehubaNavigation':
           const vec3 = window.export_nehuba.vec3
           this.$options.nonReactiveData.nehubaViewer.setPosition(vec3.fromValues(...payload.coord.map(v => v * 1e6)), true)
-          break
-        case 'redrawNehuba':
-          if (this.$options.nonReactiveData.nehubaViewer) {
-            this.$options.nonReactiveData.nehubaViewer.redraw()
-          }
-          setTimeout(() => this.navigationChanged())
           break
         case 'alignReference':
           this.$options.nonReactiveData.nehubaViewer.ngviewer.navigationState.pose.orientation.restoreState([0, 0, 0, 1])
@@ -141,13 +135,7 @@ export default {
         this.$options.nonReactiveData.ngUserLayer.layer.opacity.restoreState(rgba[3])
       }
     },
-    cid: function (val) {
-      if (val === null) {
-        this.$emit('ready', null)
-      }
-    },
     selectedIncomingVolumeId: function (id) {
-      console.log('selectedincoming volume id', id)
       this.clearUserLayers()
       const incVol = id && this.$store.state.incomingVolumes.find(v => v.id === id)
       if (incVol) {
@@ -202,29 +190,11 @@ export default {
     subscriptions: [],
     ngUserLayer: null,
     managedLayers: [],
-    nehubaViewer: null
+    nehubaViewer: null,
+    mousedownMatrix: null,
+    timeoutId: null
   },
   methods: {
-    sliceRenderEvent: function (event) {
-      if (
-        this.dataToViewport[0] !== defaultXform &&
-        this.dataToViewport[1] !== defaultXform &&
-        this.dataToViewport[2] !== defaultXform
-      ) {
-        return
-      }
-
-      const element = event.srcElement || event.originalTarget
-      this.dataToViewport[determineElement(element)] = event.detail.nanometersToOffsetPixels
-
-      if (
-        this.dataToViewport[0] !== defaultXform &&
-        this.dataToViewport[1] !== defaultXform &&
-        this.dataToViewport[2] !== defaultXform
-      ) {
-        this.navigationChanged()
-      }
-    },
     viewportToData: function (event) {
       if (this.viewportToDatas[0] && this.viewportToDatas[1] && this.viewportToDatas[2]) {
         return
@@ -233,21 +203,21 @@ export default {
       this.viewportToDatas[determineElement(element)] = event.detail.viewportToData
     },
     mouseup: function () {
-      if (this.movingIncoming || this.rotatingIncoming) {
-        this.committedTransform = Array.from(this.$options.nonReactiveData.ngUserLayer.layer.transform.transform)
-      }
+      // if (this.movingIncoming || this.rotatingIncoming) {
+      //   this.committedTransform = Array.from(this.$options.nonReactiveData.ngUserLayer.layer.transform.transform)
+      // }
       this.rotatingIncoming = false
       this.movingIncoming = false
       this.mousemoveStart = null
       this.movingIncomingIndex = null
       this.rotateAbsoluteStart = null
 
-      this.translation = null
-      this.rotation = null
+      this.$options.nonReactiveData.mousedownMatrix = null
     },
     mousedown: function (event) {
       if (this.mouseOverIncoming) {
         this.incomingVolumeSelected = true
+        this.$options.nonReactiveData.mousedownMatrix = Array.from(this.incTransformMatrix)
 
         this.mousemoveStart = [event.screenX, event.screenY]
 
@@ -261,20 +231,63 @@ export default {
         const element = event.srcElement || event.originalTarget
         this.movingIncomingIndex = determineElement(element)
       } else {
-        this.incomingVolumeSelected = false
+
+        /**
+         * allows for user drag whole volume, without deselecting incoming volume
+         */
+        this.$options.nonReactiveData.timeoutId = setTimeout(() => {
+          this.incomingVolumeSelected = false
+          this.$options.nonReactiveData.timeoutId = null
+        }, 300)
       }
     },
     mousemove: function (event) {
+
+      /**
+       * allows for user drag whole volume, without deselecting incoming volume
+       */
+      if (this.$options.nonReactiveData.timeoutId) {
+        clearTimeout(this.$options.nonReactiveData.timeoutId)
+      }
       if ((this.translationByDragEnabled && this.movingIncoming) || (this.rotationByDragEnabled && this.rotatingIncoming)) {
-        const {vec3, quat} = window.export_nehuba
+        const {vec3, mat4, quat} = window.export_nehuba
 
         const deltaX = event.screenX - this.mousemoveStart[0]
         const deltaY = event.screenY - this.mousemoveStart[1]
         if (this.translationByDragEnabled && this.movingIncoming) {
+          /**
+           * first, translation mouse delta into 3d delta
+           */
           let pos = vec3.fromValues(deltaX, deltaY, 0)
           vec3.transformMat4(pos, pos, this.viewportToDatas[this.movingIncomingIndex])
+          
+          /**
+           * account for navigation movement
+           */
           vec3.subtract(pos, pos, vec3.fromValues(...this.viewerNavigationPosition))
-          this.translation = Array.from(pos)
+
+          /**
+           * get xformOnMousedown
+           */
+          const xformOnMousedown = mat4.fromValues(...this.$options.nonReactiveData.mousedownMatrix)
+          
+          /**
+           * scale delta pos
+           */
+          const scaleOnMousedown = mat4.getScaling(vec3.create(), xformOnMousedown)
+          vec3.divide(pos, pos, scaleOnMousedown)
+          
+          /**
+           * account for xform prior to mousedown
+           */
+          const translOnMousedown = mat4.getTranslation(vec3.create(), xformOnMousedown)
+          vec3.divide(translOnMousedown, translOnMousedown, scaleOnMousedown)
+          vec3.add(pos, pos, translOnMousedown)
+          
+          this.$store.dispatch('setTranslInc', {
+            axis: 'xyz',
+            value: Array.from(pos)
+          })
         }
 
         if (this.rotationByDragEnabled && this.rotatingIncoming) {
@@ -300,7 +313,8 @@ export default {
               deltaY * Math.PI / 180
             )
           )
-          this.rotation = Array.from(finalRotation)
+          this.$store.dispatch('setRotateIncByQuat', { quaternion: Array.from(finalRotation) })
+          // this.rotation = Array.from(finalRotation)
         }
       }
     },
@@ -401,9 +415,6 @@ export default {
       window['nehubaVue'] = this
       window['viewer'] = null
     },
-    navigationChanged: function () {
-      this.$refs.lmOverlay.$forceUpdate()
-    },
     clearUserLayers: function () {
       if (!this.$options.nonReactiveData.nehubaViewer) {
         return
@@ -417,7 +428,6 @@ export default {
       this.userLayers = []
     },
     addUserLayer: function (uri) {
-      console.log('uri', uri)
       if (!this.$options.nonReactiveData.nehubaViewer) {
         return
       }
@@ -453,57 +463,8 @@ export default {
       // return false
       return !this.previewMode
     },
-    translationVec3: {
-      get: function () {
-        if (this.appendNehubaFlag) {
-          const { vec3 } = window.export_nehuba
-          return this.translation
-            ? vec3.fromValues(...this.translation)
-            : vec3.fromValues(0, 0, 0)
-        } else {
-          return null
-        }
-      }
-    },
-    rotationQuat: {
-      get: function () {
-        if (this.appendNehubaFlag) {
-          const { quat } = window.export_nehuba
-          return this.rotation
-            ? quat.fromValues(...this.rotation)
-            : quat.fromValues(0, 0, 0, 1)
-        } else {
-          return null
-        }
-      }
-    },
-    scaleVec3: {
-      get: function () {
-        if (this.appendNehubaFlag) {
-          const { vec3 } = window.export_nehuba
-          return vec3.fromValues(...this.$store.state.incomingScale)
-        } else {
-          return null
-        }
-      }
-    },
     incomingTransformMatrix: {
       get: function () {
-        if (this.appendNehubaFlag) {
-          const { mat4, vec3 } = window.export_nehuba
-
-          const rotateAbsoluteStart = this.rotateAbsoluteStart
-            ? this.rotateAbsoluteStart
-            : [0, 0, 0]
-
-          return mat4.fromRotationTranslationScaleOrigin(
-            mat4.create(),
-            this.rotationQuat,
-            this.translationVec3,
-            this.scaleVec3,
-            vec3.fromValues(...rotateAbsoluteStart)
-          )
-        }
         return null
       }
     },
@@ -518,9 +479,6 @@ export default {
     },
     selectedIncomingVolumeId: function () {
       return this.$store.state.selectedIncomingVolumeId
-    },
-    viewerIncomingScale: function () {
-      return this.$store.state.incomingScale
     },
     referenceLandmarks: function () {
       return this.$store.state.landmarkPairs

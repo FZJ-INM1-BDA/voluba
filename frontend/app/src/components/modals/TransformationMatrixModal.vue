@@ -1,5 +1,11 @@
 <template>
-  <b-modal :id="id" title="Transformation Matrix" header-bg-variant="secondary" header-text-variant="light" ok-only>
+  <b-modal
+    centered
+    :id="id"
+    title="Transformation Matrix"
+    header-bg-variant="secondary"
+    header-text-variant="light"
+    ok-only>
     <table class="table table-hover">
       <tbody>
         <tr :key = "rowIndex" v-for = "(row, rowIndex) in transformationMatrix">
