@@ -74,8 +74,7 @@ export default {
         this.$emit("sliderInput", num);
       }
     }
-  },
-  watch: {}
+  }
 };
 </script>
 <style scoped>
