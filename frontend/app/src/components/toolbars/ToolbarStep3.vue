@@ -47,7 +47,7 @@ export default {
   },
   data: function () {
     return {
-      nibShow: false,
+      nibShow: true,
       saveIconTooltip: 'Save Transformation params and results.'
     }
   },
