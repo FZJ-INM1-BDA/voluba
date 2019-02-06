@@ -1,6 +1,5 @@
 <template>
   <div class="container-fluid">
-    <nehuba-component @ready = "nehubaReady('nehuba1', $event)" />
   </div>
 </template>
 

@@ -740,6 +740,9 @@ const store = new Vuex.Store({
 
       const xformMat = mat4.fromRotation(mat4.create(), angle, rotQuat)
       commit('multiplyIncTransmMatrix', xformMat)
+    },
+    startFromScratch ({dispatch}) {
+      dispatch('removeLandmarkPairs')
     }
   }
 })

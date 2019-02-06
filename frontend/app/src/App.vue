@@ -12,9 +12,10 @@
           @ready = "mainNehubaReady"
           ref = "templatenehuba" />
         <SimpleNehubaComponent
-          :config = "simpleNehubaConfig"
-          ref = "incomingnehuba"
-          v-show = "showSimpleNehuba" />
+          v-if="simpleNehubaConfig"
+          :config="simpleNehubaConfig"
+          ref="incomingnehuba"
+          v-show="showSimpleNehuba" />
       </div>
 
       <!-- floating layer -->
@@ -138,6 +139,11 @@ export default {
   width: 100%;
   height: 100%;
   display: flex;
+}
+
+.underlay > *
+{
+  flex: 1 1 0;
 }
 
 .overlay

@@ -1,5 +1,6 @@
 <template>
   <div
+    :style="nibStyle"
     id="container">
 
     <!-- icon -->
@@ -34,27 +35,41 @@ export default {
     return {
       open: this.initOpen
     }
-  }
+  },
+  computed: {
+    nibStyle: function () {
+      return {
+        zIndex: this.open
+          ? 5
+          : 1
+      }
+    }
+  },
 }
 </script>
 <style scoped>
 #container
 {
   position:relative;
+  display:inline-block;
 }
 
 .icon
 {
   margin: 1em;
-  position:absolute;
+  position:relative;
+  display: inline-block;
   z-index: 1;
+  pointer-events: all;
 }
-.layer-control,
-.layer-control-toggle {
+.layer-control
+{
   position: absolute;
+  display: inline-block;
   z-index: 0;
   top: 0;
   left: 0;
+  pointer-events: all;
   box-shadow: 0 0.4em 0.4em -0.2em rgba(50, 50, 50, 0.2);
 }
 

@@ -1,65 +1,22 @@
 <template>
-  <div>
+  <div id="flexcontainer">
 
-    <!-- landmark controls -->
-    <nib-component :style="draggingMixin__Style">
-      <template slot="icon">
-        <div
-          v-b-tooltip.right.hover
-          :title="landmarkTooltip"
-          @click="toggleLandmarksControl"
-          id="icon"
-          class="point-events rounded-circle landmarks-control-toggle btn-shadow btn-sm btn btn-secondary">
-          <font-awesome-icon :icon="icon"/>
-        </div>
-      </template>
-      <template slot="body">
-        <LandmarkControl
-          id="content"
-          class="point-events landmarks-control"
-          @header-mousedown="draggingMixin__StartDragging"
-          v-if="showLandmarksControl" />
-        <TransformationComponent class="point-events" />
-      </template>
+    <!-- layer control -->
+    <LayerControl class="flex-items pointer-events" />
 
-      <!-- not being displayed  -->
-      <template>
-        
-        <div v-show = "false" id = "accordion" rol = "tablist">
-
-          <!-- Landmark-Pairs -->
-          <card-component :id = "'landmark-pairs'" :initialVisibility = "true">
-            <template slot = "header">
-              <h6><strong>Landmark-Pairs</strong></h6>
-            </template>
-            <template slot = "body">
-              <div>
-                <input type="checkbox" id="synchronize-zoom" name="synchronize-zoom" v-model="synchronizeZoom"/>
-                <label for="synchronize-zoom">Synchronize Zoom</label>
-              </div>
-              <div>
-                <input type="checkbox" id="synchronize-cursor" name="synchronize-cursor" v-model="synchronizeCursor"/>
-                <label for="synchronize-cursor">Synchronize Cursor</label>
-              </div>
-              <div>
-                <input type="checkbox" id="preview-mode" name="preview-mode" />
-                <label for="preview-mode">Preview Mode</label>
-              </div>
-              <landmark-list />
-            </template>
-          </card-component>
-
-        </div>
-      </template>
-    </nib-component>
+    <!-- landmark-control -->
+    <landmark-control
+      :initOpen="showLandmarksControl"
+      @showLandmarksControl="showLandmarksControl = $event"
+      class="pointer-events flex-items" />
 
     <!-- add btn -->
     <div
-      :style="addBtnStyle">
+      class="flex-items">
       <div
         v-if="!showLandmarksControl"
         @click="$store.dispatch('addLandmarkPair')"
-        class="point-events rounded-circle btn btn-sm btn-success"
+        class="addBtn point-events rounded-circle btn btn-sm btn-success"
         v-b-tooltip.right.hover
         title="Add Landmark Pair">
         <font-awesome-icon icon="plus" />
@@ -69,84 +26,58 @@
   </div>
 </template>
 <script>
-import axios from 'axios'
-import CardComponent from '@/components/Card'
-import LandmarkList from '@/components/LandmarkList'
-import LandmarkControl from '@/components/LandmarkControl'
-import DraggableMixin from '@/mixins/DraggableMixin'
-import NibComponent from '@/components/NibComponent'
-import TransformationComponent from '@/components/TransformationComponent'
 
-// Vue-Color
-import { Compact } from 'vue-color'
+import LayerControl from '@/components/LayerControl'
+import LandmarkControl from '@/components/LandmarkControl'
 
 export default {
-  mixins: [
-    DraggableMixin
-  ],
   components: {
-    TransformationComponent,
-    CardComponent,
-    LandmarkList,
-    'compact-picker': Compact,
     LandmarkControl,
-    NibComponent
+    LayerControl
   },
   data: function () {
     return {
-      showLandmarksControl: false,
-      synchronizeZoom: this.$store.state.synchronizeZoom,
-      synchronizeCursor: this.$store.state.synchronizeCursor,
-    }
-  },
-  watch: {
-    synchronizeZoom: function () {
-      this.enableSynchronizeZoom()
-    },
-    synchronizeCursor: function () {
-      this.enableSynchronizeCursor()
+      showLandmarksControl: true
     }
   },
   computed: {
     addBtnStyle: function () {
       return {
-        display: 'inline-block',
-        margin: '1em',
-        transform: 'translateY(2.5em)'
       }
     },
-    landmarkTooltip: function () {
-      return `Edit Landmarks`
-    },
-    icon: function () {
-      return `map-marker-alt`
-    },
-    computedTransformationAvailable: function () {
-      return this.$store.state.landmarkTransformationMatrix
-    }
   },
   methods: {
-    toggleLandmarksControl: function () {
-      this.showLandmarksControl = !this.showLandmarksControl
-      if (!this.showLandmarksControl) {
-        this.draggingMixin__ResetPosition()
+    getYTranslateStyle: function (idx) {
+      return {
+        marginTop: `${idx * 2.5}em`
       }
-    },
-    enableSynchronizeZoom: function () {
-      this.$store.dispatch('enableSynchronizeZoom', this.synchronizeZoom)
-    },
-    enableSynchronizeCursor: function () {
-      this.$store.dispatch('enableSynchronizeCursor', this.synchronizeCursor)
     }
   }
 }
 </script>
 <style scoped>
-.point-events
+#flexcontainer
 {
-  pointer-events: all;
+  display: flex;
+  flex-direction: column;
+  width: 2em;
 }
 
+#flexcontainer > *
+{
+  flex: 0 0 0;
+}
+
+.flex-items:not(:first-child)
+{
+  margin-top: -1em;
+}
+.addBtn
+{
+  pointer-events: all;
+  display: inline-block;
+  margin: 1.2em;
+}
 .btn-shadow {
   box-shadow: 0 0.4em 0.4em -0.1em rgba(50, 50, 50, 0.2);
 }

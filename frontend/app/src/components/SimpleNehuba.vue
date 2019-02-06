@@ -1,8 +1,7 @@
 <template>
   <div class="nehuba-container">
     <div
-      v-if="vif"
-      @sliceRenderEvent="sliceRenderEvent"
+      @sliceRenderEvent="nehubaBase__sliceRenderEvent"
       class = "nehubaElement"
       :id = "cid">
       {{ placeholderText }}
@@ -39,29 +38,42 @@ export default {
   data: function () {
     return {
       loadingText: 'Loading simple nehuba ...',
-      cid: null,
       errorMessage: null,
-      vif: true,
 
       subscriptions: []
     }
   },
   mounted () {
+    this.nehubaBase__initNehuba()
+      .then(() => {
+        console.log('yay')
+      })
+      .catch(e => {
+        console.log(('uh oh'))
+      })
     this.$store.subscribeAction(({type, payload}) => {
       switch (type) {
         case 'setSecondaryNehubaNavigation':
-          const vec3 = window.export_nehuba.vec3
-          this.$options.nonReactiveData.nehubaViewer.setPosition(vec3.fromValues(...payload.coord.map(v => v * 1e6)), true)
+          if (this.$options.nonReactiveData.nehubaViewer) {
+            const vec3 = window.export_nehuba.vec3
+            this.$options.nonReactiveData.nehubaViewer.setPosition(vec3.fromValues(...payload.coord.map(v => v * 1e6)), true)
+          }
           break
         default:
       }
     })
-    if (this.config) {
-    } else {
+    
+    if (!this.config) {
       this.errorMessage = `incoming dataset not set`
     }
   },
   computed: {
+    cid: function () {
+      return this.nehubaBase__cid
+    },
+    dataToViewport: function () {
+      return this.nehubaBase__dataToViewport
+    },
     incomingLandmarks: function () {
       return this.$store.state.landmarkPairs
         .map(lmp => {
@@ -83,47 +95,6 @@ export default {
     }
   },
   methods: {
-    preInit: function () {
-      return new Promise((resolve, reject) => {
-        this.vif = true
-        this.cid = 'neuroglancer-container'
-        resolve()
-      })
-    },
-    init: function () {
-      return new Promise((resolve, reject) => {
-        this.$options.nonReactiveData.nehubaViewer = window.export_nehuba.createNehubaViewer(this.config, (err) => {
-          console.log(err)
-        })
-        this.$options.nonReactiveData.subscriptions.push(
-          this.$options.nonReactiveData.nehubaViewer.navigationState.full.subscribe(() => {
-            this.navigationChanged()
-          })
-        )
-        this.$options.nonReactiveData.subscriptions.push(
-          this.$options.nonReactiveData.nehubaViewer.navigationState.position.inRealSpace
-            .subscribe(fa => {
-              this.$store.dispatch('secondaryNehubaNavigationPositionChanged', Array.from(fa))
-            })
-        )
-        resolve()
-      })
-    },
-    postInit: function () {
-      return new Promise((resolve, reject) => {
-        this.cid = null
-        window.secondaryViewer = window.viewer
-        window.secondaryNehubaViewer = this.$options.nonReactiveData.nehubaViewer
-        window.viewer = null
-        resolve()
-      })
-    },
-    initNehuba: function () {
-      this.preInit()
-        .then(this.init)
-        .then(this.postInit)
-        .catch(console.error)
-    },
     onError: function (e) {
       this.errorMessage = e
     },
@@ -142,27 +113,30 @@ export default {
         }
         this.$options.nonReactiveData.subscriptions.forEach(s => s.unsubscribe())
 
-        if (this.nehubaBaseDestroyHook) {
-          this.nehubaBaseDestroyHook()
+        if (this.nehubaBase__nehubaBaseDestroyHook) {
+          this.nehubaBase__nehubaBaseDestroyHook()
         }
-        this.vif = false
         resolve()
       })
     }
   },
   watch: {
-    config: function () {
-      this.destroyNehuba()
+    nehubaBase__navigationPosition: function (array) {
+      this.$store.dispatch('secondaryNehubaNavigationPositionChanged', array)
+    },
+    config: function (val) {
+      this.nehubaBase__destroyNehuba()
         .then(() => {
-          if (this.config) {
-            this.initNehuba()
+          console.log('init nehuba')
+          if (val) {
+            this.nehubaBase__initNehuba()
           }
         })
         .catch(console.error)
     }
   },
   beforeDestroy () {
-    this.destroyNehuba()
+    this.nehubaBase__destroyNehuba()
   }
 }
 </script>

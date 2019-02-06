@@ -5,17 +5,15 @@
     <div class="input-group-prepend">
 
       <!-- select -->
-      <div @click = "toggleActive" class="input-group-text">
-        <input type="checkbox" :checked = "active" />
-      </div>
-
       <!-- color -->
       <div
+        @click = "toggleActive"
         :title = "color"
         v-b-tooltip.hover
         :style = "{backgroundColor : color}"
         class="input-group-text color-container">
-        &nbsp;
+        
+        <input type="checkbox" :checked = "active" />
       </div>
     </div>
 

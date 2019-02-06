@@ -4,15 +4,6 @@
     <label class = "mb-0">{{ name }}</label> 
     <div class = "input-group input-group-sm">
 
-      <div class = "input-group-prepend">
-        <div
-          :disabled = "disabled"
-          @click = "$emit('minus')"
-          class = "btn btn-sm btn-outline-secondary">
-          <font-awesome-icon icon = "minus"/>
-        </div>
-      </div>
-
       <input
         style = "height: 100%;"
         v-model = "sliderValue"
@@ -23,18 +14,14 @@
         class = "form-control"
         type = "range" />
       
-      <div class="input-group-append">
-        <div
-          :disabled = "disabled"
-          @click = "$emit('plus')"
-          class = "btn btn-sm btn-outline-secondary">
-          <font-awesome-icon icon = "plus" />
-        </div>
-      </div>
       <input
+        @mousewheel="wheel"
         style = "flex: 0 0 4em;"
         v-model = "sliderValue"
-        type = "text"
+        :min="min"
+        :max="max"
+        :step="step"
+        type = "number"
         :disabled = "disabled"
         class = "form-control">
 
@@ -72,6 +59,13 @@ export default {
          * check num isNaN
          */
         this.$emit("sliderInput", num);
+      }
+    }
+  },
+  methods: {
+    wheel: function (event) {
+      if (event.deltaY) {
+        this.$emit( event.deltaY > 0 ? 'minus' : 'plus')
       }
     }
   }

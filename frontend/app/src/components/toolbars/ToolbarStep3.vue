@@ -1,7 +1,7 @@
 <template>
   <div>
     <!-- save component -->
-    <nib-component :style="draggingMixin__Style">
+    <nib-component :initOpen="true" :style="draggingMixin__Style">
 
       <!-- icon -->
       <template slot="icon">
@@ -33,7 +33,7 @@
   </div>
 </template>
 <script>
-import NibComponent from '@/components/NibComponent'
+import NibComponent from '@/components/layout/Nib'
 import DraggableMixin from '@/mixins/DraggableMixin'
 import SaveControl from '@/components/SaveControl'
 
