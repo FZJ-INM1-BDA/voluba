@@ -7,11 +7,6 @@ COPY . /frontend
 WORKDIR /frontend/app
 RUN npm i
 
-# terser build error temp fix
-# https://github.com/vuejs/vue-cli/issues/3407
-# https://github.com/terser-js/terser/pull/254
-RUN npm i terser@3.14
-
 RUN npm run build
 
 ENV PORT=8080
