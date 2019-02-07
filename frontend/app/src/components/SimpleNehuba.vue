@@ -11,20 +11,34 @@
       v-if = "dataToViewport.length > 2"
       :dataToViewport = "dataToViewport"
       :landmarks = "incomingLandmarks"
-      class = "landmarks-overlay"
-      />
+      class = "landmarks-overlay" />
+
+    <div class="statusCardWrapper">
+      <NehubaStatusCard>
+        <template>
+          <div>
+            {{ navStatusText }}
+          </div>
+          <div>
+            {{ mousePosStatusText }}
+          </div>
+        </template>
+      </NehubaStatusCard>
+    </div>
   </div>
 </template>
 <script>
 import NehubaLandmarksOverlay from '@/components/NehubaLandmarksOverlay'
 import NehubaBaseMixin from '@/mixins/NehubaBase'
+import NehubaStatusCard from '@/components/NehubaStatusCard'
 
 export default {
   mixins: [
     NehubaBaseMixin
   ],
   components: {
-    NehubaLandmarksOverlay
+    NehubaLandmarksOverlay,
+    NehubaStatusCard
   },
   props: {
     config: {
@@ -39,6 +53,9 @@ export default {
     return {
       loadingText: 'Loading simple nehuba ...',
       errorMessage: null,
+
+      viewerNavigationPosition: [0, 0, 0],
+      viewerMousePosition: [0, 0, 0],
 
       subscriptions: []
     }
@@ -92,6 +109,12 @@ export default {
       return this.errorMessage
         ? this.errorMessage
         : this.loadingText
+    },
+    navStatusText: function () {
+      return `navigation (mm): ${this.viewerNavigationPosition.map(v => (v / 1e6).toFixed(3)).join(', ')}`
+    },
+    mousePosStatusText: function () {
+      return `mouse (mm): ${this.viewerMousePosition.map(v => (v / 1e6).toFixed(3)).join(', ')}`
     }
   },
   methods: {
@@ -121,7 +144,11 @@ export default {
     }
   },
   watch: {
+    nehubaBase__mousePosition: function (array) {
+      this.viewerMousePosition = array
+    },
     nehubaBase__navigationPosition: function (array) {
+      this.viewerNavigationPosition = array
       this.$store.dispatch('secondaryNehubaNavigationPositionChanged', array)
     },
     config: function (val) {
@@ -145,5 +172,25 @@ export default {
 {
   width: 100%;
   height: 100%;
+}
+
+.statusCardWrapper
+{
+  width: 0;
+  height: 0;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  overflow: visible;
+
+  z-index: 11;
+
+  display: flex;
+  flex-direction: column-reverse;
+}
+
+.statusCardWrapper > *
+{
+  flex: 0 0 0;
 }
 </style>

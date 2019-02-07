@@ -13,6 +13,8 @@ export default {
         defaultXform,
         defaultXform
       ],
+      nehubaBase__navigationReal: null,
+      nehubaBase__mousePosition: null
     }
   },
   mounted() {
@@ -83,6 +85,12 @@ export default {
             .subscribe(fa => {
               this.nehubaBase__navigationPosition = Array.from(fa)
             })
+        )
+        this.nehubaBase__subscriptions.push(
+          nehubaViewer.mousePosition.inRealSpace.subscribe(fa => {
+            if (fa)
+              this.nehubaBase__mousePosition = Array.from(fa)
+          })
         )
         resolve({ nehubaViewer })
       })

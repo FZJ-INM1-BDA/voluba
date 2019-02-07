@@ -14,12 +14,23 @@
 
     <NehubaLandmarksOverlay
       ref = "lmOverlay"
-      v-show = "!previewMode"
       v-if = "dataToViewport.length > 2"
       :dataToViewport = "dataToViewport"
       :landmarks = "referenceLandmarks"
-      class = "landmarks-overlay"
-    />
+      class = "landmarks-overlay" />
+    
+    <div class="statusCardWrapper">
+      <NehubaStatusCard>
+        <template>
+          <div>
+            {{ navStatusText }}
+          </div>
+          <div>
+            {{ mousePosStatusText }}
+          </div>
+        </template>
+      </NehubaStatusCard>
+    </div>
   </div>
 </template>
 
@@ -29,6 +40,7 @@ import { annotationColorBlur, annotationColorFocus, getShader, testBigbrain, pat
 
 import NehubaBaseMixin from '@/mixins/NehubaBase'
 import NehubaLandmarksOverlay from '@/components/NehubaLandmarksOverlay'
+import NehubaStatusCard from '@/components/NehubaStatusCard'
 
 export default {
   mixins: [
@@ -102,6 +114,9 @@ export default {
     })
   },
   watch: {
+    nehubaBase__mousePosition: function (array) {
+      this.viewerMousePosition = array
+    },
     nehubaBase__navigationPosition: function (array) {
       this.viewerNavigationPosition = array
       this.$store.dispatch('primaryNehubaNavigationPositionChanged', array)
@@ -379,13 +394,6 @@ export default {
       )
 
       /**
-       * when navigation state changes, call to force update landmarks
-       */
-      this.$options.nonReactiveData.subscriptions.push(
-        this.$options.nehubaBase.nehubaBase__nehubaViewer.navigationState.full.subscribe(this.nehubaBase__navigationChanged)
-      )
-
-      /**
        * patch nehuba slice view draw
        */
       setTimeout(() => {
@@ -397,6 +405,11 @@ export default {
        * emit ready so that second nehuba can be shown if necessary
        */
       this.$emit('ready')
+
+      /**
+       * debug
+       */
+      window.primaryNehubaViewer = this.$options.nehubaBase.nehubaBase__nehubaViewer
     },
     clearUserLayers: function () {
       if (!this.$options.nehubaBase.nehubaBase__nehubaViewer) {
@@ -477,15 +490,19 @@ export default {
         })
         .filter(refLm => refLm !== null)
     },
-    previewMode: function () {
-      return this.$store.state.previewMode
+    navStatusText: function () {
+      return `navigation (mm): ${this.viewerNavigationPosition.map(v => (v / 1e6).toFixed(3)).join(', ')}`
+    },
+    mousePosStatusText: function () {
+      return `mouse (mm): ${this.viewerMousePosition.map(v => (v / 1e6).toFixed(3)).join(', ')}`
     }
   },
   beforeDestroy () {
     this.$options.nonReactiveData.subscriptions.forEach(s => s.unsubscribe())
   },
   components: {
-    NehubaLandmarksOverlay
+    NehubaLandmarksOverlay,
+    NehubaStatusCard
   }
 }
 </script>
@@ -556,5 +573,25 @@ div.scale-bar-container
 .landmarks-overlay
 {
   z-index: 11;
+}
+
+.statusCardWrapper
+{
+  width: 0;
+  height: 0;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  overflow: visible;
+
+  z-index: 11;
+
+  display: flex;
+  flex-direction: column-reverse;
+}
+
+.statusCardWrapper > *
+{
+  flex: 0 0 0;
 }
 </style>
