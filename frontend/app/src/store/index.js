@@ -268,15 +268,44 @@ const store = new Vuex.Store({
       state.incTransformMatrix = matrix
     },
     multiplyIncTransmMatrix (state, matrix) {
+      // catch when matrix is null (happens occationally?)
+      if (!matrix)
+        return
       const { mat4 } = window.export_nehuba
       const incM = mat4.fromValues(...state.incTransformMatrix)
       const mulM = mat4.fromValues(...matrix)
       mat4.mul(incM, incM, mulM)
       const det = mat4.determinant(incM)
       state.incTransformMatrix = Array.from(incM)
+    },
+    setRefLandmark (state, { id, lm: newLm }) {
+      state.referenceLandmarks = state.referenceLandmarks.map(lm => lm.id === id ? newLm : lm)
+    },
+    setIncLandmark (state, {id, lm: newLm}) {
+      state.incomingLandmarks = state.incomingLandmarks.map(lm => lm.id === id ? newLm : lm)
     }
   },
   actions: {
+    translateLandmarkPosBy ({commit, state}, { volume, id, value}) {
+      const lm = volume === 'reference'
+        ? state.referenceLandmarks.find(lm => lm.id === id)
+        : volume === 'incoming'
+          ? state.incomingLandmarks.find(lm => lm.id === id)
+          : null
+      if (!lm)
+        return
+
+      const commitSignature = volume === 'reference'
+        ? 'setRefLandmark'
+        : 'setIncLandmark'
+      commit(commitSignature, {
+        id: id,
+        lm: {
+          ...lm,
+          coord: lm.coord.map((v, idx) => v + value[idx])
+        }
+      })
+    },
     deleteIncomingVolume ({ dispatch }, {id}) {
       if (!/^user-/.test(id)) {
         return

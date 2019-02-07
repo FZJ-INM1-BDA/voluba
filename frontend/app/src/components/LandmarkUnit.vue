@@ -1,12 +1,22 @@
 <template>
-  <div :style = "styleLandmark" class="icon-container">
-    <font-awesome-icon :style = "iconStyle" class = "icon" icon = "map-marker-alt" />
-    <div :style = "stalkStyle" class = "stalk" />
+  <div :style="styleLandmark" class="icon-container">
+    <div
+      @mousedown="mousedownOnIcon"
+      :style="iconStyle"
+      class="icon"
+      v-b-tooltip="tooltipObj">
+      <font-awesome-icon :icon="icon" />
+    </div>
+    <div :style="stalkStyle" class="stalk" />
   </div>
 </template>
 <script>
 export default {
   props: {
+    tooltipText: {
+      type: String,
+      default: 'no info'
+    },
     active: {
       type: Boolean,
       default: true
@@ -28,7 +38,22 @@ export default {
       }
     }
   },
+  methods: {
+    mousedownOnIcon: function () {
+      this.$emit('mousedownOnIcon')
+    }
+  },
   computed: {
+    tooltipObj: function () {
+      return {
+        title: this.tooltipText,
+        trigger: 'hover',
+        placement: this.zOffset > 0 ? 'top' : 'bottom'
+      }
+    },
+    tooltipPlacement: function () {
+      return 'bottom'
+    },
     styleLandmark: function () {
       return {
         opacity: this.active ?
@@ -38,6 +63,11 @@ export default {
           : '0.05',
         color: this.color
       }
+    },
+    icon: function () {
+      return this.zOffset > 0
+        ? 'map-marker-alt'
+        : 'anchor'
     },
     iconStyle: function () {
       return {
@@ -59,7 +89,7 @@ export default {
 <style scoped>
 .icon-container
 {
-  pointer-events: none;
+  pointer-events: all;
   width: 0px;
   height: 0px;
   overflow: visible;
@@ -67,6 +97,7 @@ export default {
 }
 .icon
 {
+  pointer-events: all;
   width: 1em;
   height: 1em;
   margin-left: -0.5em;
@@ -77,6 +108,17 @@ export default {
   position:absolute;
   left: 0;
   top: 0;
+}
+
+.icon:hover
+{
+  cursor: move
+}
+
+.icon > *
+{
+  width: 1em;
+  height: 1em;
 }
 .stalk
 {

@@ -12,7 +12,7 @@
           @ready = "mainNehubaReady"
           ref = "templatenehuba" />
         <SimpleNehubaComponent
-          v-if="simpleNehubaConfig"
+          v-if="primaryNehubaReady && simpleNehubaConfig"
           :config="simpleNehubaConfig"
           ref="incomingnehuba"
           v-show="showSimpleNehuba" />

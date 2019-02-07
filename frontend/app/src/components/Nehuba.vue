@@ -1,18 +1,23 @@
 <template>
+
+  <!-- mosue move event need to capture the entire container -->
+  <!-- otherwise, when drag inc vol over landmarks, the inc vol will not move -->
   <div
-    @mousedown.capture="mousedown"
-    @mousemove.capture="mousemove"
     class="nehuba-container">
 
+    <!-- mousedown needs to be capturing event into nehuba container -->
+    <!-- otherwise, mousedown on landmarks will also be captured -->
     <div
+      @mousedown.capture="mousedown"
       @sliceRenderEvent="nehubaBase__sliceRenderEvent"
-      @viewportToData="viewportToData"
+      @viewportToData="nehubaBase__viewportToData"
       class = "nehuba-element"
       :id = "cid">
       {{ placeholderText }}
     </div>
 
     <NehubaLandmarksOverlay
+      @mousedownOnIcon="dragLandmark__handleMousedownOnIcon({...$event, volume: 'reference'})"
       ref = "lmOverlay"
       v-if = "dataToViewport.length > 2"
       :dataToViewport = "dataToViewport"
@@ -36,15 +41,17 @@
 
 <script>
 
-import { annotationColorBlur, annotationColorFocus, getShader, testBigbrain, patchSliceViewPanel, determineElement, getRotationVec3, incomingTemplateActiveOpacity } from '@//constants'
+import { annotationColorBlur, annotationColorFocus, getShader, testBigbrain, determineElement, getRotationVec3, incomingTemplateActiveOpacity } from '@//constants'
 
 import NehubaBaseMixin from '@/mixins/NehubaBase'
+import DragLandmarkMixin from '@/mixins/DragLandmarkMixin'
 import NehubaLandmarksOverlay from '@/components/NehubaLandmarksOverlay'
 import NehubaStatusCard from '@/components/NehubaStatusCard'
 
 export default {
   mixins: [
-    NehubaBaseMixin
+    NehubaBaseMixin,
+    DragLandmarkMixin
   ],
   data: function () {
     return {
@@ -190,13 +197,6 @@ export default {
     timeoutId: null
   },
   methods: {
-    viewportToData: function (event) {
-      if (this.viewportToDatas[0] && this.viewportToDatas[1] && this.viewportToDatas[2]) {
-        return
-      }
-      const element = event.srcElement || event.originalTarget
-      this.viewportToDatas[determineElement(element)] = event.detail.viewportToData
-    },
     mousedown: function (event) {
       if (this.mouseOverIncoming) {
         this.incomingVolumeSelected = true
@@ -214,7 +214,14 @@ export default {
         const element = event.srcElement || event.originalTarget
         this.movingIncomingIndex = determineElement(element)
 
+        document.addEventListener('mousemove', this.mousemove, true)
+
         document.addEventListener('mouseup', ev => {
+
+          /**
+           * on mosue up, remove event listener
+           */
+          document.removeEventListener('mousemove', this.mousemove, true)
 
           /**
            * instead of attaching mouseup listener to this element, attach to the whole body
@@ -260,7 +267,9 @@ export default {
            * first, translation mouse delta into 3d delta
            */
           let pos = vec3.fromValues(deltaX, deltaY, 0)
-          vec3.transformMat4(pos, pos, this.viewportToDatas[this.movingIncomingIndex])
+          if (!this.nehubaBase__viewportToDatas[this.movingIncomingIndex])
+            return
+          vec3.transformMat4(pos, pos, this.nehubaBase__viewportToDatas[this.movingIncomingIndex])
           
           /**
            * account for navigation movement
@@ -394,11 +403,8 @@ export default {
       )
 
       /**
-       * patch nehuba slice view draw
+       * get managedLayer for easier access
        */
-      setTimeout(() => {
-        this.$options.nehubaBase.nehubaBase__nehubaViewer.ngviewer.display.panels.forEach(patchSliceViewPanel)
-      })
       this.$options.nonReactiveData.managedLayers = this.$options.nehubaBase.nehubaBase__nehubaViewer.ngviewer.layerManager.managedLayers
 
       /**

@@ -1,4 +1,4 @@
-import { defaultXform, determineElement } from '@//constants'
+import { defaultXform, determineElement, patchSliceViewPanel } from '@//constants'
 
 export default {
   data: function () {
@@ -13,7 +13,7 @@ export default {
         defaultXform,
         defaultXform
       ],
-      nehubaBase__navigationReal: null,
+      nehubaBase__viewportToDatas: [],
       nehubaBase__mousePosition: null
     }
   },
@@ -28,6 +28,14 @@ export default {
     })
   },
   methods: {
+    nehubaBase__viewportToData: function (event) {
+
+      if (this.nehubaBase__viewportToDatas[0] && this.nehubaBase__viewportToDatas[1] && this.nehubaBase__viewportToDatas[2]) {
+        return
+      }
+      const element = event.srcElement || event.originalTarget
+      this.nehubaBase__viewportToDatas[determineElement(element)] = event.detail.viewportToData
+    },
     nehubaBase__initNehuba: function () {
       /**
        * only change cid. watcher should take care of the rest
@@ -92,6 +100,14 @@ export default {
               this.nehubaBase__mousePosition = Array.from(fa)
           })
         )
+
+        /**
+         * patch nehuba slice view draw
+         */
+        setTimeout(() => {
+          nehubaViewer.ngviewer.display.panels.forEach(patchSliceViewPanel)
+        })
+
         resolve({ nehubaViewer })
       })
     },

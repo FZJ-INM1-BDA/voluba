@@ -9,8 +9,7 @@ import Step2 from '@/components/toolbars/ToolbarStep2'
 import Step3 from '@/components/toolbars/ToolbarStep3'
 import NotFound from '@/views/NotFound'
 
-const checkRefVolIncVolSet = (to, from, next) => {
-  console.log(store.state.selectedReferenceVolumeId, store.state.selectedIncomingVolumeId)
+const checkRefVolIncVolSet = (_to, _from, next) => {
   if (store.state.selectedIncomingVolumeId && store.state.selectedReferenceVolumeId) {
     next()
   } else {

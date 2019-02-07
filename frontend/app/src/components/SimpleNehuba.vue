@@ -2,11 +2,13 @@
   <div class="nehuba-container">
     <div
       @sliceRenderEvent="nehubaBase__sliceRenderEvent"
+      @viewportToData="nehubaBase__viewportToData"
       class = "nehubaElement"
       :id = "cid">
       {{ placeholderText }}
     </div>
     <nehuba-landmarks-overlay
+      @mousedownOnIcon="dragLandmark__handleMousedownOnIcon({...$event, volume: 'incoming'})"
       ref = "lmOverlay"
       v-if = "dataToViewport.length > 2"
       :dataToViewport = "dataToViewport"
@@ -30,11 +32,13 @@
 <script>
 import NehubaLandmarksOverlay from '@/components/NehubaLandmarksOverlay'
 import NehubaBaseMixin from '@/mixins/NehubaBase'
+import DragLandmarkMixin from '@/mixins/DragLandmarkMixin'
 import NehubaStatusCard from '@/components/NehubaStatusCard'
 
 export default {
   mixins: [
-    NehubaBaseMixin
+    NehubaBaseMixin,
+    DragLandmarkMixin
   ],
   components: {
     NehubaLandmarksOverlay,
@@ -63,7 +67,7 @@ export default {
   mounted () {
     this.nehubaBase__initNehuba()
       .then(() => {
-        console.log('yay')
+        
       })
       .catch(e => {
         console.log(('uh oh'))
