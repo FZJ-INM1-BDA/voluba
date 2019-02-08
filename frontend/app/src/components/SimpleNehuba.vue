@@ -83,6 +83,11 @@ export default {
         default:
       }
     })
+
+    this.nehubaBase__navigationChanged = () => {
+      if (this.$refs.lmOverlay)
+        this.$refs.lmOverlay.$forceUpdate()
+    }
     
     if (!this.config) {
       this.errorMessage = `incoming dataset not set`

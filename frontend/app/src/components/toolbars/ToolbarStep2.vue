@@ -1,5 +1,15 @@
 <template>
   <div id="flexcontainer">
+    
+    <div class="pointer-events flex-items">
+      <div
+        v-b-tooltip.hover.right="modeBtnTooltipText"
+        @click="toggleMode"
+        :class="modeBtnClass"
+        class="addBtn rounded-circle btn btn-sm">
+        <font-awesome-icon icon="columns"></font-awesome-icon>
+      </div>
+    </div>
 
     <!-- layer control -->
     <LayerControl class="flex-items pointer-events" />
@@ -37,16 +47,43 @@ export default {
   },
   data: function () {
     return {
-      showLandmarksControl: true
+      showLandmarksControl: true,
     }
   },
   computed: {
+    mode: {
+      get: function () {
+        return this.$store.state._step2Mode
+      },
+      set: function (mode) {
+        /**
+         * TODO remove this in release
+         */
+        this.$store.commit('_setStep2Mode', { mode })
+      }
+    },
     addBtnStyle: function () {
       return {
       }
     },
+    modeBtnClass: function () {
+      return this.mode === 'overlay'
+        ? 'btn-secondary'
+        : 'btn-info'
+    },
+    modeBtnTooltipText: function () {
+      return `debug: toggle step 2 mode`
+      return this.mode === 'overlay'
+        ? `overlay mode`
+        : `split screen mode`
+    }
   },
   methods: {
+    toggleMode: function () {
+      this.mode = this.mode === 'overlay'
+        ? 'classic'
+        : 'overlay'
+    },
     getYTranslateStyle: function (idx) {
       return {
         marginTop: `${idx * 2.5}em`

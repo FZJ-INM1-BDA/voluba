@@ -3,16 +3,24 @@ const DragLandmarkMixin = {
     return {
       dragLandmark__draggedLmId : null,
       dragLandmark__draggedPanelIdx : null,
-      dragLandmark__volume: null
+      dragLandmark__volume: null,
+      dragLandmark__quat: null 
     }
   },
   methods: {
-    dragLandmark__handleMousedownOnIcon: function ({lmId, panelIdx, volume, ...rest}) {
-      debugger
+    dragLandmark__handleMousedownOnIcon: function ({lmId, panelIdx, volume, transform, ...rest}) {
+
+      const { mat4, quat } = window.export_nehuba
+
       this.dragLandmark__draggedLmId = lmId
       this.dragLandmark__draggedPanelIdx = panelIdx
       this.dragLandmark__volume = volume
-
+      if (transform) {
+        const xform = mat4.fromValues(...transform)
+        const q = mat4.getRotation(quat.create(), xform)
+        quat.invert(q, q)
+        this.dragLandmark__quat = Array.from(q)
+      }
       document.addEventListener('mousemove', this.dragLandmark__handleMousemove, true)
       document.addEventListener('mouseup', this.dragLandmark__handleMouseup, {capture: true, once: true})
     },
@@ -25,7 +33,7 @@ const DragLandmarkMixin = {
 
       const deltaX = event.movementX
       const deltaY = event.movementY
-      const { vec3 } = window.export_nehuba
+      const { vec3, quat } = window.export_nehuba
 
       const pos = vec3.fromValues(deltaX, deltaY, 0)
 
@@ -38,6 +46,11 @@ const DragLandmarkMixin = {
        * account for navigation movement
        */
       vec3.subtract(pos, pos, this.dragLandmark__viewerNavigationPos)
+
+      /**
+       * account for rotation (if defined)
+       */
+      vec3.transformQuat(pos, pos, quat.fromValues(...this.dragLandmark__quat))
       
       this.$store.dispatch('translateLandmarkPosBy', {
         volume: this.dragLandmark__volume,
@@ -49,6 +62,7 @@ const DragLandmarkMixin = {
       this.dragLandmark__draggedLmId = null
       this.dragLandmark__draggedPanelIdx = null
       this.dragLandmark__volume = null
+      this.dragLandmark__quat = null
       document.removeEventListener('mousemove', this.dragLandmark__handleMousemove, true)
     }
   },

@@ -18,11 +18,19 @@
 
     <NehubaLandmarksOverlay
       @mousedownOnIcon="dragLandmark__handleMousedownOnIcon({...$event, volume: 'reference'})"
-      ref = "lmOverlay"
-      v-if = "dataToViewport.length > 2"
-      :dataToViewport = "dataToViewport"
-      :landmarks = "referenceLandmarks"
-      class = "landmarks-overlay" />
+      ref="lmOverlay"
+      v-if="showReferenceLandmarkOverlay"
+      :dataToViewport="dataToViewport"
+      :landmarks="referenceLandmarks"
+      class="landmarks-overlay" />
+
+    <nehuba-landmarks-overlay
+      @mousedownOnIcon="dragLandmark__handleMousedownOnIcon({...$event, volume: 'incoming', transform: incTransformMatrix})"
+      ref="lmOverlay1"
+      v-if="showIncomingLandmarkOverlay"
+      :dataToViewport="dataToViewport"
+      :landmarks="incomingLandmarks"
+      class="landmarks-overlay" />
     
     <div class="statusCardWrapper">
       <NehubaStatusCard>
@@ -99,6 +107,13 @@ export default {
         console.error('e', e)
         this.placeholderText = 'error loading nehuba'
       })
+
+    this.nehubaBase__navigationChanged = () => {
+      if (this.$refs.lmOverlay)
+        this.$refs.lmOverlay.$forceUpdate()
+      if (this.$refs.lmOverlay1)
+        this.$refs.lmOverlay1.$forceUpdate()
+    }
 
     this.$store.subscribeAction(({type, payload}) => {
       if (!('export_nehuba' in window)) return
@@ -454,6 +469,42 @@ export default {
     }
   },
   computed: {
+    showReferenceLandmarkOverlay: function () {
+      return this.dataToViewport.length > 2 && (!this.showDoubleOverlay || this._step2OverlayFocus === 'reference' )
+    },
+    showIncomingLandmarkOverlay: function () {
+      return this.dataToViewport.length > 2 && this.showDoubleOverlay && this._step2OverlayFocus === 'incoming'
+    },
+    _step2OverlayFocus: function () {
+      return this.$store.state._step2OverlayFocus
+    },
+    incomingLandmarks: function () {
+      const {vec3,  mat4} = window.export_nehuba
+      const incVM = mat4.fromValues(...this.incTransformMatrix)
+      return this.$store.state.landmarkPairs
+        .map(lmp => {
+          const lm = this.$store.state.incomingLandmarks.find(lm => lm.id === lmp.incId)
+          return lm
+            ? {
+              ...lm,
+              color: lmp.color,
+              active: lmp.active
+            }
+            : null
+        })
+        .filter(incLm => incLm !== null)
+        .map(lm => {
+          const coord = vec3.fromValues(...lm.coord.map(v => v * 1e6))
+          vec3.transformMat4(coord, coord, incVM)
+          return {
+            ...lm,
+            coord: Array.from(coord).map(v => v / 1e6)
+          }
+        })
+    },
+    showDoubleOverlay: function () {
+      return this.$store.state._step2Mode === 'overlay'
+    },
     cid: function () {
       return this.nehubaBase__cid
     },

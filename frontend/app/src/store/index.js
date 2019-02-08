@@ -81,6 +81,9 @@ const store = new Vuex.Store({
       { id: '5', text: 'Affine', value: 'affine' }
     ],
 
+    _step2Mode: 'overlay',
+    _step2OverlayFocus: 'reference',
+
     referenceTemplate: null,
     incomingTemplate: null,
     incomingColor: [252, 200, 0, 0.5],
@@ -117,6 +120,12 @@ const store = new Vuex.Store({
     landmarkRMSE: null
   },
   mutations: {
+    _setStep2Mode (state, { mode }) {
+      state._step2Mode = mode
+    },
+    _setStep2OverlayFocus (state, {mode}) {
+      state._step2OverlayFocus = mode
+    },
     setIncomingVolumes (state, { volumes }) {
       state.incomingVolumes = volumes
     },

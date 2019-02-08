@@ -19,17 +19,23 @@
     <template slot="body">
 
       <!-- landmark-control-body -->
+      <LandmarkControlBodyV2
+        id="content"
+        class="landmarks-control"
+        @header-mousedown="draggingMixin__StartDragging"
+        v-if="showLandmarksControl && showV2" />
+
       <LandmarkControlBody
         id="content"
         class="landmarks-control"
         @header-mousedown="draggingMixin__StartDragging"
-        v-if="showLandmarksControl" />
+        v-if="showLandmarksControl && !showV2" />
 
       <!-- transformation -->
-      <TransformationComponent />
+      <TransformationComponent v-if="!showV2" />
 
       <!-- Sync Zoom  -->
-      <div style = "pointer-events: all">
+      <div v-if="!showV2" style = "pointer-events: all">
         <input type="checkbox" id="synchronize-zoom" name="synchronize-zoom" v-model="synchronizeZoom"/>
         <label for="synchronize-zoom">Synchronize Zoom</label>
       </div>
@@ -41,6 +47,7 @@
 import NibComponent from '@/components/layout/Nib'
 import DraggableMixin from '@/mixins/DraggableMixin'
 import LandmarkControlBody from '@/components/LandmarkControlBody'
+import LandmarkControlBodyV2 from '@/components/LandmarkControlBodyV2'
 import TransformationComponent from '@/components/TransformationComponent'
 import axios from 'axios'
 import { Compact } from 'vue-color'
@@ -51,7 +58,7 @@ export default {
     LandmarkControlBody,
     'compact-picker': Compact,
     TransformationComponent,
-    
+    LandmarkControlBodyV2
   },
   mixins: [
     DraggableMixin
@@ -77,6 +84,12 @@ export default {
     }
   },
   computed: {
+    showV2: function () {
+      return this.mode === 'overlay'
+    },
+    mode: function () {
+      return this.$store.state._step2Mode
+    },
     synchronizeZoom: {
       get: function () {
         return this.$store.state.synchronizeZoom

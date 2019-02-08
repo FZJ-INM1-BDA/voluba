@@ -139,9 +139,9 @@ export default {
       this.nehubaBase__subscriptions.forEach(s => s.unsubscribe())
     },
     nehubaBase__navigationChanged: function () {
-      if (this.$refs.lmOverlay) {
-        this.$refs.lmOverlay.$forceUpdate()
-      }
+      /**
+       * by default nothing happens. to be overwritten by subclasses
+       */
     },
     nehubaBase__sliceRenderEvent: function (event) {
       if (

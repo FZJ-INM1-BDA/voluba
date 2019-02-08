@@ -12,7 +12,7 @@
           @ready = "mainNehubaReady"
           ref = "templatenehuba" />
         <SimpleNehubaComponent
-          v-if="primaryNehubaReady && simpleNehubaConfig"
+          v-if="primaryNehubaReady && simpleNehubaConfig && showSimpleNehuba"
           :config="simpleNehubaConfig"
           ref="incomingnehuba"
           v-show="showSimpleNehuba" />
@@ -96,7 +96,7 @@ export default {
       return incVol && incVol.imageSource && getDefaultNehubaConfigLight(incVol.imageSource)
     },
     showSimpleNehuba: function () {
-      return this.showSecondNehuba && this.primaryNehubaReady
+      return this.showSecondNehuba && this.primaryNehubaReady && this.$store.state._step2Mode === 'classic'
     }
   },
   methods: {
