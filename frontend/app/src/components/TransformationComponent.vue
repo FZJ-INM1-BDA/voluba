@@ -107,10 +107,16 @@ export default {
       console.log(data)
       axios.post(this.$store.state.backendURL + '/least-squares', data)
         .then(response => {
-          this.$store.dispatch('changeLandmarkTransformationMatrix', response.data.transformation_matrix)
-          this.$store.dispatch('changeLandmarkInverseMatrix', response.data.inverse_matrix)
-          this.$store.dispatch('changeLandmarkDeterminant', this.computeDeterminant(response.data.transformation_matrix))
-          this.$store.dispatch('changeLandmarkRMSE', response.data.RMSE)
+          /**
+           * TODO catch error
+           */
+          const { transformation_matrix: transformationMatrix, inverse_matrix: inverseMatrix, RMSE } = response.data
+          this.$store.dispatch('computeTransformResponseReceived', {
+            transformationMatrix,
+            inverseMatrix,
+            RMSE,
+            determinant: this.computeDeterminant(transformationMatrix)
+          })
         }, error => {
           console.log(error)
           // TODO: handle error!
@@ -153,8 +159,8 @@ export default {
         .filter(lm => lm !== null)
 
       return {
-        'source_image': this.$store.state.selectReference,
-        'target_image': this.$store.state.selectTemplate,
+        'source_image': this.$store.state.selectReference, // TODO update
+        'target_image': this.$store.state.selectTemplate, // TODO update
         'transformation_type': this.$store.state.transformationTypes[this.$store.state.selectedTransformationIndex].value,
         'landmark_pairs': lmPairs
       }

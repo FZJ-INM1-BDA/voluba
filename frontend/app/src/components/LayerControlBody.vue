@@ -415,17 +415,6 @@ export default {
     },
     renderedIncomingVolumes: function () {
       return [this.dummyIncomingTemplate].concat(this.$store.state.incomingVolumes)
-    },
-    /**
-     * NYI, need deeper integration with backend on available template spaces
-     */
-    selectReference: function () {
-      return this.$store.state.selectReference
-    },
-    selectTemplateText: function () {
-      return this.$store.state.incomingTemplate
-        ? this.$store.state.incomingTemplate.text
-        : this.dummyIncomingTemplate.text
     }
   },
   watch: {
