@@ -136,6 +136,17 @@ export default {
     })
   },
   watch: {
+    _showRefVol: function (bool) {
+      const layer = this.$options.nehubaBase.nehubaBase__nehubaViewer.ngviewer.layerManager.managedLayers[0]
+      layer.setVisible(bool)
+    },
+    _showIncVolOverlay: function (bool) {
+      const layer = this.$options.nehubaBase.nehubaBase__nehubaViewer.ngviewer.layerManager.getLayerByName('userlayer-0')
+      if (layer) {
+        layer.setVisible(bool)
+        this.$store.dispatch('changeOpacity', 1.0)
+      }
+    },
     nehubaBase__mousePosition: function (array) {
       this.viewerMousePosition = array
     },
@@ -362,6 +373,10 @@ export default {
       }
     },
     updateMouseOverIncVolState: function ({mouseOverUserlayer}) {
+
+      if (this._showIncVolOverlay && !this._showRefVol)
+        return
+
       this.mouseOverIncoming = mouseOverUserlayer
       this.$store.dispatch(this.mouseOverIncoming
         ? 'mouseOverIncomingLayer'
@@ -469,6 +484,15 @@ export default {
     }
   },
   computed: {
+    _showRefVol: function () {
+      return this.$route.name !== 'Step 2' || this.showReferenceLandmarkOverlay
+    },
+    _showIncVolOverlay: function () {
+      return this.$route.name !== 'Step 2' || this.showIncomingLandmarkOverlay
+    },
+    _step2Mode: function () {
+      return this.$store.state._step2Mode
+    },
     showReferenceLandmarkOverlay: function () {
       return this.dataToViewport.length > 2 && (!this.showDoubleOverlay || this._step2OverlayFocus === 'reference' )
     },
@@ -481,26 +505,41 @@ export default {
     incomingLandmarks: function () {
       const {vec3,  mat4} = window.export_nehuba
       const incVM = mat4.fromValues(...this.incTransformMatrix)
-      return this.$store.state.landmarkPairs
-        .map(lmp => {
-          const lm = this.$store.state.incomingLandmarks.find(lm => lm.id === lmp.incId)
-          return lm
-            ? {
+      return this._step2Mode === 'overlay'
+        /**
+         * retturn all landmarks
+         */
+        ? this.$store.state.incomingLandmarks.map(lm => {
+            const coord = vec3.fromValues(...lm.coord.map(v => v * 1e6))
+            vec3.transformMat4(coord, coord, incVM)
+            return {
               ...lm,
-              color: lmp.color,
-              active: lmp.active
+              coord: Array.from(coord).map(v => v / 1e6)
             }
-            : null
-        })
-        .filter(incLm => incLm !== null)
-        .map(lm => {
-          const coord = vec3.fromValues(...lm.coord.map(v => v * 1e6))
-          vec3.transformMat4(coord, coord, incVM)
-          return {
-            ...lm,
-            coord: Array.from(coord).map(v => v / 1e6)
-          }
-        })
+          })
+        /**
+         * only returns the landmarks covered by landmark pairs
+         */
+        : this.$store.state.landmarkPairs
+            .map(lmp => {
+              const lm = this.$store.state.incomingLandmarks.find(lm => lm.id === lmp.incId)
+              return lm
+                ? {
+                  ...lm,
+                  color: lmp.color,
+                  active: lmp.active
+                }
+                : null
+            })
+            .filter(incLm => incLm !== null)
+            .map(lm => {
+              const coord = vec3.fromValues(...lm.coord.map(v => v * 1e6))
+              vec3.transformMat4(coord, coord, incVM)
+              return {
+                ...lm,
+                coord: Array.from(coord).map(v => v / 1e6)
+              }
+            })
     },
     showDoubleOverlay: function () {
       return this.$store.state._step2Mode === 'overlay'
@@ -515,11 +554,10 @@ export default {
       return this.$store.state.incTransformMatrix
     },
     translationByDragEnabled: function () {
-      return !this.previewMode
+      return this.$route.name === 'Step 1'
     },
     rotationByDragEnabled: function () {
-      // return false
-      return !this.previewMode
+      return this.$route.name === 'Step 1'
     },
     calculatedTransformMatrix: function () {
       return this.$store.state.landmarkInverseMatrix.map((arr, i) => arr.map((v, idx) => i !== 3 && idx === 3 ? v * 1e6 : v))
@@ -534,7 +572,9 @@ export default {
       return this.$store.state.selectedIncomingVolumeId
     },
     referenceLandmarks: function () {
-      return this.$store.state.landmarkPairs
+      return this._step2Mode === 'overlay'
+        ? this.$store.state.referenceLandmarks
+        : this.$store.state.landmarkPairs
         .map(lmp => {
           const lm = this.$store.state.referenceLandmarks.find(lm => lm.id === lmp.refId)
           return lm

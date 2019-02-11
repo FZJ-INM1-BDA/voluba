@@ -1,80 +1,26 @@
 <template>
   <div
     :style="rowStyle"
-    class="input-group mb-1">
+    class="input-group">
     
     <!-- prepend -->
-    <div v-if="false" class="input-group-prepend">
-      <div class="input-group-text">
-        <input type="checkbox" :checked="landmark.active"/>
-      </div>
-    </div>
+    <slot name="prepend"></slot>
 
     <!-- landmark name -->
     <input
       type="text"
       class="form-control"
-      :value="name"
-      @change="changeName" />
+      v-model="landmarkName"
+      />
 
     <!-- append -->
-    <div
-      @mouseleave="showIcon=false"
-      class="input-group-append">
-
-      <!-- go to landmark -->
-      <button
-        v-if="showIcon"
-        @click.stop.prevent = "gotoLandmark"
-        type="button"
-        class="btn btn-sm btn-primary"
-        v-b-tooltip.hover title="Go to landmark">
-        <font-awesome-icon icon = "map-marker-alt"/>
-      </button>
-
-      <!-- relocate landmark -->
-      <button
-        v-if="showIcon"
-        v-b-tooltip.hover
-        title="Reset landmark to current location"
-        @click.stop.prevent = "resetLandmark"
-        type="button"
-        class="btn btn-sm btn-warning">
-        <font-awesome-icon icon="thumbtack" style="color: white;"/>
-      </button>
-
-      <!-- trash landmark -->
-      <button
-        v-if="showIcon"
-        @click.stop.prevent = "removeLandmark"
-        type="button"
-        class="btn btn-sm btn-danger"
-        v-b-tooltip.hover title="Remove landmark">
-        <font-awesome-icon icon="trash-alt"/>
-      </button>
-
-      <!-- link btn -->
-      <button
-        v-if="showLink && showIcon"
-        type="button"
-        v-b-tooltip.hover title="Paired landmark"
-        class="btn btn-sm btn-secondary">
-        <font-awesome-icon icon="link"/>
-      </button>
-
-      <button
-        @mouseover="showIcon=true"
-        v-if="!showIcon"
-        class="btn btn-sm btn-secondary">
-        <font-awesome-icon icon="ellipsis-h"></font-awesome-icon>
-      </button>
-    </div>
+    <slot name="append"></slot>
   </div>  
 </template>
 <script>
 export default {
   props: {
-    showLink: {
+    showAppend: {
       type: Boolean,
       default: false
     },
@@ -95,14 +41,9 @@ export default {
 
     },
     gotoLandmark: function () {
-
     },
     resetLandmark: function () {
 
-    },
-    changeName: function (val) {
-      this.$emit('changeName', val)
-      console.log('changename', val)
     }
   },
   computed: {
@@ -111,9 +52,19 @@ export default {
         // opacity: this.landmark.active ? 1.0 : 0.3
       }
     },
+    landmarkName: {
+      get: function () {
+        return this.landmark && typeof this.landmark.name !== 'undefined' && this.landmark.name !== null
+          ? this.landmark.name
+          : `Untitled`
+      },
+      set: function (name) {
+        this.$emit('changeName', { name })
+      }
+    },
     name: function () {
       return this.landmark
-        ? this.landmark.name
+        ? this.landmark.name 
         : `Untitled`
     }
   }

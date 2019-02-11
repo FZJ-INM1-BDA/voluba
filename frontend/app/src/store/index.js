@@ -415,6 +415,44 @@ const store = new Vuex.Store({
       commit('changeLandmarkDeterminant', determinant)
       commit('changeLandmarkRMSE', RMSE)
     },
+    addLandmark ({commit, state}) {
+      if (state._step2OverlayFocus === 'reference') {
+        const refId = generateId(state.referenceLandmarks).toString()
+        const newReferenceLandmark = {
+          id: refId,
+          name: refId,
+          /**
+           * position in nm
+           */
+          coord: state.primaryNehubaNavigationPosition.map(v => v / 1e6)
+        }
+        commit('setReferenceLandmarks', {
+          referenceLandmarks: state.referenceLandmarks.concat(newReferenceLandmark)
+        })
+      } else if (state._step2OverlayFocus === 'incoming') {
+        /**
+         * currently, only way addLandmark action is triggered is in overlay mode
+         * as a result, we need to calculate the actual coord, from primary nehuba navigation to inc vol space
+         */
+        const {mat4, vec3 } = window.export_nehuba
+
+        const coord = state.primaryNehubaNavigationPosition
+        const xform = mat4.fromValues(...state.incTransformMatrix)
+        mat4.invert(xform, xform)
+        const pos = vec3.fromValues(...coord)
+        vec3.transformMat4(pos, pos, xform)
+        
+        const incId = generateId(state.incomingLandmarks).toString()
+        const newIncomingLandmark = {
+          id: incId,
+          name: incId,
+          coord: Array.from(pos).map(v => v / 1e6)
+        }
+        commit('setIncomingLandmarks', {
+          incomingLandmarks: state.incomingLandmarks.concat(newIncomingLandmark)
+        })
+      }
+    },
     addLandmarkPair ({ commit, state }) {
       const refId = generateId(state.referenceLandmarks).toString()
       const newReferenceLandmark = {
@@ -498,13 +536,28 @@ const store = new Vuex.Store({
         })
       })
     },
+    changeLandmarkName ({commit, state}, {id, name, volume}) {
+      if (volume === 'reference') {
+        commit('setReferenceLandmarks', {
+          referenceLandmarks: state.referenceLandmarks.map(lm => lm.id === id 
+            ? {
+              ...lm,
+              name
+            }
+            : lm)
+        })
+      } else if (volume === 'incoming') {
+        commit('setIncomingLandmarks', {
+          incomingLandmarks: state.incomingLandmarks.map(lm => lm.id === id
+            ? {
+              ...lm,
+              name
+            }
+            : lm)
+        })
+      }
+    },
     changeLandmarkPairName ({commit, state}, { id, name }) {
-      console.log('change landmark pair name', id, name, state.landmarkPairs.map(lmp => {
-        return {
-          ...lmp,
-          name: lmp.id === id ? name : lmp.name
-        }
-      }))
       commit('setLandmarkPairs', {
         landmarkPairs: state.landmarkPairs.map(lmp => {
           return {

@@ -1,8 +1,10 @@
 <template>
   <div>
     <LandmarkRowV2
-      :showLink="showLink"
+      @changeName="$emit('changeName',  {...$event, id: lm.id})"
+      :showAppend="showAppend"
       v-for="lm in landmarks"
+      class="mb-1"
       :landmark="lm"
       :key="lm.id"/>
   </div>  
@@ -11,7 +13,7 @@
 import LandmarkRowV2 from '@/components/LandmarkRowV2'
 export default {
   props: {
-    showLink: {
+    showAppend: {
       type: Boolean,
       default: false
     },

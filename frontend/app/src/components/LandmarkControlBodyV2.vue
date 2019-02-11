@@ -33,32 +33,174 @@
       </b-tabs>
     </div>
 
-    <LandmarkListV2
-      v-if="_step2OverlayFocus === 'incoming'"
-      :showLink="true"
-      :landmarks="incomingLandmarks"
-      class="body bg-light" />
+    <!-- primary landmarks -->
+    <div class="body bg-light">
+      <LandmarkRowV2
+        class="mb-1"
+        @changeName="$store.dispatch('changeLandmarkName', {...$event, id: lm.id, volume: _step2OverlayFocus})"
+        :key="lm.id"
+        :landmark="lm"
+        v-for="lm in primaryLandmarks">
 
-    <LandmarkListV2
-      v-if="_step2OverlayFocus === 'reference'"
-      :showLink="true"
-      :landmarks="referenceLandmarks"
-      class="body bg-light" />
+        <!-- append icons -->
+        <template slot="append">
+          
+          <div
+            :id="'lmRow' + lm.id"
+            @mouseleave="mouseoverId=null"
+            class="input-group-append">
+
+            <!-- go to landmark -->
+            <button
+              v-if="mouseoverId === lm.id"
+              @click.stop.prevent = "gotoLandmark"
+              type="button"
+              class="btn btn-sm btn-primary"
+              v-b-tooltip.hover title="Go to landmark">
+              <font-awesome-icon icon = "map-marker-alt"/>
+            </button>
+
+            <!-- relocate landmark -->
+            <button
+              v-if="mouseoverId === lm.id"
+              v-b-tooltip.hover
+              title="Reset landmark to current location"
+              @click.stop.prevent = "resetLandmark"
+              type="button"
+              class="btn btn-sm btn-warning">
+              <font-awesome-icon icon="thumbtack" style="color: white;"/>
+            </button>
+
+            <!-- trash landmark -->
+            <button
+              v-if="mouseoverId === lm.id"
+              @click.stop.prevent = "removeLandmark"
+              type="button"
+              class="btn btn-sm btn-danger"
+              v-b-tooltip.hover title="Remove landmark">
+              <font-awesome-icon icon="trash-alt"/>
+            </button>
+
+            <!-- link btn -->
+            <button
+              v-if="mouseoverId === lm.id"
+              @click.stop.prevent="showPopoverId = lm.id"
+              type="button"
+              v-b-tooltip.hover title="Paired landmark"
+              class="btn btn-sm btn-secondary">
+              <font-awesome-icon icon="link"/>
+            </button>
+
+            <button
+              v-if="lm.id !== mouseoverId"
+              @mouseenter="mouseoverId=lm.id"
+              class="btn btn-sm btn-secondary">
+              <font-awesome-icon
+                icon="ellipsis-h">
+                <!-- :icon="lmIconOpenSet.findIndex(i => i === lm.id) < 0? 'ellipsis-h' : 'times'"> -->
+                </font-awesome-icon>
+            </button>
+
+          </div>
+        </template>
+
+      </LandmarkRowV2>
+    </div>
+
+    <!-- popover -->
+    <b-popover
+      v-if="popoverTarget"
+      ref="popoverLinkLandmark"
+      placement="rightbottom"
+      :target="popoverTarget">
+      <template slot="title">
+        <div>
+          {{ popoverTitle }}
+        </div>
+      </template>
+      <div class="body bg-light" >
+        <LandmarkRowV2
+          :key="lm.id"
+          :landmark="lm"
+          v-for="lm in secondaryLandmarks">
+          <template slot="prepend">
+            <div class="input-group-prepend">
+
+              <!-- tooltip wrapper -->
+              <div v-b-tooltip="'test'">
+                <div class="btn btn-secondary">
+                  <font-awesome-icon icon="link"></font-awesome-icon>
+                </div>
+              </div>
+            </div>
+          </template>
+        </LandmarkRowV2>
+      </div>
+    </b-popover>
 
   </div>
 </template>
 <script>
-import LandmarkListV2 from '@/components/LandmarkListV2'
+import LandmarkRowV2 from '@/components/LandmarkRowV2'
 export default {
   components: {
-    LandmarkListV2
+    LandmarkRowV2
+  },
+  data: function () {
+    return {
+      mouseoverId: null,
+      showPopoverId: null,
+      lmIconOpenSet: []
+    }
   },
   methods: {
+    toggleLmIcons: function (id) {
+      const foundId = this.lmIconOpenSet.find(i => i === id)
+      if (foundId) {
+        this.lmIconOpenSet = this.lmIconOpenSet.filter(i => i !== id)
+      } else {
+        this.lmIconOpenSet = this.lmIconOpenSet.concat(id)
+      }
+    },
     toggleLandmark: function (mode) {
       this.$store.commit('_setStep2OverlayFocus', { mode })
     }
   },
+  watch: {
+    showPopoverId: function (val) {
+      if (!this.$refs.popoverLinkLandmark) 
+        return
+
+      // this.$refs.popoverLinkLandmark.$emit('close')
+      // if (val) {
+      //   this.$refs.popoverLinkLandmark.$emit('open')
+      // }
+    }
+  },
   computed: {
+    popoverTarget: function () {
+      return this.mouseoverId
+        ? `lmRow${this.mouseoverId}`
+        : null
+    },
+    popoverTitle: function () {
+      return this._step2OverlayFocus === 'reference' ? 'Incoming Volume Landmarks' : 'Reference Volume Landmarks'
+    },
+    primaryLandmarks: function () {
+      return (this._step2OverlayFocus === 'reference'
+        ? this.referenceLandmarks
+        : this.incomingLandmarks).map(lm => {
+          return {
+            ...lm,
+            showIcon: this.lmIconOpenSet.findIndex(i => i === lm.id) >= 0
+          }
+        })
+    },
+    secondaryLandmarks: function () {
+      return this._step2OverlayFocus === 'reference'
+        ? this.incomingLandmarks
+        : this.referenceLandmarks
+    },  
     _step2OverlayFocus: function () {
       return this.$store.state._step2OverlayFocus
     },

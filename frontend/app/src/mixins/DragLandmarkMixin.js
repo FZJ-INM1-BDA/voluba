@@ -50,7 +50,9 @@ const DragLandmarkMixin = {
       /**
        * account for rotation (if defined)
        */
-      vec3.transformQuat(pos, pos, quat.fromValues(...this.dragLandmark__quat))
+      if (this.dragLandmark__quat) {
+        vec3.transformQuat(pos, pos, quat.fromValues(...this.dragLandmark__quat))
+      }
       
       this.$store.dispatch('translateLandmarkPosBy', {
         volume: this.dragLandmark__volume,

@@ -25,7 +25,7 @@
       class="flex-items">
       <div
         v-if="!showLandmarksControl"
-        @click="$store.dispatch('addLandmarkPair')"
+        @click="$store.dispatch(mode === 'overlay' ? 'addLandmark' : 'addLandmarkPair')"
         class="addBtn point-events rounded-circle btn btn-sm btn-success"
         v-b-tooltip.right.hover
         title="Add Landmark Pair">

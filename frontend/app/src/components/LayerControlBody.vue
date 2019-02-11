@@ -225,7 +225,6 @@ export default {
       scaleMin: 0.1,
       scaleMax: 10,
       scaleStep: 0.01,
-      opacity: 0.5,
       opacityMin: 0,
       opacityMax: 1.0,
       opacityStep: 0.01,
@@ -415,12 +414,18 @@ export default {
     },
     renderedIncomingVolumes: function () {
       return [this.dummyIncomingTemplate].concat(this.$store.state.incomingVolumes)
+    },
+    opacity: {
+      get: function () {
+        const color = this.$store.state.incomingColor
+        return color[3]
+      },
+      set: function (opacityVal) {
+        this.$store.dispatch('changeOpacity', Number(opacityVal))
+      }
     }
   },
   watch: {
-    opacity: function (opacityVal) {
-      this.$store.dispatch('changeOpacity', Number(opacityVal))
-    },
     scale: function () {
       this.scaleChanged()
     },
