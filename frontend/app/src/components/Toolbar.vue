@@ -1,7 +1,7 @@
 <template>
   <div id="flexcontainer">
 
-    <div class="pointer-events flex-items">
+    <div class="horizontalContainer flex-items">
       <div
         @click="showIcons = !showIcons"
         class="pointer-events addBtnLg rounded-circle btn btn-lg btn-light">
@@ -12,7 +12,7 @@
     <!-- toggle double pane mode -->
     <div
       v-if="showIcons"
-      class="horizontalContainer pointer-events flex-items">
+      class="horizontalContainer flex-items">
       <div
         v-b-tooltip.hover.right="modeBtnTooltipText"
         @click="toggleMode"
@@ -25,7 +25,7 @@
     <!-- layer control -->
     <div
       v-if="showIcons"
-      class="horizontalContainer flex-items pointer-events">
+      class="horizontalContainer flex-items">
       <div
         v-b-tooltip.right.hover="'configure incoming volume'"
         :class="showLayerControl ? 'btn-info' : 'btn-secondary'"
@@ -44,7 +44,7 @@
     <!-- landmark-control -->
     <div
       v-if="showIcons"
-      class="horizontalContainer flex-items pointer-events">
+      class="horizontalContainer flex-items">
 
       <div
         v-b-tooltip.right.hover="'Edit landmarks'"
@@ -76,7 +76,7 @@
     <!-- save export control -->
     <div
       v-if="showIcons"
-      class="horizontalContainer flex-items pointer-events">
+      class="horizontalContainer flex-items">
 
       <div
         v-b-tooltip.right.hover="'Save Transformation params and results.'"
@@ -95,7 +95,7 @@
     <!-- start from scratch btn -->
     <div
       v-if="showIcons"
-      class="horizontalContainer pointer-events flex-items">
+      class="horizontalContainer flex-items">
       <div
         @click="$store.dispatch('startFromScratch')"
         class="addBtn point-events rounded-circle btn btn-sm btn-danger"
