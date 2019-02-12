@@ -20,7 +20,7 @@
 
       <!-- floating layer -->
       <div class = "overlay">
-        <router-view />
+        <toolbar-component />
       </div>
     </main>
 
@@ -37,6 +37,9 @@
       <upload-modal
         ref="uploadModal"
         id="uploadModal" />
+      <SelectVolumesModal
+        v-if="showSelectVolumesModal"
+        @destroyMe="showSelectVolumesModal=false" />
     </div>
     <!--<footer-component/>-->
   </div>
@@ -46,13 +49,13 @@
 import HeaderComponent from '@/components/TheHeader'
 import NehubaComponent from '@/components/Nehuba'
 import SimpleNehubaComponent from '@/components/SimpleNehuba'
-// import FooterComponent from '@/components/TheFooter'
+import ToolbarComponent from '@/components/Toolbar'
 import { getDefaultNehubaConfigLight } from '@/constants'
 
-// modals
 import LoadLandmarkPairsModal from '@/components/modals/LoadLandmarkPairsModal'
 import TransformationMatrixModal from '@/components/modals/TransformationMatrixModal'
 import UploadModal from '@/components/modals/UploadModal'
+import SelectVolumesModal from '@/components/modals/SelectVolumesModal'
 
 export default {
   name: 'App',
@@ -60,28 +63,31 @@ export default {
     HeaderComponent,
     NehubaComponent,
     SimpleNehubaComponent,
+    ToolbarComponent,
 
-    // modals
     TransformationMatrixModal,
     LoadLandmarkPairsModal,
-    UploadModal
+    UploadModal,
+    SelectVolumesModal
   },
   data: function () {
     return {
-      showSecondNehuba: false,
-      primaryNehubaReady: false
+      showSecondNehuba: true,
+      primaryNehubaReady: false,
+      showSelectVolumesModal: true
     }
   },
   mounted: function () {
     this.$store.subscribeAction(({ type, payload }) => {
       switch (type) {
-        case 'openModal':
+        case 'openModal': {
           const modalId = payload && payload.modalId
           const modal = modalId && this.$refs[modalId]
           if (modal) {
             modal.showModal()
           }
-          break;
+          break
+        }
         default:
       }
     })
@@ -107,9 +113,6 @@ export default {
   watch: {
     showSimpleNehuba: function () {
       this.$store.dispatch('redrawNehuba')
-    },
-    $route (to, from) {
-      this.showSecondNehuba = to.path === '/step2'
     }
   }
 }

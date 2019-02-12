@@ -4,7 +4,12 @@
     <!-- header -->
     <div class="card bg-light" @mousedown="$emit('header-mousedown', $event)">
       <h5 class="title">
-        Landmark Control V2
+        <div>
+          Edit landmarks
+        </div>
+        <small>
+          {{ popoverTitle }}
+        </small>
       </h5>
     </div>
 

@@ -38,11 +38,11 @@ export default {
 {
   display:inline-block;
   flex-direction: column;
-  width: 16em;
+  width: 20em;
   background-color:rgba(50, 50, 50, 0.8);
   color: white;
 
-  margin-left: 10em;
+  margin-left: 1em;
 
   border-radius: 0.4em 0.4em 0 0;
 }

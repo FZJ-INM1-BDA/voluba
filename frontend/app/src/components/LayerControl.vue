@@ -1,17 +1,16 @@
 <template>
   <nib-component
+    @toggleOpen="$emit('changeNibState', $event)"
     :initOpen="initOpen"
     :style="draggingMixin__Style">
 
     <!-- icon -->
     <template slot="icon">
       <div
-        v-b-tooltip.right.hover
-        :title="configureIncVolTooltip"
         :class="showLayerControl ? '' : 'btn-shadow'"
         @click="toggleShowLayerControl"
         class="rounded-circle layer-control-toggle btn btn-sm btn-secondary">
-        <font-awesome-icon :icon="icon"/>
+        <font-awesome-icon icon="times"/>
       </div>
     </template>
 
@@ -54,16 +53,8 @@ export default {
       .catch(console.error)
   },
   computed: {
-    configureIncVolTooltip: function() {
-      return `configure incoming volume`
-    },
     computedShowLayerControl: function() {
       return this.nehubaAppended && this.showLayerControl
-    },
-    icon: function() {
-      return this.showLayerControl
-        ? "sliders-h" // 'times'
-        : "sliders-h"
     }
   },
   methods: {
@@ -77,5 +68,8 @@ export default {
 }
 </script>
 <style scoped>
-
+.rounded-circle
+{
+  width: 2rem;
+}
 </style>

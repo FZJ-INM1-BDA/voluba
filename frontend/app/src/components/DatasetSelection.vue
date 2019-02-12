@@ -77,14 +77,13 @@
 
     <upload-volume-component />
     <hr />
-    <router-link to = "/step1">
-      <div
-        :disabled="bothSelected"
-        :class = "nextStepClass"
-        class="float-sm-right btn">
-        Start registration!
-      </div>
-    </router-link>
+    <div
+      @click="$emit('destroyMe')"
+      :disabled="bothSelected"
+      :class = "nextStepClass"
+      class="float-sm-right btn">
+      Start registration!
+    </div>
   </div>
 </template>
 
@@ -215,6 +214,10 @@ export default {
 </script>
 
 <style scoped>
+.disabled
+{
+  pointer-events: none;
+}
 .container
 {
   pointer-events: all;

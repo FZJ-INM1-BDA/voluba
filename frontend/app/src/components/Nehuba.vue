@@ -186,6 +186,10 @@ export default {
       this.setNavigationActive(!val)
     },
     $route: function (to, from) {
+      /**
+       * zoom in and potentially rotate when transite from step1 to step2
+       * currently obsolete, since there are no steps
+       */
       if (this.$options.nonReactiveData.ngUserLayer && to.path === '/step2') {
         const { lower, upper } = this.$options.nonReactiveData.ngUserLayer.layer.renderLayer.boundingBox
         const { vec3, mat4 } = window.export_nehuba
@@ -485,10 +489,10 @@ export default {
   },
   computed: {
     _showRefVol: function () {
-      return this.$route.name !== 'Step 2' || this.showReferenceLandmarkOverlay
+      return this.showReferenceLandmarkOverlay
     },
     _showIncVolOverlay: function () {
-      return this.$route.name !== 'Step 2' || this.showIncomingLandmarkOverlay
+      return this.showIncomingLandmarkOverlay
     },
     _step2Mode: function () {
       return this.$store.state._step2Mode
@@ -554,10 +558,10 @@ export default {
       return this.$store.state.incTransformMatrix
     },
     translationByDragEnabled: function () {
-      return this.$route.name === 'Step 1'
+      return true
     },
     rotationByDragEnabled: function () {
-      return this.$route.name === 'Step 1'
+      return true
     },
     calculatedTransformMatrix: function () {
       return this.$store.state.landmarkInverseMatrix.map((arr, i) => arr.map((v, idx) => i !== 3 && idx === 3 ? v * 1e6 : v))
@@ -605,6 +609,11 @@ export default {
 </script>
 
 <style>
+div.neuroglancer-panel
+{
+  position: relative;
+}
+
 div.scale-bar-container
 {
   text-align: center;

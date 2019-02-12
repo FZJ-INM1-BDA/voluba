@@ -1,17 +1,16 @@
 <template>
   
   <!-- landmark controls -->
-  <nib-component :initOpen="initOpen" :style="draggingMixin__Style">
+  <nib-component
+    @toggleOpen="$emit('changeNibState', $event)"
+    :initOpen="initOpen"
+    :style="draggingMixin__Style">
 
     <!-- icon -->
     <template slot="icon">
       <div
-        v-b-tooltip.right.hover
-        :title="landmarkTooltip"
-        @click="toggleLandmarksControl"
-        id="icon"
         class="rounded-circle landmarks-control-toggle btn-shadow btn-sm btn btn-secondary">
-        <font-awesome-icon :icon="icon"/>
+        <font-awesome-icon icon="times"/>
       </div>
     </template>
 
@@ -50,13 +49,11 @@ import LandmarkControlBody from '@/components/LandmarkControlBody'
 import LandmarkControlBodyV2 from '@/components/LandmarkControlBodyV2'
 import TransformationComponent from '@/components/TransformationComponent'
 import axios from 'axios'
-import { Compact } from 'vue-color'
 
 export default {
   components: {
     NibComponent,
     LandmarkControlBody,
-    'compact-picker': Compact,
     TransformationComponent,
     LandmarkControlBodyV2
   },
@@ -77,7 +74,7 @@ export default {
   },
   watch: {
     showLandmarksControl: function (bool) {
-      this.$emit('showLandmarksControl', bool)
+      this.$emit('changeNibState', bool)
     },
     synchronizeCursor: function () {
       this.enableSynchronizeCursor()
@@ -95,30 +92,20 @@ export default {
         return this.$store.state.synchronizeZoom
       },
       set: function (bool) {
-        console.log(bool)
-        // this.$store.dispatch('enableSynchronizeZoom', bool)
       }
-    },
-    landmarkTooltip: function () {
-      return `Edit Landmarks`
-    },
-    icon: function () {
-      return `map-marker-alt`
     },
     computedTransformationAvailable: function () {
       return this.$store.state.landmarkTransformationMatrix
     }
   },
   methods: {
-    toggleLandmarksControl: function () {
-      this.showLandmarksControl = !this.showLandmarksControl
-      if (!this.showLandmarksControl) {
-        this.draggingMixin__ResetPosition()
-      }
-    }
   }
 }
 </script>
 <style scoped>
 
+.rounded-circle
+{
+  width: 2rem;
+}
 </style>

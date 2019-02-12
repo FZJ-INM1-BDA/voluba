@@ -441,7 +441,7 @@ const store = new Vuex.Store({
         mat4.invert(xform, xform)
         const pos = vec3.fromValues(...coord)
         vec3.transformMat4(pos, pos, xform)
-        
+
         const incId = generateId(state.incomingLandmarks).toString()
         const newIncomingLandmark = {
           id: incId,

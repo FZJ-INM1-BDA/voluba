@@ -16,7 +16,7 @@
 
     <!-- landmark-control -->
     <landmark-control
-      :initOpen="showLandmarksControl"
+      :initOpen="false"
       @showLandmarksControl="showLandmarksControl = $event"
       class="pointer-events flex-items" />
 

@@ -5,7 +5,7 @@
 
     <!-- icon -->
     <div
-      @click="open = !open"
+      @click="toggleOpen"
       :class="open ? '' : 'btn-shadow'"
       class="icon">
       <slot name="icon"></slot>
@@ -34,6 +34,12 @@ export default {
   data: function () {
     return {
       open: this.initOpen
+    }
+  },
+  methods: {
+    toggleOpen: function () {
+      this.open = !this.open
+      this.$emit('toggleOpen', this.open)
     }
   },
   computed: {

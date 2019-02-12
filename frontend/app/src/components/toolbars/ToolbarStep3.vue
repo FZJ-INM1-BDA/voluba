@@ -1,5 +1,4 @@
 <template>
-  <div>
     <!-- save component -->
     <nib-component :initOpen="true" :style="draggingMixin__Style">
 
@@ -25,12 +24,6 @@
       </template>
     </nib-component>
 
-    <!-- not being shown -->
-    <template>
-      <b-card-body v-if="false" class = "save-export-container">
-      </b-card-body>
-    </template>
-  </div>
 </template>
 <script>
 import NibComponent from '@/components/layout/Nib'

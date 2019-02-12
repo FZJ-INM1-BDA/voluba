@@ -6,7 +6,12 @@
         class="card bg-light">
 
         <h5 class="title">
-          {{ selectedIncomingVolumeName }}
+          <div>
+            Configure Incoming Volume
+          </div>
+          <small>
+            {{ selectedIncomingVolumeName }}
+          </small>
         </h5>
       </div>
       
