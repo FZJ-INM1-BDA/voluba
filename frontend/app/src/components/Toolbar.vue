@@ -64,12 +64,22 @@
     <div
       v-if="showIcons"
       class="horizontalContainer flex-items">
-      <div
-        @click="$store.dispatch(mode === 'overlay' ? 'addLandmark' : 'addLandmarkPair')"
-        class="addBtn point-events rounded-circle btn btn-sm btn-success"
-        v-b-tooltip.right.hover
-        title="Add landmark pair">
-        <font-awesome-icon icon="plus" />
+      <div class="btn-group">
+        <div
+          id="addLm"
+          @click="addLandmark"
+          class="addBtn point-events rounded-circle btn btn-sm btn-success"
+          v-b-tooltip.right.hover
+          title="Add landmark pair">
+          <font-awesome-icon icon="plus" />
+        </div>
+        <div
+          @click="$store.commit('setLandmarkMode', {mode : false})"
+          v-if="addLandmarkMode"
+          id="cancelAddLm"
+          class="pointer-events btn btn-sm btn-danger">
+          cancel
+        </div>
       </div>
     </div>
     
@@ -121,13 +131,23 @@ export default {
   },
   data: function () {
     return {
-      showLandmarksControl: false,
       showLayerControl: false,
       showSaveExportControl: false,
       showIcons: false
     }
   },
   computed: {
+    addLandmarkMode: function () {
+      return this.$store.state.addLandmarkMode
+    },
+    showLandmarksControl: {
+      get: function () {
+        return this.$store.state.landmarkControlVisible
+      },
+      set: function (visible) {
+        return this.$store.dispatch('landmarkControlVisibilityChanged', {visible})
+      }
+    },
     hamburgerIcon: function () {
       return this.showIcons
         ? 'times'
@@ -157,7 +177,22 @@ export default {
       return `debug: toggle step 2 mode`
     }
   },
+  watch: {
+    showLandmarksControl: function (visible) {
+      this.$store.dispatch('landmarkControlVisibilityChanged', { visible })
+    }
+  },
   methods: {
+    addLandmark: function () {
+      if (this.mode === 'overlay') {
+        this.$store.dispatch('toggleLandmarkMode')
+      } else {
+        /**
+         * classic mode
+         */
+        this.$store.dispatch('addLandmarkPair')
+      }
+    },
     toggleMode: function () {
       this.mode = this.mode === 'overlay'
         ? 'classic'
@@ -172,6 +207,17 @@ export default {
 }
 </script>
 <style scoped>
+#addLm
+{
+  z-index: 1;
+}
+#cancelAddLm
+{
+  z-index: 0;
+  margin-left: -2.5em;
+  padding-left: 2em;
+  padding-right: 0.8em;
+}
 .pointer-events
 {
   pointer-events: all;

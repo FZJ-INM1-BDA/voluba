@@ -103,6 +103,8 @@ const store = new Vuex.Store({
     viewerSliceOrientation: [0, 0, 0, 1],
     mouseoverUserlayer: null,
 
+    addLandmarkMode: false,
+    landmarkControlVisible: false,
     referenceLandmarks: [],
     incomingLandmarks: [],
     landmarkPairs: [],
@@ -120,6 +122,12 @@ const store = new Vuex.Store({
     landmarkRMSE: null
   },
   mutations: {
+    setLandmarkMode (state, { mode }) {
+      state.addLandmarkMode = mode
+    },
+    setLandmarkControlVisibility (state, { visible }) {
+      state.landmarkControlVisible = visible
+    },
     _setStep2Mode (state, { mode }) {
       state._step2Mode = mode
     },
@@ -240,6 +248,13 @@ const store = new Vuex.Store({
     }
   },
   actions: {
+    toggleLandmarkMode ({commit, state}) {
+      const mode = !state.addLandmarkMode
+      commit('setLandmarkMode', { mode })
+    },
+    landmarkControlVisibilityChanged ({ commit }, { visible }) {
+      commit('setLandmarkControlVisibility', { visible })
+    },
     translateLandmarkPosBy ({commit, state}, { volume, id, value}) {
       const lm = volume === 'reference'
         ? state.referenceLandmarks.find(lm => lm.id === id)

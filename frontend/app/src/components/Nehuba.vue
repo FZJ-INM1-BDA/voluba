@@ -488,20 +488,27 @@ export default {
     }
   },
   computed: {
+    landmarkControlVisible: function () {
+      return this.$store.state.landmarkControlVisible
+    },
     _showRefVol: function () {
-      return this.showReferenceLandmarkOverlay
+      return !this.showDoubleOverlay || !this.landmarkControlVisible || this._step2OverlayFocus === 'reference'
     },
     _showIncVolOverlay: function () {
-      return this.showIncomingLandmarkOverlay
+      if (this.showDoubleOverlay) {
+        return !this.landmarkControlVisible || this._step2OverlayFocus === 'incoming'
+      } else {
+        return false
+      }
     },
     _step2Mode: function () {
       return this.$store.state._step2Mode
     },
     showReferenceLandmarkOverlay: function () {
-      return this.dataToViewport.length > 2 && (!this.showDoubleOverlay || this._step2OverlayFocus === 'reference' )
+      return this.dataToViewport.length > 2 && this._showRefVol
     },
     showIncomingLandmarkOverlay: function () {
-      return this.dataToViewport.length > 2 && this.showDoubleOverlay && this._step2OverlayFocus === 'incoming'
+      return this.dataToViewport.length > 2 && this._showIncVolOverlay
     },
     _step2OverlayFocus: function () {
       return this.$store.state._step2OverlayFocus
@@ -518,6 +525,7 @@ export default {
             vec3.transformMat4(coord, coord, incVM)
             return {
               ...lm,
+              color: '#ff6666',
               coord: Array.from(coord).map(v => v / 1e6)
             }
           })
