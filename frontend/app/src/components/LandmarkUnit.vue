@@ -45,11 +45,12 @@ export default {
   },
   computed: {
     tooltipObj: function () {
-      return {
-        title: this.tooltipText,
-        trigger: 'hover',
-        placement: this.zOffset > 0 ? 'top' : 'bottom'
-      }
+      return null 
+      // {
+      //   title: this.tooltipText,
+      //   trigger: 'hover',
+      //   placement: this.zOffset > 0 ? 'top' : 'bottom'
+      // }
     },
     tooltipPlacement: function () {
       return 'bottom'
@@ -97,7 +98,7 @@ export default {
 }
 .icon
 {
-  pointer-events: all;
+  pointer-events: none;
   width: 1em;
   height: 1em;
   margin-left: -0.5em;

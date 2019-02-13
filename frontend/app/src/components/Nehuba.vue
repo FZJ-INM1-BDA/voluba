@@ -48,7 +48,7 @@
 </template>
 
 <script>
-
+import { mapState } from 'vuex'
 import { annotationColorBlur, annotationColorFocus, getShader, testBigbrain, determineElement, getRotationVec3, incomingTemplateActiveOpacity } from '@//constants'
 
 import NehubaBaseMixin from '@/mixins/NehubaBase'
@@ -64,6 +64,7 @@ export default {
   data: function () {
     return {
       placeholderText: 'Loading nehuba ...',
+      nehubaLoaded: false,
 
       /**
        * managed layer state
@@ -228,6 +229,14 @@ export default {
   },
   methods: {
     mousedown: function (event) {
+      if (this.addLandmarkMode) {
+        this.$store.dispatch('addLandmark', {
+          landmark: {
+            coord: this.viewerMousePosition.map(v => v / 1e6)
+          }
+        })
+        return
+      }
       if (this.mouseOverIncoming) {
         this.incomingVolumeSelected = true
         this.$options.nonReactiveData.mousedownMatrix = Array.from(this.incTransformMatrix)
@@ -445,6 +454,7 @@ export default {
        * emit ready so that second nehuba can be shown if necessary
        */
       this.$emit('ready')
+      this.nehubaLoaded = true
 
       /**
        * debug
@@ -488,9 +498,14 @@ export default {
     }
   },
   computed: {
-    landmarkControlVisible: function () {
-      return this.$store.state.landmarkControlVisible
-    },
+    ...mapState({
+      addLandmarkMode: 'addLandmarkMode',
+      landmarkControlVisible: 'landmarkControlVisible',
+      _step2Mode: '_step2Mode',
+      _step2OverlayFocus: '_step2OverlayFocus',
+      incTransformMatrix: 'incTransformMatrix',
+      selectedIncomingVolumeId: 'selectedIncomingVolumeId'
+    }),
     _showRefVol: function () {
       return !this.showDoubleOverlay || !this.landmarkControlVisible || this._step2OverlayFocus === 'reference'
     },
@@ -501,24 +516,39 @@ export default {
         return false
       }
     },
-    _step2Mode: function () {
-      return this.$store.state._step2Mode
-    },
     showReferenceLandmarkOverlay: function () {
-      return this.dataToViewport.length > 2 && this._showRefVol
+      return this.nehubaLoaded && this.dataToViewport.length > 2 && this._showRefVol
     },
     showIncomingLandmarkOverlay: function () {
-      return this.dataToViewport.length > 2 && this._showIncVolOverlay
+      return this.nehubaLoaded && this.dataToViewport.length > 2 && this._showIncVolOverlay
     },
-    _step2OverlayFocus: function () {
-      return this.$store.state._step2OverlayFocus
+    showDoubleOverlay: function () {
+      return this.$store.state._step2Mode === 'overlay'
     },
-    incomingLandmarks: function () {
+    cid: function () {
+      return this.nehubaBase__cid
+    },
+    dataToViewport: function () {
+      return this.nehubaBase__dataToViewport
+    },
+    translationByDragEnabled: function () {
+      return true
+    },
+    rotationByDragEnabled: function () {
+      return true
+    },
+    calculatedTransformMatrix: function () {
+      return this.$store.state.landmarkInverseMatrix.map((arr, i) => arr.map((v, idx) => i !== 3 && idx === 3 ? v * 1e6 : v))
+    },
+    incomingColor: function () {
+      return this.$store.state.incomingColor.map((v, idx) => idx === 3 ? v : v / 255)
+    },
+    storedIncomingLandmarks: function () {
       const {vec3,  mat4} = window.export_nehuba
       const incVM = mat4.fromValues(...this.incTransformMatrix)
       return this._step2Mode === 'overlay'
         /**
-         * retturn all landmarks
+         * retturn all incoming landmarks
          */
         ? this.$store.state.incomingLandmarks.map(lm => {
             const coord = vec3.fromValues(...lm.coord.map(v => v * 1e6))
@@ -553,37 +583,19 @@ export default {
               }
             })
     },
-    showDoubleOverlay: function () {
-      return this.$store.state._step2Mode === 'overlay'
+    incomingLandmarks: function () {
+      return this.addLandmarkMode
+        ? this.storedIncomingLandmarks.concat([
+            {
+              id: 'tmplm',
+              name: 'tmplm',
+              color: this._step2OverlayFocus === 'incoming' ? '#ff6666' : 'yellow',
+              coord: this.viewerMousePosition.map(v => v / 1e6)
+            }
+          ])
+        : this.storedIncomingLandmarks
     },
-    cid: function () {
-      return this.nehubaBase__cid
-    },
-    dataToViewport: function () {
-      return this.nehubaBase__dataToViewport
-    },
-    incTransformMatrix: function () {
-      return this.$store.state.incTransformMatrix
-    },
-    translationByDragEnabled: function () {
-      return true
-    },
-    rotationByDragEnabled: function () {
-      return true
-    },
-    calculatedTransformMatrix: function () {
-      return this.$store.state.landmarkInverseMatrix.map((arr, i) => arr.map((v, idx) => i !== 3 && idx === 3 ? v * 1e6 : v))
-    },
-    incomingColor: function () {
-      return this.$store.state.incomingColor.map((v, idx) => idx === 3 ? v : v / 255)
-    },
-    selectedIncomingVolume: function () {
-      return this.$store.state.selectedIncomingVolumeIndex
-    },
-    selectedIncomingVolumeId: function () {
-      return this.$store.state.selectedIncomingVolumeId
-    },
-    referenceLandmarks: function () {
+    storedReferenceLandmarks: function () {
       return this._step2Mode === 'overlay'
         ? this.$store.state.referenceLandmarks
         : this.$store.state.landmarkPairs
@@ -598,6 +610,18 @@ export default {
             : null
         })
         .filter(refLm => refLm !== null)
+    },
+    referenceLandmarks: function () {
+      return this.addLandmarkMode
+        ? this.storedReferenceLandmarks.concat([
+            {
+              id: 'tmplm',
+              name: 'tmplm',
+              color: this._step2OverlayFocus === 'incoming' ? '#ff6666' : 'yellow',
+              coord: this.viewerMousePosition.map(v => v / 1e6)
+            }
+          ])
+        : this.storedReferenceLandmarks
     },
     navStatusText: function () {
       return `navigation (mm): ${this.viewerNavigationPosition.map(v => (v / 1e6).toFixed(3)).join(', ')}`

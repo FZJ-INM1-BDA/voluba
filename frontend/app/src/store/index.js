@@ -430,7 +430,7 @@ const store = new Vuex.Store({
       commit('changeLandmarkDeterminant', determinant)
       commit('changeLandmarkRMSE', RMSE)
     },
-    addLandmark ({commit, state}) {
+    addLandmark ({commit, state}, {landmark = {}}) {
       if (state._step2OverlayFocus === 'reference') {
         const refId = generateId(state.referenceLandmarks).toString()
         const newReferenceLandmark = {
@@ -439,7 +439,8 @@ const store = new Vuex.Store({
           /**
            * position in nm
            */
-          coord: state.primaryNehubaNavigationPosition.map(v => v / 1e6)
+          coord: state.primaryNehubaNavigationPosition.map(v => v / 1e6),
+          ...landmark
         }
         commit('setReferenceLandmarks', {
           referenceLandmarks: state.referenceLandmarks.concat(newReferenceLandmark)
@@ -451,7 +452,7 @@ const store = new Vuex.Store({
          */
         const {mat4, vec3 } = window.export_nehuba
 
-        const coord = state.primaryNehubaNavigationPosition
+        const coord = (landmark.coord && landmark.coord.map(v => v * 1e6)) || state.primaryNehubaNavigationPosition
         const xform = mat4.fromValues(...state.incTransformMatrix)
         mat4.invert(xform, xform)
         const pos = vec3.fromValues(...coord)
