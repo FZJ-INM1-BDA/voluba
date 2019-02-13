@@ -5,6 +5,7 @@
     <div class = "input-group input-group-sm">
 
       <input
+        @mousewheel="wheel"
         style = "height: 100%;"
         v-model = "sliderValue"
         :disabled = "disabled"
@@ -16,7 +17,7 @@
       
       <input
         @mousewheel="wheel"
-        style = "flex: 0 0 4em;"
+        style = "flex: 0 0 6em;"
         v-model = "sliderValue"
         :min="min"
         :max="max"

@@ -64,13 +64,15 @@
     <div
       v-if="showIcons"
       class="horizontalContainer flex-items">
-      <div class="btn-group">
+      <div
+        class="btn-group">
         <div
           id="addLm"
           @click="addLandmark"
-          class="addBtn point-events rounded-circle btn btn-sm btn-success"
-          v-b-tooltip.right.hover
-          title="Add landmark pair">
+          v-b-tooltip.right.hover="landmarkControlVisible ? 'Toggle add landmark mode' : 'Edit landmark pane must be opened first'"
+          :class="landmarkControlVisible ? '' : 'lmr-disabled'"
+          class="addBtn pointer-events rounded-circle btn btn-sm btn-success"
+          >
           <font-awesome-icon icon="plus" />
         </div>
         <div
@@ -83,11 +85,14 @@
       </div>
     </div>
 
+    <!-- compute xform -->
     <div
       v-if="showIcons"
       class="horizontalContainer flex-items">
       <div
         @click="calculateXform"
+        v-b-tooltip.right.hover="ableToComputeTransformationMatrix ? 'Compute and display transform based on landmarks.' : 'Need at least three (3) active landmarks to compute transformation.'"
+        :class="ableToComputeTransformationMatrix ? '' : 'lmr-disabled'"
         class="addBtn rounded-circle landmarks-control-toggle btn btn-sm btn-primary">
         <font-awesome-icon icon="calculator"></font-awesome-icon>
       </div>
@@ -101,7 +106,7 @@
       <div
         v-b-tooltip.right.hover="'Save Transformation params and results.'"
         @click="showSaveExportControl = !showSaveExportControl"
-        class="addBtn point-events rounded-circle save-control-toggle btn-shadow btn btn-sm btn-secondary">
+        class="addBtn pointer-events rounded-circle save-control-toggle btn-shadow btn btn-sm btn-secondary">
         <font-awesome-icon icon="save" />
       </div>
 
@@ -118,7 +123,7 @@
       class="horizontalContainer flex-items">
       <div
         @click="$store.dispatch('startFromScratch')"
-        class="addBtn point-events rounded-circle btn btn-sm btn-danger"
+        class="addBtn pointer-events rounded-circle btn btn-sm btn-danger"
         v-b-tooltip.right.hover
         title="Start from scratch">
         <font-awesome-icon icon="backward" />
@@ -128,7 +133,7 @@
   </div>
 </template>
 <script>
-
+import { mapState } from 'vuex'
 import LayerControl from '@/components/LayerControl'
 import LandmarkControl from '@/components/LandmarkControl'
 import SaveExportControl from '@/components/SaveExportControl'
@@ -147,9 +152,11 @@ export default {
     }
   },
   computed: {
-    addLandmarkMode: function () {
-      return this.$store.state.addLandmarkMode
-    },
+    ...mapState({
+      addLandmarkMode: 'addLandmarkMode',
+      landmarkControlVisible: 'landmarkControlVisible',
+      ableToComputeTransformationMatrix: state => state.landmarkPairs.filter(lp => lp.active === true).length >= 3
+    }),
     showLandmarksControl: {
       get: function () {
         return this.$store.state.landmarkControlVisible
@@ -194,10 +201,16 @@ export default {
   },
   methods: {
     calculateXform: function () {
+      if (!this.ableToComputeTransformationMatrix) {
+        return
+      }
       this.$store.dispatch('computeXform')
     },
     addLandmark: function () {
       if (this.mode === 'overlay') {
+        if (!this.landmarkControlVisible) {
+          return
+        }
         this.$store.dispatch('toggleLandmarkMode')
       } else {
         /**
@@ -280,5 +293,15 @@ export default {
 }
 .btn-shadow:hover {
   box-shadow: 0 0.6em 0.6em -0.2em rgba(50, 50, 50, 0.2);
+}
+
+.btn.lmr-disabled
+{
+  opacity:0.5;
+}
+
+.btn.lmr-disabled:hover
+{
+  cursor: default;
 }
 </style>
