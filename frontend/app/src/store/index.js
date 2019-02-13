@@ -6,6 +6,27 @@ import axios from 'axios'
 
 Vue.use(Vuex)
 
+
+const computeDeterminant = (matrix) => {
+  if (!matrix) {
+    return null
+  }
+  if (matrix.length === 2) {
+    return matrix[0][0] * matrix[1][1] - matrix[0][1] * matrix[1][0]
+  } else {
+    var res = 0
+    for (var i = 0; i < matrix.length; i++) {
+      var minor = []
+      for (var j = 0; j < matrix.length - 1; j++) {
+        minor[j] = matrix[j + 1].slice(0, i).concat(matrix[j + 1].slice(i + 1, matrix.length))
+      }
+      var sign = 1 - 2 * (i % 2)
+      res += sign * matrix[0][i] * computeDeterminant(minor)
+    }
+    return res
+  }
+}
+
 const store = new Vuex.Store({
   state: {
     appendNehubaPromise: new Promise((resolve, reject) => {
@@ -248,6 +269,59 @@ const store = new Vuex.Store({
     }
   },
   actions: {
+    applyCalculatedTransform ({ commit, state }) {
+
+      const { mat4 } = window.export_nehuba
+
+      const inverseM = state.landmarkInverseMatrix
+      const flattenedMatrix = inverseM.flatMap((arr, arrI) => arr.map((v, elIdx) => elIdx === 3 && arrI !== 3 ? v * 1e6 : v ))
+      const transposedM = mat4.transpose(mat4.create(), mat4.fromValues(...flattenedMatrix))
+      commit('setIncTransformMatrix', Array.from(transposedM))
+    },
+    computeXform ({ state, dispatch }) {
+      const lmPairs = state.landmarkPairs
+        .map(pair => {
+          const refLm = state.referenceLandmarks.find(rLm => rLm.id === pair.refId)
+          const incLm = state.incomingLandmarks.find(iLm => iLm.id === pair.incId)
+          return refLm && incLm
+            ? {
+              active: pair.active,
+              colour: pair.active,
+              name: pair.name,
+              'source_point': refLm.coord,
+              'target_point': incLm.coord
+            }
+            : null
+        })
+        .filter(lm => lm !== null)
+      
+      const data = {
+        'source_image': state.selectReference, // TODO update
+        'target_image': state.selectTemplate, // TODO update
+        'transformation_type': state.transformationTypes[state.selectedTransformationIndex].value,
+        'landmark_pairs': lmPairs
+      }
+
+      console.log('sending data to backend...', {data})
+
+      axios.post(state.backendURL + '/least-squares', data)
+        .then(response => {
+          /**
+           * TODO catch error
+           */
+          const { transformation_matrix: transformationMatrix, inverse_matrix: inverseMatrix, RMSE } = response.data
+          dispatch('computeTransformResponseReceived', {
+            transformationMatrix,
+            inverseMatrix,
+            RMSE,
+            determinant: computeDeterminant(transformationMatrix)
+          })
+          dispatch('applyCalculatedTransform')
+        }, error => {
+          console.log(error)
+          // TODO: handle error!
+        })
+    },
     toggleLandmarkMode ({commit, state}) {
       const mode = !state.addLandmarkMode
       commit('setLandmarkMode', { mode })

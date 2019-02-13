@@ -230,6 +230,10 @@ export default {
   methods: {
     mousedown: function (event) {
       if (this.addLandmarkMode) {
+        /**
+         * as this landmark object will directly overwrite the added landmark
+         * use mm instead
+         */
         this.$store.dispatch('addLandmark', {
           landmark: {
             coord: this.viewerMousePosition.map(v => v / 1e6)

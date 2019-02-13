@@ -82,6 +82,16 @@
         </div>
       </div>
     </div>
+
+    <div
+      v-if="showIcons"
+      class="horizontalContainer flex-items">
+      <div
+        @click="calculateXform"
+        class="addBtn rounded-circle landmarks-control-toggle btn btn-sm btn-primary">
+        <font-awesome-icon icon="calculator"></font-awesome-icon>
+      </div>
+    </div>
     
     <!-- save export control -->
     <div
@@ -183,6 +193,9 @@ export default {
     }
   },
   methods: {
+    calculateXform: function () {
+      this.$store.dispatch('computeXform')
+    },
     addLandmark: function () {
       if (this.mode === 'overlay') {
         this.$store.dispatch('toggleLandmarkMode')
