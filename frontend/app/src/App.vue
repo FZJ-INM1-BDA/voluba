@@ -1,5 +1,7 @@
 <template>
-  <div id="app">
+  <div
+    @keydown.capture="keydown"
+    id="app">
 
     <!-- header -->
     <header-component class = "app-header"/>
@@ -46,6 +48,7 @@
 </template>
 
 <script>
+import { mapState } from 'vuex'
 import HeaderComponent from '@/components/TheHeader'
 import NehubaComponent from '@/components/Nehuba'
 import SimpleNehubaComponent from '@/components/SimpleNehuba'
@@ -93,6 +96,11 @@ export default {
     })
   },
   computed: {
+    ...mapState({
+      undoStack: 'undoStack',
+      redoStack: 'redoStack',
+      incTransformMatrix: 'incTransformMatrix'
+    }),
     sidebarWidth: function () {
       return this.$store.state.sidebarWidth
     },
@@ -106,6 +114,17 @@ export default {
     }
   },
   methods: {
+    keydown: function (event) {
+      const {key, ctrlKey} = event
+      if (ctrlKey) {
+        if (key === 'z') {
+          this.$store.dispatch('undo')
+        }
+        if (key === 'y') {
+          this.$store.dispatch('redo')
+        }
+      }
+    },
     mainNehubaReady: function () {
       this.primaryNehubaReady = true
     }

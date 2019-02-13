@@ -23,6 +23,28 @@ export const patchSliceViewPanel = function (sliceViewPanel) {
   }
 }
 
+export const DEBOUNCE_TIMEOUT = 200
+
+export const computeDeterminant = (matrix) => {
+  if (!matrix) {
+    return null
+  }
+  if (matrix.length === 2) {
+    return matrix[0][0] * matrix[1][1] - matrix[0][1] * matrix[1][0]
+  } else {
+    var res = 0
+    for (var i = 0; i < matrix.length; i++) {
+      var minor = []
+      for (var j = 0; j < matrix.length - 1; j++) {
+        minor[j] = matrix[j + 1].slice(0, i).concat(matrix[j + 1].slice(i + 1, matrix.length))
+      }
+      var sign = 1 - 2 * (i % 2)
+      res += sign * matrix[0][i] * computeDeterminant(minor)
+    }
+    return res
+  }
+}
+
 export const defaultXform = function (array) {
   return array
 }

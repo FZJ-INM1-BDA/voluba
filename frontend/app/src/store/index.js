@@ -1,34 +1,16 @@
 
-import { randomColor, generateId, UPLOAD_URL } from '@//constants'
+import { randomColor, generateId, UPLOAD_URL, computeDeterminant, DEBOUNCE_TIMEOUT } from '@//constants'
 import Vuex from 'vuex'
 import Vue from 'vue'
 import axios from 'axios'
 
 Vue.use(Vuex)
 
-
-const computeDeterminant = (matrix) => {
-  if (!matrix) {
-    return null
-  }
-  if (matrix.length === 2) {
-    return matrix[0][0] * matrix[1][1] - matrix[0][1] * matrix[1][0]
-  } else {
-    var res = 0
-    for (var i = 0; i < matrix.length; i++) {
-      var minor = []
-      for (var j = 0; j < matrix.length - 1; j++) {
-        minor[j] = matrix[j + 1].slice(0, i).concat(matrix[j + 1].slice(i + 1, matrix.length))
-      }
-      var sign = 1 - 2 * (i % 2)
-      res += sign * matrix[0][i] * computeDeterminant(minor)
-    }
-    return res
-  }
-}
-
 const store = new Vuex.Store({
   state: {
+    undoStack: [],
+    redoStack: [],
+
     appendNehubaPromise: new Promise((resolve, reject) => {
       if ('export_nehuba' in window) {
         resolve()
@@ -143,6 +125,12 @@ const store = new Vuex.Store({
     landmarkRMSE: null
   },
   mutations: {
+    setUndoStack (state, { undoStack }) {
+      state.undoStack = undoStack
+    },
+    setRedoStack (state, { redoStack }) {
+      state.redoStack = redoStack
+    },
     setLandmarkMode (state, { mode }) {
       state.addLandmarkMode = mode
     },
@@ -247,7 +235,8 @@ const store = new Vuex.Store({
       lm.coord = state.secondaryNehubaNavigationPosition.map(v => v / 1e6)
     },
 
-    setIncTransformMatrix (state, matrix) {
+    setIncTransformMatrix (state, { matrix}) {
+
       state.incTransformMatrix = matrix
     },
     multiplyIncTransmMatrix (state, matrix) {
@@ -259,6 +248,7 @@ const store = new Vuex.Store({
       const mulM = mat4.fromValues(...matrix)
       mat4.mul(incM, incM, mulM)
       const det = mat4.determinant(incM)
+      
       state.incTransformMatrix = Array.from(incM)
     },
     setRefLandmark (state, { id, lm: newLm }) {
@@ -269,6 +259,62 @@ const store = new Vuex.Store({
     }
   },
   actions: {
+    pushUndo: function ({commit, state}) {
+      const incTransformMatrix = state.incTransformMatrix
+      const undoItem = {
+        incTransformMatrix
+      }
+      const undoStack = state.undoStack.concat(undoItem)
+      commit('setUndoStack', { undoStack })
+    },
+    undo: function ({commit, state}) {
+      if (state.undoStack.length === 0) {
+        /**
+         * nothing in the undo stack
+         */
+        return
+      }
+      const item = state.undoStack.slice(-1)
+
+      const newRedoItem = {
+        incTransformMatrix : Array.from(state.incTransformMatrix)
+      }
+
+      const redoStack = state.redoStack.concat(newRedoItem)
+      const undoStack = state.undoStack.slice(0, -1)
+
+      const { incTransformMatrix } = item[0]
+
+      if ( incTransformMatrix ) {
+        commit('setIncTransformMatrix', { matrix: incTransformMatrix })
+      }
+
+      commit('setUndoStack', { undoStack })
+      commit('setRedoStack', { redoStack })
+    },
+    redo: function ({commit, state}) {
+      if (state.redoStack.length === 0) {
+        return
+      }
+
+      const item = state.redoStack.slice(-1)
+
+      const newUndoItem = {
+        incTransformMatrix : Array.from(state.incTransformMatrix)
+      }
+
+      const undoStack = state.undoStack.concat(newUndoItem)
+      const redoStack = state.redoStack.slice(0, -1)
+
+      const { incTransformMatrix } = item[0]
+
+      if ( incTransformMatrix ) {
+        commit('setIncTransformMatrix', { matrix: incTransformMatrix })
+      }
+
+      commit('setUndoStack', { undoStack })
+      commit('setRedoStack', { redoStack })
+    },
     applyCalculatedTransform ({ commit, state }) {
 
       const { mat4 } = window.export_nehuba
@@ -276,7 +322,9 @@ const store = new Vuex.Store({
       const inverseM = state.landmarkInverseMatrix
       const flattenedMatrix = inverseM.flatMap((arr, arrI) => arr.map((v, elIdx) => elIdx === 3 && arrI !== 3 ? v * 1e6 : v ))
       const transposedM = mat4.transpose(mat4.create(), mat4.fromValues(...flattenedMatrix))
-      commit('setIncTransformMatrix', Array.from(transposedM))
+
+      const matrix = Array.from(transposedM)
+      commit('setIncTransformMatrix', { matrix })
     },
     computeXform ({ state, dispatch }) {
       const lmPairs = state.landmarkPairs
@@ -759,7 +807,9 @@ const store = new Vuex.Store({
       const newRotDeg = quat.getAxisAngle(newAxisVec3, newRotQuat)
       mat4.rotate(xformMat, xformMat, newRotDeg, newAxisVec3)
 
-      commit('setIncTransformMatrix', Array.from(xformMat))
+      const matrix = Array.from(xformMat)
+
+      commit('setIncTransformMatrix', { matrix })
     },
     setRotateInc ({commit, state}, {axis, value}) {
       if (axis !== 'xyz') {
@@ -781,7 +831,9 @@ const store = new Vuex.Store({
       const newAngleNum = quat.getAxisAngle(newAxisVec, rotationQuat)
       mat4.rotate(xformMat, xformMat, newAngleNum, rotationQuat)
 
-      commit('setIncTransformMatrix', Array.from(xformMat))
+      const matrix = Array.from(xformMat)
+
+      commit('setIncTransformMatrix', { matrix })
     },
     setScaleInc ({commit, state}, {axis, value}) {
       if (axis !== 'x' && axis !== 'y' && axis !== 'z') {
@@ -804,7 +856,9 @@ const store = new Vuex.Store({
       scaleVec[idx] = value
       mat4.scale(xformMat, xformMat, inverseVec)
       mat4.scale(xformMat, xformMat, scaleVec)
-      commit('setIncTransformMatrix', Array.from(xformMat))
+
+      const matrix = Array.from(xformMat)
+      commit('setIncTransformMatrix', { matrix })
     },
     setTranslInc ({commit, state}, {axis, value}) {
       if (axis !== 'x' && axis !== 'y' && axis !== 'z' && axis !== 'xyz') {
@@ -851,7 +905,9 @@ const store = new Vuex.Store({
        * apply new translation
        */
       mat4.translate(xformMat, xformMat, vec3.fromValues(...newTranslArray))
-      commit('setIncTransformMatrix', Array.from(xformMat))
+
+      const matrix = Array.from(xformMat)
+      commit('setIncTransformMatrix', { matrix })
     },
     translIncBy ({commit}, {axis, value}) {
       const idx = axis === 'x'

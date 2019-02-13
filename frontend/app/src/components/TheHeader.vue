@@ -3,7 +3,7 @@
     <b-navbar-toggle target="nav_collapse"></b-navbar-toggle>
     <b-navbar-brand href="#">
       <img id="logo" src="../assets/HBP.png" width="32" height="32" alt="">
-      <span>Spatial Registration</span>
+      <span>Spatial Registration  {{ tmp }}</span>
     </b-navbar-brand>
 
     <progress-tracker v-if = "showProgressTracker" />
@@ -31,6 +31,9 @@ export default {
     ProgressTracker
   },
   computed: {
+    tmp: function () {
+      return this.$store.state.undoStack.length
+    },
     showProgressTracker: function () {
       const obj = this.$router.options.routes.find(r => r.path === this.$route.path)
       return obj && obj.shown

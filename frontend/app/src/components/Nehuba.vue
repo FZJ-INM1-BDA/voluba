@@ -65,6 +65,7 @@ export default {
     return {
       placeholderText: 'Loading nehuba ...',
       nehubaLoaded: false,
+      pushUndoFlag: true,
 
       /**
        * managed layer state
@@ -277,6 +278,8 @@ export default {
           this.rotateAbsoluteStart = null
 
           this.$options.nonReactiveData.mousedownMatrix = null
+
+          this.pushUndoFlag = true
         }, {
           once: true,
           capture: true
@@ -292,6 +295,13 @@ export default {
         }, 300)
       }
     },
+    pushUndo: function () {
+      if (!this.pushUndoFlag) {
+        return
+      }
+      this.$store.dispatch('pushUndo')
+      this.pushUndoFlag = false
+    },
     mousemove: function (event) {
       /**
        * allows for user drag whole volume, without deselecting incoming volume
@@ -306,6 +316,7 @@ export default {
         const deltaY = event.movementY
 
         if (this.translationByDragEnabled && this.movingIncoming) {
+          this.pushUndo()
           /**
            * first, translation mouse delta into 3d delta
            */
@@ -344,6 +355,7 @@ export default {
         }
 
         if (this.rotationByDragEnabled && this.rotatingIncoming) {
+          this.pushUndo()
           let { vec31, vec32 } = getRotationVec3(this.movingIncomingIndex)
           if (vec31 === null || vec32 === null) {
             return
