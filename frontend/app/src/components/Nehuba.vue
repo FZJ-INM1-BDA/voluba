@@ -295,11 +295,11 @@ export default {
         }, 300)
       }
     },
-    pushUndo: function () {
+    pushUndo: function (meta = {}) {
       if (!this.pushUndoFlag) {
         return
       }
-      this.$store.dispatch('pushUndo')
+      this.$store.dispatch('pushUndo', meta)
       this.pushUndoFlag = false
     },
     mousemove: function (event) {
@@ -316,7 +316,7 @@ export default {
         const deltaY = event.movementY
 
         if (this.translationByDragEnabled && this.movingIncoming) {
-          this.pushUndo()
+          this.pushUndo({ name: 'translating incoming volume' })
           /**
            * first, translation mouse delta into 3d delta
            */
@@ -355,7 +355,7 @@ export default {
         }
 
         if (this.rotationByDragEnabled && this.rotatingIncoming) {
-          this.pushUndo()
+          this.pushUndo({ name : 'rotating incoming volume' })
           let { vec31, vec32 } = getRotationVec3(this.movingIncomingIndex)
           if (vec31 === null || vec32 === null) {
             return

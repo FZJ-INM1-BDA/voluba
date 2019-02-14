@@ -6,6 +6,12 @@ import axios from 'axios'
 
 Vue.use(Vuex)
 
+const getStateSnapshot = ({ incTransformMatrix }) => {
+  return {
+    incTransformMatrix: Array.from(incTransformMatrix)
+  }
+}
+
 const store = new Vuex.Store({
   state: {
     undoStack: [],
@@ -116,6 +122,7 @@ const store = new Vuex.Store({
     synchronizeCursor: false,
     backendURL: process.env.VUE_APP_BACKEND_URL || 'http://localhost:5000/api',
 
+    backendQueryInProgress: false,
     /**
      * response from landmark-reg server
      */
@@ -125,6 +132,9 @@ const store = new Vuex.Store({
     landmarkRMSE: null
   },
   mutations: {
+    setBackendQueryInProgress (state, { backendQueryInProgress }) {
+      state.backendQueryInProgress = backendQueryInProgress
+    },
     setUndoStack (state, { undoStack }) {
       state.undoStack = undoStack
     },
@@ -259,13 +269,17 @@ const store = new Vuex.Store({
     }
   },
   actions: {
-    pushUndo: function ({commit, state}) {
-      const incTransformMatrix = state.incTransformMatrix
+    pushUndo: function ({ commit, state }, { name, desc }) {
+      const stateSnapshot = getStateSnapshot(state)
       const undoItem = {
-        incTransformMatrix
+        id: Date.now(),
+        name,
+        desc,
+        state: stateSnapshot
       }
       const undoStack = state.undoStack.concat(undoItem)
       commit('setUndoStack', { undoStack })
+      commit('setRedoStack', { redoStack: [] })
     },
     undo: function ({commit, state}) {
       if (state.undoStack.length === 0) {
@@ -274,16 +288,21 @@ const store = new Vuex.Store({
          */
         return
       }
-      const item = state.undoStack.slice(-1)
+      const item = state.undoStack.slice(-1)[0]
+
+      const stateSnapshot = getStateSnapshot(state)
 
       const newRedoItem = {
-        incTransformMatrix : Array.from(state.incTransformMatrix)
+        id: Date.now(),
+        name: item.name,
+        desc: item.desc,
+        state: stateSnapshot
       }
 
       const redoStack = state.redoStack.concat(newRedoItem)
       const undoStack = state.undoStack.slice(0, -1)
 
-      const { incTransformMatrix } = item[0]
+      const { incTransformMatrix } = item.state
 
       if ( incTransformMatrix ) {
         commit('setIncTransformMatrix', { matrix: incTransformMatrix })
@@ -297,16 +316,21 @@ const store = new Vuex.Store({
         return
       }
 
-      const item = state.redoStack.slice(-1)
+      const item = state.redoStack.slice(-1)[0]
+
+      const stateSnapshot = getStateSnapshot(state)
 
       const newUndoItem = {
-        incTransformMatrix : Array.from(state.incTransformMatrix)
+        id: Date.now(),
+        name: item.name,
+        desc: item.desc,
+        state: stateSnapshot
       }
 
       const undoStack = state.undoStack.concat(newUndoItem)
       const redoStack = state.redoStack.slice(0, -1)
 
-      const { incTransformMatrix } = item[0]
+      const { incTransformMatrix } = item.state
 
       if ( incTransformMatrix ) {
         commit('setIncTransformMatrix', { matrix: incTransformMatrix })
@@ -326,7 +350,7 @@ const store = new Vuex.Store({
       const matrix = Array.from(transposedM)
       commit('setIncTransformMatrix', { matrix })
     },
-    computeXform ({ state, dispatch }) {
+    computeXform ({ commit, state, dispatch }) {
       const lmPairs = state.landmarkPairs
         .map(pair => {
           const refLm = state.referenceLandmarks.find(rLm => rLm.id === pair.refId)
@@ -350,8 +374,9 @@ const store = new Vuex.Store({
         'landmark_pairs': lmPairs
       }
 
-      console.log('sending data to backend...', {data})
+      commit('setBackendQueryInProgress', { backendQueryInProgress : true})
 
+      console.log('sending data to backend...', {data})
       axios.post(state.backendURL + '/least-squares', data)
         .then(response => {
           /**
@@ -364,7 +389,10 @@ const store = new Vuex.Store({
             RMSE,
             determinant: computeDeterminant(transformationMatrix)
           })
-          dispatch('applyCalculatedTransform')
+
+          dispatch('pushUndo', { name: 'apply calculated transform' })
+          commit('setBackendQueryInProgress', { backendQueryInProgress : false})
+          dispatch('applyCalculatedTransform')          
         }, error => {
           console.log(error)
           // TODO: handle error!

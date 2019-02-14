@@ -22,6 +22,25 @@
       </div>
     </div>
 
+    <!-- toggle history -->
+    <div
+      v-if="showIcons"
+      class="horizontalContainer flex-items">
+      <div
+        v-b-tooltip.right.hover="'undo history'"
+        :class="showHistory ? 'btn-info' : 'btn-secondary'"
+      @click="showHistory = !showHistory"
+        class="addBtn rounded-circle layer-control-toggle btn btn-sm">
+        <font-awesome-icon icon="history" />
+      </div>
+
+      <HistoryControl
+        @changeNibState="showHistory=$event"
+        v-if="showHistory">
+
+      </HistoryControl>
+    </div>
+
     <!-- layer control -->
     <div
       v-if="showIcons"
@@ -137,18 +156,21 @@ import { mapState } from 'vuex'
 import LayerControl from '@/components/LayerControl'
 import LandmarkControl from '@/components/LandmarkControl'
 import SaveExportControl from '@/components/SaveExportControl'
+import HistoryControl from '@/components/HistoryControl'
 
 export default {
   components: {
     LandmarkControl,
     LayerControl,
-    SaveExportControl
+    SaveExportControl,
+    HistoryControl
   },
   data: function () {
     return {
       showLayerControl: false,
       showSaveExportControl: false,
-      showIcons: false
+      showIcons: false,
+      showHistory: false
     }
   },
   computed: {
