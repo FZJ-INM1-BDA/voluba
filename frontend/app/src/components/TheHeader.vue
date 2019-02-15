@@ -3,7 +3,7 @@
     <b-navbar-toggle target="nav_collapse"></b-navbar-toggle>
     <b-navbar-brand href="#">
       <img id="logo" src="../assets/HBP.png" width="32" height="32" alt="">
-      <span>Spatial Registration  {{ tmp }}</span>
+      <span>Spatial Registration</span>
     </b-navbar-brand>
 
     <progress-tracker v-if = "showProgressTracker" />
@@ -12,8 +12,33 @@
 
       <!-- Right aligned nav items -->
       <b-navbar-nav class="ml-auto">
-        <b-nav-item-dropdown text="Login" right>
-          <b-dropdown-item href="#">Register</b-dropdown-item>
+
+        <!-- authenticated -->
+        <b-nav-item-dropdown
+          :text="welcomeUsername"
+          v-if="user"
+          right>
+          <b-dropdown-item href="logout">
+            Logout
+          </b-dropdown-item>
+        </b-nav-item-dropdown>
+
+        <!-- unauthenticated -->
+        <b-nav-item-dropdown
+          text="Login"
+          v-if="!user"
+          right>
+
+          <b-dropdown-item
+            :href="loginM.href"
+            :key="idx"
+            v-for="(loginM, idx) in loginMethods">
+            {{ loginM.name }}
+          </b-dropdown-item>
+
+          <b-dropdown-item href="#">
+            Register
+          </b-dropdown-item>
         </b-nav-item-dropdown>
         <b-nav-item href="#"><font-awesome-icon icon="question-circle"/></b-nav-item>
       </b-navbar-nav>
@@ -24,15 +49,47 @@
 
 <script>
 import ProgressTracker from '@/components/layout/ProgressTracker'
+import axios from 'axios'
+import { mapState } from 'vuex'
+import { loginMethods } from '@/constants'
 
 export default {
   name: 'HeaderComponent',
+  data: function () {
+    return {
+      loginMethods,
+      getUserPromise: axios.get('user') 
+      
+      // new Promise((resolve, reject) => {
+      //   // rejectt(null)
+      //   resolve({
+      //     id: 'TEST ID',
+      //     name: 'Xiao Gui',
+      //     type: 'orcid-oidc'
+      //   })
+      // })
+    }
+  },
   components: {
     ProgressTracker
   },
+  mounted() {
+    this.getUserPromise
+      .then(({ data }) => {
+        console.log('auth successful', { data })
+        this.$store.commit('setUser', { user: data })
+      })
+      .catch(e => {
+        console.log('error', {e})
+        this.$store.commit('setUser', { user: null })
+      })
+  },
   computed: {
-    tmp: function () {
-      return this.$store.state.undoStack.length
+    ...mapState({
+      user: 'user'
+    }),
+    welcomeUsername: function () {
+      return `Logged in as ${this.user.name}`
     },
     showProgressTracker: function () {
       const obj = this.$router.options.routes.find(r => r.path === this.$route.path)

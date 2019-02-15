@@ -111,7 +111,7 @@
       <div
         @click="calculateXform"
         v-b-tooltip.right.hover="ableToComputeTransformationMatrix ? 'Compute and display transform based on landmarks.' : 'Need at least three (3) active landmarks to compute transformation.'"
-        :class="ableToComputeTransformationMatrix ? '' : 'lmr-disabled'"
+        :class="ableToComputeTransformationMatrix && !backendQueryInProgress ? '' : 'lmr-disabled'"
         class="addBtn rounded-circle landmarks-control-toggle btn btn-sm btn-primary">
         <font-awesome-icon icon="calculator"></font-awesome-icon>
       </div>
@@ -175,6 +175,7 @@ export default {
   },
   computed: {
     ...mapState({
+      backendQueryInProgress: 'backendQueryInProgress',
       addLandmarkMode: 'addLandmarkMode',
       landmarkControlVisible: 'landmarkControlVisible',
       ableToComputeTransformationMatrix: state => state.landmarkPairs.filter(lp => lp.active === true).length >= 3

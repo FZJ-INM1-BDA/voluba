@@ -1,5 +1,14 @@
 /* eslint-disable */
 
+export const loginMethods = [{
+  name: 'HBP OIDC',
+  imgSrc: null,
+  href: '/hbp-oidc/auth'
+},{
+  name: 'ORCID OIDC',
+  imgSrc: null,
+  href: '/orcid-oidc/auth'
+}]
 
 export const getShader = (rgb) => `void main() {
   float x = toNormalized(getDataValue());

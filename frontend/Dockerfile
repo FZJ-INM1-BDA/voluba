@@ -12,4 +12,4 @@ RUN npm run build
 ENV PORT=8080
 EXPOSE 8080
 
-ENTRYPOINT ["node", "server.js"]
+ENTRYPOINT ["node", "server/index.js"]

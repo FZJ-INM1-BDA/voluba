@@ -14,6 +14,8 @@ const getStateSnapshot = ({ incTransformMatrix }) => {
 
 const store = new Vuex.Store({
   state: {
+    user: null,
+
     undoStack: [],
     redoStack: [],
 
@@ -132,6 +134,9 @@ const store = new Vuex.Store({
     landmarkRMSE: null
   },
   mutations: {
+    setUser (state, { user }) {
+      state.user = user
+    },
     setBackendQueryInProgress (state, { backendQueryInProgress }) {
       state.backendQueryInProgress = backendQueryInProgress
     },
