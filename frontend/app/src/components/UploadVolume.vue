@@ -1,6 +1,7 @@
 <template>
-<div>
+<div class="container">
 
+  <!-- old upload btn -->
   <div v-if="false">
     <b-button
       @click="$store.dispatch('uploadVolume')"
@@ -11,48 +12,63 @@
   </div>
   <hr />
 
-  <h4>
-    Upload a volume
-  </h4>
+  <!-- new upload container -->
+  <div class="uploadUI">
+    <h4>
+      Upload a volume
+    </h4>
 
-  <div class="input-group mb-1">
-    <div class="input-group-prepend">
-      <span class="input-group-text">
-        POST URL
-      </span>
+    <div class="input-group mb-1">
+      <div class="input-group-prepend">
+        <span class="input-group-text">
+          POST URL
+        </span>
+      </div>
+      <input
+        v-model="url"
+        class="form-control"
+        type="text" />
     </div>
-    <input
-      v-model="url"
-      class="form-control"
-      type="text" />
-  </div>
-  <input ref = "fileInput" type="file" class="form-control mb-3" />
-  <div
-    @click.stop.prevent="upload"
-    :class="uploadInProgress?'disabled btn-secondary':'btn-primary'"
-    class="btn mb-2">
-    {{ uploadInProgress ? 'Uploading in progress...' : 'Upload to Server!'}}
-  </div>
-  <div
-    v-if="uploadInProgress && !uploadError"
-    class="progress">
+    <input ref = "fileInput" type="file" class="form-control mb-3" />
     <div
-      :style="{width:uploadProgressPercentage}"
-      role="progressbar"
-      class="progress-bar">
-      {{ uploadProgressPercentage }}
+      @click.stop.prevent="upload"
+      :class="uploadInProgress?'disabled btn-secondary':'btn-primary'"
+      class="btn mb-2">
+      {{ uploadInProgress ? 'Uploading in progress...' : 'Upload to Server!'}}
+    </div>
+    <div
+      v-if="uploadInProgress && !uploadError"
+      class="progress">
+      <div
+        :style="{width:uploadProgressPercentage}"
+        role="progressbar"
+        class="progress-bar">
+        {{ uploadProgressPercentage }}
+      </div>
+    </div>
+    <div v-if="uploadFinished && !uploadError" class="alert alert-success">
+      Upload Complete!
+    </div>
+    <div class="alert alert-danger" v-if="uploadError">
+      <font-awesome-icon icon="exclamation-triangle" /> {{ uploadError }}
+    </div>    
+  </div>
+
+  <div v-if="!user" class="uploadScreenOverlay">
+    <h5>
+      You must sign in before you can upload volumes.
+    </h5>
+    <div class="card">
+      <SigningComponent />
     </div>
   </div>
-  <div v-if="uploadFinished && !uploadError" class="alert alert-success">
-    Upload Complete!
-  </div>
-  <div class="alert alert-danger" v-if="uploadError">
-     <font-awesome-icon icon="exclamation-triangle" /> {{ uploadError }}
-  </div>
+
 </div>
 </template>
 <script>
 import axios from 'axios'
+import { mapState } from 'vuex'
+import SigningComponent from '@/components/SigninComponent'
 /**
  * /upload
  * /user/list
@@ -70,7 +86,13 @@ export default {
       uploadError: null
     }
   },
+  components: {
+    SigningComponent
+  },
   computed: {
+    ...mapState({
+      user: 'user'
+    }),
     uploadProgressPercentage: function () {
       return (this.uploadProgress * 100).toFixed(2) + '%'
     }
@@ -127,8 +149,27 @@ export default {
 }
 </script>
 <style scoped>
-.progress
+.container
 {
-  
+  position: relative;
+}
+
+.container > .uploadUI
+{
+  position: relative;
+  top: 0;
+  left: 0;
+}
+
+.container > .uploadScreenOverlay
+{
+  position: absolute;
+  top: 0;
+  left: 0;
+  background-color: rgba(255, 255, 255, 0.8);
+  color: black;
+  padding: 2em 1em;
+  width: 100%;
+  height: 100%;
 }
 </style>

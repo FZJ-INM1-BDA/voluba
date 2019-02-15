@@ -29,16 +29,15 @@
           v-if="!user"
           right>
 
-          <b-dropdown-item
+          <SigningComponent />
+
+          <!-- <b-dropdown-item
             :href="loginM.href"
             :key="idx"
             v-for="(loginM, idx) in loginMethods">
             {{ loginM.name }}
-          </b-dropdown-item>
+          </b-dropdown-item> -->
 
-          <b-dropdown-item href="#">
-            Register
-          </b-dropdown-item>
         </b-nav-item-dropdown>
         <b-nav-item href="#"><font-awesome-icon icon="question-circle"/></b-nav-item>
       </b-navbar-nav>
@@ -49,29 +48,20 @@
 
 <script>
 import ProgressTracker from '@/components/layout/ProgressTracker'
+import SigningComponent from '@/components/SigninComponent'
 import axios from 'axios'
 import { mapState } from 'vuex'
-import { loginMethods } from '@/constants'
 
 export default {
   name: 'HeaderComponent',
   data: function () {
     return {
-      loginMethods,
       getUserPromise: axios.get('user') 
-      
-      // new Promise((resolve, reject) => {
-      //   // rejectt(null)
-      //   resolve({
-      //     id: 'TEST ID',
-      //     name: 'Xiao Gui',
-      //     type: 'orcid-oidc'
-      //   })
-      // })
     }
   },
   components: {
-    ProgressTracker
+    ProgressTracker,
+    SigningComponent
   },
   mounted() {
     this.getUserPromise
@@ -104,11 +94,11 @@ export default {
 {
   z-index: 1060;
 }
-  #logo {
-    margin-right: 5px;
-  }
-  .description {
-    font-size: 12px;
-    margin-bottom: 0px;
-  }
+#logo {
+  margin-right: 5px;
+}
+.description {
+  font-size: 12px;
+  margin-bottom: 0px;
+}
 </style>

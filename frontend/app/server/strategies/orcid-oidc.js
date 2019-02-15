@@ -1,7 +1,6 @@
 const passport = require('passport')
 const { configureAuth } = require('./oidc')
 
-
 const HOSTNAME = process.env.HOSTNAME || 'http://localhost:3000'
 
 const clientId = process.env.ORCID_CLIENTID || 'no oicid id'
@@ -32,4 +31,3 @@ module.exports = async (app) => {
     failureRedirect: '/'
   }))
 }
-
