@@ -7,12 +7,12 @@ const clientId = process.env.HBP_CLIENTID || 'no hbp id'
 const clientSecret = process.env.HBP_CLIENTSECRET || 'no hbp client secret'
 const discoveryUrl = 'https://services.humanbrainproject.eu/oidc'
 const redirectUri = `${HOSTNAME}/hbp-oidc/cb`
-const cb = (tokenset, userinfo, done) => {
-  console.log('hbp-oidc auth success', {
-    tokenset,
-    userinfo
+const cb = (tokenset, {sub, given_name, family_name, ...rest}, done) => {
+  return done(null, {
+    id: `hbp-oidc:${sub}`,
+    name: `${given_name} ${family_name}`,
+    type: `hbp-oidc`
   })
-  return done(null, userinfo)
 }
 
 module.exports = async (app) => {
@@ -21,7 +21,11 @@ module.exports = async (app) => {
     clientSecret,
     discoveryUrl,
     redirectUri,
-    cb
+    cb,
+    clientConfig: {
+      redirect_uris: [ redirectUri ],
+      response_types: [ 'code' ]
+    }
   })
   
   passport.use('hbp-oidc', oidcStrategy)

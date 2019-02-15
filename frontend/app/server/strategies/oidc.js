@@ -7,7 +7,7 @@ const defaultCb = (tokenset, {id, ...rest}, done) => {
   })
 }
 
-exports.configureAuth = async ({ discoveryUrl, clientId, clientSecret, redirectUri, cb = defaultCb }) => {
+exports.configureAuth = async ({ discoveryUrl, clientId, clientSecret, redirectUri, clientConfig = {}, cb = defaultCb }) => {
   if (!discoveryUrl)
     throw new Error('discoveryUrl must be defined!')
 
@@ -24,7 +24,8 @@ exports.configureAuth = async ({ discoveryUrl, clientId, clientSecret, redirectU
 
   const client = new issuer.Client({
     client_id: clientId,
-    client_secret: clientSecret
+    client_secret: clientSecret,
+    ...clientConfig
   })
 
   const oidcStrategy = new Strategy({
