@@ -11,6 +11,9 @@
   </div>
 </template>
 <script>
+
+const zOffsetThreshold = -4
+
 export default {
   props: {
     tooltipText: {
@@ -45,7 +48,7 @@ export default {
   },
   computed: {
     tooltipObj: function () {
-      return null 
+      return {} 
       // {
       //   title: this.tooltipText,
       //   trigger: 'hover',
@@ -58,7 +61,7 @@ export default {
     styleLandmark: function () {
       return {
         opacity: this.active ?
-          this.zOffset > 0
+          this.zOffset >= zOffsetThreshold
             ? '1.0'
             : '0.5'
           : '0.05',
@@ -66,7 +69,7 @@ export default {
       }
     },
     icon: function () {
-      return this.zOffset > 0
+      return this.zOffset >= zOffsetThreshold
         ? 'map-marker-alt'
         : 'anchor'
     },
@@ -79,7 +82,7 @@ export default {
       return {
         backgroundColor: this.color,
         height: `${Math.abs(this.zOffset)}px`,
-        marginTop: this.zOffset > 0
+        marginTop: this.zOffset >= zOffsetThreshold
           ? `${-this.zOffset}px`
           : `0px`
       }
@@ -128,5 +131,10 @@ export default {
   position:absolute;
   left: 0;
   top: 0
+}
+
+* 
+{
+  transition: linear opacity 0.2s;
 }
 </style>

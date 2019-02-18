@@ -13,9 +13,8 @@
       </h5>
     </div>
 
+    <!-- add load save -->
     <div class="bg-light">
-
-      <!-- add load save -->
       <div class="btn-group mb-3">
         <button
           type="button"
@@ -27,6 +26,7 @@
       </div>
     </div>
 
+    <!-- tabs -->
     <div class="bg-light">
       <b-tabs>
         <b-tab @click="toggleLandmark('reference')" :active="_step2OverlayFocus === 'reference'" title="Reference">
@@ -38,13 +38,16 @@
       </b-tabs>
     </div>
 
+    <!-- TODO: sanitize to prevent XSS -->
     <!-- primary landmarks -->
     <div class="body bg-light">
       <LandmarkRowV2
-        class="mb-1"
+        class="mb-1 landmark-row"
         @changeName="$store.dispatch('changeLandmarkName', {...$event, id: lm.id, volume: _step2OverlayFocus})"
         :key="lm.id"
         :landmark="lm"
+        :style="lm.active ? {} : {opacity:0.2}"
+        :id="'lmr-' + lm.id"
         v-for="lm in primaryLandmarks">
 
         <!-- append icons -->
@@ -58,28 +61,17 @@
             <!-- go to landmark -->
             <button
               v-if="mouseoverId === lm.id"
-              @click.stop.prevent = "gotoLandmark"
+              @click.stop.prevent="gotoLm({volume: _step2OverlayFocus, id: lm.id})"
               type="button"
               class="btn btn-sm btn-primary"
               v-b-tooltip.hover title="Go to landmark">
               <font-awesome-icon icon = "map-marker-alt"/>
             </button>
 
-            <!-- relocate landmark -->
-            <button
-              v-if="mouseoverId === lm.id"
-              v-b-tooltip.hover
-              title="Reset landmark to current location"
-              @click.stop.prevent = "resetLandmark"
-              type="button"
-              class="btn btn-sm btn-warning">
-              <font-awesome-icon icon="thumbtack" style="color: white;"/>
-            </button>
-
             <!-- trash landmark -->
             <button
               v-if="mouseoverId === lm.id"
-              @click.stop.prevent = "removeLandmark"
+              @click.stop.prevent="removeLm({ volume: _step2OverlayFocus, id: lm.id})"
               type="button"
               class="btn btn-sm btn-danger"
               v-b-tooltip.hover title="Remove landmark">
@@ -89,13 +81,14 @@
             <!-- link btn -->
             <button
               v-if="mouseoverId === lm.id"
-              @click.stop.prevent="showPopoverId = lm.id"
               type="button"
+              @click="popoverOpenId = popoverOpenId === lm.id ? null : lm.id"
               v-b-tooltip.hover title="Paired landmark"
               class="btn btn-sm btn-secondary">
               <font-awesome-icon icon="link"/>
             </button>
 
+            <!-- show more ellipses -->
             <button
               v-if="lm.id !== mouseoverId"
               @mouseenter="mouseoverId=lm.id"
@@ -107,58 +100,69 @@
             </button>
 
           </div>
+
+          <!-- popover -->
+          <LandmarkPairingComponent
+            :parentLm="lm"
+            :show="popoverOpenId === lm.id"/>
+        </template>
+
+        <template slot="prepend">
+          <div
+            @click="toggleLmActive({ volume: _step2OverlayFocus, id: lm.id })"
+            class="input-group-prepend">
+            <div
+              class="input-group-text">
+              <input
+                :checked="lm.active"
+                type="checkbox" />
+            </div>
+            <span
+              :style="checkboxStyle"
+              class="input-group-text">
+              <font-awesome-icon class="icon" icon="map-marker-alt"></font-awesome-icon>
+            </span>
+          </div>
         </template>
 
       </LandmarkRowV2>
     </div>
-
-    <!-- popover -->
-    <b-popover
-      v-if="popoverTarget"
-      ref="popoverLinkLandmark"
-      placement="rightbottom"
-      :target="popoverTarget">
-      <template slot="title">
-        <div>
-          {{ popoverTitle }}
-        </div>
-      </template>
-      <div class="body bg-light" >
-        <LandmarkRowV2
-          :key="lm.id"
-          :landmark="lm"
-          v-for="lm in secondaryLandmarks">
-          <template slot="prepend">
-            <div class="input-group-prepend">
-
-              <!-- tooltip wrapper -->
-              <div v-b-tooltip="'test'">
-                <div class="btn btn-secondary">
-                  <font-awesome-icon icon="link"></font-awesome-icon>
-                </div>
-              </div>
-            </div>
-          </template>
-        </LandmarkRowV2>
-      </div>
-    </b-popover>
-
   </div>
 </template>
 <script>
 import LandmarkRowV2 from '@/components/LandmarkRowV2'
+import LandmarkPairingComponent from '@/components/LandmarkPairingUI'
+import { REFERENCE_COLOR, INCOMING_COLOR } from '@/constants'
+import { mapActions } from 'vuex'
+
 export default {
   components: {
-    LandmarkRowV2
+    LandmarkRowV2,
+    LandmarkPairingComponent
   },
   data: function () {
     return {
       mouseoverId: null,
-      showPopoverId: null,
-      lmIconOpenSet: []
+      popoverTarget: null,
+      lmIconOpenSet: [],
+      popoverOpenId: null
     }
   },
   methods: {
+    ...mapActions({
+      toggleLmActive: 'toggleLmActive',
+      removeLm: 'removeLm',
+      gotoLm: 'gotoLm'
+    }),
+    showPopover: function ({ volume, id }) {
+      const popoverRef = this.$refs.popoverLinkLandmark
+      this.popoverTarget = `lmr-${id}`
+      if (!popoverRef)
+        return
+      if (popoverRef.show)
+        popoverRef.$emit('close')
+      popoverRef.$emit('open')
+    },
     toggleLmIcons: function (id) {
       const foundId = this.lmIconOpenSet.find(i => i === id)
       if (foundId) {
@@ -171,25 +175,16 @@ export default {
       this.$store.commit('_setStep2OverlayFocus', { mode })
     }
   },
-  watch: {
-    showPopoverId: function (val) {
-      if (!this.$refs.popoverLinkLandmark) 
-        return
-
-      // this.$refs.popoverLinkLandmark.$emit('close')
-      // if (val) {
-      //   this.$refs.popoverLinkLandmark.$emit('open')
-      // }
-    }
-  },
   computed: {
-    popoverTarget: function () {
-      return this.mouseoverId
-        ? `lmRow${this.mouseoverId}`
-        : null
-    },
     popoverTitle: function () {
       return this._step2OverlayFocus === 'reference' ? 'Incoming Volume Landmarks' : 'Reference Volume Landmarks'
+    },
+    checkboxStyle: function () {
+      return {
+        color: this._step2OverlayFocus === 'reference'
+          ? REFERENCE_COLOR
+          : INCOMING_COLOR
+      }
     },
     primaryLandmarks: function () {
       return (this._step2OverlayFocus === 'reference'
@@ -238,5 +233,18 @@ export default {
 .body
 {
   padding: 1em;
+}
+
+.landmark-row
+{
+  transition: linear all 0.2s;
+}
+
+.icon
+{
+  filter: drop-shadow( 0px 1px rgba(0, 0, 0, 0.5))
+    drop-shadow(0px -1px rgba(0, 0, 0, 0.5))
+    drop-shadow(1px 0px rgba(0, 0, 0, 0.5))
+    drop-shadow(-1px 0px rgba(0, 0, 0, 0.5));
 }
 </style>

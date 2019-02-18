@@ -274,6 +274,83 @@ const store = new Vuex.Store({
     }
   },
   actions: {
+    addLmp: function ({commit, state}, { refId, incId }) {
+      const id = generateId(state.landmarkPairs)
+      commit('setLandmarkPairs', {
+        landmarkPairs: state.landmarkPairs.concat({
+          refId,
+          incId,
+          id,
+          name: id
+        })
+      })
+    },
+    gotoLm: function ({dispatch, state}, {volume, id}) {
+      const payload = {}
+      if (volume === 'reference') {
+        const refLm = state.referenceLandmarks.find(lm => lm.id === id)
+        if (!refLm)
+          return
+        payload.coord = refLm.coord
+      }
+      if (volume === 'incoming') {
+        const {vec3, mat4} = window.export_nehuba
+        const incLm = state.incomingLandmarks.find(lm => lm.id === id)
+        if (!incLm)
+          return
+        const incXform = mat4.fromValues(...state.incTransformMatrix)
+        const coord = vec3.fromValues(...incLm.coord.map(v => v * 1e6))
+        vec3.transformMat4(coord, coord, incXform)
+        payload.coord = Array.from(coord).map(v => v / 1e6)
+      }
+
+      if (payload.coord)
+        dispatch('setPrimaryNehubaNavigation', payload)
+    },
+    removeLmp: function ({commit, state}, { id }) {
+      const landmarkPairs = state.landmarkPairs.filter(lmp => lmp.id !== id)
+      commit('setLandmarkPairs', { landmarkPairs })
+    },
+    removeLm: function ({commit, state}, {volume, id}) {
+      let lmPair = {}
+      if (volume === 'reference') {
+        const referenceLandmarks = state.referenceLandmarks.filter(lm => lm.id !== id)
+        commit('setReferenceLandmarks', { referenceLandmarks })
+        lmPair.refId = id
+      }
+      if (volume === 'incoming') {
+        const incomingLandmarks = state.incomingLandmarks.filter(lm => lm.id !== id)
+        commit('setIncomingLandmarks', { incomingLandmarks })
+        lmPair.incId = id
+      }
+
+      const landmarkPairs = state.landmarkPairs.filter(lm => 
+        !(
+          (lmPair.refId && lm.refId === lmPair.refId) || 
+          (lmPair.incId && lm.incId === lmPair.incId)
+        ))
+      commit('setLandmarkPairs', { landmarkPairs })
+    },
+    toggleLmActive: function ({commit, state}, { volume, id }) {
+      if (volume === 'reference') {
+        const referenceLandmarks = state.referenceLandmarks.map(lm => {
+          return {
+            ...lm,
+            active: lm.id === id ? !lm.active : lm.active
+          }
+        })
+        commit('setReferenceLandmarks', { referenceLandmarks })
+      }
+      if (volume === 'incoming') {
+        const incomingLandmarks = state.incomingLandmarks.map(lm => {
+          return {
+            ...lm,
+            active: lm.id === id ? !lm.active : lm.active
+          }
+        })
+        commit('setIncomingLandmarks', { incomingLandmarks })
+      }
+    },
     pushUndo: function ({ commit, state }, { name, desc }) {
       const stateSnapshot = getStateSnapshot(state)
       const undoItem = {
@@ -595,6 +672,7 @@ const store = new Vuex.Store({
            * position in nm
            */
           coord: state.primaryNehubaNavigationPosition.map(v => v / 1e6),
+          active: true,
           ...landmark
         }
         commit('setReferenceLandmarks', {
@@ -617,6 +695,7 @@ const store = new Vuex.Store({
         const newIncomingLandmark = {
           id: incId,
           name: incId,
+          active: true,
           coord: Array.from(pos).map(v => v / 1e6)
         }
         commit('setIncomingLandmarks', {
@@ -765,6 +844,7 @@ const store = new Vuex.Store({
         return {
           id: `${pair.name}_ref`,
           name: `${pair.name}_ref`,
+          active: true,
           coord: transformRef(pair.target_point)
         }
       })
@@ -772,6 +852,7 @@ const store = new Vuex.Store({
         return {
           id: `${pair.name}_inc`,
           name: `${pair.name}_inc`,
+          active: true,
           coord: pair.source_point
         }
       })

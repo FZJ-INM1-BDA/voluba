@@ -49,7 +49,7 @@
 
 <script>
 import { mapState } from 'vuex'
-import { annotationColorBlur, annotationColorFocus, getShader, testBigbrain, determineElement, getRotationVec3, incomingTemplateActiveOpacity } from '@//constants'
+import { REFERENCE_COLOR, INCOMING_COLOR, annotationColorBlur, annotationColorFocus, getShader, testBigbrain, determineElement, getRotationVec3, incomingTemplateActiveOpacity } from '@//constants'
 
 import NehubaBaseMixin from '@/mixins/NehubaBase'
 import DragLandmarkMixin from '@/mixins/DragLandmarkMixin'
@@ -605,7 +605,7 @@ export default {
             {
               id: 'tmplm',
               name: 'tmplm',
-              color: this._step2OverlayFocus === 'incoming' ? '#ff6666' : 'yellow',
+              color: this._step2OverlayFocus === 'incoming' ? INCOMING_COLOR : REFERENCE_COLOR,
               coord: this.viewerMousePosition.map(v => v / 1e6)
             }
           ])
@@ -633,7 +633,7 @@ export default {
             {
               id: 'tmplm',
               name: 'tmplm',
-              color: this._step2OverlayFocus === 'incoming' ? '#ff6666' : 'yellow',
+              color: this._step2OverlayFocus === 'incoming' ? INCOMING_COLOR : REFERENCE_COLOR,
               coord: this.viewerMousePosition.map(v => v / 1e6)
             }
           ])

@@ -9,6 +9,7 @@
     <!-- landmark name -->
     <input
       type="text"
+      :class="size ? 'form-control-' + size : ''"
       class="form-control"
       v-model="landmarkName"
       />
@@ -24,6 +25,10 @@ export default {
       type: Boolean,
       default: false
     },
+    size: {
+      type: String,
+      default: null
+    },
     landmark: {
       type: Object,
       default: function () {
@@ -34,16 +39,6 @@ export default {
   data: function () {
     return {
       showIcon: false
-    }
-  },
-  methods: {
-    removeLandmark: function () {
-
-    },
-    gotoLandmark: function () {
-    },
-    resetLandmark: function () {
-
     }
   },
   computed: {

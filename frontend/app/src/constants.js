@@ -15,6 +15,10 @@ export const getShader = (rgb) => `void main() {
   emitRGB(vec3(x * ${rgb[0].toFixed(1)}, x * ${rgb[1].toFixed(1)}, x * ${rgb[2].toFixed(1)} ));
 }`
 
+export const REFERENCE_COLOR = `yellow`
+
+export const INCOMING_COLOR = `#ff6666`
+
 export const patchSliceViewPanel = function (sliceViewPanel) {
   const originalDraw = sliceViewPanel.draw
   sliceViewPanel.draw = function () {
@@ -448,7 +452,7 @@ export const generateId = (arr) => {
   var i = 1
   while(arr.find(obj => obj.id === i.toString()))
     i++
-  return i
+  return i.toString()
 }
 
 export const saveToFile = (data, mimeType, filename) => {
