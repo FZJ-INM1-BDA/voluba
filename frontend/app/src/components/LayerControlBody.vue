@@ -41,161 +41,176 @@
           :value = "opacity" />
           
         <!-- scale -->
-        <section-component
-          class = "mb-2"
-          id="scale-section"
-          title="Scale"
-          style="margin-top: 5px;">
-          <template slot = "body">
-            <SliderComponent
-              @minus = "testScaleX = testScaleX - 0.05 < scaleMin ? scaleMin : testScaleX - 0.05"
-              @plus = "testScaleX = testScaleX + 0.05 > scaleMax ? scaleMax : testScaleX + 0.05"
-              @textInput = "testScaleX = $event"
-              @sliderInput = "testScaleX = $event"
-              name = "Scale X"
-              :min = "0.1"
-              :max = "10"
-              :step = "0.01"
-              :value = "testScaleX" />
-            <SliderComponent
-              @minus = "testScaleY = testScaleY - 0.05 < scaleMin ? scaleMin : testScaleY - 0.05"
-              @plus = "testScaleY = testScaleY + 0.05 > scaleMax ? scaleMax : testScaleY + 0.05"
-              @textInput = "testScaleY = $event"
-              @sliderInput = "testScaleY = $event"
-              name = "Scale Y"
-              :min = "0.1"
-              :max = "10"
-              :step = "0.01"
-              :value = "testScaleY" />
-            <SliderComponent
-              @minus = "testScaleZ = testScaleZ - 0.05 < scaleMin ? scaleMin : testScaleZ - 0.05"
-              @plus = "testScaleZ = testScaleZ + 0.05 > scaleMax ? scaleMax : testScaleZ + 0.05"
-              @textInput = "testScaleZ = $event"
-              @sliderInput = "testScaleZ = $event"
-              name = "Scale Z"
-              :min = "0.1"
-              :max = "10"
-              :step = "0.01"
-              :value = "testScaleZ" />
-          </template>
-        </section-component>
+        <div class="section-wrapper mb-1">
+          <div
+            :class="false?'':'text-muted'">
+            <font-awesome-icon
+              :icon="lockIconScale"></font-awesome-icon>
+          </div>
+          <section-component
+            id="scale-section"
+            title="Scale">
+            <template slot = "body">
+              <SliderComponent
+                @minus = "testScaleX = testScaleX - 0.05 < scaleMin ? scaleMin : testScaleX - 0.05"
+                @plus = "testScaleX = testScaleX + 0.05 > scaleMax ? scaleMax : testScaleX + 0.05"
+                @textInput = "testScaleX = $event"
+                @sliderInput = "testScaleX = $event"
+                name = "Scale X"
+                :min = "0.1"
+                :max = "10"
+                :step = "0.01"
+                :value = "testScaleX" />
+              <SliderComponent
+                @minus = "testScaleY = testScaleY - 0.05 < scaleMin ? scaleMin : testScaleY - 0.05"
+                @plus = "testScaleY = testScaleY + 0.05 > scaleMax ? scaleMax : testScaleY + 0.05"
+                @textInput = "testScaleY = $event"
+                @sliderInput = "testScaleY = $event"
+                name = "Scale Y"
+                :min = "0.1"
+                :max = "10"
+                :step = "0.01"
+                :value = "testScaleY" />
+              <SliderComponent
+                @minus = "testScaleZ = testScaleZ - 0.05 < scaleMin ? scaleMin : testScaleZ - 0.05"
+                @plus = "testScaleZ = testScaleZ + 0.05 > scaleMax ? scaleMax : testScaleZ + 0.05"
+                @textInput = "testScaleZ = $event"
+                @sliderInput = "testScaleZ = $event"
+                name = "Scale Z"
+                :min = "0.1"
+                :max = "10"
+                :step = "0.01"
+                :value = "testScaleZ" />
+            </template>
+          </section-component>
+        </div>
 
         <!-- translation -->
-        <section-component
-          class="mb-2"
-          title="Translation"
-          id="translation-component">
-          <template slot = "body">
-            <SliderComponent
-              @minus = "translationEvent({ axis: 'x', event:$event, delta: testTranslX - 0.1 < translMin ? 0 :  - 0.1 })"
-              @plus = "translationEvent({ axis: 'x', event:$event, delta: testTranslX + 0.1 > translMax ? 0 : 0.1 })"
-              @textInput = "translationEvent({axis: 'x', event:$event, delta: $event - testTranslX})"
-              @sliderInput = "translationEvent({axis: 'x', event:$event, delta: $event - testTranslX})"
-              name = "X-axis"
-              :min = "translMin"
-              :max = "translMax"
-              :step = "0.1"
-              unit = "mm"
-              :value = "testTranslX" />
-            <SliderComponent
-              @minus = "translationEvent({axis: 'y', event:$event, delta: testTranslY - 0.1 < translMin ? 0 : - 0.1 }) "
-              @plus = "translationEvent({axis: 'y', event:$event, delta: testTranslY + 0.1 > translMax ? 0 : 0.1 }) "
-              @textInput = "translationEvent({axis: 'y', event:$event, delta: $event - testTranslY})"
-              @sliderInput = "translationEvent({axis: 'y', event:$event, delta: $event - testTranslY})"
-              name = "Y-axis"
-              :min = "translMin"
-              :max = "translMax"
-              :step = "0.1"
-              unit = "mm"
-              :value = "testTranslY" />
-            <SliderComponent
-              @minus = "translationEvent({axis: 'z', event:$event, delta: testTranslZ - 0.1 < translMin ? 0 : - 0.1})"
-              @plus = "translationEvent({axis: 'z', event:$event, delta: testTranslZ + 0.1 > translMax ? 0 : 0.1})"
-              @textInput = "translationEvent({axis: 'z', event:$event, delta: $event - testTranslZ})"
-              @sliderInput = "translationEvent({axis: 'z', event:$event, delta: $event - testTranslZ})"
-              name = "Z-axis"
-              :min = "translMin"
-              :max = "translMax"
-              :step = "0.1"
-              unit = "mm"
-              :value = "testTranslZ" />
-          </template>
-        </section-component>
+        <div class="section-wrapper mb-1">
+          <div
+            @click="lockIncVol({ incVolTranslationLock: !incVolTranslationLock})">
+            <font-awesome-icon :icon="lockIconTranslation"></font-awesome-icon>
+          </div>
+          <section-component
+            title="Translation"
+            id="translation-component">
+            <template slot = "body">
+              <SliderComponent
+                @minus = "translationEvent({ axis: 'x', event:$event, delta: testTranslX - 0.1 < translMin ? 0 :  - 0.1 })"
+                @plus = "translationEvent({ axis: 'x', event:$event, delta: testTranslX + 0.1 > translMax ? 0 : 0.1 })"
+                @textInput = "translationEvent({axis: 'x', event:$event, delta: $event - testTranslX})"
+                @sliderInput = "translationEvent({axis: 'x', event:$event, delta: $event - testTranslX})"
+                name = "X-axis"
+                :min = "translMin"
+                :max = "translMax"
+                :step = "0.1"
+                unit = "mm"
+                :value = "testTranslX" />
+              <SliderComponent
+                @minus = "translationEvent({axis: 'y', event:$event, delta: testTranslY - 0.1 < translMin ? 0 : - 0.1 }) "
+                @plus = "translationEvent({axis: 'y', event:$event, delta: testTranslY + 0.1 > translMax ? 0 : 0.1 }) "
+                @textInput = "translationEvent({axis: 'y', event:$event, delta: $event - testTranslY})"
+                @sliderInput = "translationEvent({axis: 'y', event:$event, delta: $event - testTranslY})"
+                name = "Y-axis"
+                :min = "translMin"
+                :max = "translMax"
+                :step = "0.1"
+                unit = "mm"
+                :value = "testTranslY" />
+              <SliderComponent
+                @minus = "translationEvent({axis: 'z', event:$event, delta: testTranslZ - 0.1 < translMin ? 0 : - 0.1})"
+                @plus = "translationEvent({axis: 'z', event:$event, delta: testTranslZ + 0.1 > translMax ? 0 : 0.1})"
+                @textInput = "translationEvent({axis: 'z', event:$event, delta: $event - testTranslZ})"
+                @sliderInput = "translationEvent({axis: 'z', event:$event, delta: $event - testTranslZ})"
+                name = "Z-axis"
+                :min = "translMin"
+                :max = "translMax"
+                :step = "0.1"
+                unit = "mm"
+                :value = "testTranslZ" />
+            </template>
+          </section-component>
+        </div>
 
         <!-- rotation -->
-        <section-component
-          class = "mb-2"
-          title = "Rotation"
-          id = "rotation-component">
-          <template slot = "body">
-            <SliderComponent
-              @minus = "testRotateX = testRotateX - 0.1 < rotateMin ? rotateMin : testRotateX - 0.1"
-              @plus = "testRotateX = testRotateX + 0.1 > rotateMax ? rotateMax : testRotateX + 0.1"
-              @textInput = "testRotateX = $event"
-              @sliderInput = "testRotateX = $event"
-              name = "X-axis"
-              :min = "rotateMin"
-              :max = "rotateMax"
-              :step = "0.1"
-              unit = "deg"
-              :value = "testRotateX" />
-            <SliderComponent
-              @minus = "testRotateY = testRotateY - 0.1 < rotateMin ? rotateMin : testRotateY - 0.1"
-              @plus = "testRotateY = testRotateY + 0.1 > rotateMax ? rotateMax : testRotateY + 0.1"
-              @textInput = "testRotateY = $event"
-              @sliderInput = "testRotateY = $event"
-              name = "Y-axis"
-              :min = "rotateMin"
-              :max = "rotateMax"
-              :step = "0.1"
-              unit = "deg"
-              :value = "testRotateY" />
-            <SliderComponent
-              @minus = "testRotateZ = testRotateZ - 0.1 < rotateMin ? rotateMin : testRotateZ - 0.1"
-              @plus = "testRotateZ = testRotateZ + 0.1 > rotateMax ? rotateMax : testRotateZ + 0.1"
-              @textInput = "testRotateZ = $event"
-              @sliderInput = "testRotateZ = $event"
-              name = "Z-axis"
-              :min = "rotateMin"
-              :max = "rotateMax"
-              :step = "0.1"
-              unit = "deg"
-              :value = "testRotateZ" />
+        <div class="section-wrapper mb-1">
+          <div
+            @click="lockIncVol({ incVolRotationLock: !incVolRotationLock})">
+            <font-awesome-icon :icon="lockIconRotation" />
+          </div>
+          <section-component
+            title = "Rotation"
+            id = "rotation-component">
+            <template slot = "body">
+              <SliderComponent
+                @minus = "testRotateX = testRotateX - 0.1 < rotateMin ? rotateMin : testRotateX - 0.1"
+                @plus = "testRotateX = testRotateX + 0.1 > rotateMax ? rotateMax : testRotateX + 0.1"
+                @textInput = "testRotateX = $event"
+                @sliderInput = "testRotateX = $event"
+                name = "X-axis"
+                :min = "rotateMin"
+                :max = "rotateMax"
+                :step = "0.1"
+                unit = "deg"
+                :value = "testRotateX" />
+              <SliderComponent
+                @minus = "testRotateY = testRotateY - 0.1 < rotateMin ? rotateMin : testRotateY - 0.1"
+                @plus = "testRotateY = testRotateY + 0.1 > rotateMax ? rotateMax : testRotateY + 0.1"
+                @textInput = "testRotateY = $event"
+                @sliderInput = "testRotateY = $event"
+                name = "Y-axis"
+                :min = "rotateMin"
+                :max = "rotateMax"
+                :step = "0.1"
+                unit = "deg"
+                :value = "testRotateY" />
+              <SliderComponent
+                @minus = "testRotateZ = testRotateZ - 0.1 < rotateMin ? rotateMin : testRotateZ - 0.1"
+                @plus = "testRotateZ = testRotateZ + 0.1 > rotateMax ? rotateMax : testRotateZ + 0.1"
+                @textInput = "testRotateZ = $event"
+                @sliderInput = "testRotateZ = $event"
+                name = "Z-axis"
+                :min = "rotateMin"
+                :max = "rotateMax"
+                :step = "0.1"
+                unit = "deg"
+                :value = "testRotateZ" />
 
-            <div class="mb-1"></div>
+              <div class="mb-1"></div>
 
-            <!-- rotation options -->
-            <div class="btn-group">
+              <!-- rotation options -->
+              <div class="btn-group">
 
-              <!-- flip x -->
-              <div
-                @click.stop.prevent="flipAxis(0)"
-                class="flip-btn btn btn-sm btn-outline-secondary">
-                <span>
-                  flip x axis
-                </span>
+                <!-- flip x -->
+                <div
+                  @click.stop.prevent="flipAxis(0)"
+                  class="flip-btn btn btn-sm btn-outline-secondary">
+                  <span>
+                    flip x axis
+                  </span>
+                </div>
+
+                <!-- flip y -->
+                <div
+                  @click.stop.prevent="flipAxis(1)"
+                  class="flip-btn btn btn-sm btn-outline-secondary">
+                  <span>
+                    flip y axis
+                  </span>
+                </div>
+
+                <!-- flip z -->
+                <div
+                  @click.stop.prevent="flipAxis(2)"
+                  class="flip-btn btn btn-sm btn-outline-secondary">
+                  <span>
+                    flip z axis
+                  </span>
+                </div>
               </div>
-
-              <!-- flip y -->
-              <div
-                @click.stop.prevent="flipAxis(1)"
-                class="flip-btn btn btn-sm btn-outline-secondary">
-                <span>
-                  flip y axis
-                </span>
-              </div>
-
-              <!-- flip z -->
-              <div
-                @click.stop.prevent="flipAxis(2)"
-                class="flip-btn btn btn-sm btn-outline-secondary">
-                <span>
-                  flip z axis
-                </span>
-              </div>
-            </div>
-          </template>
-        </section-component>
+            </template>
+          </section-component>
+        </div>
 
       </div>
     </div>
@@ -205,6 +220,7 @@
 import { Compact } from 'vue-color'
 import SectionComponent from '@/components/layout/Section'
 import SliderComponent from '@/components/layout/Slider'
+import { mapState, mapActions } from 'vuex'
 
 export default {
   components: {
@@ -241,6 +257,13 @@ export default {
     }
   },
   computed: {
+    ...mapState({
+      incVolTranslationLock: 'incVolTranslationLock',
+      incVolRotationLock: 'incVolRotationLock',
+      lockIconTranslation: state => state.incVolTranslationLock ? 'lock' : 'lock-open',
+      lockIconRotation: state => state.incVolRotationLock ? 'lock' : 'lock-open',
+      lockIconScale: () => 'lock-open'
+    }),
     testScaleX: {
       get: function () {
         return this.testScale[0]
@@ -451,6 +474,9 @@ export default {
     }
   },
   methods: {
+    ...mapActions({
+      lockIncVol: 'lockIncVol'
+    }),
     translationEvent: function ({axis, delta}) {
       const {mat4, quat, vec3} = window.export_nehuba
       const pos = vec3.create()
@@ -543,5 +569,21 @@ export default {
 {
   background-color: rgba(125,125,125,0.15);
   cursor: move;
+}
+
+.section-wrapper
+{
+  display: flex;
+}
+
+.section-wrapper > *:first-child
+{
+  flex: 0 0 1em;
+  width: 1em;
+}
+
+.section-wrapper > *:last-child
+{
+  flex: 1 0 auto;
 }
 </style>

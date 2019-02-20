@@ -178,7 +178,7 @@ export default {
       backendQueryInProgress: 'backendQueryInProgress',
       addLandmarkMode: 'addLandmarkMode',
       landmarkControlVisible: 'landmarkControlVisible',
-      ableToComputeTransformationMatrix: state => state.landmarkPairs.filter(lp => lp.active === true).length >= 3
+      ableToComputeTransformationMatrix: state => state.landmarkPairs.length >= 3
     }),
     showLandmarksControl: {
       get: function () {

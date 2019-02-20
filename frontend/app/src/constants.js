@@ -20,8 +20,8 @@ export const getShader = (rgb) => `void main() {
 }`
 
 export const REFERENCE_COLOR = `yellow`
-
 export const INCOMING_COLOR = `#ff6666`
+export const INACTIVE_ROW_OPACITY = 0.2
 
 export const patchSliceViewPanel = function (sliceViewPanel) {
   const originalDraw = sliceViewPanel.draw

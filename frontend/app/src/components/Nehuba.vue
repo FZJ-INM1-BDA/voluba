@@ -528,6 +528,8 @@ export default {
   computed: {
     ...mapState({
       appendNehubaFlag: 'appendNehubaFlag',
+      translationByDragEnabled: state => !state.incVolTranslationLock,
+      rotationByDragEnabled: state => !state.incVolRotationLock,
       addLandmarkMode: 'addLandmarkMode',
       landmarkControlVisible: 'landmarkControlVisible',
       _step2Mode: '_step2Mode',
@@ -536,11 +538,11 @@ export default {
       selectedIncomingVolumeId: 'selectedIncomingVolumeId'
     }),
     _showRefVol: function () {
-      return !this.showDoubleOverlay || !this.landmarkControlVisible || this._step2OverlayFocus === 'reference'
+      return true || !this.showDoubleOverlay || !this.landmarkControlVisible || this._step2OverlayFocus === 'reference'
     },
     _showIncVolOverlay: function () {
       if (this.showDoubleOverlay) {
-        return !this.landmarkControlVisible || this._step2OverlayFocus === 'incoming'
+        return true || !this.landmarkControlVisible || this._step2OverlayFocus === 'incoming'
       } else {
         return false
       }
@@ -559,12 +561,6 @@ export default {
     },
     dataToViewport: function () {
       return this.nehubaBase__dataToViewport
-    },
-    translationByDragEnabled: function () {
-      return true
-    },
-    rotationByDragEnabled: function () {
-      return true
     },
     calculatedTransformMatrix: function () {
       return this.$store.state.landmarkInverseMatrix.map((arr, i) => arr.map((v, idx) => i !== 3 && idx === 3 ? v * 1e6 : v))

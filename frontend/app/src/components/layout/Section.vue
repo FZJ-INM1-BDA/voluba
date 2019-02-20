@@ -1,9 +1,14 @@
 <template>
-  <div :id="id">
-    <div @click="toggle" class="header">
+  <div
+    class="container"
+    :id="id">
+    <div
+      @click="toggle"
+      class="header">
       <font-awesome-icon
         icon="caret-right"
-        :class="transformIcon" pull="left"/>
+        :class="transformIcon"
+        pull="left"/>
       <span><strong> {{ title }}</strong></span>
       <slot name="header"></slot>
     </div>
@@ -51,6 +56,13 @@ export default {
 {
   position: relative;
   user-select: none;
+  display: flex;
+  align-items: center;
+}
+
+.header > *
+{
+  flex: 0 0 auto;
 }
 
 .header:after
@@ -88,5 +100,10 @@ export default {
 {
   padding-left: 11px;
   margin-top: 5px;
+}
+
+.container
+{
+  width: 100%;
 }
 </style>

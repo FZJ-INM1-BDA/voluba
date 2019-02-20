@@ -112,6 +112,9 @@ const store = new Vuex.Store({
       0,    0,    0,    1.0
     ],
 
+    incVolTranslationLock: false,
+    incVolRotationLock: false,
+
     overlayColor: {hex: '#FCDC00', rgba: {r: 252, g: 220, b: 0, a: 1}},
     // in nm
     primaryNehubaNavigationPosition: [0, 0, 0],
@@ -147,6 +150,10 @@ const store = new Vuex.Store({
       /**
        * TODO, UI feedback on error
        */
+    },
+    setIncVolLoc (state, { incVolTranslationLock, incVolRotationLock }) {
+      state.incVolRotationLock = incVolRotationLock
+      state.incVolTranslationLock = incVolTranslationLock
     },
     setUser (state, { user }) {
       state.user = user
@@ -298,6 +305,12 @@ const store = new Vuex.Store({
         .then(() => commit('setAppendNehubaFlag', {flag: true}))
         .catch(e => dispatch('modalMessage', { title: 'Incompatible browser', body: incompatibleBrowserText }))
     },
+    lockIncVol: function ({ commit, state }, { incVolTranslationLock = null, incVolRotationLock = null }) {
+      commit('setIncVolLoc', {
+        incVolTranslationLock : incVolTranslationLock !== null ? incVolTranslationLock : state.incVolTranslationLock,
+        incVolRotationLock: incVolRotationLock !== null ? incVolRotationLock : state.incVolRotationLock
+      })
+    },
     addLmp: function ({commit, state}, { refId, incId }) {
       const id = generateId(state.landmarkPairs)
       commit('setLandmarkPairs', {
@@ -331,8 +344,12 @@ const store = new Vuex.Store({
       if (payload.coord)
         dispatch('setPrimaryNehubaNavigation', payload)
     },
-    removeLmp: function ({commit, state}, { id }) {
-      const landmarkPairs = state.landmarkPairs.filter(lmp => lmp.id !== id)
+    removeLmp: function ({commit, state}, { id, incId, refId }) {
+      const landmarkPairs = state.landmarkPairs.filter(lmp => !(
+        id && lmp.id === id ||
+        incId && lmp.incId === incId ||
+        refId && lmp.refId === refId
+      ))
       commit('setLandmarkPairs', { landmarkPairs })
     },
     removeLm: function ({commit, state}, {volume, id}) {
@@ -773,7 +790,7 @@ const store = new Vuex.Store({
         incomingLandmarks: state.incomingLandmarks.filter(lm => lm.id !== id)
       })
     },
-    removeLandmarkPair ({commit, state}, {id}) {
+    removeLandmarkPair ({commit, state}, { id }) {
       commit('setLandmarkPairs', {
         landmarkPairs: state.landmarkPairs.filter(lm => lm.id !== id)
       })

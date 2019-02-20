@@ -1,0 +1,218 @@
+<template>
+  <LandmarkRowV2
+    :draggable="!parentLandmark"
+    @dragstart.native="dragStart"
+    @dragend.native="dragEnd"
+    :landmark="landmark"
+    :style="dragInProgress ? {opacity: 0.2} : {}"
+    class="container"
+    @changeName="changeLandmarkName({...$event, id: landmark.id, volume: 'incoming'})"
+    v-if="landmark">
+
+    <!-- prepend -->
+    <template slot="prepend">
+      <div class="input-group-prepend">
+
+        <!-- unlink -->
+        <div
+          v-if="parentLandmark"
+          @click="unlink"
+          class="btn btn-sm btn-danger">
+          <font-awesome-icon icon="unlink"></font-awesome-icon>
+        </div>
+
+        <div
+          v-else
+          @mousedown="dragFlag = true"
+          class="input-group-text text-muted drag-handle">
+          <font-awesome-icon icon="grip-vertical"></font-awesome-icon>
+        </div>
+
+        <!-- uncheck -->
+        <div
+          @click="toggleLmActive({ volume: 'incoming', id: landmark.id })"
+          class="input-group-text">
+          <input
+            :checked="landmark.active"
+            type="checkbox" />
+        </div>
+
+        <!-- landmark icon -->
+        <span
+          @click="gotoLm({ volume: 'incoming', id: landmark.id })"
+          v-b-tooltip.hover.left.nofade="landmark.name"
+          :style="{color: iconColor, opacity: landmark.active ? 1.0 : inactiveOpacity }"
+          class="input-group-text opacity-transition">
+          <font-awesome-icon class="icon" icon="map-marker-alt"></font-awesome-icon>
+        </span>
+      </div>
+    </template>
+
+    <template slot="append">
+      <div class="input-group-append">
+
+        <!-- see more icon -->
+        <div
+          tabindex="-1"
+          :id="'popover-' + landmark.id"
+          class="input-group-text readmore-icon">
+          <font-awesome-icon icon="ellipsis-v"></font-awesome-icon>
+        </div>
+
+        <b-popover
+          triggers="click blur"
+          :target="'popover-' + landmark.id">
+          <template slot="title">Edit Landmark</template>
+          <EditLandmarkComponent
+            volume="incoming"
+            @removeLm="removeLm({ volume: 'incoming', id: landmark.id})"
+            @changeName="changeLandmarkName({ ...$event, id: landmark.id, volume: 'incoming' })"
+            :landmark="landmark"/>
+        </b-popover>
+      </div>
+    </template>
+  </LandmarkRowV2>
+  <div
+    @dragover="dragOver"
+    @drop="dragDrop"
+    @dragenter="dragEnter"
+    @dragleave="dragLeave"
+    :style="dragOverFlag ? {backgroundColor: 'rgba(0, 100, 0, 0.2)'} : {}"
+    class="empty-container" v-else>
+
+  </div>
+</template>
+<script>
+import { mapActions } from 'vuex'
+import { INACTIVE_ROW_OPACITY, INCOMING_COLOR } from '@/constants'
+import LandmarkRowV2 from '@/components/LandmarkRowV2'
+import EditLandmarkComponent from '@/components/EditLandmark'
+export default {
+  components: {
+    LandmarkRowV2,
+    EditLandmarkComponent
+  },
+  methods: {
+    ...mapActions({
+      toggleLmActive: 'toggleLmActive',
+      removeLm: 'removeLm',
+      addLmp: 'addLmp',
+      gotoLm: 'gotoLm',
+      changeLandmarkName: 'changeLandmarkName'
+    }),
+    unlink: function () {
+      this.$store.dispatch('removeLmp', {
+        incId: this.landmark.id
+      })
+    },
+    dragStart: function (ev) {
+      if (!this.dragFlag)
+        ev.preventDefault()
+      this.dragFlag = false
+      this.dragInProgress = true
+      ev.dataTransfer.setData('text/plain', this.landmark.id)
+    },
+    dragEnd: function (ev) {
+      this.dragInProgress = false
+    },
+    dragDrop: function (ev) {
+      const incId = ev.dataTransfer.getData('text')
+      this.dragOverFlag = false      
+      if (!incId || !this.parentLandmark)
+        return
+
+      this.addLmp({
+        incId,
+        refId: this.parentLandmark.id
+      })
+    },
+    dragOver: function (ev) {
+      ev.preventDefault()
+    },
+    dragEnter: function (ev) {
+      ev.preventDefault()
+      this.dragOverFlag = true
+    },
+    dragLeave: function () {
+      this.dragOverFlag = false
+    }
+  },
+  data: function () {
+    return {
+      dragInProgress: false,
+      dragFlag: false,
+      dragOverFlag: false
+    }
+  },
+  props: {
+    landmark: {
+      type: Object,
+      default: null
+    },
+    parentLandmark: {
+      type: Object,
+      default: null
+    }
+  },
+  computed: {
+    inactiveOpacity: function () {
+      return INACTIVE_ROW_OPACITY
+    },
+    iconColor: function () {
+      return INCOMING_COLOR
+    }
+  }
+}
+</script>
+<style scoped>
+.container
+{
+  transition: linear opacity 0.2s;
+}
+.icon
+{
+  filter: drop-shadow( 0px 1px rgba(0, 0, 0, 0.5))
+    drop-shadow(0px -1px rgba(0, 0, 0, 0.5))
+    drop-shadow(1px 0px rgba(0, 0, 0, 0.5))
+    drop-shadow(-1px 0px rgba(0, 0, 0, 0.5));
+}
+
+.opacity-transition
+{
+  transition: linear all 0.2s;
+}
+
+.empty-container
+{
+  width: 100%;
+  height: 100%;
+  transition: linear all 0.2s;
+}
+
+.readmore-icon,
+.drag-handle
+{
+  padding-left: 0.2em;
+  padding-right: 0.2em;
+}
+
+
+.drag-handle > *,
+.readmore-icon > *
+{
+  opacity: 0.3;
+  transition: linear all 0.2s;
+}
+
+.drag-handle:hover > *,
+.readmore-icon:hover >*
+{
+  opacity: 1.0;
+}
+
+.drag-handle:hover
+{
+  cursor:move;
+}
+
+</style>

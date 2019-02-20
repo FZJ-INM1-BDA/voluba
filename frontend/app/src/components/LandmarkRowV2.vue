@@ -1,6 +1,5 @@
 <template>
   <div
-    :style="rowStyle"
     class="input-group">
     
     <!-- prepend -->
@@ -8,6 +7,8 @@
 
     <!-- landmark name -->
     <input
+      v-if="false"
+      :style="rowStyle"
       type="text"
       :class="size ? 'form-control-' + size : ''"
       class="form-control"
@@ -44,7 +45,7 @@ export default {
   computed: {
     rowStyle: function () {
       return {
-        // opacity: this.landmark.active ? 1.0 : 0.3
+        opacity: this.landmark.active ? 1.0 : 0.3
       }
     },
     landmarkName: {
