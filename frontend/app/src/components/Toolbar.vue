@@ -309,6 +309,9 @@ export default {
 .addBtnLg
 {
   margin: 0.6em;
+  box-sizing: border-box;
+  width: 2.5em;
+  height: 2.5em;
 }
 
 .btn-shadow {

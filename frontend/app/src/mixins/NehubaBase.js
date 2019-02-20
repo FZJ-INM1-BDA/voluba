@@ -1,4 +1,5 @@
 import { defaultXform, determineElement, patchSliceViewPanel } from '@//constants'
+import Vue from 'vue'
 
 export default {
   data: function () {
@@ -43,6 +44,7 @@ export default {
       return new Promise((resolve, reject) => {
         this.$store.state.appendNehubaPromise
           .then(this.nehubaBase__preInit)
+          .then(Vue.nextTick)
           .then(this.nehubaBase__init)
           .then(this.nehubaBase__postInit)
           .then(({ nehubaViewer }) => {
