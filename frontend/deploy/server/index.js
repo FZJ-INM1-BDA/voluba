@@ -28,7 +28,7 @@ const authStrategies = require('./strategies')
 
 const startServer = async (app) => {
   await authStrategies(app)
-  const publicPath = path.join(__dirname, '..', 'dist')
+  const publicPath = path.join(__dirname, '..',  'public')
   app.use(express.static(publicPath))
   app.listen(PORT, () => console.log(`server listening on port ${PORT}`))
 }

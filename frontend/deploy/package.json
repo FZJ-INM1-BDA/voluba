@@ -1,0 +1,22 @@
+{
+  "name": "deploy",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "dependencies": {
+    "express": "^4.16.4",
+    "express-session": "^1.15.6",
+    "memorystore": "1.6.0",
+    "openid-client": "^2.4.5",
+    "passport": "^0.4.0"
+  },
+  "devDependencies": {
+    "dotenv": "^6.2.0"
+  },
+  "scripts": {
+    "start": "node server/index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT"
+}
