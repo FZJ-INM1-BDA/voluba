@@ -21,7 +21,9 @@
       </div>
 
       <!-- floating layer -->
-      <div class = "overlay">
+      <div
+        v-if="appendNehubaFlag"
+        class = "overlay">
         <toolbar-component />
       </div>
     </main>
@@ -39,6 +41,10 @@
       <upload-modal
         ref="uploadModal"
         id="uploadModal" />
+      <MessageModal
+        :message="messageModalMessage"
+        id="messageModal"
+        ref="messageModal"/>
       <SelectVolumesModal
         v-if="showSelectVolumesModal"
         @destroyMe="showSelectVolumesModal=false" />
@@ -59,6 +65,7 @@ import LoadLandmarkPairsModal from '@/components/modals/LoadLandmarkPairsModal'
 import TransformationMatrixModal from '@/components/modals/TransformationMatrixModal'
 import UploadModal from '@/components/modals/UploadModal'
 import SelectVolumesModal from '@/components/modals/SelectVolumesModal'
+import MessageModal from '@/components/modals/MessageModal'
 
 export default {
   name: 'App',
@@ -71,16 +78,19 @@ export default {
     TransformationMatrixModal,
     LoadLandmarkPairsModal,
     UploadModal,
-    SelectVolumesModal
+    SelectVolumesModal,
+    MessageModal
   },
   data: function () {
     return {
       showSecondNehuba: true,
       primaryNehubaReady: false,
-      showSelectVolumesModal: true
+      showSelectVolumesModal: false,
+      messageModalMessage: ''
     }
   },
   mounted: function () {
+    this.$store.dispatch('appendNehuba')
     this.$store.subscribeAction(({ type, payload }) => {
       switch (type) {
         case 'openModal': {
@@ -97,6 +107,7 @@ export default {
   },
   computed: {
     ...mapState({
+      appendNehubaFlag: 'appendNehubaFlag',
       undoStack: 'undoStack',
       redoStack: 'redoStack',
       incTransformMatrix: 'incTransformMatrix'
@@ -130,6 +141,9 @@ export default {
     }
   },
   watch: {
+    appendNehubaFlag: function (flag) {
+      this.showSelectVolumesModal = flag
+    },
     showSimpleNehuba: function () {
       this.$store.dispatch('redrawNehuba')
     }

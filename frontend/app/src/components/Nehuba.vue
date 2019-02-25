@@ -13,13 +13,21 @@
       @viewportToData="nehubaBase__viewportToData"
       class = "nehuba-element"
       :id = "cid">
-      {{ placeholderText }}
+      <span
+        v-if="!errorFlag">
+        {{ placeholderText }}
+      </span>
+      <div
+        v-if="errorFlag"
+        class="alert alert-danger">
+        {{ placeholderText }}
+      </div>
     </div>
 
     <NehubaLandmarksOverlay
       @mousedownOnIcon="dragLandmark__handleMousedownOnIcon({...$event, volume: 'reference'})"
       ref="lmOverlay"
-      v-if="showReferenceLandmarkOverlay"
+      v-if="appendNehubaFlag && showReferenceLandmarkOverlay"
       :dataToViewport="dataToViewport"
       :landmarks="referenceLandmarks"
       class="landmarks-overlay" />
@@ -27,12 +35,14 @@
     <nehuba-landmarks-overlay
       @mousedownOnIcon="dragLandmark__handleMousedownOnIcon({...$event, volume: 'incoming', transform: incTransformMatrix})"
       ref="lmOverlay1"
-      v-if="showIncomingLandmarkOverlay"
+      v-if="appendNehubaFlag && showIncomingLandmarkOverlay"
       :dataToViewport="dataToViewport"
       :landmarks="incomingLandmarks"
       class="landmarks-overlay" />
     
-    <div class="statusCardWrapper">
+    <div
+      v-if="appendNehubaFlag"
+      class="statusCardWrapper">
       <NehubaStatusCard>
         <template>
           <div>
@@ -49,7 +59,7 @@
 
 <script>
 import { mapState } from 'vuex'
-import { REFERENCE_COLOR, INCOMING_COLOR, annotationColorBlur, annotationColorFocus, getShader, testBigbrain, determineElement, getRotationVec3, incomingTemplateActiveOpacity } from '@//constants'
+import { incompatibleBrowserText, REFERENCE_COLOR, INCOMING_COLOR, annotationColorBlur, annotationColorFocus, getShader, testBigbrain, determineElement, getRotationVec3, incomingTemplateActiveOpacity } from '@//constants'
 
 import NehubaBaseMixin from '@/mixins/NehubaBase'
 import DragLandmarkMixin from '@/mixins/DragLandmarkMixin'
@@ -66,6 +76,7 @@ export default {
       placeholderText: 'Loading nehuba ...',
       nehubaLoaded: false,
       pushUndoFlag: true,
+      errorFlag: false,
 
       /**
        * managed layer state
@@ -107,7 +118,8 @@ export default {
          * TODO proper error catching and user feedback
          */
         console.error('e', e)
-        this.placeholderText = 'error loading nehuba'
+        this.errorFlag = true
+        this.placeholderText = incompatibleBrowserText
       })
 
     this.nehubaBase__navigationChanged = () => {
@@ -478,7 +490,7 @@ export default {
       window.primaryNehubaViewer = this.$options.nehubaBase.nehubaBase__nehubaViewer
     },
     clearUserLayers: function () {
-      if (!this.$options.nehubaBase.nehubaBase__nehubaViewer) {
+      if (!this.$options.nehubaBase || !this.$options.nehubaBase.nehubaBase__nehubaViewer) {
         return
       }
       this.$options.nonReactiveData.ngUserLayer = null
@@ -490,7 +502,7 @@ export default {
       this.userLayers = []
     },
     addUserLayer: function (uri) {
-      if (!this.$options.nehubaBase.nehubaBase__nehubaViewer) {
+      if (!this.$options.nehubaBase ||  !this.$options.nehubaBase.nehubaBase__nehubaViewer) {
         return
       }
       if (!uri) {
@@ -515,6 +527,7 @@ export default {
   },
   computed: {
     ...mapState({
+      appendNehubaFlag: 'appendNehubaFlag',
       addLandmarkMode: 'addLandmarkMode',
       landmarkControlVisible: 'landmarkControlVisible',
       _step2Mode: '_step2Mode',

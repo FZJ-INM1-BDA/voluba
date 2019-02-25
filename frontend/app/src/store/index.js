@@ -1,5 +1,5 @@
 
-import { randomColor, generateId, UPLOAD_URL, computeDeterminant, DEBOUNCE_TIMEOUT } from '@//constants'
+import { incompatibleBrowserText, randomColor, generateId, UPLOAD_URL, computeDeterminant, DEBOUNCE_TIMEOUT } from '@//constants'
 import Vuex from 'vuex'
 import Vue from 'vue'
 import axios from 'axios'
@@ -12,6 +12,48 @@ const getStateSnapshot = ({ incTransformMatrix }) => {
   }
 }
 
+const appendNehuba = () => new Promise((resolve, reject) => {
+    /**
+     * debug
+     */
+    // return reject('Your browser is not supported')
+    if ('export_nehuba' in window) {
+      resolve()
+    } else {
+      
+      /**
+       * TODO need to check browser compatibility
+       */
+
+      const el = document.createElement('script')
+      el.src = 'main.bundle.js'
+      el.onload = () => {
+        /**
+         * patching nehuba/neuroglancer default behaviour of altering hash
+         */
+        const { UrlHashBinding } = window['export_nehuba'].getNgPatchableObj()
+        UrlHashBinding.prototype.setUrlHash = () => {
+          // console.log('seturl hash')
+          // console.log('setting url hash')
+        }
+        UrlHashBinding.prototype.updateFromUrlHash = () => {
+          // console.log('update hash binding')
+        }
+        /* TODO find a more permanent fix to disable double click */
+        // LayerManager.prototype.invokeAction = (arg) => {
+        //   const region = this.regionsLabelIndexMap.get(this.mouseOverSegment)
+        //   if (arg === 'select' && region) {
+        //     this.regionSelectionEmitter.emit(region)
+        //   }
+        // }
+
+        resolve()
+      }
+      el.onerror = reject
+      document.head.appendChild(el)
+    }
+})
+
 const store = new Vuex.Store({
   state: {
     user: null,
@@ -19,43 +61,7 @@ const store = new Vuex.Store({
     undoStack: [],
     redoStack: [],
 
-    appendNehubaPromise: new Promise((resolve, reject) => {
-      if ('export_nehuba' in window) {
-        resolve()
-      } else {
-        
-        /**
-         * TODO need to check browser compatibility
-         */
-
-        const el = document.createElement('script')
-        el.src = 'main.bundle.js'
-        el.onload = () => {
-          /**
-           * patching nehuba/neuroglancer default behaviour of altering hash
-           */
-          const { UrlHashBinding } = window['export_nehuba'].getNgPatchableObj()
-          UrlHashBinding.prototype.setUrlHash = () => {
-            // console.log('seturl hash')
-            // console.log('setting url hash')
-          }
-          UrlHashBinding.prototype.updateFromUrlHash = () => {
-            // console.log('update hash binding')
-          }
-          /* TODO find a more permanent fix to disable double click */
-          // LayerManager.prototype.invokeAction = (arg) => {
-          //   const region = this.regionsLabelIndexMap.get(this.mouseOverSegment)
-          //   if (arg === 'select' && region) {
-          //     this.regionSelectionEmitter.emit(region)
-          //   }
-          // }
-
-          resolve()
-        }
-        el.onerror = reject
-        document.head.appendChild(el)
-      }
-    }),
+    appendNehubaFlag: false,
 
     selectReferenceVolumeIdx: null,
     selectedReferenceVolumeId: 'ref-1',
@@ -134,6 +140,14 @@ const store = new Vuex.Store({
     landmarkRMSE: null
   },
   mutations: {
+    setAppendNehubaFlag ( state, { flag }) {
+      state.appendNehubaFlag = flag
+    },
+    setErrorMessage ( state, {}) {
+      /**
+       * TODO, UI feedback on error
+       */
+    },
     setUser (state, { user }) {
       state.user = user
     },
@@ -274,6 +288,16 @@ const store = new Vuex.Store({
     }
   },
   actions: {
+    modalMessage: function () {
+      /**
+       * required for subscribe action
+       */
+    },
+    appendNehuba: function ({ commit, dispatch }) {
+      appendNehuba()
+        .then(() => commit('setAppendNehubaFlag', {flag: true}))
+        .catch(e => dispatch('modalMessage', { title: 'Incompatible browser', body: incompatibleBrowserText }))
+    },
     addLmp: function ({commit, state}, { refId, incId }) {
       const id = generateId(state.landmarkPairs)
       commit('setLandmarkPairs', {

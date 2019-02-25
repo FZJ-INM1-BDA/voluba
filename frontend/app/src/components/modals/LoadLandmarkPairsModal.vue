@@ -1,13 +1,13 @@
 <template>
   <b-modal
-    :id = "id"
+    :id="id"
     centered
-    ref = "modal"
+    ref="modal"
     title="Load Landmark-Pairs"
     header-bg-variant="secondary"
     header-text-variant="light"
-    ok-variant = "secondary"
-    ok-title = "Cancel"
+    ok-variant="secondary"
+    ok-title="Cancel"
     ok-only>
 
     <button

@@ -27,6 +27,7 @@
 import LayerControlBody from '@/components/LayerControlBody'
 import NibComponent from '@/components/layout/Nib'
 import DraggableMixin from '@/mixins/DraggableMixin'
+import { mapState } from 'vuex'
 export default {
   components: {
     NibComponent,
@@ -47,12 +48,10 @@ export default {
       showLayerControl: this.initOpen,
     };
   },
-  mounted() {
-    this.$store.state.appendNehubaPromise
-      .then(() => this.nehubaAppended = true)
-      .catch(console.error)
-  },
   computed: {
+    ...mapState({
+      nehubaAppended: 'appendNehubaFlag'
+    }),
     computedShowLayerControl: function() {
       return this.nehubaAppended && this.showLayerControl
     }

@@ -42,8 +42,9 @@ export default {
        * only change cid. watcher should take care of the rest
        */
       return new Promise((resolve, reject) => {
-        this.$store.state.appendNehubaPromise
-          .then(this.nehubaBase__preInit)
+        if ( !('export_nehuba' in window) ) 
+          return reject('export_nehuba is not present in global scope. append nehuba error')
+        this.nehubaBase__preInit()
           .then(Vue.nextTick)
           .then(this.nehubaBase__init)
           .then(this.nehubaBase__postInit)
