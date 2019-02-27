@@ -197,9 +197,31 @@ export default {
       }
     },
     mouseOverIncoming: function (val) {
-      this.setNavigationActive(!val)
+      if (val) {
+        this.$options.nonReactiveData.ngUserLayer.layer.opacity.restoreState(this.incomingColor[3] * 0.8)
+      } else {
+        this.$options.nonReactiveData.ngUserLayer.layer.opacity.restoreState(this.incomingColor[3])
+      }
+
+      this.nehubaInputBinding({
+        overrideRotation: val && !this.incVolRotationLock,
+        overrideTranslation: val && !this.incVolTranslationLock
+      })
+    },
+    incVolRotationLock: function (lock) {
+      this.nehubaInputBinding({
+        overrideRotation: !lock
+      })
+    },
+    incVolTranslationLock: function (lock) {
+      this.nehubaInputBinding({
+        overrideTranslation: !lock
+      })
     },
     $route: function (to, from) {
+      /**
+       * TODO deprecated
+       */
       /**
        * zoom in and potentially rotate when transite from step1 to step2
        * currently obsolete, since there are no steps
@@ -254,50 +276,7 @@ export default {
         })
         return
       }
-      if (this.mouseOverIncoming) {
-        this.incomingVolumeSelected = true
-        this.$options.nonReactiveData.mousedownMatrix = Array.from(this.incTransformMatrix)
-
-        this.mousemoveStart = [event.screenX, event.screenY]
-
-        if (event.shiftKey) {
-          this.rotatingIncoming = true
-          this.rotateAbsoluteStart = this.viewerMousePosition
-        } else {
-          this.movingIncoming = true
-        }
-
-        const element = event.srcElement || event.originalTarget
-        this.movingIncomingIndex = determineElement(element)
-
-        document.addEventListener('mousemove', this.mousemove, true)
-
-        document.addEventListener('mouseup', ev => {
-
-          /**
-           * on mosue up, remove event listener
-           */
-          document.removeEventListener('mousemove', this.mousemove, true)
-
-          /**
-           * instead of attaching mouseup listener to this element, attach to the whole body
-           * so when user mousedown on nehuba, then mouseover other elements, things don't break
-           */
-          this.rotatingIncoming = false
-          this.movingIncoming = false
-          this.mousemoveStart = null
-          this.movingIncomingIndex = null
-          this.rotateAbsoluteStart = null
-
-          this.$options.nonReactiveData.mousedownMatrix = null
-
-          this.pushUndoFlag = true
-        }, {
-          once: true,
-          capture: true
-        })
-      } else {
-
+      if (!this.mouseOverIncoming) {
         /**
          * allows for user drag whole volume, without deselecting incoming volume
          */
@@ -305,7 +284,58 @@ export default {
           this.incomingVolumeSelected = false
           this.$options.nonReactiveData.timeoutId = null
         }, 300)
+        return
       }
+      if (this.incVolTranslationLock && this.incVolRotationLock) 
+        return
+      if (this.incVolTranslationLock || this.incVolRotationLock) {
+        if (this.incVolTranslationLock && !event.shiftKey)
+          return
+        if (this.incVolRotationLock && event.shiftKey)
+          return
+      }
+
+      this.incomingVolumeSelected = true
+      this.$options.nonReactiveData.mousedownMatrix = Array.from(this.incTransformMatrix)
+
+      this.mousemoveStart = [event.screenX, event.screenY]
+
+      if (event.shiftKey) {
+        this.rotatingIncoming = true
+        this.rotateAbsoluteStart = this.viewerMousePosition
+      } else {
+        this.movingIncoming = true
+      }
+
+      const element = event.srcElement || event.originalTarget
+      this.movingIncomingIndex = determineElement(element)
+
+      document.addEventListener('mousemove', this.mousemove, true)
+
+      document.addEventListener('mouseup', ev => {
+
+        /**
+         * on mosue up, remove event listener
+         */
+        document.removeEventListener('mousemove', this.mousemove, true)
+
+        /**
+         * instead of attaching mouseup listener to this element, attach to the whole body
+         * so when user mousedown on nehuba, then mouseover other elements, things don't break
+         */
+        this.rotatingIncoming = false
+        this.movingIncoming = false
+        this.mousemoveStart = null
+        this.movingIncomingIndex = null
+        this.rotateAbsoluteStart = null
+
+        this.$options.nonReactiveData.mousedownMatrix = null
+
+        this.pushUndoFlag = true
+      }, {
+        once: true,
+        capture: true
+      })
     },
     pushUndo: function (meta = {}) {
       if (!this.pushUndoFlag) {
@@ -395,24 +425,6 @@ export default {
         }
       }
     },
-    /**
-     * overwrites NG original behaviour, so that on mouse down, the view port does not move
-     */
-    setNavigationActive: function (bool) {
-      if (bool) {
-        this.$options.nonReactiveData.ngUserLayer.layer.opacity.restoreState(this.incomingColor[3] * 0.8)
-        this.$options.nehubaBase.nehubaBase__nehubaViewer.ngviewer.inputEventBindings.sliceView.bindings.delete('at:mousedown0')
-        this.$options.nehubaBase.nehubaBase__nehubaViewer.ngviewer.inputEventBindings.sliceView.bindings.delete('at:shift+mousedown0')
-      } else {
-        this.$options.nonReactiveData.ngUserLayer.layer.opacity.restoreState(this.incomingColor[3])
-        if (this.translationByDragEnabled) {
-          this.$options.nehubaBase.nehubaBase__nehubaViewer.ngviewer.inputEventBindings.sliceView.bindings.set('at:mousedown0', {stopPropagation: true})
-        }
-        if (this.rotationByDragEnabled) {
-          this.$options.nehubaBase.nehubaBase__nehubaViewer.ngviewer.inputEventBindings.sliceView.bindings.set('at:shift+mousedown0', {stopPropagation: true})
-        }
-      }
-    },
     updateMouseOverIncVolState: function ({mouseOverUserlayer}) {
 
       if (this._showIncVolOverlay && !this._showRefVol)
@@ -489,6 +501,24 @@ export default {
        */
       window.primaryNehubaViewer = this.$options.nehubaBase.nehubaBase__nehubaViewer
     },
+    nehubaInputBinding: function ({ overrideTranslation = null, overrideRotation = null}) {
+      if (overrideTranslation !== null) {
+        if (overrideTranslation) {
+          this.$options.nehubaBase.nehubaBase__nehubaViewer.ngviewer.inputEventBindings.sliceView.bindings.set('at:mousedown0', {stopPropagation: true})
+        } else {
+          this.$options.nehubaBase.nehubaBase__nehubaViewer.ngviewer.inputEventBindings.sliceView.bindings.delete('at:mousedown0')
+        }
+      }
+
+      if (overrideRotation !== null) {
+        if (overrideRotation) {
+          this.$options.nehubaBase.nehubaBase__nehubaViewer.ngviewer.inputEventBindings.sliceView.bindings.set('at:shift+mousedown0', {stopPropagation: true})
+        } else {
+          this.$options.nehubaBase.nehubaBase__nehubaViewer.ngviewer.inputEventBindings.sliceView.bindings.delete('at:shift+mousedown0')
+        }
+      }
+
+    },
     clearUserLayers: function () {
       if (!this.$options.nehubaBase || !this.$options.nehubaBase.nehubaBase__nehubaViewer) {
         return
@@ -535,7 +565,9 @@ export default {
       _step2Mode: '_step2Mode',
       _step2OverlayFocus: '_step2OverlayFocus',
       incTransformMatrix: 'incTransformMatrix',
-      selectedIncomingVolumeId: 'selectedIncomingVolumeId'
+      selectedIncomingVolumeId: 'selectedIncomingVolumeId',
+      incVolTranslationLock: 'incVolTranslationLock',
+      incVolRotationLock: 'incVolRotationLock'
     }),
     _showRefVol: function () {
       return true || !this.showDoubleOverlay || !this.landmarkControlVisible || this._step2OverlayFocus === 'reference'

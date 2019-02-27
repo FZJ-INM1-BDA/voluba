@@ -49,8 +49,6 @@
         :id="'lmr-' + lm.id"
         v-for="lm in primaryLandmarks">
 
-        
-
         <!-- append icons -->
         <template slot="append">
           
@@ -299,7 +297,6 @@ export default {
 .landmark-row.empty
 {
   display: flex;
-  height: 0;
 }
 
 .experimental-container

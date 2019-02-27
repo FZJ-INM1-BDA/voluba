@@ -67,15 +67,15 @@
 
       <div
         v-b-tooltip.right.hover="'Edit landmarks'"
-        @click="showLandmarksControl=!showLandmarksControl"
-        :class="showLandmarksControl ? 'btn-info' : 'btn-secondary'"
+        @click="landmarkControlVisibilityChanged({visible : !landmarkControlVisible })"
+        :class="landmarkControlVisible ? 'btn-info' : 'btn-secondary'"
         class="addBtn rounded-circle landmarks-control-toggle btn-shadow btn-sm btn">
         <font-awesome-icon icon="map-marker-alt"/>
       </div>
       <landmark-control
         :initOpen="true"
-        v-if="showLandmarksControl"
-        @changeNibState="showLandmarksControl=$event"
+        v-if="landmarkControlVisible"
+        @changeNibState="landmarkControlVisibilityChanged({visible : $event })"
         class="row-flex-items" />
     </div>
 
@@ -88,8 +88,7 @@
         <div
           id="addLm"
           @click="addLandmark"
-          v-b-tooltip.right.hover="landmarkControlVisible ? 'Toggle add landmark mode' : 'Edit landmark pane must be opened first'"
-          :class="landmarkControlVisible ? '' : 'lmr-disabled'"
+          v-b-tooltip.right.hover="'Toggle add landmark mode'"
           class="addBtn pointer-events rounded-circle btn btn-sm btn-success"
           >
           <font-awesome-icon icon="plus" />
@@ -152,7 +151,7 @@
   </div>
 </template>
 <script>
-import { mapState } from 'vuex'
+import { mapState, mapActions } from 'vuex'
 import LayerControl from '@/components/LayerControl'
 import LandmarkControl from '@/components/LandmarkControl'
 import SaveExportControl from '@/components/SaveExportControl'
@@ -180,14 +179,6 @@ export default {
       landmarkControlVisible: 'landmarkControlVisible',
       ableToComputeTransformationMatrix: state => state.landmarkPairs.length >= 3
     }),
-    showLandmarksControl: {
-      get: function () {
-        return this.$store.state.landmarkControlVisible
-      },
-      set: function (visible) {
-        return this.$store.dispatch('landmarkControlVisibilityChanged', {visible})
-      }
-    },
     hamburgerIcon: function () {
       return this.showIcons
         ? 'times'
@@ -217,12 +208,10 @@ export default {
       return `debug: toggle step 2 mode`
     }
   },
-  watch: {
-    showLandmarksControl: function (visible) {
-      this.$store.dispatch('landmarkControlVisibilityChanged', { visible })
-    }
-  },
   methods: {
+    ...mapActions({
+      'landmarkControlVisibilityChanged': 'landmarkControlVisibilityChanged'
+    }),
     calculateXform: function () {
       if (!this.ableToComputeTransformationMatrix) {
         return
@@ -231,9 +220,6 @@ export default {
     },
     addLandmark: function () {
       if (this.mode === 'overlay') {
-        if (!this.landmarkControlVisible) {
-          return
-        }
         this.$store.dispatch('toggleLandmarkMode')
       } else {
         /**
