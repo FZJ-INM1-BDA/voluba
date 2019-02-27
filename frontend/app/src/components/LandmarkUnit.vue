@@ -16,17 +16,17 @@ const zOffsetThreshold = -4
 
 export default {
   props: {
-    tooltipText: {
-      type: String,
-      default: 'no info'
-    },
     active: {
       type: Boolean,
       default: true
     },
+    tooltipText: {
+      type: String,
+      default: null
+    },  
     zOffset: {
       type: Number,
-      default: 0
+      default: zOffsetThreshold + 1
     },
     overwriteStyle: {
       type: Object,
@@ -43,17 +43,19 @@ export default {
   },
   methods: {
     mousedownOnIcon: function () {
+      return false
       this.$emit('mousedownOnIcon')
     }
   },
   computed: {
     tooltipObj: function () {
-      return {} 
-      // {
-      //   title: this.tooltipText,
-      //   trigger: 'hover',
-      //   placement: this.zOffset > 0 ? 'top' : 'bottom'
-      // }
+      return this.tooltipText && !this.active 
+        ? {} 
+        : {
+            title: this.tooltipText,
+            trigger: 'hover',
+            placement: this.zOffset > zOffsetThreshold ? 'top' : 'bottom'
+          }
     },
     tooltipPlacement: function () {
       return 'bottom'
@@ -75,11 +77,15 @@ export default {
     },
     iconStyle: function () {
       return {
-        transform: `translateY(${-this.zOffset}px)`
+        transform: `translateY(${-this.zOffset}px)`,
+        pointerEvents: this.tooltipText
+          ? 'all'
+          : 'none'
       }
     },
     stalkStyle: function () {
       return {
+
         backgroundColor: this.color,
         height: `${Math.abs(this.zOffset)}px`,
         marginTop: this.zOffset >= zOffsetThreshold
@@ -101,7 +107,7 @@ export default {
 }
 .icon
 {
-  pointer-events: none;
+  pointer-events: all;
   width: 1em;
   height: 1em;
   margin-left: -0.5em;
@@ -114,10 +120,10 @@ export default {
   top: 0;
 }
 
-.icon:hover
+/* .icon:hover
 {
   cursor: move
-}
+} */
 
 .icon > *
 {

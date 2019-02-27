@@ -101,6 +101,10 @@ export default {
           }
           break
         }
+        case 'startFromScratch': {
+          this.showSelectVolumesModal = true
+          break;
+        }
         default:
       }
     })

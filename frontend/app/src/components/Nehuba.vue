@@ -646,8 +646,10 @@ export default {
             {
               id: 'tmplm',
               name: 'tmplm',
-              color: this._step2OverlayFocus === 'incoming' ? INCOMING_COLOR : REFERENCE_COLOR,
-              coord: this.viewerMousePosition.map(v => v / 1e6)
+              color: this.addLandmarkMode === 'incoming' ? INCOMING_COLOR : REFERENCE_COLOR,
+              coord: this.viewerMousePosition.map(v => v / 1e6),
+              temporary: true,
+              active: true
             }
           ])
         : this.storedIncomingLandmarks
@@ -674,8 +676,10 @@ export default {
             {
               id: 'tmplm',
               name: 'tmplm',
-              color: this._step2OverlayFocus === 'incoming' ? INCOMING_COLOR : REFERENCE_COLOR,
-              coord: this.viewerMousePosition.map(v => v / 1e6)
+              color: this.addLandmarkMode === 'incoming' ? INCOMING_COLOR : REFERENCE_COLOR,
+              coord: this.viewerMousePosition.map(v => v / 1e6),
+              temporary: true,
+              active: true
             }
           ])
         : this.storedReferenceLandmarks

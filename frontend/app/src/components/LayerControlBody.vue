@@ -269,6 +269,12 @@ export default {
         return this.testScale[0]
       },
       set: function (value) {
+
+        this.$store.dispatch('pushUndo', {
+          name: 'scale x by slider',
+          collapse: 'scaleBySliderX'
+        })
+
         this.$store.dispatch('setScaleInc', {
           axis: 'x',
           value
@@ -280,6 +286,12 @@ export default {
         return this.testScale[1]
       },
       set: function (value) {
+
+        this.$store.dispatch('pushUndo', {
+          name: 'scale y by slider',
+          collapse: 'scaleBySliderY'
+        })
+
         this.$store.dispatch('setScaleInc', {
           axis: 'y',
           value
@@ -291,6 +303,12 @@ export default {
         return this.testScale[2]
       },
       set: function (value) {
+
+        this.$store.dispatch('pushUndo', {
+          name: 'scale z by slider',
+          collapse: 'scaleBySliderZ'
+        })
+
         this.$store.dispatch('setScaleInc', {
           axis: 'z',
           value
@@ -335,6 +353,12 @@ export default {
         return v
       },
       set: function (value) {
+
+        this.$store.dispatch('pushUndo', {
+          name: 'rotate x by slider',
+          collapse: 'rotateBySliderX'
+        })
+
         this.$store.dispatch('setRotateInc', {
           axis: 'xyz',
           value: [value, this.testRotateY, this.testRotateZ]
@@ -358,6 +382,12 @@ export default {
         if (value > 90 || value < -90) {
           return
         }
+
+        this.$store.dispatch('pushUndo', {
+          name: 'rotate y by slider',
+          collapse: 'rotateBySliderY'
+        })
+
         this.$store.dispatch('setRotateInc', {
           axis: 'xyz',
           value: [this.testRotateX, value, this.testRotateZ ]
@@ -378,6 +408,12 @@ export default {
         return v
       },
       set: function (value) {
+
+        this.$store.dispatch('pushUndo', {
+          name: 'rotate z by slider',
+          collapse: 'rotateBySliderZ'
+        })
+
         this.$store.dispatch('setRotateInc', {
           axis: 'xyz',
           value: [this.testRotateX, this.testRotateY, value]
@@ -504,12 +540,20 @@ export default {
       quat.invert(incRot, incRot)
       vec3.transformQuat(pos, pos, incRot)
 
+      this.$store.dispatch('pushUndo', {
+        name: 'translate by slider',
+        collapse: 'translateBySlider'
+      })
+
       this.$store.dispatch('translIncBy', {
         axis: 'xyz',
         value: Array.from(pos)
       })
     },
     flipAxis: function (axis) {
+      this.$store.dispatch('pushUndo', {
+        name: `flip on axis ${axis}`
+      })
       this.$store.dispatch('flipAxis', { axis })
     },
     scaleChanged: function () {

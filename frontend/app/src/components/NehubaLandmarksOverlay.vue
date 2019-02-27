@@ -6,8 +6,8 @@
           @mousedownOnIcon="mousedownOnIcon({lmId: lm.id, panelIdx: 0})"
           v-for="lm in landmarks"
           class="landmark-unit"
-          :tooltipText="lm.name"
           :active="lm.active"
+          :tooltipText="lm.temporary ? null : lm.name"
           :color="lm.color"
           :zOffset="calcZOffset(0, lm)"
           :style="calcTransformStyle(0, lm)"
@@ -17,10 +17,10 @@
       <div class="landmark-cell">
         <LandmarkComponent
           @mousedownOnIcon="mousedownOnIcon({lmId: lm.id, panelIdx: 1})"
-          :active="lm.active"
           :zOffset="calcZOffset(1, lm)"
           class="landmark-unit"
-          :tooltipText="lm.name"
+          :active="lm.active"
+          :tooltipText="lm.temporary ? null : lm.name"
           :color="lm.color"
           :style="calcTransformStyle(1, lm)"
           v-for="lm in landmarks"
@@ -32,9 +32,9 @@
       <div class="landmark-cell">
         <LandmarkComponent
           @mousedownOnIcon="mousedownOnIcon({lmId: lm.id, panelIdx: 2})"
-          :active="lm.active"
           :zOffset="calcZOffset(2, lm)"
-          :tooltipText="lm.name"
+          :active="lm.active"
+          :tooltipText="lm.temporary ? null : lm.name"
           :color="lm.color"
           class="landmark-unit"
           :style="calcTransformStyle(2, lm)"

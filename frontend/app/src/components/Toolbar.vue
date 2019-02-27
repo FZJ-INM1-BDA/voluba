@@ -83,21 +83,31 @@
     <div
       v-if="showIcons"
       class="horizontalContainer flex-items">
-      <div
-        class="btn-group">
+      <div class="btn-group">
+
         <div
           id="addLm"
           @click="addLandmark"
           v-b-tooltip.right.hover="'Toggle add landmark mode'"
-          class="addBtn pointer-events rounded-circle btn btn-sm btn-success"
-          >
+          class="addBtn pointer-events rounded-circle btn btn-sm btn-success">
           <font-awesome-icon icon="plus" />
+        </div>
+
+        <div
+          class="btn btn-sm btn-secondary additionalAddLmBtn"
+          v-if="addLandmarkMode">
+          &nbsp;
+        </div>
+        <div
+          @click="toggleAddLmMode"
+          class="btn btn-sm btn-secondary pointer-events "
+          v-if="addLandmarkMode">
+          {{ addLmMode }}
         </div>
         <div
           @click="$store.commit('setLandmarkMode', {mode : false})"
           v-if="addLandmarkMode"
-          id="cancelAddLm"
-          class="pointer-events btn btn-sm btn-danger">
+          class=" pointer-events btn btn-sm btn-danger">
           cancel
         </div>
       </div>
@@ -169,7 +179,8 @@ export default {
       showLayerControl: false,
       showSaveExportControl: false,
       showIcons: false,
-      showHistory: false
+      showHistory: false,
+      addLmMode: 'reference'
     }
   },
   computed: {
@@ -212,6 +223,12 @@ export default {
     ...mapActions({
       'landmarkControlVisibilityChanged': 'landmarkControlVisibilityChanged'
     }),
+    toggleAddLmMode: function () {
+      this.addLmMode = this.addLmMode === 'reference'
+        ? 'incoming'
+        : 'reference'
+      this.$store.commit('setLandmarkMode', { mode: this.addLmMode })
+    },
     calculateXform: function () {
       if (!this.ableToComputeTransformationMatrix) {
         return
@@ -220,7 +237,7 @@ export default {
     },
     addLandmark: function () {
       if (this.mode === 'overlay') {
-        this.$store.dispatch('toggleLandmarkMode')
+        this.$store.commit('setLandmarkMode', { mode : this.addLandmarkMode === false ? this.addLmMode : false })
       } else {
         /**
          * classic mode
@@ -246,13 +263,12 @@ export default {
 {
   z-index: 1;
 }
-#cancelAddLm
+
+.additionalAddLmBtn.btn.btn-sm
 {
-  z-index: 0;
-  margin-left: -2.5em;
-  padding-left: 2em;
-  padding-right: 0.8em;
+  margin-left:-2.5em;
 }
+
 .pointer-events
 {
   pointer-events: all;

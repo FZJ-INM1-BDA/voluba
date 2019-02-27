@@ -69,7 +69,7 @@ export default {
     },
     name: {
       get: function () {
-        return this.landmark && this.landmark.name
+        return this.landmark && typeof this.landmark.name !== 'undefined' && this.landmark.name !== null
           ? this.landmark.name
           : `Untitled`
       },

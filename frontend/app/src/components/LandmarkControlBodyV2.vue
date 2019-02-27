@@ -41,6 +41,69 @@
     <!-- TODO: sanitize to prevent XSS -->
     <!-- primary landmarks -->
     <div class="body bg-light">
+
+      <!-- check del all container -->
+      <div class="mb-3">
+
+        <!-- reference landmarks -->
+        <div  
+          :class="referenceLandmarks.length > 0 ? '' : 'invisible'"
+          class="checkDelAllContainer">
+          <div class="input-group input-group-sm">
+            <div class="input-group-prepend">
+              <div
+                @click="setLmsActive({ volume: 'reference', active: !allRefLmChecked })"
+                class="onhoverCursorDefault input-group-text">
+                <input
+                  :checked="allRefLmChecked"
+                  type="checkbox">
+                All
+              </div>
+            </div>
+            <div class="input-group-append">
+              <div
+                @click="removeAllLm({ volume: 'reference' })"
+                class="btn btn-sm btn-danger">
+                <font-awesome-icon icon="trash-alt"></font-awesome-icon>
+                All
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- incoming landmarks -->
+        <div
+          :class="incomingLandmarks.length > 0 ? '' : 'invisible'"
+          class="checkDelAllContainer ml-3">
+          <div class="input-group input-group-sm">
+            <div class="input-group-prepend">
+              <div
+                @click="removeAllLmp"
+                class="btn btn-sm btn-danger">
+                <font-awesome-icon icon="unlink"></font-awesome-icon>
+                All
+              </div>
+              <div
+                @click="setLmsActive({ volume: 'incoming', active: !allIncLmChecked })"
+                class="onhoverCursorDefault input-group-text">
+                <input
+                  :checked="allIncLmChecked"
+                  type="checkbox">
+                All
+              </div>
+            </div>
+            <div class="input-group-append">
+              <div
+                @click="removeAllLm({ volume: 'incoming' })"
+                class="btn btn-sm btn-danger">
+                <font-awesome-icon icon="trash-alt"></font-awesome-icon>
+                All
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <LandmarkRowV2
         class="mb-1 landmark-row"
         @changeName="changeLandmarkName({...$event, id: lm.id, volume: _step2OverlayFocus})"
@@ -180,11 +243,11 @@ export default {
       toggleLmActive: 'toggleLmActive',
       removeLm: 'removeLm',
       gotoLm: 'gotoLm',
-      changeLandmarkName: 'changeLandmarkName'
+      changeLandmarkName: 'changeLandmarkName',
+      removeAllLmp: 'removeAllLmp',
+      removeAllLm: 'removeAllLm',
+      setLmsActive: 'setLmsActive'
     }),
-    getEditLandmarkPopoverConfig: function (lm) {
-      return EditLandmarkComponent
-    },
     toggleLmIcons: function (id) {
       const foundId = this.lmIconOpenSet.find(i => i === id)
       if (foundId) {
@@ -210,7 +273,9 @@ export default {
     ...mapState({
       referenceLandmarks: 'referenceLandmarks',
       incomingLandmarks: 'incomingLandmarks',
-      landmarkPairs: 'landmarkPairs'
+      landmarkPairs: 'landmarkPairs',
+      allRefLmChecked: state => state.referenceLandmarks.every(lm => lm.active),
+      allIncLmChecked: state => state.incomingLandmarks.every(lm => lm.active)
     }),
     unpairedIncLm: function () {
       return this.incomingLandmarks.filter(incLm => {
@@ -336,6 +401,16 @@ export default {
 .readmore-icon:hover >*
 {
   opacity: 1.0;
+}
+
+.checkDelAllContainer
+{
+  display: inline-block;
+}
+
+.onhoverCursorDefault:hover
+{
+  cursor: default;
 }
 
 </style>

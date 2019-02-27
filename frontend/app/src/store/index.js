@@ -352,6 +352,18 @@ const store = new Vuex.Store({
       ))
       commit('setLandmarkPairs', { landmarkPairs })
     },
+    removeAllLm: function ({ commit, dispatch }, { volume }) {
+      if (volume === 'reference') {
+        commit('setReferenceLandmarks', { referenceLandmarks: [] })
+      }
+      if (volume === 'incoming') {
+        commit('setIncomingLandmarks', { incomingLandmarks: [] })
+      }
+      dispatch('removeAllLmp')
+    },
+    removeAllLmp: function ({ commit }) {
+      commit('setLandmarkPairs', { landmarkPairs: [] })
+    },
     removeLm: function ({commit, state}, {volume, id}) {
       let lmPair = {}
       if (volume === 'reference') {
@@ -371,6 +383,29 @@ const store = new Vuex.Store({
           (lmPair.incId && lm.incId === lmPair.incId)
         ))
       commit('setLandmarkPairs', { landmarkPairs })
+    },
+    setLmsActive: function ({ commit, state }, { volume, active }) {
+      if (volume === 'reference') {
+        commit('setReferenceLandmarks', 
+          { referenceLandmarks : state.referenceLandmarks.map(lm => {
+            return {
+              ...lm,
+              active
+            }
+          }) 
+        })
+      }
+      if (volume === 'incoming') {
+        commit('setIncomingLandmarks', 
+          { incomingLandmarks : state.incomingLandmarks.map(lm => {
+            return {
+              ...lm,
+              active
+            }
+          }) 
+        })
+
+      }
     },
     toggleLmActive: function ({commit, state}, { volume, id }) {
       if (volume === 'reference') {
@@ -392,15 +427,26 @@ const store = new Vuex.Store({
         commit('setIncomingLandmarks', { incomingLandmarks })
       }
     },
-    pushUndo: function ({ commit, state }, { name, desc }) {
+    pushUndo: function ({ commit, state }, { name, desc, collapse }) {
+      /**
+       * items with the same collapseId will not generate a new undo stack 
+       */
+      if (collapse && state.undoStack.length > 0 && state.undoStack.slice(-1)[0].collapse === collapse)
+        return
       const stateSnapshot = getStateSnapshot(state)
       const undoItem = {
         id: Date.now(),
         name,
         desc,
+        collapse,
         state: stateSnapshot
       }
-      const undoStack = state.undoStack.concat(undoItem)
+      /**
+       * older undo items, remove collapseid. when new item is added on top, they should have no collapsability
+       */
+      const undoStack = state.undoStack
+        .map(({ collapse, ...rest }) => rest)
+        .concat(undoItem)
       commit('setUndoStack', { undoStack })
       commit('setRedoStack', { redoStack: [] })
     },
@@ -411,21 +457,20 @@ const store = new Vuex.Store({
          */
         return
       }
-      const item = state.undoStack.slice(-1)[0]
+      const {id, state: _state, ...rest} = state.undoStack.slice(-1)[0]
 
       const stateSnapshot = getStateSnapshot(state)
 
       const newRedoItem = {
         id: Date.now(),
-        name: item.name,
-        desc: item.desc,
-        state: stateSnapshot
+        state: stateSnapshot,
+        ...rest
       }
 
       const redoStack = state.redoStack.concat(newRedoItem)
       const undoStack = state.undoStack.slice(0, -1)
 
-      const { incTransformMatrix } = item.state
+      const { incTransformMatrix } = _state
 
       if ( incTransformMatrix ) {
         commit('setIncTransformMatrix', { matrix: incTransformMatrix })
@@ -439,21 +484,20 @@ const store = new Vuex.Store({
         return
       }
 
-      const item = state.redoStack.slice(-1)[0]
+      const {id, state: _state, ...rest} = state.redoStack.slice(-1)[0]
 
       const stateSnapshot = getStateSnapshot(state)
 
       const newUndoItem = {
         id: Date.now(),
-        name: item.name,
-        desc: item.desc,
-        state: stateSnapshot
+        state: stateSnapshot,
+        ...rest
       }
 
       const undoStack = state.undoStack.concat(newUndoItem)
       const redoStack = state.redoStack.slice(0, -1)
 
-      const { incTransformMatrix } = item.state
+      const { incTransformMatrix } = _state
 
       if ( incTransformMatrix ) {
         commit('setIncTransformMatrix', { matrix: incTransformMatrix })
@@ -520,10 +564,6 @@ const store = new Vuex.Store({
           console.log(error)
           // TODO: handle error!
         })
-    },
-    toggleLandmarkMode ({commit, state}) {
-      const mode = !state.addLandmarkMode
-      commit('setLandmarkMode', { mode })
     },
     landmarkControlVisibilityChanged ({ commit }, { visible }) {
       commit('setLandmarkControlVisibility', { visible })
@@ -704,7 +744,7 @@ const store = new Vuex.Store({
       commit('changeLandmarkRMSE', RMSE)
     },
     addLandmark ({commit, state}, {landmark = {}}) {
-      if (state._step2OverlayFocus === 'reference') {
+      if (state.addLandmarkMode === 'reference') {
         const refId = generateId(state.referenceLandmarks).toString()
         const newReferenceLandmark = {
           id: refId,
@@ -719,7 +759,7 @@ const store = new Vuex.Store({
         commit('setReferenceLandmarks', {
           referenceLandmarks: state.referenceLandmarks.concat(newReferenceLandmark)
         })
-      } else if (state._step2OverlayFocus === 'incoming') {
+      } else if (state.addLandmarkMode === 'incoming') {
         /**
          * currently, only way addLandmark action is triggered is in overlay mode
          * as a result, we need to calculate the actual coord, from primary nehuba navigation to inc vol space
@@ -837,7 +877,8 @@ const store = new Vuex.Store({
             }
             : lm)
         })
-      } else if (volume === 'incoming') {
+      }
+      if (volume === 'incoming') {
         commit('setIncomingLandmarks', {
           incomingLandmarks: state.incomingLandmarks.map(lm => lm.id === id
             ? {
@@ -1103,8 +1144,13 @@ const store = new Vuex.Store({
       const xformMat = mat4.fromRotation(mat4.create(), angle, rotQuat)
       commit('multiplyIncTransmMatrix', xformMat)
     },
-    startFromScratch ({dispatch}) {
-      dispatch('removeLandmarkPairs')
+    startFromScratch ({dispatch, commit}) {
+      dispatch('removeAllLm', { volume: 'reference' })
+      dispatch('removeAllLm', { volume: 'incoming' })
+      dispatch('removeAllLmp')
+      dispatch('selectIncomingVolumeWithId', null)
+      commit('setUndoStack', { undoStack: [] })
+      commit('setRedoStack', { redoStack: [] })
     }
   }
 })
