@@ -27,7 +27,13 @@ app.use(session({
 const authStrategies = require('./strategies')
 
 const startServer = async (app) => {
-  await authStrategies(app)
+  try{
+    await authStrategies(app)
+  } catch (e) {
+    console.log(`error during authStrategy`, e)
+    throw e
+  }
+  
   const publicPath = path.join(__dirname, '..',  'public')
   app.use(express.static(publicPath))
   app.listen(PORT, () => console.log(`server listening on port ${PORT}`))
