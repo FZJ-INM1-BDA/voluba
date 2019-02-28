@@ -60,8 +60,11 @@
         <div
           @click="clickUndo(undo)"
           :key="undo.id"
-          v-for="undo in undoStack"
+          v-for="(undo, idx) in undoStack"
           class="alert alert-primary mb-0">
+          <small v-if="idx === undoStack.length - 1" class="text-muted">
+            current:
+          </small>
           {{ undo.name }}
         </div>
       </div>
