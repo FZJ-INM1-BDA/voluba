@@ -28,6 +28,7 @@
       @mousedownOnIcon="dragLandmark__handleMousedownOnIcon({...$event, volume: 'reference'})"
       ref="lmOverlay"
       v-if="appendNehubaFlag && showReferenceLandmarkOverlay"
+      :perspectiveOrientation="compoundPerspectiveOrientation"
       :dataToViewport="dataToViewport"
       :landmarks="referenceLandmarks"
       class="landmarks-overlay" />
@@ -103,6 +104,7 @@ export default {
       viewerNavigationPosition: [0, 0, 0],
       viewerMousePosition: [0, 0, 0],
       viewerSliceOrientation: [0, 0, 0, 1],
+      viewerPerspectiveOrientation: [0, 0, 0, 1],
 
       /**
        * temporary. need to retrieve config separately
@@ -451,7 +453,7 @@ export default {
         : 'mouseOutIncomingLayer')
     },
     postNehubaInit: function () {
-      
+
       /**
        * if an incoming volume has already been selected, add the user layer
        */
@@ -498,6 +500,19 @@ export default {
               ? [0, 0, 0, 1]
               : Array.from(fa)
             this.viewerSliceOrientation = array
+          })
+      )
+
+      /**
+       * viewer perspective orientation
+       */
+      this.$options.nonReactiveData.subscriptions.push(
+        this.$options.nehubaBase.nehubaBase__nehubaViewer.navigationState.perspectiveOrientation
+          .subscribe(fa => {
+            const array = fa === null
+              ? [0, 0, 0, 1]
+              : Array.from(fa)
+            this.viewerPerspectiveOrientation = array
           })
       )
 
@@ -574,6 +589,7 @@ export default {
   computed: {
     ...mapState({
       appendNehubaFlag: 'appendNehubaFlag',
+      incRotQuat: 'incRotQuat',
       translationByDragEnabled: state => !state.incVolTranslationLock,
       rotationByDragEnabled: state => !state.incVolRotationLock,
       addLandmarkMode: 'addLandmarkMode',
@@ -586,6 +602,14 @@ export default {
       incVolRotationLock: 'incVolRotationLock',
       flippedState: 'flippedState'
     }),
+    compoundPerspectiveOrientation: function () {
+      if (!this.viewerPerspectiveOrientation)
+        return null
+      const { quat } = window.export_nehuba
+      const q = quat.fromValues(...this.incRotQuat)
+      quat.mul(q, q, this.viewerPerspectiveOrientation)
+      return Array.from(q)
+    },
     _showRefVol: function () {
       return true || !this.showDoubleOverlay || !this.landmarkControlVisible || this._step2OverlayFocus === 'reference'
     },

@@ -132,6 +132,11 @@ const store = new Vuex.Store({
     incomingTemplate: null,
     incomingColor: [252, 200, 0, 0.5],
     incomingVolumeSelected: false,
+
+    /**
+     * read only, depend on state.incTransformMatrix
+     */
+    incRotQuat: [0, 0, 0, 1],
     incTransformMatrix: [
       1.0,  0,    0,    0,
       0,    1.0,  0,    0,
@@ -305,19 +310,27 @@ const store = new Vuex.Store({
     },
 
     setIncTransformMatrix (state, { matrix}) {
-
+      const { quat, mat4 } = window.export_nehuba
+      const m = mat4.fromValues(...matrix)
+      const q = mat4.getRotation(quat.create(), m)
+      quat.invert(q, q)
+      state.incRotQuat = Array.from(q)
       state.incTransformMatrix = matrix
     },
     multiplyIncTransmMatrix (state, matrix) {
       // catch when matrix is null (happens occationally?)
       if (!matrix)
         return
-      const { mat4 } = window.export_nehuba
+      const { mat4, quat } = window.export_nehuba
       const incM = mat4.fromValues(...state.incTransformMatrix)
       const mulM = mat4.fromValues(...matrix)
       mat4.mul(incM, incM, mulM)
       const det = mat4.determinant(incM)
-      
+
+      const q = mat4.getRotation(quat.create(), incM)
+      quat.invert(q, q)
+
+      state.incRotQuat = Array.from(q)
       state.incTransformMatrix = Array.from(incM)
     },
     setRefLandmark (state, { id, lm: newLm }) {
