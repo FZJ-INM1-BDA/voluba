@@ -57,6 +57,9 @@ const appendNehuba = () => new Promise((resolve, reject) => {
 const store = new Vuex.Store({
   state: {
     user: null,
+    pairLandmarkStartDragging: false,
+
+    flippedState: [1, 1, 1],
 
     undoStack: [],
     redoStack: [],
@@ -150,6 +153,12 @@ const store = new Vuex.Store({
       /**
        * TODO, UI feedback on error
        */
+    },
+    setFlippedState (state, { flippedState }) {
+      state.flippedState = flippedState
+    },
+    setPairLandmarkStartDragging (state, { pairLandmarkStartDragging }){
+      state.pairLandmarkStartDragging = pairLandmarkStartDragging
     },
     setIncVolLoc (state, { incVolTranslationLock, incVolRotationLock }) {
       state.incVolRotationLock = incVolRotationLock
@@ -658,16 +667,24 @@ const store = new Vuex.Store({
        * required for subscribe action
        */
     },
-    flipAxis ({ commit }, { axis }) {
+    flipAxis ({ commit, state }, { axis }) {
       const { mat4 } = window.export_nehuba
+      const idx = axis === 0
+        ? 0
+        : axis === 1
+          ? 5
+          : axis === 2
+            ? 10
+            : -1
+
+      if (idx < 0)
+        return
+      
+      commit('setFlippedState', {
+        flippedState: state.flippedState.map((v, id) => id === axis ? v * -1 : v)
+      })
       const mulM = mat4.create()
-      mulM[
-        axis === 0
-          ? 0
-          : axis === 1
-            ? 5
-            : 10
-      ] = -1
+      mulM[idx] = -1
       commit('multiplyIncTransmMatrix', Array.from(mulM))
     },
     selectReferenceVolumeWithId ({commit}, id) {
@@ -1105,7 +1122,7 @@ const store = new Vuex.Store({
       const matrix = Array.from(xformMat)
       commit('setIncTransformMatrix', { matrix })
     },
-    translIncBy ({commit}, {axis, value}) {
+    translIncBy ({commit, state}, {axis, value}) {
       const idx = axis === 'x'
         ? 0
         : axis === 'y'
@@ -1128,8 +1145,8 @@ const store = new Vuex.Store({
         translVec[1] = value[1] * 1e6
         translVec[2] = value[2] * 1e6
       }
+      
       const translM = mat4.fromTranslation(mat4.create(), translVec)
-
       commit('multiplyIncTransmMatrix', Array.from(translM))
     },
     rotIncBy ({commit}, { quaternion }) {

@@ -104,6 +104,7 @@
         </div>
       </div>
 
+      <!-- all ref landmarks -->
       <LandmarkRowV2
         class="mb-1 landmark-row"
         @changeName="changeLandmarkName({...$event, id: lm.id, volume: _step2OverlayFocus})"

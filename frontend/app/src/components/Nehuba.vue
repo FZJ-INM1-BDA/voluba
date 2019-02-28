@@ -177,9 +177,10 @@ export default {
       this.$options.nonReactiveData.ngUserLayer.layer.transform.transform = matrix
       this.$options.nonReactiveData.ngUserLayer.layer.transform.changed.dispatch()
     },
+    /**
+     * may becoming obsolete
+     */
     incomingVolumeSelected: function (bool) {
-      this.$options.nonReactiveData.managedLayers.forEach(layer => layer.layer.annotationColor.restoreState(bool ? annotationColorBlur : annotationColorFocus))
-      this.$options.nonReactiveData.ngUserLayer.layer.annotationColor.restoreState(bool ? annotationColorFocus : annotationColorBlur)
       this.$store.dispatch('highlightIncomingVolume', bool)
     },
     incomingColor: function (rgba) {
@@ -382,13 +383,27 @@ export default {
            */
           const scaleOnMousedown = mat4.getScaling(vec3.create(), xformOnMousedown)
           vec3.divide(pos, pos, scaleOnMousedown)
-
+          
           /**
            * account for the internal rotation of inc volume
            */
           const incRot = mat4.getRotation(quat.create(), mat4.fromValues(...this.incTransformMatrix))
+          /**
+           * after flipping, incRot may be not normalized.
+           */
+          quat.normalize(incRot, incRot)
           quat.invert(incRot, incRot)
           vec3.transformQuat(pos, pos, incRot)
+
+          /**
+           * account for any flipping
+           */
+          if (this.flippedState.every(v => v < 0)) {
+            vec3.mul(pos, pos, vec3.fromValues(1, 1, -1))
+          } else if (this.flippedState.reduce((acc, factor) => acc * factor, 1) < 0) {
+            const flipVec3 = vec3.fromValues(...this.flippedState)
+            vec3.mul(pos, pos, flipVec3)
+          }
           
           this.$store.dispatch('translIncBy', {
             axis: 'xyz',
@@ -436,6 +451,7 @@ export default {
         : 'mouseOutIncomingLayer')
     },
     postNehubaInit: function () {
+      
       /**
        * if an incoming volume has already been selected, add the user layer
        */
@@ -541,7 +557,7 @@ export default {
       const viewer = this.$options.nehubaBase.nehubaBase__nehubaViewer.ngviewer
       const name = `userlayer-0`
       const newLayer = {
-        annotationColor: '#CCCCCC',
+        annotationColor: annotationColorFocus,
         source: uri,
         opacity: this.incomingColor[3],
         shader: getShader(this.incomingColor)
@@ -567,7 +583,8 @@ export default {
       incTransformMatrix: 'incTransformMatrix',
       selectedIncomingVolumeId: 'selectedIncomingVolumeId',
       incVolTranslationLock: 'incVolTranslationLock',
-      incVolRotationLock: 'incVolRotationLock'
+      incVolRotationLock: 'incVolRotationLock',
+      flippedState: 'flippedState'
     }),
     _showRefVol: function () {
       return true || !this.showDoubleOverlay || !this.landmarkControlVisible || this._step2OverlayFocus === 'reference'

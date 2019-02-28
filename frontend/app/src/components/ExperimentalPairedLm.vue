@@ -45,9 +45,12 @@
           class="input-group-text opacity-transition">
           <font-awesome-icon class="icon" icon="map-marker-alt"></font-awesome-icon>
         </span>
+        
       </div>
     </template>
 
+
+    <!-- append -->
     <template slot="append">
       <div class="input-group-append">
 
@@ -79,11 +82,15 @@
     @dragleave="dragLeave"
     :style="dragOverFlag ? {backgroundColor: 'rgba(0, 100, 0, 0.2)'} : {}"
     class="empty-container" v-else>
-
+    <transition name="fade">
+      <span class="parent-name-container" v-if="pairLandmarkStartDragging">
+        {{ parentLandmark.name }}
+      </span>
+    </transition>
   </div>
 </template>
 <script>
-import { mapActions } from 'vuex'
+import { mapActions, mapState } from 'vuex'
 import { INACTIVE_ROW_OPACITY, INCOMING_COLOR } from '@/constants'
 import LandmarkRowV2 from '@/components/LandmarkRowV2'
 import EditLandmarkComponent from '@/components/EditLandmark'
@@ -108,16 +115,22 @@ export default {
     dragStart: function (ev) {
       if (!this.dragFlag)
         ev.preventDefault()
+      this.$store.commit('setPairLandmarkStartDragging', {
+        pairLandmarkStartDragging: true
+      })
       this.dragFlag = false
       this.dragInProgress = true
       ev.dataTransfer.setData('text/plain', this.landmark.id)
     },
     dragEnd: function (ev) {
       this.dragInProgress = false
+      this.$store.commit('setPairLandmarkStartDragging', {
+        pairLandmarkStartDragging: false
+      })
     },
     dragDrop: function (ev) {
       const incId = ev.dataTransfer.getData('text')
-      this.dragOverFlag = false      
+      this.dragOverFlag = false
       if (!incId || !this.parentLandmark)
         return
 
@@ -155,6 +168,9 @@ export default {
     }
   },
   computed: {
+    ...mapState({
+      pairLandmarkStartDragging: 'pairLandmarkStartDragging'
+    }),
     inactiveOpacity: function () {
       return INACTIVE_ROW_OPACITY
     },
@@ -187,6 +203,12 @@ export default {
   width: 100%;
   height: 100%;
   transition: linear all 0.2s;
+  white-space: nowrap;
+  overflow:hidden;
+  color: rgba(0, 0, 0, 0.5);
+  font-size: 80%;
+  display: flex;
+  align-items: center;
 }
 
 .readmore-icon,
@@ -213,6 +235,19 @@ export default {
 .drag-handle:hover
 {
   cursor:move;
+}
+
+.parent-name-container
+{
+  pointer-events: none;
+  margin-left: 1em;
+}
+
+.landmark-name-container
+{
+  width: 0em;
+  overflow: visible;
+  white-space: nowrap;
 }
 
 </style>
