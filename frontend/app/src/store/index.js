@@ -6,9 +6,33 @@ import axios from 'axios'
 
 Vue.use(Vuex)
 
-const getStateSnapshot = ({ incTransformMatrix }) => {
+const getStateSnapshot = ({ incTransformMatrix, referenceLandmarks, incomingLandmarks, landmarkPairs }) => {
   return {
-    incTransformMatrix: Array.from(incTransformMatrix)
+    incTransformMatrix: Array.from(incTransformMatrix),
+    referenceLandmarks,
+    incomingLandmarks,
+    landmarkPairs
+  }
+}
+
+const restoreState = ({commit}, {incTransformMatrix, referenceLandmarks, incomingLandmarks, landmarkPairs}) => {
+  if ( incTransformMatrix ) {
+    commit('setIncTransformMatrix', { matrix: incTransformMatrix })
+  }
+  if ( referenceLandmarks ) {
+    commit('setReferenceLandmarks', {
+      referenceLandmarks
+    })
+  }
+  if ( incomingLandmarks ) {
+    commit('setIncomingLandmarks', {
+      incomingLandmarks
+    })
+  }
+  if ( landmarkPairs ) {
+    commit('setLandmarkPairs', {
+      landmarkPairs
+    })
   }
 }
 
@@ -353,7 +377,10 @@ const store = new Vuex.Store({
       if (payload.coord)
         dispatch('setPrimaryNehubaNavigation', payload)
     },
-    removeLmp: function ({commit, state}, { id, incId, refId }) {
+    removeLmp: function ({commit, dispatch, state}, { id, incId, refId }) {
+      dispatch('pushUndo', {
+        name: `unlink landmark pair`
+      })
       const landmarkPairs = state.landmarkPairs.filter(lmp => !(
         id && lmp.id === id ||
         incId && lmp.incId === incId ||
@@ -362,19 +389,28 @@ const store = new Vuex.Store({
       commit('setLandmarkPairs', { landmarkPairs })
     },
     removeAllLm: function ({ commit, dispatch }, { volume }) {
+      dispatch('pushUndo', {
+        name: `remove all ${volume} landmark`
+      })
       if (volume === 'reference') {
         commit('setReferenceLandmarks', { referenceLandmarks: [] })
       }
       if (volume === 'incoming') {
         commit('setIncomingLandmarks', { incomingLandmarks: [] })
       }
-      dispatch('removeAllLmp')
-    },
-    removeAllLmp: function ({ commit }) {
       commit('setLandmarkPairs', { landmarkPairs: [] })
     },
-    removeLm: function ({commit, state}, {volume, id}) {
+    removeAllLmp: function ({ dispatch, commit }) {
+      dispatch('pushUndo', {
+        name: 'unlink all landmark pairs'
+      })
+      commit('setLandmarkPairs', { landmarkPairs: [] })
+    },
+    removeLm: function ({commit, dispatch, state}, {volume, id}) {
       let lmPair = {}
+      dispatch('pushUndo', {
+        name: `remove ${volume} landmark`
+      })
       if (volume === 'reference') {
         const referenceLandmarks = state.referenceLandmarks.filter(lm => lm.id !== id)
         commit('setReferenceLandmarks', { referenceLandmarks })
@@ -440,6 +476,7 @@ const store = new Vuex.Store({
       /**
        * items with the same collapseId will not generate a new undo stack 
        */
+
       if (collapse && state.undoStack.length > 0 && state.undoStack.slice(-1)[0].collapse === collapse)
         return
       const stateSnapshot = getStateSnapshot(state)
@@ -466,7 +503,13 @@ const store = new Vuex.Store({
          */
         return
       }
-      const {id, state: _state, ...rest} = state.undoStack.slice(-1)[0]
+
+      console.log('undo')
+
+      /**
+       * collapse state is not to be pushed onto the redo stack
+       */
+      const {id, state: _state, collapse, ...rest} = state.undoStack.slice(-1)[0]
 
       const stateSnapshot = getStateSnapshot(state)
 
@@ -479,12 +522,8 @@ const store = new Vuex.Store({
       const redoStack = state.redoStack.concat(newRedoItem)
       const undoStack = state.undoStack.slice(0, -1)
 
-      const { incTransformMatrix } = _state
-
-      if ( incTransformMatrix ) {
-        commit('setIncTransformMatrix', { matrix: incTransformMatrix })
-      }
-
+      restoreState({commit}, _state)
+      
       commit('setUndoStack', { undoStack })
       commit('setRedoStack', { redoStack })
     },
@@ -492,6 +531,8 @@ const store = new Vuex.Store({
       if (state.redoStack.length === 0) {
         return
       }
+
+      console.log('redo')
 
       const {id, state: _state, ...rest} = state.redoStack.slice(-1)[0]
 
@@ -506,11 +547,7 @@ const store = new Vuex.Store({
       const undoStack = state.undoStack.concat(newUndoItem)
       const redoStack = state.redoStack.slice(0, -1)
 
-      const { incTransformMatrix } = _state
-
-      if ( incTransformMatrix ) {
-        commit('setIncTransformMatrix', { matrix: incTransformMatrix })
-      }
+      restoreState({commit}, _state)
 
       commit('setUndoStack', { undoStack })
       commit('setRedoStack', { redoStack })
@@ -760,7 +797,10 @@ const store = new Vuex.Store({
       commit('changeLandmarkDeterminant', determinant)
       commit('changeLandmarkRMSE', RMSE)
     },
-    addLandmark ({commit, state}, {landmark = {}}) {
+    addLandmark ({commit, dispatch, state}, {landmark = {}}) {
+      dispatch('pushUndo', {
+        name: `add ${state.addLandmarkMode} landmark`
+      })
       if (state.addLandmarkMode === 'reference') {
         const refId = generateId(state.referenceLandmarks).toString()
         const newReferenceLandmark = {
@@ -802,6 +842,9 @@ const store = new Vuex.Store({
       }
     },
     addLandmarkPair ({ commit, state }) {
+      /**
+       * TODO deprecated. old 2 way split method
+       */
       const refId = generateId(state.referenceLandmarks).toString()
       const newReferenceLandmark = {
         id: refId,
@@ -884,7 +927,11 @@ const store = new Vuex.Store({
         })
       })
     },
-    changeLandmarkName ({commit, state}, {id, name, volume}) {
+    changeLandmarkName ({commit, dispatch, state}, {id, name, volume}) {
+      dispatch('pushUndo', {
+        name: `change ${volume} landmark name`,
+        collapse: `change ${volume} landmark name ${id}`
+      })
       if (volume === 'reference') {
         commit('setReferenceLandmarks', {
           referenceLandmarks: state.referenceLandmarks.map(lm => lm.id === id 
@@ -922,7 +969,7 @@ const store = new Vuex.Store({
      * temporary 
      */
     
-     loadOldJson ({ commit, state }, { json, config }) {
+     loadOldJson ({ commit, dispatch, state }, { json, config }) {
       const { fixCenterTranslation } = config
       const { vec3, mat4 } = window.export_nehuba
       const arrayMat4 = state.referenceTemplateTransform
@@ -939,6 +986,11 @@ const store = new Vuex.Store({
           return coord
         }
       }
+
+      dispatch('pushUndo', {
+        name: 'loaded old landmark json'
+      })
+      
       const referenceLandmarks = json.map(pair => {
         return {
           id: `${pair.name}_ref`,
@@ -1162,9 +1214,9 @@ const store = new Vuex.Store({
       commit('multiplyIncTransmMatrix', xformMat)
     },
     startFromScratch ({dispatch, commit}) {
-      dispatch('removeAllLm', { volume: 'reference' })
-      dispatch('removeAllLm', { volume: 'incoming' })
-      dispatch('removeAllLmp')
+      commit('setReferenceLandmarks', { referenceLandmarks: [] })
+      commit('setIncomingLandmarks', { incomingLandmarks: [] })
+      commit('setLandmarkPairs', { landmarkPairs: [] })
       dispatch('selectIncomingVolumeWithId', null)
       commit('setUndoStack', { undoStack: [] })
       commit('setRedoStack', { redoStack: [] })

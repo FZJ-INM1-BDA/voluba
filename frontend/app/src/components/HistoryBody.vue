@@ -44,10 +44,11 @@
           {{ moreRedo }}
         </div>
         <div
+          @click="clickRedo(redo)"
           :key="redo.id"
           v-for="redo in redoStack"
           class="alert alert-secondary mb-0">
-          redo: {{ redo.name }}
+          {{ redo.name }}
         </div>
       </div>
 
@@ -57,10 +58,11 @@
           {{ moreUndo }}
         </div>
         <div
+          @click="clickUndo(undo)"
           :key="undo.id"
           v-for="undo in undoStack"
           class="alert alert-primary mb-0">
-          undo: {{ undo.name }}
+          {{ undo.name }}
         </div>
       </div>
     </div>
@@ -73,7 +75,16 @@ export default {
     ...mapActions({
       undo: 'undo',
       redo: 'redo'
-    })
+    }),
+    clickUndo: function (undo) {
+      this.log(undo)
+    },
+    clickRedo: function (redo) {
+      this.log(redo)
+    },
+    log: function (item) {
+      console.log(item)
+    }
   },
   computed: {
     ...mapState({

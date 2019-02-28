@@ -9,6 +9,8 @@
         </span>
       </div>
       <input
+        @keydown="keydown"
+        ref="landmarkName"
         class="form-control from-control-sm"
         type="text"
         v-model="name">
@@ -59,6 +61,13 @@ export default {
     volume: {
       type: String,
       default: null
+    }
+  },
+  methods: {
+    keydown: function (event) {
+      if (event.key === 'Escape' || event.key === 'Enter' ) {
+        this.$refs.landmarkName.blur()
+      }
     }
   },
   computed: {

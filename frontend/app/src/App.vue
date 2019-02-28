@@ -130,13 +130,21 @@ export default {
   },
   methods: {
     keydown: function (event) {
+      /**
+       * stop/prevent is needed if user focus is on one of the popover text field
+       * otherwise changeLandmarkName undo stack does not get resolved properly. 
+       */
       const {key, ctrlKey} = event
       if (ctrlKey) {
         if (key === 'z') {
           this.$store.dispatch('undo')
+          event.stopPropagation()
+          event.preventDefault()
         }
         if (key === 'y') {
           this.$store.dispatch('redo')
+          event.stopPropagation()
+          event.preventDefault()
         }
       }
     },
