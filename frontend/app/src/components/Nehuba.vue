@@ -615,6 +615,7 @@ export default {
       const { quat } = window.export_nehuba
       const q = quat.fromValues(...this.incRotQuat)
       quat.mul(q, q, this.viewerPerspectiveOrientation)
+      quat.normalize(q, q)
       return Array.from(q)
     },
     _showRefVol: function () {

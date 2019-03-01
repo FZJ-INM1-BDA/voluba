@@ -98,8 +98,7 @@ export default {
     guidingLineD: function () {
       if (!this.mousePos)
         return null
-      const l = this.mousePos.reduce((acc, item) => acc + item ** 2, 0) ** 0.5
-      return `M60 60 l ${this.mousePos.map(v => v / l * 50).join(' ')}`
+      return `M60 60 l ${this.mousePos.map(v => v * 100).join(' ')}`
     },
   },
   methods: {
