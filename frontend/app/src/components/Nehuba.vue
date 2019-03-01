@@ -41,6 +41,12 @@
       :landmarks="incomingLandmarks"
       class="landmarks-overlay" />
     
+    <div ref="svgContainer"
+      class="perspective-controller">
+      <RotationWidgetComponent
+        :rotationQuat="compoundPerspectiveOrientation"/>
+    </div>
+    
     <div
       v-if="appendNehubaFlag"
       class="statusCardWrapper">
@@ -66,6 +72,7 @@ import NehubaBaseMixin from '@/mixins/NehubaBase'
 import DragLandmarkMixin from '@/mixins/DragLandmarkMixin'
 import NehubaLandmarksOverlay from '@/components/NehubaLandmarksOverlay'
 import NehubaStatusCard from '@/components/NehubaStatusCard'
+import RotationWidgetComponent from '@/components/RotationWidgetComponent'
 
 export default {
   mixins: [
@@ -603,7 +610,7 @@ export default {
       flippedState: 'flippedState'
     }),
     compoundPerspectiveOrientation: function () {
-      if (!this.viewerPerspectiveOrientation)
+      if (!this.viewerPerspectiveOrientation || !this.nehubaLoaded)
         return null
       const { quat } = window.export_nehuba
       const q = quat.fromValues(...this.incRotQuat)
@@ -737,7 +744,8 @@ export default {
   },
   components: {
     NehubaLandmarksOverlay,
-    NehubaStatusCard
+    NehubaStatusCard,
+    RotationWidgetComponent
   }
 }
 </script>
@@ -833,5 +841,14 @@ div.scale-bar-container
 .statusCardWrapper > *
 {
   flex: 0 0 0;
+}
+
+.perspective-controller
+{
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  margin: 1.5em;
+  z-index: 999;
 }
 </style>
