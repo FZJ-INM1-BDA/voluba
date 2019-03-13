@@ -37,45 +37,42 @@ const restoreState = ({commit}, {incTransformMatrix, referenceLandmarks, incomin
 }
 
 const appendNehuba = () => new Promise((resolve, reject) => {
+  if ('export_nehuba' in window) {
+    resolve()
+  } else {
+    
     /**
-     * debug
+     * TODO need to check browser compatibility
      */
-    // return reject('Your browser is not supported')
-    if ('export_nehuba' in window) {
-      resolve()
-    } else {
-      
+
+    const el = document.createElement('script')
+    el.src = 'main.bundle.js'
+    el.onload = () => {
+      console.log('loaded nehuba')
       /**
-       * TODO need to check browser compatibility
+       * patching nehuba/neuroglancer default behaviour of altering hash
        */
-
-      const el = document.createElement('script')
-      el.src = 'main.bundle.js'
-      el.onload = () => {
-        /**
-         * patching nehuba/neuroglancer default behaviour of altering hash
-         */
-        const { UrlHashBinding } = window['export_nehuba'].getNgPatchableObj()
-        UrlHashBinding.prototype.setUrlHash = () => {
-          // console.log('seturl hash')
-          // console.log('setting url hash')
-        }
-        UrlHashBinding.prototype.updateFromUrlHash = () => {
-          // console.log('update hash binding')
-        }
-        /* TODO find a more permanent fix to disable double click */
-        // LayerManager.prototype.invokeAction = (arg) => {
-        //   const region = this.regionsLabelIndexMap.get(this.mouseOverSegment)
-        //   if (arg === 'select' && region) {
-        //     this.regionSelectionEmitter.emit(region)
-        //   }
-        // }
-
-        resolve()
+      const { UrlHashBinding } = window['export_nehuba'].getNgPatchableObj()
+      UrlHashBinding.prototype.setUrlHash = () => {
+        // console.log('seturl hash')
+        // console.log('setting url hash')
       }
-      el.onerror = reject
-      document.head.appendChild(el)
+      UrlHashBinding.prototype.updateFromUrlHash = () => {
+        // console.log('update hash binding')
+      }
+      /* TODO find a more permanent fix to disable double click */
+      // LayerManager.prototype.invokeAction = (arg) => {
+      //   const region = this.regionsLabelIndexMap.get(this.mouseOverSegment)
+      //   if (arg === 'select' && region) {
+      //     this.regionSelectionEmitter.emit(region)
+      //   }
+      // }
+
+      resolve()
     }
+    el.onerror = reject
+    document.head.appendChild(el)
+  }
 })
 
 const store = new Vuex.Store({

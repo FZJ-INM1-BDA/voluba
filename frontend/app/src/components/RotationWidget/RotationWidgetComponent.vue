@@ -111,13 +111,12 @@ export default {
   data: function () {
     return {
       mousePos: null,
-      focusIdx: null,
-      nehubaAppended: false
+      focusIdx: null
     }
   },
   computed: {
     ...mapState({
-      appendNehubaPromise: 'appendNehubaPromise'
+      appendNehubaFlag: 'appendNehubaFlag'
     }),
     gradientRed: function () {
       const arr = this.circleRed.path
@@ -246,7 +245,7 @@ export default {
           : { opacity: 0.2 }
     },
     xformCoordFull: function ({ coord, index }) {
-      if (! this.nehubaAppended )
+      if (! this.appendNehubaFlag )
         return coord
       
       const { mat4, quat, vec3 } = window.export_nehuba
@@ -336,10 +335,6 @@ export default {
       this.mousePos = null
       document.removeEventListener('mousemove', this.mousemove, {capture: true})
     },
-  },
-  mounted() {
-    this.appendNehubaPromise
-      .then(() => this.nehubaAppended = true)
   }
 }
 </script>

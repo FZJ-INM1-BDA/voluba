@@ -41,7 +41,9 @@
       :landmarks="incomingLandmarks"
       class="landmarks-overlay" />
     
-    <div ref="svgContainer"
+    <div
+      v-if="appendNehubaFlag"
+      ref="svgContainer"
       class="perspective-controller">
       <RotationWidgetComponent
         :rotationQuat="compoundPerspectiveOrientation"/>
@@ -120,16 +122,6 @@ export default {
     }
   },
   mounted: function () {
-    this.nehubaBase__initNehuba()
-      .then(this.postNehubaInit)
-      .catch(e => {
-        /**
-         * TODO proper error catching and user feedback
-         */
-        console.error('e', e)
-        this.errorFlag = true
-        this.placeholderText = incompatibleBrowserText
-      })
 
     this.nehubaBase__navigationChanged = () => {
       if (this.$refs.lmOverlay)
@@ -159,6 +151,20 @@ export default {
     })
   },
   watch: {
+    appendNehubaFlag: function (flag) {
+      if (flag) {
+        this.nehubaBase__initNehuba()
+          .then(this.postNehubaInit)
+          .catch(e => {
+            /**
+             * TODO proper error catching and user feedback
+             */
+            console.error('e', e)
+            this.errorFlag = true
+            this.placeholderText = incompatibleBrowserText
+          })
+      }
+    },
     _showRefVol: function (bool) {
       const layer = this.$options.nehubaBase.nehubaBase__nehubaViewer.ngviewer.layerManager.managedLayers[0]
       layer.setVisible(bool)
