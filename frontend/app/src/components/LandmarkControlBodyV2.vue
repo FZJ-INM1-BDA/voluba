@@ -7,9 +7,6 @@
         <div>
           Edit landmarks
         </div>
-        <small>
-          {{ popoverTitle }}
-        </small>
       </h5>
     </div>
 
@@ -26,24 +23,36 @@
       </div>
     </div>
 
-    <!-- tabs -->
-    <div v-if="false" class="bg-light">
-      <b-tabs>
-        <b-tab @click="toggleLandmark('reference')" :active="_step2OverlayFocus === 'reference'" title="Reference">
-
-        </b-tab>
-        <b-tab @click="toggleLandmark('incoming')" :active="_step2OverlayFocus === 'incoming'" title="Incoming">
-
-        </b-tab>
-      </b-tabs>
-    </div>
-
     <!-- TODO: sanitize to prevent XSS -->
     <!-- primary landmarks -->
     <div class="body bg-light">
 
+      <!-- top label -->
+      <div class="lm-heading mb-3">
+        <!-- reference landmarks -->
+        <div class="checkDelAllContainer">
+          <div
+            @click="changeLandmarkMode({ mode : addLandmarkMode === 'reference' ? false : 'reference' })"
+            :class="addLandmarkMode === 'reference' ? 'btn-success' : 'btn-secondary'"
+            class="btn-sm btn rounded-circle">
+            <font-awesome-icon icon="plus"></font-awesome-icon>
+          </div>
+          Reference
+        </div>
+
+        <div class="checkDelAllContainer">
+          <div
+            @click="changeLandmarkMode({ mode : addLandmarkMode === 'incoming' ? false : 'incoming' })"
+            :class="addLandmarkMode === 'incoming' ? 'btn-success' : 'btn-secondary'"
+            class="btn-sm btn rounded-circle">
+            <font-awesome-icon icon="plus"></font-awesome-icon>
+          </div>
+          Incoming
+        </div>
+      </div>
+
       <!-- check del all container -->
-      <div class="mb-3">
+      <div class=" lm-heading mb-3">
 
         <!-- reference landmarks -->
         <div  
@@ -104,118 +113,108 @@
         </div>
       </div>
 
-      <!-- all ref landmarks -->
-      <LandmarkRowV2
-        class="mb-1 landmark-row"
-        @changeName="changeLandmarkName({...$event, id: lm.id, volume: _step2OverlayFocus})"
-        :key="lm.id"
-        :landmark="lm"
-        :id="'lmr-' + lm.id"
-        v-for="lm in primaryLandmarks">
+      <div class="lm-wrapper">
 
-        <!-- append icons -->
-        <template slot="append">
-          
-          <div
-            :style="lm.active ? {} : {opacity: inactiveRowOpacity}"
-            @mouseleave="mouseoverId=null"
-            class="input-group-append opacity-transition">
+        <!-- all ref landmarks -->
+        <div class="ref-lm-wrapper">
+          <LandmarkRowV2
+            class="mb-1 landmark-row"
+            @changeName="changeLandmarkName({...$event, id: lm.id, volume: _step2OverlayFocus})"
+            :key="lm.id"
+            :landmark="lm"
+            :id="'lmr-' + lm.id"
+            v-for="lm in primaryLandmarks">
 
-            <!-- see more icon -->
-            <div
-              tabindex="-1"
-              :id="'popover-' + lm.id"
-              class="input-group-text readmore-icon">
-              <font-awesome-icon icon="ellipsis-v"></font-awesome-icon>
-            </div>
+            <!-- append icons -->
+            <template slot="append">
+              
+              <div
+                :style="lm.active ? {} : {opacity: inactiveRowOpacity}"
+                @mouseleave="mouseoverId=null"
+                class="input-group-append opacity-transition">
 
-            <b-popover
-              triggers="click blur"
-              :target="'popover-' + lm.id">
-              <template slot="title">Edit Landmark</template>
-              <EditLandmarkComponent
-                volume="reference"
-                @removeLm="removeLm({ volume: _step2OverlayFocus, id: lm.id})"
-                @changeName="changeLandmarkName({ ...$event, id: lm.id, volume: _step2OverlayFocus })"
-                :landmark="lm"/>
-            </b-popover>
+                <!-- see more icon -->
+                <div
+                  tabindex="-1"
+                  :id="'popover-' + lm.id"
+                  class="input-group-text readmore-icon">
+                  <font-awesome-icon icon="ellipsis-v"></font-awesome-icon>
+                </div>
 
-          </div>
+                <b-popover
+                  triggers="click blur"
+                  :target="'popover-' + lm.id">
+                  <template slot="title">Edit Landmark</template>
+                  <EditLandmarkComponent
+                    volume="reference"
+                    @removeLm="removeLm({ volume: _step2OverlayFocus, id: lm.id})"
+                    @changeName="changeLandmarkName({ ...$event, id: lm.id, volume: _step2OverlayFocus })"
+                    :landmark="lm"/>
+                </b-popover>
 
-          <!-- experimental: paired landmark -->
-          <div class="experimental-container">
-            <div class="inner-container">
-              <ExperimentalPairedLm
-                :landmark="getPairedLm(lm)"
-                :parentLandmark="lm" />
+              </div>
 
-            </div>
-          </div>
-        </template>
+              <!-- experimental: paired landmark -->
+              <div class="experimental-container">
+                <div class="inner-container">
+                  <ExperimentalPairedLm
+                    :landmark="getPairedLm(lm)"
+                    :parentLandmark="lm" />
 
-        <!-- prepend icons -->
-        <template slot="prepend">
-          <div
-            class="input-group-prepend">
-            <div
-              @click="toggleLmActive({ volume: _step2OverlayFocus, id: lm.id })"
-              class="input-group-text">
-              <input
-                :checked="lm.active"
-                type="checkbox" />
-            </div>
-            <span
-              @click="gotoLm({ volume: _step2OverlayFocus, id: lm.id })"
-              :style="{...checkboxStyle, opacity: lm.active ? 1.0 : inactiveRowOpacity}"
-              v-b-tooltip.hover.left.nofade="lm.name"
-              class="input-group-text opacity-transition">
-              <font-awesome-icon class="icon" icon="map-marker-alt"></font-awesome-icon>
-            </span>
-          </div>
-        </template>
+                </div>
+              </div>
+            </template>
 
-      </LandmarkRowV2>
+            <!-- prepend icons -->
+            <template slot="prepend">
+              <div
+                class="input-group-prepend">
+                <div
+                  @click="toggleLmActive({ volume: _step2OverlayFocus, id: lm.id })"
+                  class="input-group-text">
+                  <input
+                    :checked="lm.active"
+                    type="checkbox" />
+                </div>
+                <span
+                  @click="gotoLm({ volume: _step2OverlayFocus, id: lm.id })"
+                  :style="{...checkboxStyle, opacity: lm.active ? 1.0 : inactiveRowOpacity}"
+                  v-b-tooltip.hover.left.nofade="lm.name"
+                  class="input-group-text opacity-transition">
+                  <font-awesome-icon class="icon" icon="map-marker-alt"></font-awesome-icon>
+                </span>
+              </div>
+            </template>
 
-      <!-- unpaired incoming landmarks -->
-      <landmark-row-v2 class="landmark-row empty">
+          </LandmarkRowV2>
+        </div>
 
-        <!-- append icons -->
-        <template slot="append">
-          
-          <div class="input-group-append opacity-transition invisible">
+        <!-- unpaired incoming landmarks -->
+        <div class="inc-lm-wrapper">
 
-            <!-- see more icon -->
-            <div class="input-group-text readmore-icon">
-              <font-awesome-icon icon="ellipsis-v"></font-awesome-icon>
-            </div>
-          </div>
+          <ExperimentalPairedLm 
+            :key="lm.id"
+            :landmark="lm"
+            v-for="lm in unpairedIncLm" />
+        </div>
+      </div>
 
-          <div class="experimental-container mt-4">
-            <div class="inner-container">
-              <ExperimentalPairedLm 
-                :key="lm.id"
-                :landmark="lm"
-                v-for="lm in unpairedIncLm" />
-            </div>
-          </div>
-        </template>
+    </div>
 
-        <!-- prepend icons -->
-        <template slot="prepend">
-          <div
-            class="input-group-prepend invisible">
-            <div
-              class="input-group-text">
-              <input
-                type="checkbox" />
-            </div>
-            <span
-              class="input-group-text opacity-transition">
-              <font-awesome-icon class="icon" icon="map-marker-alt"></font-awesome-icon>
-            </span>
-          </div>
-        </template>
-      </landmark-row-v2>
+    <!-- divider -->
+    <hr class="bg-light mb-0 mt-0">
+
+    <!-- calculate xform -->
+    <div class="body bg-light">
+      <div
+        @click="computeXform"
+        v-b-tooltip.right.hover="ableToComputeTransformationMatrix ? 'Compute and display transform based on landmarks.' : 'Need at least three (3) active landmarks to compute transformation.'"
+        :class="ableToComputeTransformationMatrix && !backendQueryInProgress ? '' : 'lmr-disabled'"
+        class="addBtn rounded-circle landmarks-control-toggle btn btn-sm btn-primary">
+        <font-awesome-icon
+          :class="backendQueryInProgress ? 'spinner' : ''"
+          :icon="backendQueryInProgress ? 'spinner' : 'calculator'" />
+      </div>
     </div>
   </div>
 </template>
@@ -247,7 +246,9 @@ export default {
       changeLandmarkName: 'changeLandmarkName',
       removeAllLmp: 'removeAllLmp',
       removeAllLm: 'removeAllLm',
-      setLmsActive: 'setLmsActive'
+      setLmsActive: 'setLmsActive',
+      changeLandmarkMode: 'changeLandmarkMode',
+      computeXform: 'computeXform'
     }),
     toggleLmIcons: function (id) {
       const foundId = this.lmIconOpenSet.find(i => i === id)
@@ -272,11 +273,14 @@ export default {
   },
   computed: {
     ...mapState({
+      addLandmarkMode: 'addLandmarkMode',
       referenceLandmarks: 'referenceLandmarks',
       incomingLandmarks: 'incomingLandmarks',
       landmarkPairs: 'landmarkPairs',
       allRefLmChecked: state => state.referenceLandmarks.every(lm => lm.active),
-      allIncLmChecked: state => state.incomingLandmarks.every(lm => lm.active)
+      allIncLmChecked: state => state.incomingLandmarks.every(lm => lm.active),
+      ableToComputeTransformationMatrix: state => state.landmarkPairs.length >= 3,
+      backendQueryInProgress: 'backendQueryInProgress',
     }),
     unpairedIncLm: function () {
       return this.incomingLandmarks.filter(incLm => {
@@ -360,21 +364,25 @@ export default {
     drop-shadow(-1px 0px rgba(0, 0, 0, 0.5));
 }
 
+.landmark-row.input-group
+{
+  flex-wrap: nowrap;
+}
+
 .landmark-row.empty
 {
-  display: flex;
+  display: inline-block;
 }
 
 .experimental-container
 {
-  width: 0;
   overflow: visible;
   margin-left: 0.4em;
 }
 
 .experimental-container > .inner-container
 {
-  width: 10em;
+  min-width: 7em;
   height: 100%;
 }
 
@@ -414,4 +422,29 @@ export default {
   cursor: default;
 }
 
+.lm-heading
+{
+  display: flex;
+  justify-content: space-between;
+}
+
+.lm-wrapper
+{
+  display:flex;
+}
+
+.lm-wrapper > .ref-lm-wrapper
+{
+  flex: 1 1 auto;
+}
+
+.lm-wrapper > .inc-lm-wrapper
+{
+  flex: 0 0 auto;
+}
+
+.lmr-disabled
+{
+  opacity: 0.5;
+}
 </style>

@@ -72,7 +72,7 @@ import NehubaBaseMixin from '@/mixins/NehubaBase'
 import DragLandmarkMixin from '@/mixins/DragLandmarkMixin'
 import NehubaLandmarksOverlay from '@/components/NehubaLandmarksOverlay'
 import NehubaStatusCard from '@/components/NehubaStatusCard'
-import RotationWidgetComponent from '@/components/RotationWidgetComponent'
+import RotationWidgetComponent from '@/components/RotationWidget/RotationWidgetComponent'
 
 export default {
   mixins: [

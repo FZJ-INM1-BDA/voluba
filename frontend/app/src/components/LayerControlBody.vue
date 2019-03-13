@@ -39,10 +39,43 @@
           :max = "opacityMax"
           :step = "opacityStep"
           :value = "opacity" />
+
+
+        <!-- flip axis -->
+        <div class="mb-3 btn-group">
+
+          <!-- flip x -->
+          <div
+            @click.stop.prevent="flipAxis(0)"
+            class="flip-btn btn btn-sm btn-outline-secondary">
+            <span>
+              flip x axis
+            </span>
+          </div>
+
+          <!-- flip y -->
+          <div
+            @click.stop.prevent="flipAxis(1)"
+            class="flip-btn btn btn-sm btn-outline-secondary">
+            <span>
+              flip y axis
+            </span>
+          </div>
+
+          <!-- flip z -->
+          <div
+            @click.stop.prevent="flipAxis(2)"
+            class="flip-btn btn btn-sm btn-outline-secondary">
+            <span>
+              flip z axis
+            </span>
+          </div>
+        </div>
           
         <!-- scale -->
         <div class="section-wrapper mb-1">
           <div
+            class="invisible"
             :class="false?'':'text-muted'">
             <font-awesome-icon
               :icon="lockIconScale"></font-awesome-icon>
@@ -178,36 +211,6 @@
 
               <div class="mb-1"></div>
 
-              <!-- rotation options -->
-              <div class="btn-group">
-
-                <!-- flip x -->
-                <div
-                  @click.stop.prevent="flipAxis(0)"
-                  class="flip-btn btn btn-sm btn-outline-secondary">
-                  <span>
-                    flip x axis
-                  </span>
-                </div>
-
-                <!-- flip y -->
-                <div
-                  @click.stop.prevent="flipAxis(1)"
-                  class="flip-btn btn btn-sm btn-outline-secondary">
-                  <span>
-                    flip y axis
-                  </span>
-                </div>
-
-                <!-- flip z -->
-                <div
-                  @click.stop.prevent="flipAxis(2)"
-                  class="flip-btn btn btn-sm btn-outline-secondary">
-                  <span>
-                    flip z axis
-                  </span>
-                </div>
-              </div>
             </template>
           </section-component>
         </div>

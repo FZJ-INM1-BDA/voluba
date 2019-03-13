@@ -220,4 +220,19 @@ export default {
 #main {
   width: 100%;
 }
+
+@keyframes spinning
+{
+  from {
+    transform: rotate(0deg);
+  }
+  to{
+    transform: rotate(359deg);
+  }
+}
+
+.spinner
+{
+  animation: spinning 700ms linear infinite running;
+}
 </style>

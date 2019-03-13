@@ -184,6 +184,8 @@ export default {
 .container
 {
   transition: linear opacity 0.2s;
+  padding: 0;
+  flex-wrap: nowrap;
 }
 .icon
 {
@@ -239,6 +241,7 @@ export default {
 
 .parent-name-container
 {
+  width: 0px;
   pointer-events: none;
   margin-left: 1em;
 }

@@ -2,6 +2,12 @@ import { defaultXform, determineElement, patchSliceViewPanel } from '@//constant
 import Vue from 'vue'
 
 export default {
+  /**
+   * useful so that nehuba objects are not attached getters and setters.
+   * likely will affect performance if they do.
+   * properties are already reactive via means of subscription
+   */
+  nehubaBase: {},
   data: function () {
     return {
       nehubaBase__nehubaInitStatus: false,

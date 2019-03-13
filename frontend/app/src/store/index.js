@@ -351,6 +351,9 @@ const store = new Vuex.Store({
         .then(() => commit('setAppendNehubaFlag', {flag: true}))
         .catch(e => dispatch('modalMessage', { title: 'Incompatible browser', body: incompatibleBrowserText }))
     },
+    changeLandmarkMode: function ({ commit }, { mode }) {
+      commit('setLandmarkMode', { mode })
+    },
     lockIncVol: function ({ commit, state }, { incVolTranslationLock = null, incVolRotationLock = null }) {
       commit('setIncVolLoc', {
         incVolTranslationLock : incVolTranslationLock !== null ? incVolTranslationLock : state.incVolTranslationLock,
@@ -577,6 +580,14 @@ const store = new Vuex.Store({
       commit('setIncTransformMatrix', { matrix })
     },
     computeXform ({ commit, state, dispatch }) {
+      if (state.landmarkPairs.length < 3) {
+        return
+      }
+      
+      if (state.backendQueryInProgress) {
+        return
+      }
+      
       const lmPairs = state.landmarkPairs
         .map(pair => {
           const refLm = state.referenceLandmarks.find(rLm => rLm.id === pair.refId)

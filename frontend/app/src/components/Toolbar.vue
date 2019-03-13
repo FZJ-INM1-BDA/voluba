@@ -1,17 +1,8 @@
 <template>
   <div id="flexcontainer">
 
-    <div class="horizontalContainer flex-items">
-      <div
-        @click="showIcons = !showIcons"
-        class="pointer-events addBtnLg rounded-circle btn btn-lg btn-light">
-        <font-awesome-icon :icon="hamburgerIcon"></font-awesome-icon>
-      </div>
-    </div>
-    
     <!-- toggle double pane mode -->
     <div
-      v-if="showIcons"
       class="horizontalContainer flex-items">
       <div
         v-b-tooltip.hover.right="modeBtnTooltipText"
@@ -24,12 +15,11 @@
 
     <!-- toggle history -->
     <div
-      v-if="showIcons"
       class="horizontalContainer flex-items">
       <div
-        v-b-tooltip.right.hover="'undo history'"
+        v-b-tooltip.right.hover="'history browser'"
         :class="showHistory ? 'btn-info' : 'btn-secondary'"
-      @click="showHistory = !showHistory"
+        @click="showHistory = !showHistory"
         class="addBtn rounded-circle layer-control-toggle btn btn-sm">
         <font-awesome-icon icon="history" />
       </div>
@@ -43,10 +33,9 @@
 
     <!-- layer control -->
     <div
-      v-if="showIcons"
       class="horizontalContainer flex-items">
       <div
-        v-b-tooltip.right.hover="'configure incoming volume'"
+        v-b-tooltip.right.hover="'transform incoming volume'"
         :class="showLayerControl ? 'btn-info' : 'btn-secondary'"
         @click="showLayerControl=!showLayerControl"
         class="addBtn rounded-circle layer-control-toggle btn btn-sm">
@@ -62,11 +51,10 @@
 
     <!-- landmark-control -->
     <div
-      v-if="showIcons"
       class="horizontalContainer flex-items">
 
       <div
-        v-b-tooltip.right.hover="'Edit landmarks'"
+        v-b-tooltip.right.hover="'edit landmarks'"
         @click="landmarkControlVisibilityChanged({visible : !landmarkControlVisible })"
         :class="landmarkControlVisible ? 'btn-info' : 'btn-secondary'"
         class="addBtn rounded-circle landmarks-control-toggle btn-shadow btn-sm btn">
@@ -81,7 +69,6 @@
 
     <!-- add btn -->
     <div
-      v-if="showIcons"
       class="horizontalContainer flex-items">
       <div class="btn-group">
 
@@ -105,7 +92,7 @@
           {{ addLmMode }}
         </div>
         <div
-          @click="$store.commit('setLandmarkMode', {mode : false})"
+          @click="changeLandmarkMode({ mode: false })"
           v-if="addLandmarkMode"
           class=" pointer-events btn btn-sm btn-danger">
           cancel
@@ -115,20 +102,20 @@
 
     <!-- compute xform -->
     <div
-      v-if="showIcons"
       class="horizontalContainer flex-items">
       <div
-        @click="calculateXform"
+        @click="computeXform"
         v-b-tooltip.right.hover="ableToComputeTransformationMatrix ? 'Compute and display transform based on landmarks.' : 'Need at least three (3) active landmarks to compute transformation.'"
         :class="ableToComputeTransformationMatrix && !backendQueryInProgress ? '' : 'lmr-disabled'"
         class="addBtn rounded-circle landmarks-control-toggle btn btn-sm btn-primary">
-        <font-awesome-icon icon="calculator"></font-awesome-icon>
+        <font-awesome-icon
+          :class="backendQueryInProgress ? 'spinner' : ''"
+          :icon="backendQueryInProgress ? 'spinner' : 'calculator'"></font-awesome-icon>
       </div>
     </div>
     
     <!-- save export control -->
     <div
-      v-if="showIcons"
       class="horizontalContainer flex-items">
 
       <div
@@ -147,7 +134,6 @@
 
     <!-- start from scratch btn -->
     <div
-      v-if="showIcons"
       class="horizontalContainer flex-items">
       <div
         @click="$store.dispatch('startFromScratch')"
@@ -178,7 +164,6 @@ export default {
     return {
       showLayerControl: false,
       showSaveExportControl: false,
-      showIcons: false,
       showHistory: false,
       addLmMode: 'reference'
     }
@@ -190,11 +175,6 @@ export default {
       landmarkControlVisible: 'landmarkControlVisible',
       ableToComputeTransformationMatrix: state => state.landmarkPairs.length >= 3
     }),
-    hamburgerIcon: function () {
-      return this.showIcons
-        ? 'times'
-        : 'bars'
-    },
     mode: {
       get: function () {
         return this.$store.state._step2Mode
@@ -221,23 +201,19 @@ export default {
   },
   methods: {
     ...mapActions({
-      'landmarkControlVisibilityChanged': 'landmarkControlVisibilityChanged'
+      landmarkControlVisibilityChanged: 'landmarkControlVisibilityChanged',
+      changeLandmarkMode: 'changeLandmarkMode',
+      computeXform: 'computeXform'
     }),
     toggleAddLmMode: function () {
       this.addLmMode = this.addLmMode === 'reference'
         ? 'incoming'
         : 'reference'
-      this.$store.commit('setLandmarkMode', { mode: this.addLmMode })
-    },
-    calculateXform: function () {
-      if (!this.ableToComputeTransformationMatrix) {
-        return
-      }
-      this.$store.dispatch('computeXform')
+      this.changeLandmarkMode({ mode: this.addLmMode })
     },
     addLandmark: function () {
       if (this.mode === 'overlay') {
-        this.$store.commit('setLandmarkMode', { mode : this.addLandmarkMode === false ? this.addLmMode : false })
+        this.changeLandmarkMode({ mode : this.addLandmarkMode === false ? this.addLmMode : false })
       } else {
         /**
          * classic mode

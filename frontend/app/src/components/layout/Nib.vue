@@ -81,6 +81,6 @@ export default {
 
 .layer-control
 {
-  width: 20em;
+  width: 23em;
 }
 </style>
