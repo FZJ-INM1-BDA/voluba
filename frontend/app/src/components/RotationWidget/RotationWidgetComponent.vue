@@ -42,13 +42,13 @@
     </defs>
       
     <path
-      @mousedown="mousedown(1)"
+      @mousedown="mousedown(3)"
       :stroke-width="svgStrokeWidth"
       pointer-events="visibleStroke"
       class="svg-path"
-      :style="getStyle(1)"
+      :style="getStyle(3)"
       stroke="url('#svg-lg-red')"
-      :fill="svgFill(1)"
+      :fill="svgFill(3)"
       :d="svgD1">
     </path>
     <path
@@ -65,13 +65,13 @@
     </path>
     <path
       id="svg-3"
-      @mousedown="mousedown(3)"
+      @mousedown="mousedown(1)"
       :stroke-width="svgStrokeWidth"
       pointer-events="visibleStroke"
       class="svg-path"
-      :style="getStyle(3)"
+      :style="getStyle(1)"
       stroke="url('#svg-lg-blue')"
-      :fill="svgFill(3)"
+      :fill="svgFill(1)"
       :d="svgD3">
     </path>
 
@@ -155,19 +155,19 @@ export default {
       return [this.width/2, this.width/2]
     },
     clipPathD: function () {
-      return this.focusIdx === 1
+      return this.focusIdx === 3
         ? this.svgD1
         : this.focusIdx === 2
           ? this.svgD2
-          : this.focusIdx === 3
+          : this.focusIdx === 1
             ? this.svgD3
             : null 
     },
     circleRed: function () {
-      return this.getCircle(1)
+      return this.getCircle(3)
     },
     circleBlue: function () {
-      return this.getCircle(3)
+      return this.getCircle(1)
     },
     circleGreen: function () {
       return this.getCircle(2)
@@ -261,11 +261,11 @@ export default {
     },
     getColorFromIdx: function (idx) {
       return idx === 1
-        ? 'red'
+        ? 'blue'
         : idx === 2
           ? 'green'
           : idx === 3
-            ? 'blue'
+            ? 'red'
             : 'black'
 
     },
@@ -298,6 +298,9 @@ export default {
     },
     mousemove: function (event) {
 
+      /**
+       * TODO no better way than getBoundingClientRect?
+       */
       const {left, top} = this.$refs.svgContainer.getBoundingClientRect()
       /**
        * calculate from center of the canvas
@@ -323,7 +326,7 @@ export default {
         this.focusIdx === 1 ? rot : 0
       )
       this.$store.dispatch('pushUndo', {
-        name: 'rotate by RGB widget',
+        name: `rotate by RGB widget ${this.focusIdx}`,
         collapse: `rotate by rgb widget ${this.focusIdx}`
       })
       this.$store.dispatch('rotIncBy', {

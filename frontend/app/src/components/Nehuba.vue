@@ -19,7 +19,7 @@
       </span>
       <div
         v-if="errorFlag"
-        class="alert alert-danger">
+        class="container-alert-box alert alert-danger">
         {{ placeholderText }}
       </div>
     </div>
@@ -42,7 +42,7 @@
       class="landmarks-overlay" />
     
     <div
-      v-if="appendNehubaFlag"
+      v-if="showRotationWidget"
       ref="svgContainer"
       class="perspective-controller">
       <RotationWidgetComponent
@@ -68,7 +68,8 @@
 
 <script>
 import { mapState } from 'vuex'
-import { incompatibleBrowserText, REFERENCE_COLOR, INCOMING_COLOR, annotationColorBlur, annotationColorFocus, getShader, testBigbrain, determineElement, getRotationVec3, incomingTemplateActiveOpacity } from '@//constants'
+import { REFERENCE_COLOR, INCOMING_COLOR, annotationColorBlur, annotationColorFocus, getShader, testBigbrain, determineElement, getRotationVec3, incomingTemplateActiveOpacity } from '@//constants'
+import { incompatibleBrowserText } from '@/text'
 
 import NehubaBaseMixin from '@/mixins/NehubaBase'
 import DragLandmarkMixin from '@/mixins/DragLandmarkMixin'
@@ -122,6 +123,18 @@ export default {
     }
   },
   mounted: function () {
+    if (this.appendNehubaFlag) {
+      this.nehubaBase__initNehuba()
+        .then(this.postNehubaInit)
+        .catch(e => {
+          /**
+           * TODO proper error catching and user feedback
+           */
+          console.error('e', e)
+          this.errorFlag = true
+          this.placeholderText = incompatibleBrowserText
+        })
+    }
 
     this.nehubaBase__navigationChanged = () => {
       if (this.$refs.lmOverlay)
@@ -152,7 +165,7 @@ export default {
   },
   watch: {
     appendNehubaFlag: function (flag) {
-      if (flag) {
+      if (flag === true) {
         this.nehubaBase__initNehuba()
           .then(this.postNehubaInit)
           .catch(e => {
@@ -163,6 +176,12 @@ export default {
             this.errorFlag = true
             this.placeholderText = incompatibleBrowserText
           })
+      } else if (!flag && flag !== false) {
+        /**
+         * if flag is falsy, but not false, indicating error
+         */
+        this.errorFlag = true
+        this.placeholderText = incompatibleBrowserText
       }
     },
     _showRefVol: function (bool) {
@@ -184,7 +203,8 @@ export default {
       this.$store.dispatch('primaryNehubaNavigationPositionChanged', array)
     },
     incTransformMatrix: function (array) {
-      const { mat4 } = window.export_nehuba
+      const { mat4, vec3 } = window.export_nehuba
+
       const matrix = mat4.fromValues(...array)
       /**
        * xform matrix sometimes a bit wonky
@@ -204,11 +224,10 @@ export default {
         this.$options.nonReactiveData.ngUserLayer.layer.opacity.restoreState(rgba[3])
       }
     },
-    selectedIncomingVolumeId: function (id) {
+    selectedIncomingVolume: function (vol) {
       this.clearUserLayers()
-      const incVol = id && this.$store.state.incomingVolumes.find(v => v.id === id)
-      if (incVol) {
-        const url = incVol.imageSource
+      if (vol) {
+        const url = vol.imageSource
         this.addUserLayer(url)
       }
     },
@@ -233,42 +252,6 @@ export default {
       this.nehubaInputBinding({
         overrideTranslation: !lock
       })
-    },
-    $route: function (to, from) {
-      /**
-       * TODO deprecated
-       */
-      /**
-       * zoom in and potentially rotate when transite from step1 to step2
-       * currently obsolete, since there are no steps
-       */
-      if (this.$options.nonReactiveData.ngUserLayer && to.path === '/step2') {
-        const { lower, upper } = this.$options.nonReactiveData.ngUserLayer.layer.renderLayer.boundingBox
-        const { vec3, mat4 } = window.export_nehuba
-        const boundingVec3 = vec3.subtract(vec3.create(), upper, lower)
-        const incXM = mat4.fromValues(...this.incTransformMatrix)
-
-        const translVec3 = mat4.getTranslation(vec3.create(), incXM)
-        const scalingVec3 = mat4.getScaling(vec3.create(), incXM)
-        /**
-         * TODO can scaling ever be genative?
-         */
-        const actualDimVec3 = vec3.mul(vec3.create(), boundingVec3, scalingVec3)
-
-        const centerVec3 = vec3.scaleAndAdd(vec3.create(), translVec3, actualDimVec3, 0.5)
-        const nm = Math.min(...actualDimVec3)
-
-        /**
-         * set viewer center
-         */
-        this.$options.nehubaBase.nehubaBase__nehubaViewer.setPosition(centerVec3, true)
-        
-        /**
-         * set viewer zoomlevel
-         */
-        const viewportMin = Math.min(window.innerHeight, window.innerWidth /2 )
-        this.$options.nehubaBase.nehubaBase__nehubaViewer.ngviewer.navigationState.zoomFactor.restoreState(nm / viewportMin)
-      }
     }
   },
   nonReactiveData: {
@@ -384,43 +367,22 @@ export default {
           vec3.transformMat4(pos, pos, this.nehubaBase__viewportToDatas[this.movingIncomingIndex])
           
           /**
+           * get previous translate
+           */
+          const xformMat = mat4.fromValues(...this.incTransformMatrix)
+          const prevTranslVec = mat4.getTranslation(vec3.create(), xformMat)
+          
+          /**
            * account for navigation movement
            */
           vec3.subtract(pos, pos, vec3.fromValues(...this.viewerNavigationPosition))
 
           /**
-           * get xformOnMousedown
+           * add delta & set xformMat
            */
-          const xformOnMousedown = mat4.fromValues(...this.$options.nonReactiveData.mousedownMatrix)
+          vec3.add(pos, pos, prevTranslVec)
           
-          /**
-           * apply scale to delta pos
-           */
-          const scaleOnMousedown = mat4.getScaling(vec3.create(), xformOnMousedown)
-          vec3.divide(pos, pos, scaleOnMousedown)
-          
-          /**
-           * account for the internal rotation of inc volume
-           */
-          const incRot = mat4.getRotation(quat.create(), mat4.fromValues(...this.incTransformMatrix))
-          /**
-           * after flipping, incRot may be not normalized.
-           */
-          quat.normalize(incRot, incRot)
-          quat.invert(incRot, incRot)
-          vec3.transformQuat(pos, pos, incRot)
-
-          /**
-           * account for any flipping
-           */
-          if (this.flippedState.every(v => v < 0)) {
-            vec3.mul(pos, pos, vec3.fromValues(1, 1, -1))
-          } else if (this.flippedState.reduce((acc, factor) => acc * factor, 1) < 0) {
-            const flipVec3 = vec3.fromValues(...this.flippedState)
-            vec3.mul(pos, pos, flipVec3)
-          }
-          
-          this.$store.dispatch('translIncBy', {
+          this.$store.dispatch('setTranslInc', {
             axis: 'xyz',
             value: Array.from(pos).map(v => v / 1e6)
           })
@@ -450,7 +412,6 @@ export default {
               deltaY * Math.PI / 180
             )
           )
-          // this.$store.dispatch('setRotateIncByQuat', { quaternion: Array.from(finalRotation) })
           this.$store.dispatch('rotIncBy', {quaternion: Array.from(finalRotation)})
         }
       }
@@ -470,12 +431,9 @@ export default {
       /**
        * if an incoming volume has already been selected, add the user layer
        */
-      if (this.selectedIncomingVolumeId) {
-        const incVol = this.selectedIncomingVolumeId && this.$store.state.incomingVolumes.find(v => v && (v.id === this.selectedIncomingVolumeId))
-        if (incVol) {
-          const url = incVol.imageSource
-          this.addUserLayer(url)
-        }
+      if (this.selectedIncomingVolume) {
+        const url = this.selectedIncomingVolume.imageSource
+        this.addUserLayer(url)
       }
 
       /**
@@ -610,11 +568,15 @@ export default {
       _step2Mode: '_step2Mode',
       _step2OverlayFocus: '_step2OverlayFocus',
       incTransformMatrix: 'incTransformMatrix',
-      selectedIncomingVolumeId: 'selectedIncomingVolumeId',
+      selectedIncomingVolume: state => state.incomingVolumes.find(v => v.id === state.selectedIncomingVolumeId),
       incVolTranslationLock: 'incVolTranslationLock',
       incVolRotationLock: 'incVolRotationLock',
-      flippedState: 'flippedState'
+      flippedState: 'flippedState',
+      overlayColorHex: state => state.overlayColor.hex || INCOMING_COLOR
     }),
+    showRotationWidget: function () {
+      return this.appendNehubaFlag && this._step2Mode === 'overlay'
+    },
     compoundPerspectiveOrientation: function () {
       if (!this.viewerPerspectiveOrientation || !this.nehubaLoaded)
         return null
@@ -667,7 +629,7 @@ export default {
             vec3.transformMat4(coord, coord, incVM)
             return {
               ...lm,
-              color: '#ff6666',
+              color: this.overlayColorHex,
               coord: Array.from(coord).map(v => v / 1e6)
             }
           })
@@ -712,18 +674,24 @@ export default {
     storedReferenceLandmarks: function () {
       return this._step2Mode === 'overlay'
         ? this.$store.state.referenceLandmarks
+            .map(lm => {
+              return {
+                ...lm,
+                color: REFERENCE_COLOR
+              }
+            })
         : this.$store.state.landmarkPairs
-        .map(lmp => {
-          const lm = this.$store.state.referenceLandmarks.find(lm => lm.id === lmp.refId)
-          return lm
-            ? {
-              ...lm,
-              color: lmp.color,
-              active: lmp.active
-            }
-            : null
-        })
-        .filter(refLm => refLm !== null)
+            .map(lmp => {
+              const lm = this.$store.state.referenceLandmarks.find(lm => lm.id === lmp.refId)
+              return lm
+                ? {
+                  ...lm,
+                  color: lmp.color,
+                  active: lmp.active
+                }
+                : null
+            })
+            .filter(refLm => refLm !== null)
     },
     referenceLandmarks: function () {
       return this.addLandmarkMode
@@ -857,5 +825,10 @@ div.scale-bar-container
   bottom: 0;
   margin: 1.5em;
   z-index: 999;
+}
+
+.container-alert-box
+{
+  margin: 2em 5em;
 }
 </style>

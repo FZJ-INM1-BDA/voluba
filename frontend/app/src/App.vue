@@ -45,6 +45,23 @@
         :message="messageModalMessage"
         id="messageModal"
         ref="messageModal"/>
+      <b-modal
+        centered
+        ref="startFromScratchModal"
+        header-bg-variant="danger"
+        header-text-variant="light"
+        @ok="startFromScratch"
+        ok-variant="danger"
+        ok-title="Yes, reset everything"
+        :title="startFromScratchTitle">
+          This action would 
+          <ul>
+            <li>unload the incoming volume</li>
+            <li>remove all existing landmarks</li>
+            <li>resets your current progress</li>
+          </ul>
+          Would you like to proceed?
+      </b-modal>
       <SelectVolumesModal
         v-if="showSelectVolumesModal"
         @destroyMe="showSelectVolumesModal=false" />
@@ -54,12 +71,13 @@
 </template>
 
 <script>
-import { mapState } from 'vuex'
+import { mapState, mapActions } from 'vuex'
 import HeaderComponent from '@/components/TheHeader'
 import NehubaComponent from '@/components/Nehuba'
 import SimpleNehubaComponent from '@/components/SimpleNehuba'
 import ToolbarComponent from '@/components/Toolbar'
 import { getDefaultNehubaConfigLight } from '@/constants'
+import { START_FROM_SCRATCH_MODAL_TITLE } from '@/text'
 
 import LoadLandmarkPairsModal from '@/components/modals/LoadLandmarkPairsModal'
 import TransformationMatrixModal from '@/components/modals/TransformationMatrixModal'
@@ -97,7 +115,7 @@ export default {
           const modalId = payload && payload.modalId
           const modal = modalId && this.$refs[modalId]
           if (modal) {
-            modal.showModal()
+            (modal.showModal && modal.showModal()) || (modal.show && modal.show())
           }
           break
         }
@@ -116,6 +134,9 @@ export default {
       redoStack: 'redoStack',
       incTransformMatrix: 'incTransformMatrix'
     }),
+    startFromScratchTitle: function () {
+      return START_FROM_SCRATCH_MODAL_TITLE
+    },
     sidebarWidth: function () {
       return this.$store.state.sidebarWidth
     },
@@ -129,6 +150,9 @@ export default {
     }
   },
   methods: {
+    ...mapActions({
+      startFromScratch: 'startFromScratch'
+    }),
     keydown: function (event) {
       /**
        * stop/prevent is needed if user focus is on one of the popover text field
@@ -166,18 +190,24 @@ export default {
 <style>
 #app
 {
-  display:flex;
-  flex-direction: column;
+  position:absolute;
+  left: 0;
+  top: 0;
 }
 .app-header
 {
-  flex: 0 0 58px;
+  width: 100%;
+  height: 0;
+  position: relative;
+  left: 0;
+  top: 0;
 }
 .app-main
 {
   overflow:hidden;
-  flex: 1 1 0;
   position:relative;
+  width: 100%;
+  height: 100%;
 }
 
 .underlay
@@ -203,6 +233,8 @@ export default {
   height: 100%;
   z-index: 2;
   pointer-events: none;
+
+  margin-top: 3em;
 }
 
 .nehuba-container

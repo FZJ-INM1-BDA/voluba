@@ -3,11 +3,10 @@ import Vue from 'vue'
 
 export default {
   /**
-   * useful so that nehuba objects are not attached getters and setters.
-   * likely will affect performance if they do.
-   * properties are already reactive via means of subscription
+   * NB do not uncomment
+   * somehow shares base mixin class across all instances
    */
-  nehubaBase: {},
+  // nehubaBase: {},
   data: function () {
     return {
       nehubaBase__nehubaInitStatus: false,
@@ -21,7 +20,8 @@ export default {
         defaultXform
       ],
       nehubaBase__viewportToDatas: [],
-      nehubaBase__mousePosition: null
+      nehubaBase__mousePosition: null,
+      nehubaBase__additionalConfig: null
     }
   },
   mounted() {
@@ -43,10 +43,9 @@ export default {
       const element = event.srcElement || event.originalTarget
       this.nehubaBase__viewportToDatas[determineElement(element)] = event.detail.viewportToData
     },
-    nehubaBase__initNehuba: function () {
-      /**
-       * only change cid. watcher should take care of the rest
-       */
+    nehubaBase__initNehuba: function (additionalConfig) {
+      if (additionalConfig)
+        this.nehubaBase__additionalConfig = additionalConfig
       return new Promise((resolve, reject) => {
         if ( !('export_nehuba' in window) ) 
           return reject('export_nehuba is not present in global scope. append nehuba error')
@@ -90,7 +89,20 @@ export default {
     },
     nehubaBase__init: function () {
       return new Promise(resolve => {
-        const nehubaViewer = window.export_nehuba.createNehubaViewer(this.config, (err) => {
+
+        const config = { ...this.config }
+
+        if (this.nehubaBase__additionalConfig) {
+          const { orientation } = this.nehubaBase__additionalConfig
+          const initialNgState = config.dataset.initialNgState
+          if (!initialNgState.navigation) 
+            initialNgState.navigation = {}
+          if (!initialNgState.navigation.pose)
+            initialNgState.navigation.pose = {}
+            initialNgState.navigation.pose.orientation = orientation
+        }
+
+        const nehubaViewer = window.export_nehuba.createNehubaViewer(config, (err) => {
           console.log('callback error', err)
         })
         

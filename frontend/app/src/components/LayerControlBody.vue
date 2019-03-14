@@ -7,7 +7,7 @@
 
         <h5 class="title">
           <div>
-            Configure Incoming Volume
+            {{ incVolXformTitle }}
           </div>
           <small>
             {{ selectedIncomingVolumeName }}
@@ -16,30 +16,8 @@
       </div>
       
       <div
-        v-if = "incomingVolumeSelected"
+        v-if="incomingVolumeSelected"
         class="card card-body bg-light">
-
-        <!-- color -->
-        <div class="option-container">
-          <label class="option-label">Color:</label>
-          <div class="option-input">
-            <div @click.stop = "showOverlayColor = !showOverlayColor" :style="{'background-color': overlayColor.hex, 'min-width': '20px', 'max-width': '20px', 'min-height': '20px', 'border': '1px solid black'}" v-b-tooltip.hover :title="overlayColor.hex"></div>
-            <compact-picker v-if = "showOverlayColor" v-model="overlayColor" />
-          </div>
-        </div>
-
-        <!-- opacity -->
-        <SliderComponent
-          @minus = "opacity = opacity - 0.05 < opacityMin ? opacityMin : opacity - 0.05"
-          @plus = "opacity = opacity + 0.05 > opacityMax ? opacityMax : opacity + 0.05"
-          @textInput = "opacity = $event"
-          @sliderInput = "opacity = $event"
-          name = "Opacity"
-          :min = "opacityMin"
-          :max = "opacityMax"
-          :step = "opacityStep"
-          :value = "opacity" />
-
 
         <!-- flip axis -->
         <div class="mb-3 btn-group">
@@ -47,7 +25,8 @@
           <!-- flip x -->
           <div
             @click.stop.prevent="flipAxis(0)"
-            class="flip-btn btn btn-sm btn-outline-secondary">
+            :class="flippedState[0] < 0 ? 'btn-secondary' : 'btn-outline-secondary'"
+            class="flip-btn btn btn-sm">
             <span>
               flip x axis
             </span>
@@ -56,7 +35,8 @@
           <!-- flip y -->
           <div
             @click.stop.prevent="flipAxis(1)"
-            class="flip-btn btn btn-sm btn-outline-secondary">
+            :class="flippedState[1] < 0 ? 'btn-secondary' : 'btn-outline-secondary'"
+            class="flip-btn btn btn-sm">
             <span>
               flip y axis
             </span>
@@ -65,7 +45,8 @@
           <!-- flip z -->
           <div
             @click.stop.prevent="flipAxis(2)"
-            class="flip-btn btn btn-sm btn-outline-secondary">
+            :class="flippedState[2] < 0 ? 'btn-secondary' : 'btn-outline-secondary'"
+            class="flip-btn btn btn-sm">
             <span>
               flip z axis
             </span>
@@ -83,37 +64,57 @@
           <section-component
             id="scale-section"
             title="Scale">
-            <template slot = "body">
+            <template slot="body">
+              <input
+                v-model="isotropic"
+                type="checkbox"
+                id="isotropicScale"
+                name="isotropicScale">
+              <label for="isotropicScale">Isotropic</label>
               <SliderComponent
-                @minus = "testScaleX = testScaleX - 0.05 < scaleMin ? scaleMin : testScaleX - 0.05"
-                @plus = "testScaleX = testScaleX + 0.05 > scaleMax ? scaleMax : testScaleX + 0.05"
-                @textInput = "testScaleX = $event"
-                @sliderInput = "testScaleX = $event"
-                name = "Scale X"
-                :min = "0.1"
-                :max = "10"
-                :step = "0.01"
-                :value = "testScaleX" />
+                v-if="isotropic"
+                @minus="isotropicScaleEvent({value: testScaleX - 0.05 < scaleMin ? scaleMin : testScaleX - 0.05 })"
+                @plus="isotropicScaleEvent({value: testScaleX + 0.05 > scaleMax ? scaleMax : testScaleX + 0.05 })"
+                @textInput="isotropicScaleEvent({value: $event })"
+                @sliderInput="isotropicScaleEvent({value: $event })"
+                name="Scale"
+                :min="0.1"
+                :max="10"
+                :step="0.01"
+                :value="testScaleX" />
               <SliderComponent
-                @minus = "testScaleY = testScaleY - 0.05 < scaleMin ? scaleMin : testScaleY - 0.05"
-                @plus = "testScaleY = testScaleY + 0.05 > scaleMax ? scaleMax : testScaleY + 0.05"
-                @textInput = "testScaleY = $event"
-                @sliderInput = "testScaleY = $event"
-                name = "Scale Y"
-                :min = "0.1"
-                :max = "10"
-                :step = "0.01"
-                :value = "testScaleY" />
+                v-if="!isotropic"
+                @minus="testScaleX = testScaleX - 0.05 < scaleMin ? scaleMin : testScaleX - 0.05"
+                @plus="testScaleX = testScaleX + 0.05 > scaleMax ? scaleMax : testScaleX + 0.05"
+                @textInput="testScaleX = $event"
+                @sliderInput="testScaleX = $event"
+                name="Scale X"
+                :min="0.1"
+                :max="10"
+                :step="0.01"
+                :value="testScaleX" />
               <SliderComponent
-                @minus = "testScaleZ = testScaleZ - 0.05 < scaleMin ? scaleMin : testScaleZ - 0.05"
-                @plus = "testScaleZ = testScaleZ + 0.05 > scaleMax ? scaleMax : testScaleZ + 0.05"
-                @textInput = "testScaleZ = $event"
-                @sliderInput = "testScaleZ = $event"
-                name = "Scale Z"
-                :min = "0.1"
-                :max = "10"
-                :step = "0.01"
-                :value = "testScaleZ" />
+                v-if="!isotropic"
+                @minus="testScaleY = testScaleY - 0.05 < scaleMin ? scaleMin : testScaleY - 0.05"
+                @plus="testScaleY = testScaleY + 0.05 > scaleMax ? scaleMax : testScaleY + 0.05"
+                @textInput="testScaleY = $event"
+                @sliderInput="testScaleY = $event"
+                name="Scale Y"
+                :min="0.1"
+                :max="10"
+                :step="0.01"
+                :value="testScaleY" />
+              <SliderComponent
+                v-if="!isotropic"
+                @minus="testScaleZ = testScaleZ - 0.05 < scaleMin ? scaleMin : testScaleZ - 0.05"
+                @plus="testScaleZ = testScaleZ + 0.05 > scaleMax ? scaleMax : testScaleZ + 0.05"
+                @textInput="testScaleZ = $event"
+                @sliderInput="testScaleZ = $event"
+                name="Scale Z"
+                :min="0.1"
+                :max="10"
+                :step="0.01"
+                :value="testScaleZ" />
             </template>
           </section-component>
         </div>
@@ -127,40 +128,40 @@
           <section-component
             title="Translation"
             id="translation-component">
-            <template slot = "body">
+            <template slot="body">
               <SliderComponent
-                @minus = "translationEvent({ axis: 'x', event:$event, delta: testTranslX - 0.1 < translMin ? 0 :  - 0.1 })"
-                @plus = "translationEvent({ axis: 'x', event:$event, delta: testTranslX + 0.1 > translMax ? 0 : 0.1 })"
-                @textInput = "translationEvent({axis: 'x', event:$event, delta: $event - testTranslX})"
-                @sliderInput = "translationEvent({axis: 'x', event:$event, delta: $event - testTranslX})"
-                name = "X-axis"
-                :min = "translMin"
-                :max = "translMax"
-                :step = "0.1"
-                unit = "mm"
-                :value = "testTranslX" />
+                @minus="translationEvent({ axis: 'x', event:$event, delta: testTranslX - 0.1 < translMin ? 0 :  - 0.1 })"
+                @plus="translationEvent({ axis: 'x', event:$event, delta: testTranslX + 0.1 > translMax ? 0 : 0.1 })"
+                @textInput="translationEvent({axis: 'x', event:$event, value: $event})"
+                @sliderInput="translationEvent({axis: 'x', event:$event, value: $event})"
+                name="X-axis"
+                :min="translMin"
+                :max="translMax"
+                :step="0.1"
+                unit="mm"
+                :value="testTranslX" />
               <SliderComponent
-                @minus = "translationEvent({axis: 'y', event:$event, delta: testTranslY - 0.1 < translMin ? 0 : - 0.1 }) "
-                @plus = "translationEvent({axis: 'y', event:$event, delta: testTranslY + 0.1 > translMax ? 0 : 0.1 }) "
-                @textInput = "translationEvent({axis: 'y', event:$event, delta: $event - testTranslY})"
-                @sliderInput = "translationEvent({axis: 'y', event:$event, delta: $event - testTranslY})"
-                name = "Y-axis"
-                :min = "translMin"
-                :max = "translMax"
-                :step = "0.1"
-                unit = "mm"
-                :value = "testTranslY" />
+                @minus="translationEvent({axis: 'y', event:$event, delta: testTranslY - 0.1 < translMin ? 0 : - 0.1 }) "
+                @plus="translationEvent({axis: 'y', event:$event, delta: testTranslY + 0.1 > translMax ? 0 : 0.1 }) "
+                @textInput="translationEvent({axis: 'y', event:$event, value: $event})"
+                @sliderInput="translationEvent({axis: 'y', event:$event, value: $event})"
+                name="Y-axis"
+                :min="translMin"
+                :max="translMax"
+                :step="0.1"
+                unit="mm"
+                :value="testTranslY" />
               <SliderComponent
-                @minus = "translationEvent({axis: 'z', event:$event, delta: testTranslZ - 0.1 < translMin ? 0 : - 0.1})"
-                @plus = "translationEvent({axis: 'z', event:$event, delta: testTranslZ + 0.1 > translMax ? 0 : 0.1})"
-                @textInput = "translationEvent({axis: 'z', event:$event, delta: $event - testTranslZ})"
-                @sliderInput = "translationEvent({axis: 'z', event:$event, delta: $event - testTranslZ})"
-                name = "Z-axis"
-                :min = "translMin"
-                :max = "translMax"
-                :step = "0.1"
-                unit = "mm"
-                :value = "testTranslZ" />
+                @minus="translationEvent({axis: 'z', event:$event, delta: testTranslZ - 0.1 < translMin ? 0 : - 0.1})"
+                @plus="translationEvent({axis: 'z', event:$event, delta: testTranslZ + 0.1 > translMax ? 0 : 0.1})"
+                @textInput="translationEvent({axis: 'z', event:$event, value: $event})"
+                @sliderInput="translationEvent({axis: 'z', event:$event, value: $event})"
+                name="Z-axis"
+                :min="translMin"
+                :max="translMax"
+                :step="0.1"
+                unit="mm"
+                :value="testTranslZ" />
             </template>
           </section-component>
         </div>
@@ -172,42 +173,42 @@
             <font-awesome-icon :icon="lockIconRotation" />
           </div>
           <section-component
-            title = "Rotation"
-            id = "rotation-component">
-            <template slot = "body">
+            title="Rotation"
+            id="rotation-component">
+            <template slot="body">
               <SliderComponent
-                @minus = "testRotateX = testRotateX - 0.1 < rotateMin ? rotateMin : testRotateX - 0.1"
-                @plus = "testRotateX = testRotateX + 0.1 > rotateMax ? rotateMax : testRotateX + 0.1"
-                @textInput = "testRotateX = $event"
-                @sliderInput = "testRotateX = $event"
-                name = "X-axis"
-                :min = "rotateMin"
-                :max = "rotateMax"
-                :step = "0.1"
-                unit = "deg"
-                :value = "testRotateX" />
+                @minus="rotationEvent({axis : 'x', delta: testRotateX - 0.1 < rotateMin ? 0 : - 0.1})"
+                @plus="rotationEvent({axis: 'x', delta: testRotateX + 0.1 > rotateMax ? 0 : 0.1})"
+                @textInput="rotationEvent({ axis: 'x', delta: $event - testRotateX })"
+                @sliderInput="rotationEvent({ axis: 'x', delta: $event - testRotateX })"
+                name="X-axis"
+                :min="rotateMin"
+                :max="rotateMax"
+                :step="0.1"
+                unit="deg"
+                :value="testRotateX" />
               <SliderComponent
-                @minus = "testRotateY = testRotateY - 0.1 < rotateMin ? rotateMin : testRotateY - 0.1"
-                @plus = "testRotateY = testRotateY + 0.1 > rotateMax ? rotateMax : testRotateY + 0.1"
-                @textInput = "testRotateY = $event"
-                @sliderInput = "testRotateY = $event"
-                name = "Y-axis"
-                :min = "rotateMin"
-                :max = "rotateMax"
-                :step = "0.1"
-                unit = "deg"
-                :value = "testRotateY" />
+                @minus="rotationEvent({axis : 'y', delta: testRotateY - 0.1 < -90 ? 0 : - 0.1})"
+                @plus="rotationEvent({axis: 'y', delta: testRotateY + 0.1 > 90 ? 0 : 0.1})"
+                @textInput="rotationEvent({ axis: 'y', delta: $event - testRotateY })"
+                @sliderInput="rotationEvent({ axis: 'y', delta: $event - testRotateY })"
+                name="Y-axis"
+                :min="-90"
+                :max="90"
+                :step="0.1"
+                unit="deg"
+                :value="testRotateY" />
               <SliderComponent
-                @minus = "testRotateZ = testRotateZ - 0.1 < rotateMin ? rotateMin : testRotateZ - 0.1"
-                @plus = "testRotateZ = testRotateZ + 0.1 > rotateMax ? rotateMax : testRotateZ + 0.1"
-                @textInput = "testRotateZ = $event"
-                @sliderInput = "testRotateZ = $event"
-                name = "Z-axis"
-                :min = "rotateMin"
-                :max = "rotateMax"
-                :step = "0.1"
-                unit = "deg"
-                :value = "testRotateZ" />
+                @minus="rotationEvent({axis : 'z', delta: testRotateZ - 0.1 < rotateMin ? 0 : - 0.1})"
+                @plus="rotationEvent({axis: 'z', delta: testRotateZ + 0.1 > rotateMax ? 0 : 0.1})"
+                @textInput="rotationEvent({ axis: 'z', delta: $event - testRotateZ })"
+                @sliderInput="rotationEvent({ axis: 'z', delta: $event - testRotateZ })"
+                name="Z-axis"
+                :min="rotateMin"
+                :max="rotateMax"
+                :step="0.1"
+                unit="deg"
+                :value="testRotateZ" />
 
               <div class="mb-1"></div>
 
@@ -219,16 +220,15 @@
     </div>
 </template>
 <script>
-// Vue-Color
-import { Compact } from 'vue-color'
 import SectionComponent from '@/components/layout/Section'
 import SliderComponent from '@/components/layout/Slider'
 import { mapState, mapActions } from 'vuex'
 
+import { INC_VOL_XFORM_TITLE } from '@/text'
+
 export default {
   components: {
     SectionComponent,
-    'compact-picker': Compact,
     SliderComponent
   },
   data: function () {
@@ -249,36 +249,28 @@ export default {
       scaleMin: 0.1,
       scaleMax: 10,
       scaleStep: 0.01,
-      opacityMin: 0,
-      opacityMax: 1.0,
-      opacityStep: 0.01,
-
-      overlayColor: this.$store.state.overlayColor,
-      showOverlayColor: false,
 
       testValue: 0
     }
   },
   computed: {
     ...mapState({
+      flippedState: 'flippedState',
       incVolTranslationLock: 'incVolTranslationLock',
       incVolRotationLock: 'incVolRotationLock',
       lockIconTranslation: state => state.incVolTranslationLock ? 'lock' : 'lock-open',
       lockIconRotation: state => state.incVolRotationLock ? 'lock' : 'lock-open',
       lockIconScale: () => 'lock-open'
     }),
+    incVolXformTitle: function () {
+      return INC_VOL_XFORM_TITLE
+    },
     testScaleX: {
       get: function () {
         return this.testScale[0]
       },
       set: function (value) {
-
-        this.$store.dispatch('pushUndo', {
-          name: 'scale x by slider',
-          collapse: 'scaleBySliderX'
-        })
-
-        this.$store.dispatch('setScaleInc', {
+        this.scaleEvent({
           axis: 'x',
           value
         })
@@ -289,13 +281,7 @@ export default {
         return this.testScale[1]
       },
       set: function (value) {
-
-        this.$store.dispatch('pushUndo', {
-          name: 'scale y by slider',
-          collapse: 'scaleBySliderY'
-        })
-
-        this.$store.dispatch('setScaleInc', {
+        this.scaleEvent({
           axis: 'y',
           value
         })
@@ -306,13 +292,7 @@ export default {
         return this.testScale[2]
       },
       set: function (value) {
-
-        this.$store.dispatch('pushUndo', {
-          name: 'scale z by slider',
-          collapse: 'scaleBySliderZ'
-        })
-
-        this.$store.dispatch('setScaleInc', {
+        this.scaleEvent({
           axis: 'z',
           value
         })
@@ -331,14 +311,6 @@ export default {
     },
     testRotateX: {
       get: function () {
-        // let v = this.radToDegFactor * Math.asin(-2.0*(this.testRot[1]*this.testRot[3] - this.testRot[0]*this.testRot[2]))
-        // while (v < this.rotateMin) {
-        //   v += 360
-        // }
-        // while (v > this.rotateMax) {
-        //   v -= 360
-        // }
-
         // -0 -> -180 180 -> 0
         let v = this.radToDegFactor * Math.atan2(
           2.0*(this.testRot[1]*this.testRot[2] + this.testRot[0]*this.testRot[3]),
@@ -354,18 +326,6 @@ export default {
         }
         // let v = this.radToDegFactor * Math.atan2(2.0*(this.testRot[2]*this.testRot[3] + this.testRot[0]*this.testRot[1]), this.testRot[0]*this.testRot[0] - this.testRot[1]*this.testRot[1] - this.testRot[2]*this.testRot[2] + this.testRot[3]*this.testRot[3])
         return v
-      },
-      set: function (value) {
-
-        this.$store.dispatch('pushUndo', {
-          name: 'rotate x by slider',
-          collapse: 'rotateBySliderX'
-        })
-
-        this.$store.dispatch('setRotateInc', {
-          axis: 'xyz',
-          value: [value, this.testRotateY, this.testRotateZ]
-        })
       }
     },
     testRotateY: {
@@ -380,21 +340,6 @@ export default {
         let v = this.radToDegFactor * Math.asin(-2.0*(this.testRot[1]*this.testRot[3] - this.testRot[0]*this.testRot[2]))
         v *= -1
         return v
-      },
-      set: function (value) {
-        if (value > 90 || value < -90) {
-          return
-        }
-
-        this.$store.dispatch('pushUndo', {
-          name: 'rotate y by slider',
-          collapse: 'rotateBySliderY'
-        })
-
-        this.$store.dispatch('setRotateInc', {
-          axis: 'xyz',
-          value: [this.testRotateX, value, this.testRotateZ ]
-        })
       }
     },
     testRotateZ: {
@@ -409,41 +354,38 @@ export default {
           v -= 360
         }
         return v
-      },
-      set: function (value) {
-
-        this.$store.dispatch('pushUndo', {
-          name: 'rotate z by slider',
-          collapse: 'rotateBySliderZ'
-        })
-
-        this.$store.dispatch('setRotateInc', {
-          axis: 'xyz',
-          value: [this.testRotateX, this.testRotateY, value]
-        })
       }
     },
     testRot: {
       get: function () {
-        const {quat, mat4} = window.export_nehuba
+        const {quat, mat4, vec3} = window.export_nehuba
         const xformMat = mat4.fromValues(...this.incTransformMatrix)
+        /**
+         * TODO dealing with euler rotation with flipping is currently too involving
+         * bandaid solution: undo the flipping when calculating euler rotation
+         * euler rotation is an abstraction from quaternion any way
+         */
+        const flipVec = vec3.fromValues(...this.flippedState)
+        const flipMat = mat4.fromScaling(mat4.create(), flipVec)
+        mat4.mul(xformMat, xformMat, flipMat)
         const rotQuat = mat4.getRotation(quat.create(), xformMat)
+        quat.normalize(rotQuat, rotQuat)
         return Array.from(rotQuat)
       }
     },
     testTranslX: {
       get: function () {
-        return this.testTransl[0] / 1e6
+        return this.testTransl[0] / 1e6 * this.flippedState[0]
       }
     },
     testTranslY: {
       get: function () {
-        return this.testTransl[1] / 1e6
+        return this.testTransl[1] / 1e6 * this.flippedState[1]
       }
     },
     testTranslZ: {
       get: function () {
-        return this.testTransl[2] / 1e6
+        return this.testTransl[2] / 1e6 * this.flippedState[2]
       }
     },
     testTransl: {
@@ -481,15 +423,6 @@ export default {
     },
     renderedIncomingVolumes: function () {
       return [this.dummyIncomingTemplate].concat(this.$store.state.incomingVolumes)
-    },
-    opacity: {
-      get: function () {
-        const color = this.$store.state.incomingColor
-        return color[3]
-      },
-      set: function (opacityVal) {
-        this.$store.dispatch('changeOpacity', Number(opacityVal))
-      }
     }
   },
   watch: {
@@ -508,15 +441,36 @@ export default {
     isotropic: function () {
       this.scaleChanged()
     },
-    overlayColor: function () {
-      this.overlayColorChanged()
+    isotropic: function (flag) {
+      if (flag) {
+        this.isotropicScaleEvent({ value: this.testScaleX })
+      }
     }
   },
   methods: {
     ...mapActions({
       lockIncVol: 'lockIncVol'
     }),
-    translationEvent: function ({axis, delta}) {
+    isotropicScaleEvent: function ({value}) {
+      this.$store.dispatch('pushUndo', {
+        name: `isotropic scale by slider`,
+        collapse: `scaleBySliderIsotropic`
+      })
+
+      this.$store.dispatch('setScaleInc', {
+        axis: 'x',
+        value
+      })
+      this.$store.dispatch('setScaleInc', {
+        axis: 'y',
+        value
+      })
+      this.$store.dispatch('setScaleInc', {
+        axis: 'z',
+        value
+      })
+    },
+    translationEvent: function ({axis, delta, value}) {
       const {mat4, quat, vec3} = window.export_nehuba
       const pos = vec3.create()
       const idx = axis === 'x' ? 0 : axis === 'y' ? 1 : axis === 'z' ? 2 : null
@@ -525,32 +479,76 @@ export default {
         return
       }
 
-      pos[idx] = delta
+      pos[idx] = delta || value
 
-      const incXM = mat4.fromValues(...this.incTransformMatrix)
+      if (delta) {
 
-      /**
-       * account for internal scaling
-       */
-      const incScale = mat4.getScaling(vec3.create(), incXM)
-      vec3.inverse(incScale, incScale)
-      vec3.mul(pos, pos, incScale)
-      
-      /**
-       * account for internal rotation of inc volume
-       */
-      const incRot = mat4.getRotation(quat.create(), incXM)
-      quat.invert(incRot, incRot)
-      vec3.transformQuat(pos, pos, incRot)
+        const incXM = mat4.fromValues(...this.incTransformMatrix)
 
+        /**
+         * account for internal scaling
+         */
+        const incScale = mat4.getScaling(vec3.create(), incXM)
+        vec3.inverse(incScale, incScale)
+        vec3.mul(pos, pos, incScale)
+        
+        /**
+         * account for internal rotation of inc volume
+         */
+        const incRot = mat4.getRotation(quat.create(), incXM)
+        quat.invert(incRot, incRot)
+        vec3.transformQuat(pos, pos, incRot)
+
+        this.$store.dispatch('pushUndo', {
+          name: 'translate by slider delta',
+          collapse: 'translateBySliderDelta'
+        })
+
+        this.$store.dispatch('translIncBy', {
+          axis: 'xyz',
+          value: Array.from(pos)
+        })
+      } else if (value) {
+        
+        this.$store.dispatch('pushUndo', {
+          name: 'translate by slider value',
+          collapse: 'translateBySliderValue'
+        })
+
+        this.$store.dispatch('setTranslInc', {
+          axis,
+          value
+        })
+      }
+
+    },
+    rotationEvent: function ({ axis, delta }) {
       this.$store.dispatch('pushUndo', {
-        name: 'translate by slider',
-        collapse: 'translateBySlider'
+        name: `rotate ${axis} by slider`,
+        collapse: `rotateBySlider${axis}`
       })
 
-      this.$store.dispatch('translIncBy', {
-        axis: 'xyz',
-        value: Array.from(pos)
+      const {quat} = window.export_nehuba
+      const q = quat.fromEuler(
+        quat.create(),
+        axis === 'x' ? delta : 0,
+        axis === 'y' ? delta : 0,
+        axis === 'z' ? delta : 0
+      )
+
+      this.$store.dispatch('rotIncBy', {
+        quaternion: Array.from(q)
+      })
+    },
+    scaleEvent: function ({ axis, value }) {
+      this.$store.dispatch('pushUndo', {
+        name: `scale ${axis} by slider`,
+        collapse: `scaleBySlider${axis}`
+      })
+
+      this.$store.dispatch('setScaleInc', {
+        axis,
+        value
       })
     },
     flipAxis: function (axis) {
@@ -564,9 +562,6 @@ export default {
         ? [this.scale, this.scale, this.scale]
         : [this.scaleX, this.scaleY, this.scaleZ]
       )
-    },
-    overlayColorChanged: function () {
-      this.$store.dispatch('changeOverlayColor', this.overlayColor)
     },
     flipLeftRight: function () {
       this.$store.dispatch('flipLeftRight')

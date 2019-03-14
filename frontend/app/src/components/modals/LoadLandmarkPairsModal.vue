@@ -10,6 +10,11 @@
     ok-title="Cancel"
     ok-only>
 
+    <div class="alert alert-danger">
+      <font-awesome-icon icon="exclamation-triangle"></font-awesome-icon>
+      {{ loadLmWarning }}
+    </div>
+    
     <button
       type="button"
       @click="loadDefaultLandmarkPairs"
@@ -31,6 +36,7 @@
 
 <script>
 import { oldJson, openFileDialog, loadFromFile } from '@//constants'
+import { LOAD_LM_WARNING } from '@/text'
 
 export default {
   name: 'UploadModal',
@@ -89,7 +95,11 @@ export default {
       }
     }
   },
-  computed: {}
+  computed: {
+    loadLmWarning: function () {
+      return LOAD_LM_WARNING
+    }
+  }
 }
 </script>
 

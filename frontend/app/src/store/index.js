@@ -1,5 +1,6 @@
 
-import { incompatibleBrowserText, randomColor, generateId, UPLOAD_URL, computeDeterminant, DEBOUNCE_TIMEOUT } from '@//constants'
+import { randomColor, generateId, UPLOAD_URL, computeDeterminant, saveToFile } from '@//constants'
+import { incompatibleBrowserText } from '@/text'
 import Vuex from 'vuex'
 import Vue from 'vue'
 import axios from 'axios'
@@ -36,7 +37,14 @@ const restoreState = ({commit}, {incTransformMatrix, referenceLandmarks, incomin
   }
 }
 
+const browserCompatible = () => 'WebGL2RenderingContext' in window
+
 const appendNehuba = () => new Promise((resolve, reject) => {
+  
+  if (!browserCompatible()) {
+    return reject('browser not compatible')
+  }
+  
   if ('export_nehuba' in window) {
     resolve()
   } else {
@@ -48,7 +56,6 @@ const appendNehuba = () => new Promise((resolve, reject) => {
     const el = document.createElement('script')
     el.src = 'main.bundle.js'
     el.onload = () => {
-      console.log('loaded nehuba')
       /**
        * patching nehuba/neuroglancer default behaviour of altering hash
        */
@@ -75,6 +82,31 @@ const appendNehuba = () => new Promise((resolve, reject) => {
   }
 })
 
+const getMirrorMat = (flippedState, dim) => {
+  if (! ('export_nehuba' in window))
+    return null
+  const { vec3, mat4 } = window.export_nehuba
+  
+  const applyMirror = mat4.create()
+  const mirrorVec = vec3.fromValues(...flippedState)
+
+  /**
+   * apply mirror
+   */
+  mat4.fromScaling(applyMirror, mirrorVec)
+  /**
+   * undo translation
+   */
+  const undoTranslVec = vec3.fromValues(...flippedState.map(v => v < 0 ? v : 0))
+  vec3.mul(undoTranslVec, undoTranslVec, dim)
+  mat4.mul(applyMirror, applyMirror, mat4.fromTranslation(mat4.create(), undoTranslVec))
+
+  return {
+    applyMirror,
+    undoMirror: mat4.invert(mat4.create(), applyMirror)
+  }
+}
+
 const store = new Vuex.Store({
   state: {
     user: null,
@@ -85,6 +117,11 @@ const store = new Vuex.Store({
     undoStack: [],
     redoStack: [],
 
+    /**
+     * default: false
+     * successful append: true
+     * error: falsy non-false value (e.g. 0, -1 etc)
+     */
     appendNehubaFlag: false,
 
     selectReferenceVolumeIdx: null,
@@ -104,12 +141,22 @@ const store = new Vuex.Store({
         id: 'inc-1',
         name: 'Nucleus subthalamicus (B20)',
         // value: 'precomputed://http://imedv02.ime.kfa-juelich.de:8287/precomputed/B20_stn_l/v10'
-        imageSource: 'precomputed://https://neuroglancer-dev.humanbrainproject.org/precomputed/landmark-reg/B20_stn_l/v10'
+        imageSource: 'precomputed://https://neuroglancer-dev.humanbrainproject.org/precomputed/landmark-reg/B20_stn_l/v10',
+        dim: [
+          16208000,
+          13056000,
+          9800000
+        ]
       },
       {
         id: 'inc-2',
         name: 'Hippocampus unmasked',
-        imageSource: 'precomputed://https://neuroglancer-dev.humanbrainproject.org/precomputed/landmark-reg/hippocampus-unmasked'
+        imageSource: 'precomputed://https://neuroglancer-dev.humanbrainproject.org/precomputed/landmark-reg/hippocampus-unmasked',
+        dim: [
+          57600000,
+          57600000,
+          52800000
+        ]
       }
     ],
 
@@ -346,7 +393,10 @@ const store = new Vuex.Store({
     appendNehuba: function ({ commit, dispatch }) {
       appendNehuba()
         .then(() => commit('setAppendNehubaFlag', {flag: true}))
-        .catch(e => dispatch('modalMessage', { title: 'Incompatible browser', body: incompatibleBrowserText }))
+        .catch(e => {
+          commit('setAppendNehubaFlag', {flag: 0})
+          dispatch('modalMessage', { title: 'Incompatible browser', body: incompatibleBrowserText })
+        })
     },
     changeLandmarkMode: function ({ commit }, { mode }) {
       commit('setLandmarkMode', { mode })
@@ -517,8 +567,6 @@ const store = new Vuex.Store({
         return
       }
 
-      console.log('undo')
-
       /**
        * collapse state is not to be pushed onto the redo stack
        */
@@ -544,8 +592,6 @@ const store = new Vuex.Store({
       if (state.redoStack.length === 0) {
         return
       }
-
-      console.log('redo')
 
       const {id, state: _state, ...rest} = state.redoStack.slice(-1)[0]
 
@@ -635,7 +681,8 @@ const store = new Vuex.Store({
     landmarkControlVisibilityChanged ({ commit }, { visible }) {
       commit('setLandmarkControlVisibility', { visible })
     },
-    translateLandmarkPosBy ({commit, state}, { volume, id, value}) {
+    translateLandmarkPosBy ({commit, dispatch, state}, { volume, id, value}) {
+
       const lm = volume === 'reference'
         ? state.referenceLandmarks.find(lm => lm.id === id)
         : volume === 'incoming'
@@ -643,6 +690,11 @@ const store = new Vuex.Store({
           : null
       if (!lm)
         return
+
+      dispatch('pushUndo', {
+        name: `translating ${lm.name} in ${volume}`,
+        collapse: `translating ${lm.name} in ${volume}`
+      })
 
       const commitSignature = volume === 'reference'
         ? 'setRefLandmark'
@@ -720,13 +772,28 @@ const store = new Vuex.Store({
     loadLandmarks ({ dispatch }) {
       dispatch('openModal', {modalId: 'loadLandmarkPairsModal'})
     },
+    saveLandmarks ({ state }) {
+      const { referenceVolumes, selectedReferenceVolumeId, incomingVolumes, selectedIncomingVolumeId } = state
+      const refVol = referenceVolumes.find(v => v.id === selectedReferenceVolumeId)
+      const incVol = incomingVolumes.find(v => v.id === selectedIncomingVolumeId)
+
+      const data = {
+        reference_volume: (refVol && refVol.name) || 'Untitled Reference Volume',
+        incoming_volume: (incVol && incVol.name) || 'Untitled Incoming Volume',
+        reference_landmarks: state.referenceLandmarks,
+        incoming_landmarks: state.incomingLandmarks,
+        landmark_pairs: state.landmarkPairs
+      }
+      console.log('saving landmarks', data)
+      const jsonData = JSON.stringify(data, null, 2)
+      saveToFile(jsonData, 'application/json', 'landmark-pairs.json')
+    },
     openModal (store, { modalId }) {
       /**
        * required for subscribe action
        */
     },
     flipAxis ({ commit, state }, { axis }) {
-      const { mat4 } = window.export_nehuba
       const idx = axis === 0
         ? 0
         : axis === 1
@@ -737,13 +804,27 @@ const store = new Vuex.Store({
 
       if (idx < 0)
         return
+
+      const flippedState = state.flippedState.map((v, id) => id === axis ? v * -1 : v)
+
+      /**
+       * translation mat for operations at the center of the volume
+       */
+      const id = state.selectedIncomingVolumeId
+      const vol = state.incomingVolumes.find(v => v.id === id)
+      const dim = (vol && vol.dim) || [0, 0, 0]
+
+      const mirrorVec = [1, 1, 1]
+      mirrorVec[axis] = -1
+      const mirror = getMirrorMat(mirrorVec, dim)
       
-      commit('setFlippedState', {
-        flippedState: state.flippedState.map((v, id) => id === axis ? v * -1 : v)
-      })
-      const mulM = mat4.create()
-      mulM[idx] = -1
-      commit('multiplyIncTransmMatrix', Array.from(mulM))
+      if (!mirror)
+        return
+
+      const { applyMirror } = mirror
+      
+      commit('setFlippedState', { flippedState })
+      commit('multiplyIncTransmMatrix', Array.from(applyMirror))
     },
     selectReferenceVolumeWithId ({commit}, id) {
       commit('setSelectedReferenceVolumeWithId', id)
@@ -862,7 +943,10 @@ const store = new Vuex.Store({
         })
       }
     },
-    addLandmarkPair ({ commit, state }) {
+    addLandmarkPair ({ commit, dispatch, state }) {
+      dispatch('pushUndo', {
+        name: `add ref inc landmark pair`
+      })
       /**
        * TODO deprecated. old 2 way split method
        */
@@ -870,6 +954,7 @@ const store = new Vuex.Store({
       const newReferenceLandmark = {
         id: refId,
         name: refId,
+        active: true,
         /**
          * position in nm
          */
@@ -879,6 +964,7 @@ const store = new Vuex.Store({
       const newIncomingLandmark = {
         id: incId,
         name: incId,
+        active: true,
         coord: state.secondaryNehubaNavigationPosition.map(v => v / 1e6)
       }
       const lpId = generateId(state.landmarkPairs).toString()
@@ -901,22 +987,29 @@ const store = new Vuex.Store({
         landmarkPairs: state.landmarkPairs.concat(newLandmarkPair)
       })
     },
-    removeReferenceLandmark ({commit, state}, {id}) {
-      commit('setReferenceLandmarks', {
-        referenceLandmarks: state.referenceLandmarks.filter(lm => lm.id !== id)
+    removeLmsLmp ({commit, dispatch, state}, { id }) {
+
+      const lmp = state.landmarkPairs.find(lm => lm.id === id)
+
+      if (!lmp)
+        return
+      
+      dispatch('pushUndo', {
+        name: `remove landmark pairs ${lmp.name}`
       })
+      
+      const landmarkPairs = state.landmarkPairs.filter(lmp => lmp.id !== id)
+      const referenceLandmarks = state.referenceLandmarks.filter(lm => lm.id !== lmp.refId)
+      const incomingLandmarks = state.incomingLandmarks.filter(lm => lm.id !== lmp.incId)
+
+      commit('setLandmarkPairs', { landmarkPairs })
+      commit('setReferenceLandmarks', { referenceLandmarks })
+      commit('setIncomingLandmarks', { incomingLandmarks })
     },
-    removeIncomingLandmark ({commit}, {id}) {
-      commit('setIncomingLandmarks', {
-        incomingLandmarks: state.incomingLandmarks.filter(lm => lm.id !== id)
+    removeAllLmsLmps ({ commit, dispatch }) {
+      dispatch('pushUndo', {
+        name: 'remove all landmarks and landmark pairs'
       })
-    },
-    removeLandmarkPair ({commit, state}, { id }) {
-      commit('setLandmarkPairs', {
-        landmarkPairs: state.landmarkPairs.filter(lm => lm.id !== id)
-      })
-    },
-    removeLandmarkPairs ({commit}) {
       commit('setReferenceLandmarks', {
         referenceLandmarks: []
       })
@@ -925,6 +1018,21 @@ const store = new Vuex.Store({
       })
       commit('setLandmarkPairs', {
         landmarkPairs: []
+      })
+    },
+    removeReferenceLandmark ({commit, state}, {id}) {
+      commit('setReferenceLandmarks', {
+        referenceLandmarks: state.referenceLandmarks.filter(lm => lm.id !== id)
+      })
+    },
+    removeIncomingLandmark ({commit, state}, {id}) {
+      commit('setIncomingLandmarks', {
+        incomingLandmarks: state.incomingLandmarks.filter(lm => lm.id !== id)
+      })
+    },
+    removeLandmarkPair ({commit, state}, { id }) {
+      commit('setLandmarkPairs', {
+        landmarkPairs: state.landmarkPairs.filter(lm => lm.id !== id)
       })
     },
     enableLandmarkPairs ({commit, state}, {enable}) {
@@ -1055,6 +1163,7 @@ const store = new Vuex.Store({
       if (pair) {
         const inc = state.incomingLandmarks.find(incLm => incLm.id === pair.incId)
         const ref = state.referenceLandmarks.find(refLm => refLm.id === pair.refId)
+        console.log(ref, inc)
         dispatch('setPrimaryNehubaNavigation', ref)
         dispatch('setSecondaryNehubaNavigation', inc)
       }
@@ -1070,57 +1179,6 @@ const store = new Vuex.Store({
        */
     },
 
-    /**
-     * primary nehuba control
-     */
-    setRotateIncByQuat ({commit, state}, { quaternion }) {
-      const {mat4, quat, vec3} = window.export_nehuba
-
-      /**
-       * undo existing rotation
-       */
-      const xformMat = mat4.fromValues(...state.incTransformMatrix)
-      const oldRotQuat = mat4.getRotation(quat.create(), xformMat)
-      const oldAxisVec3 = vec3.create()
-      const oldRotDeg = quat.getAxisAngle(oldAxisVec3, oldRotQuat)
-      mat4.rotate(xformMat, xformMat, -1 * oldRotDeg, oldAxisVec3)
-
-      /**
-       * apply the new rotation
-       */
-      const newRotQuat = quat.fromValues(...quaternion)
-      const newAxisVec3 = vec3.create()
-      const newRotDeg = quat.getAxisAngle(newAxisVec3, newRotQuat)
-      mat4.rotate(xformMat, xformMat, newRotDeg, newAxisVec3)
-
-      const matrix = Array.from(xformMat)
-
-      commit('setIncTransformMatrix', { matrix })
-    },
-    setRotateInc ({commit, state}, {axis, value}) {
-      if (axis !== 'xyz') {
-        return
-      }
-
-      const {mat4, quat, vec3} = window.export_nehuba
-
-      const xformMat = mat4.fromValues(...state.incTransformMatrix)
-      const oldQuat = mat4.getRotation(quat.create(), xformMat)
-      const axisVec = vec3.create()
-      const angleNum = quat.getAxisAngle(axisVec, oldQuat)
-      mat4.rotate(xformMat, xformMat, -1 * angleNum, axisVec)
-
-      const eulerArr = value
-      const rotationQuat = quat.create()
-      quat.fromEuler(rotationQuat, ...eulerArr)
-      const newAxisVec = vec3.create()
-      const newAngleNum = quat.getAxisAngle(newAxisVec, rotationQuat)
-      mat4.rotate(xformMat, xformMat, newAngleNum, rotationQuat)
-
-      const matrix = Array.from(xformMat)
-
-      commit('setIncTransformMatrix', { matrix })
-    },
     setScaleInc ({commit, state}, {axis, value}) {
       if (axis !== 'x' && axis !== 'y' && axis !== 'z') {
         return
@@ -1135,67 +1193,58 @@ const store = new Vuex.Store({
           : 2
 
       const { mat4, vec3 } = window.export_nehuba
-      const xformMat = mat4.fromValues(...state.incTransformMatrix)
-      const scaleVec = mat4.getScaling(vec3.create(), xformMat)
-      
-      const inverseVec = vec3.inverse(vec3.create(), scaleVec)
-      scaleVec[idx] = value
-      mat4.scale(xformMat, xformMat, inverseVec)
-      mat4.scale(xformMat, xformMat, scaleVec)
 
-      const matrix = Array.from(xformMat)
-      commit('setIncTransformMatrix', { matrix })
+      /**
+       * returning mat
+       */
+      const xformMat = mat4.create()
+
+      const cXformMat = mat4.fromValues(...state.incTransformMatrix)
+      const cScaleVec = mat4.getScaling(vec3.create(), cXformMat)
+      const nScaleVec = vec3.clone(cScaleVec)
+      nScaleVec[idx] = value
+
+      vec3.div(nScaleVec, nScaleVec, cScaleVec)
+      mat4.fromScaling(xformMat, nScaleVec)
+      
+      commit('multiplyIncTransmMatrix', Array.from(xformMat))
     },
-    setTranslInc ({commit, state}, {axis, value}) {
+    setTranslInc ({commit, state}, {axis, value : uncorrectedValue}) {
       if (axis !== 'x' && axis !== 'y' && axis !== 'z' && axis !== 'xyz') {
         return
       }
-      if (Number.isNaN(value)) {
-        return
-      }
-      const idx = axis === 'x'
+
+      const value = axis === 'xyz'
+        ? uncorrectedValue.map(v => v * 1e6)
+        : uncorrectedValue * 1e6
+
+      const mIdx = axis === 'x'
+        ? 12
+        : axis === 'y'
+          ? 13
+          : axis === 'z'
+            ? 14
+            : null
+      const vIdx = axis === 'x'
         ? 0
         : axis === 'y'
           ? 1
           : axis === 'z'
             ? 2
-            : null
-      const {mat4, vec3} = window.export_nehuba
-
-      /**
-       * first get current transformation matrix
-       */
+            : null 
+      const {mat4} = window.export_nehuba
       const xformMat = mat4.fromValues(...state.incTransformMatrix)
-
-      /**
-       * get current translate, and calculate scaled inverse to undo translate
-       */
-      const translVec = mat4.getTranslation(vec3.create(), xformMat)
-      const inverseVec = vec3.negate(vec3.create(), translVec)
-      const scaleVec = mat4.getScaling(vec3.create(), xformMat)
-      vec3.divide(inverseVec, inverseVec, scaleVec)
-
-      /**
-       * set new translation array
-       */
-      const newTranslArray = idx === null
-        ? value
-        : Array.from(translVec).map((v, i) => i === idx ? value : v)
-
-      /**
-       * undo translation first
-       */
-      mat4.translate(xformMat, xformMat, inverseVec)
-
-      /**
-       * apply new translation
-       */
-      mat4.translate(xformMat, xformMat, vec3.fromValues(...newTranslArray))
-
+      if (mIdx !== null) {
+        xformMat[mIdx] = value * state.flippedState[vIdx]
+      } else {
+        xformMat[12] = value[0]
+        xformMat[13] = value[1]
+        xformMat[14] = value[2]
+      }
       const matrix = Array.from(xformMat)
       commit('setIncTransformMatrix', { matrix })
     },
-    translIncBy ({commit, state}, {axis, value}) {
+    translIncBy ({commit}, {axis, value}) {
       const idx = axis === 'x'
         ? 0
         : axis === 'y'
@@ -1222,25 +1271,93 @@ const store = new Vuex.Store({
       const translM = mat4.fromTranslation(mat4.create(), translVec)
       commit('multiplyIncTransmMatrix', Array.from(translM))
     },
-    rotIncBy ({commit}, { quaternion }) {
+    rotIncBy ({commit, state}, { quaternion }) {
       if (!quaternion) {
         return
       }
+      if (quaternion.some(n => Number.isNaN(n))) {
+        return
+      }
       const {quat, vec3, mat4} = window.export_nehuba
+      
       const axis = vec3.create()
       const rotQuat = quat.fromValues(...quaternion)
       const angle = quat.getAxisAngle(axis, rotQuat)
+      const rotMat = mat4.fromRotation(mat4.create(), angle, rotQuat)
 
-      const xformMat = mat4.fromRotation(mat4.create(), angle, rotQuat)
-      commit('multiplyIncTransmMatrix', xformMat)
+      /**
+       * rotMat may be null if angle is zero
+       */
+      if (!rotMat)
+        return
+
+      const xformMat = mat4.create()
+
+      /**
+       * translation mat for operations at the center of the volume
+       */
+      const id = state.selectedIncomingVolumeId
+      const vol = state.incomingVolumes.find(v => v.id === id)
+      const dim = vec3.fromValues(...(vol && vol.dim) || [0, 0, 0])
+
+      /**
+       * get mirror mats
+       */
+      const mirror = getMirrorMat(state.flippedState, dim)
+
+      if (!mirror)
+        return
+
+      const { undoMirror } = mirror
+
+      /**
+       * undo mirror & undo scale
+       */
+      const cXformMat = mat4.fromValues(...state.incTransformMatrix)
+      const cScaling = mat4.getScaling(vec3.create(), cXformMat)
+      const ivCScaling = vec3.inverse(vec3.create(), cScaling)
+      const cScalingMat = mat4.fromScaling(mat4.create(), ivCScaling)
+      mat4.mul(xformMat, undoMirror, cScalingMat)
+
+      /**
+       * apply translation correction
+       */
+
+      const incTransl = vec3.mul(dim, dim, cScaling)
+      vec3.scale(incTransl, incTransl, 0.5)
+      const incTranslMat = mat4.fromTranslation(mat4.create(), incTransl)
+      mat4.mul(xformMat, xformMat, incTranslMat)
+
+      /**
+       * save invert
+       */
+      const invert = mat4.invert(mat4.create(), xformMat)
+
+      /**
+       * apply rotation
+       */
+      mat4.mul(xformMat, xformMat, rotMat)
+
+      /**
+       * apply invert
+       */
+      mat4.mul(xformMat, xformMat, invert)
+
+      commit('multiplyIncTransmMatrix', Array.from(xformMat))
     },
-    startFromScratch ({dispatch, commit}) {
+    startFromScratch ({dispatch, state, commit}) {
       commit('setReferenceLandmarks', { referenceLandmarks: [] })
       commit('setIncomingLandmarks', { incomingLandmarks: [] })
       commit('setLandmarkPairs', { landmarkPairs: [] })
       dispatch('selectIncomingVolumeWithId', null)
       commit('setUndoStack', { undoStack: [] })
       commit('setRedoStack', { redoStack: [] })
+
+      if (!state.appendNehubaFlag)
+        return
+      const { mat4 } = window.export_nehuba
+      const matrix = Array.from(mat4.create())
+      commit('setIncTransformMatrix', { matrix })
     }
   }
 })

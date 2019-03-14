@@ -13,6 +13,7 @@
         ref="landmarkName"
         class="form-control from-control-sm"
         type="text"
+        tabindex="1"
         v-model="name">
     </div>
 

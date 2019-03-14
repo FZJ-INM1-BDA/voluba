@@ -44,7 +44,6 @@ export default {
   },
   data: function() {
     return {
-      nehubaAppended: false,
       showLayerControl: this.initOpen,
     };
   },

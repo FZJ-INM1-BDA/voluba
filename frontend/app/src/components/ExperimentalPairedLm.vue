@@ -41,7 +41,7 @@
         <span
           @click="gotoLm({ volume: 'incoming', id: landmark.id })"
           v-b-tooltip.hover.left.nofade="landmark.name"
-          :style="{color: iconColor, opacity: landmark.active ? 1.0 : inactiveOpacity }"
+          :style="{color: overlayColorHex, opacity: landmark.active ? 1.0 : inactiveOpacity }"
           class="input-group-text opacity-transition">
           <font-awesome-icon class="icon" icon="map-marker-alt"></font-awesome-icon>
         </span>
@@ -169,13 +169,11 @@ export default {
   },
   computed: {
     ...mapState({
-      pairLandmarkStartDragging: 'pairLandmarkStartDragging'
+      pairLandmarkStartDragging: 'pairLandmarkStartDragging',
+      overlayColorHex: state => state.overlayColor.hex || INCOMING_COLOR
     }),
     inactiveOpacity: function () {
       return INACTIVE_ROW_OPACITY
-    },
-    iconColor: function () {
-      return INCOMING_COLOR
     }
   }
 }

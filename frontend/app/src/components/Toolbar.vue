@@ -1,18 +1,6 @@
 <template>
   <div id="flexcontainer">
 
-    <!-- toggle double pane mode -->
-    <div
-      class="horizontalContainer flex-items">
-      <div
-        v-b-tooltip.hover.right="modeBtnTooltipText"
-        @click="toggleMode"
-        :class="modeBtnClass"
-        class="addBtn rounded-circle btn btn-sm">
-        <font-awesome-icon icon="columns"></font-awesome-icon>
-      </div>
-    </div>
-
     <!-- toggle history -->
     <div
       class="horizontalContainer flex-items">
@@ -35,7 +23,7 @@
     <div
       class="horizontalContainer flex-items">
       <div
-        v-b-tooltip.right.hover="'transform incoming volume'"
+        v-b-tooltip.right.hover="incVolXformTitle"
         :class="showLayerControl ? 'btn-info' : 'btn-secondary'"
         @click="showLayerControl=!showLayerControl"
         class="addBtn rounded-circle layer-control-toggle btn btn-sm">
@@ -54,7 +42,7 @@
       class="horizontalContainer flex-items">
 
       <div
-        v-b-tooltip.right.hover="'edit landmarks'"
+        v-b-tooltip.right.hover="editLandmarksTitle"
         @click="landmarkControlVisibilityChanged({visible : !landmarkControlVisible })"
         :class="landmarkControlVisible ? 'btn-info' : 'btn-secondary'"
         class="addBtn rounded-circle landmarks-control-toggle btn-shadow btn-sm btn">
@@ -75,8 +63,9 @@
         <div
           id="addLm"
           @click="addLandmark"
-          v-b-tooltip.right.hover="'Toggle add landmark mode'"
-          class="addBtn pointer-events rounded-circle btn btn-sm btn-success">
+          v-b-tooltip.right.hover="addLmTooltipText"
+          :class="addLmBttnClass"
+          class="addBtn pointer-events rounded-circle btn btn-sm">
           <font-awesome-icon icon="plus" />
         </div>
 
@@ -109,13 +98,14 @@
         :class="ableToComputeTransformationMatrix && !backendQueryInProgress ? '' : 'lmr-disabled'"
         class="addBtn rounded-circle landmarks-control-toggle btn btn-sm btn-primary">
         <font-awesome-icon
-          :class="backendQueryInProgress ? 'spinner' : ''"
+          :class="backendQueryInProgress ? 'spinner' : 'startFromScratchModal'"
           :icon="backendQueryInProgress ? 'spinner' : 'calculator'"></font-awesome-icon>
       </div>
     </div>
     
     <!-- save export control -->
     <div
+      v-if="false"
       class="horizontalContainer flex-items">
 
       <div
@@ -136,7 +126,7 @@
     <div
       class="horizontalContainer flex-items">
       <div
-        @click="$store.dispatch('startFromScratch')"
+        @click="openModal({ modalId: 'startFromScratchModal' })"
         class="addBtn pointer-events rounded-circle btn btn-sm btn-danger"
         v-b-tooltip.right.hover
         title="Start from scratch">
@@ -152,6 +142,8 @@ import LayerControl from '@/components/LayerControl'
 import LandmarkControl from '@/components/LandmarkControl'
 import SaveExportControl from '@/components/SaveExportControl'
 import HistoryControl from '@/components/HistoryControl'
+
+import { INC_VOL_XFORM_TITLE, EDIT_LANDMARKS_TITLE, HISTORY_BROWSER_TITLE } from '@/text'
 
 export default {
   components: {
@@ -175,6 +167,25 @@ export default {
       landmarkControlVisible: 'landmarkControlVisible',
       ableToComputeTransformationMatrix: state => state.landmarkPairs.length >= 3
     }),
+    historyBrowserTitle: function () {
+      return HISTORY_BROWSER_TITLE
+    },
+    incVolXformTitle: function () {
+      return INC_VOL_XFORM_TITLE
+    },
+    editLandmarksTitle: function () {
+      return EDIT_LANDMARKS_TITLE
+    },
+    addLmTooltipText: function(){
+      return this.mode === 'overlay'
+        ? 'Toggle add landmark mode'
+        : 'Add a landmark pair'
+    },
+    addLmBttnClass: function () {
+      return this.mode === 'classic' || this.addLandmarkMode
+        ? 'btn-success'
+        : 'btn-secondary'
+    },
     mode: {
       get: function () {
         return this.$store.state._step2Mode
@@ -189,21 +200,14 @@ export default {
     addBtnStyle: function () {
       return {
       }
-    },
-    modeBtnClass: function () {
-      return this.mode === 'overlay'
-        ? 'btn-secondary'
-        : 'btn-info'
-    },
-    modeBtnTooltipText: function () {
-      return `debug: toggle step 2 mode`
     }
   },
   methods: {
     ...mapActions({
       landmarkControlVisibilityChanged: 'landmarkControlVisibilityChanged',
       changeLandmarkMode: 'changeLandmarkMode',
-      computeXform: 'computeXform'
+      computeXform: 'computeXform',
+      openModal: 'openModal'
     }),
     toggleAddLmMode: function () {
       this.addLmMode = this.addLmMode === 'reference'

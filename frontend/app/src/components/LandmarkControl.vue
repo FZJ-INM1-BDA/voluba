@@ -30,18 +30,55 @@
         @header-mousedown="draggingMixin__StartDragging"
         v-if="showLandmarksControl && !showV2" />
 
-      <!-- transformation -->
-      <TransformationComponent v-if="!showV2" />
+      <!-- landmark footer -->
 
-      <!-- Sync Zoom  -->
-      <div v-if="!showV2" style = "pointer-events: all">
-        <input type="checkbox" id="synchronize-zoom" name="synchronize-zoom" v-model="synchronizeZoom"/>
-        <label for="synchronize-zoom">Synchronize Zoom</label>
+      <!-- divider -->
+      <hr class="bg-light mb-0 mt-0">
+
+      <!-- footer -->
+      <div class="body bg-light">
+
+        <!-- add lm -->
+        <div
+          v-if="!showV2"
+          v-b-tooltip.bottom.hover="'save landmarks'"
+          class="footer-icon rounded-circle btn btn-sm btn-success"
+          @click="addLandmarkPair">
+
+          <font-awesome-icon icon="plus"/>
+        </div>
+        <!-- save lms -->
+        <div
+          @click="saveLandmarks"
+          v-b-tooltip.bottom.hover="'save landmarks'"
+          class="footer-icon rounded-circle btn btn-sm btn-secondary">
+          <font-awesome-icon icon="save"></font-awesome-icon>
+        </div>
+
+        <!-- load lms -->
+        <div
+          @click="$store.dispatch('loadLandmarks')"
+          v-b-tooltip.bottom.hover="'load landmarks'"
+          class="footer-icon rounded-circle btn btn-sm btn-secondary">
+          <font-awesome-icon icon="folder-open"></font-awesome-icon>
+        </div>
+
+        <!-- calculate xform -->
+        <div
+          @click="computeXform"
+          v-b-tooltip.bottom.hover="ableToComputeTransformationMatrix ? 'Compute and display transform based on landmarks.' : 'Need at least three (3) active landmarks to compute transformation.'"
+          :class="ableToComputeTransformationMatrix && !backendQueryInProgress ? '' : 'lmr-disabled'"
+          class="footer-icon rounded-circle btn btn-sm btn-primary">
+          <font-awesome-icon
+            :class="backendQueryInProgress ? 'spinner' : ''"
+            :icon="backendQueryInProgress ? 'spinner' : 'calculator'" />
+        </div>
       </div>
     </template>
   </nib-component>
 </template>
 <script>
+import { mapActions, mapState } from 'vuex'
 
 import NibComponent from '@/components/layout/Nib'
 import DraggableMixin from '@/mixins/DraggableMixin'
@@ -81,6 +118,10 @@ export default {
     }
   },
   computed: {
+    ...mapState({
+      ableToComputeTransformationMatrix: state => state.landmarkPairs.filter(lmp => lmp.active).length >= 3,
+      backendQueryInProgress: 'backendQueryInProgress'
+    }),
     showV2: function () {
       return this.mode === 'overlay'
     },
@@ -99,6 +140,11 @@ export default {
     }
   },
   methods: {
+    ...mapActions({
+      addLandmarkPair: 'addLandmarkPair',
+      computeXform: 'computeXform',
+      saveLandmarks: 'saveLandmarks'
+    })
   }
 }
 </script>
@@ -107,5 +153,20 @@ export default {
 .rounded-circle
 {
   width: 2rem;
+}
+
+.footer-icon
+{
+  margin: 1em 0.2em;
+}
+
+.footer-icon:first-child
+{
+  margin-left: 1em;
+}
+
+.lmr-disabled
+{
+  opacity: 0.5;
 }
 </style>

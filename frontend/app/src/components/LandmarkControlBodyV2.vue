@@ -2,25 +2,14 @@
   <div>
 
     <!-- header -->
-    <div class="card bg-light" @mousedown="$emit('header-mousedown', $event)">
+    <div
+      class="card bg-light"
+      @mousedown="$emit('header-mousedown', $event)">
       <h5 class="title">
         <div>
-          Edit landmarks
+          {{ editLandmarksTitle }}
         </div>
       </h5>
-    </div>
-
-    <!-- add load save -->
-    <div class="bg-light">
-      <div class="btn-group mb-3">
-        <button
-          type="button"
-          @click="$store.dispatch('loadLandmarks')"
-          class="btn btn-lg btn-secondary">
-          <font-awesome-icon icon="file-upload"/>
-          Load
-        </button>
-      </div>
     </div>
 
     <!-- TODO: sanitize to prevent XSS -->
@@ -30,20 +19,24 @@
       <!-- top label -->
       <div class="lm-heading mb-3">
         <!-- reference landmarks -->
-        <div class="checkDelAllContainer">
+        <div
+          @click="changeLandmarkMode({ mode : addLandmarkMode === 'reference' ? false : 'reference' })"  
+          :class="addLandmarkMode === 'reference' ? 'btn-success' : 'btn-outline-secondary'"
+          class="btn-sm btn checkDelAllContainer">
           <div
-            @click="changeLandmarkMode({ mode : addLandmarkMode === 'reference' ? false : 'reference' })"
-            :class="addLandmarkMode === 'reference' ? 'btn-success' : 'btn-secondary'"
-            class="btn-sm btn rounded-circle">
+            :class="addLandmarkMode === 'reference' ? 'btn-outline-success bg-light' : 'btn-secondary'"
+            class="btn btn-sm rounded-circle">
             <font-awesome-icon icon="plus"></font-awesome-icon>
           </div>
           Reference
         </div>
 
-        <div class="checkDelAllContainer">
+        <div
+          @click="changeLandmarkMode({ mode : addLandmarkMode === 'incoming' ? false : 'incoming' })"
+          :class="addLandmarkMode === 'incoming' ? 'btn-success' : 'btn-outline-secondary'"
+          class="btn-sm btn checkDelAllContainer">
           <div
-            @click="changeLandmarkMode({ mode : addLandmarkMode === 'incoming' ? false : 'incoming' })"
-            :class="addLandmarkMode === 'incoming' ? 'btn-success' : 'btn-secondary'"
+            :class="addLandmarkMode === 'incoming' ? 'btn-outline-success bg-light' : 'btn-secondary'"
             class="btn-sm btn rounded-circle">
             <font-awesome-icon icon="plus"></font-awesome-icon>
           </div>
@@ -52,11 +45,11 @@
       </div>
 
       <!-- check del all container -->
-      <div class=" lm-heading mb-3">
+      <div v-if="refLmTopRowVisible || incLmTopRowVisible" class=" lm-heading mb-3">
 
         <!-- reference landmarks -->
         <div  
-          :class="referenceLandmarks.length > 0 ? '' : 'invisible'"
+          :class="refLmTopRowVisible ? '' : 'invisible'"
           class="checkDelAllContainer">
           <div class="input-group input-group-sm">
             <div class="input-group-prepend">
@@ -82,7 +75,7 @@
 
         <!-- incoming landmarks -->
         <div
-          :class="incomingLandmarks.length > 0 ? '' : 'invisible'"
+          :class="incLmTopRowVisible ? '' : 'invisible'"
           class="checkDelAllContainer ml-3">
           <div class="input-group input-group-sm">
             <div class="input-group-prepend">
@@ -187,6 +180,13 @@
             </template>
 
           </LandmarkRowV2>
+
+          <div
+            class="empty-text-helper text-muted"
+            v-if="referenceLandmarks.length === 0">
+            {{ addRefLmText }}
+          </div>
+
         </div>
 
         <!-- unpaired incoming landmarks -->
@@ -196,34 +196,27 @@
             :key="lm.id"
             :landmark="lm"
             v-for="lm in unpairedIncLm" />
+
+
+          <div
+            class="empty-text-helper text-muted"
+            v-if="incomingLandmarks.length === 0">
+            {{ addIncLmText }}
+          </div>
         </div>
       </div>
 
     </div>
-
-    <!-- divider -->
-    <hr class="bg-light mb-0 mt-0">
-
-    <!-- calculate xform -->
-    <div class="body bg-light">
-      <div
-        @click="computeXform"
-        v-b-tooltip.right.hover="ableToComputeTransformationMatrix ? 'Compute and display transform based on landmarks.' : 'Need at least three (3) active landmarks to compute transformation.'"
-        :class="ableToComputeTransformationMatrix && !backendQueryInProgress ? '' : 'lmr-disabled'"
-        class="addBtn rounded-circle landmarks-control-toggle btn btn-sm btn-primary">
-        <font-awesome-icon
-          :class="backendQueryInProgress ? 'spinner' : ''"
-          :icon="backendQueryInProgress ? 'spinner' : 'calculator'" />
-      </div>
-    </div>
   </div>
 </template>
 <script>
+import { mapActions, mapState } from 'vuex'
+
 import LandmarkRowV2 from '@/components/LandmarkRowV2'
 import ExperimentalPairedLm from '@/components/ExperimentalPairedLm'
 import EditLandmarkComponent from '@/components/EditLandmark'
 import { REFERENCE_COLOR, INCOMING_COLOR, INACTIVE_ROW_OPACITY } from '@/constants'
-import { mapActions, mapState } from 'vuex'
+import { EDIT_LANDMARKS_TITLE, OVERLAY_ADD_REF_LM_TEXT, OVERLAY_ADD_INC_LM_TEXT } from '@/text'
 
 export default {
   components: {
@@ -247,8 +240,7 @@ export default {
       removeAllLmp: 'removeAllLmp',
       removeAllLm: 'removeAllLm',
       setLmsActive: 'setLmsActive',
-      changeLandmarkMode: 'changeLandmarkMode',
-      computeXform: 'computeXform'
+      changeLandmarkMode: 'changeLandmarkMode'
     }),
     toggleLmIcons: function (id) {
       const foundId = this.lmIconOpenSet.find(i => i === id)
@@ -278,10 +270,23 @@ export default {
       incomingLandmarks: 'incomingLandmarks',
       landmarkPairs: 'landmarkPairs',
       allRefLmChecked: state => state.referenceLandmarks.every(lm => lm.active),
-      allIncLmChecked: state => state.incomingLandmarks.every(lm => lm.active),
-      ableToComputeTransformationMatrix: state => state.landmarkPairs.length >= 3,
-      backendQueryInProgress: 'backendQueryInProgress',
+      allIncLmChecked: state => state.incomingLandmarks.every(lm => lm.active)
     }),
+    editLandmarksTitle: function () {
+      return EDIT_LANDMARKS_TITLE
+    },
+    addRefLmText: function () {
+      return OVERLAY_ADD_REF_LM_TEXT
+    },
+    addIncLmText: function () {
+      return OVERLAY_ADD_INC_LM_TEXT
+    },
+    refLmTopRowVisible: function () {
+      return this.referenceLandmarks.length > 0
+    },
+    incLmTopRowVisible: function () {
+      return this.incomingLandmarks.length > 0
+    },
     unpairedIncLm: function () {
       return this.incomingLandmarks.filter(incLm => {
         return this.landmarkPairs.findIndex(lmp => lmp.incId === incLm.id) < 0
@@ -348,7 +353,7 @@ export default {
 
 .body
 {
-  padding: 1em;
+  padding: 0.5em;
 }
 
 .opacity-transition
@@ -443,8 +448,14 @@ export default {
   flex: 0 0 auto;
 }
 
-.lmr-disabled
+.btn-container
 {
-  opacity: 0.5;
+  padding: 0.5em;
+}
+.empty-text-helper
+{
+  padding: 1em;
+  font-size: 75%;
+  max-width: 10em;
 }
 </style>

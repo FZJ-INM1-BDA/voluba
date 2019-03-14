@@ -35,6 +35,8 @@ import NehubaBaseMixin from '@/mixins/NehubaBase'
 import DragLandmarkMixin from '@/mixins/DragLandmarkMixin'
 import NehubaStatusCard from '@/components/NehubaStatusCard'
 
+import { mapState } from 'vuex'
+
 export default {
   mixins: [
     NehubaBaseMixin,
@@ -65,19 +67,28 @@ export default {
     }
   },
   mounted () {
-    this.nehubaBase__initNehuba()
+    const { quat, mat4 } = window.export_nehuba
+    const q = mat4.getRotation(quat.create(), mat4.fromValues(...this.incTransformMatrix))
+    quat.normalize(q, q)
+    quat.invert(q, q)
+
+    const additionalConfig = {
+      orientation: Array.from(q)
+    }
+
+    this.nehubaBase__initNehuba(additionalConfig)
       .then(() => {
         
       })
       .catch(e => {
-        console.log(('uh oh'))
+        console.log('nehubaBase initNehuba Error', e)
       })
     this.$store.subscribeAction(({type, payload}) => {
       switch (type) {
         case 'setSecondaryNehubaNavigation':
-          if (this.$options.nonReactiveData.nehubaViewer) {
+          if (this.$options.nehubaBase && this.$options.nehubaBase.nehubaBase__nehubaViewer) {
             const vec3 = window.export_nehuba.vec3
-            this.$options.nonReactiveData.nehubaViewer.setPosition(vec3.fromValues(...payload.coord.map(v => v * 1e6)), true)
+            this.$options.nehubaBase.nehubaBase__nehubaViewer.setPosition(vec3.fromValues(...payload.coord.map(v => v * 1e6)), true)
           }
           break
         default:
@@ -94,6 +105,9 @@ export default {
     }
   },
   computed: {
+    ...mapState({
+      incTransformMatrix: 'incTransformMatrix'
+    }),
     cid: function () {
       return this.nehubaBase__cid
     },

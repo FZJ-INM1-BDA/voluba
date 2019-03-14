@@ -31,7 +31,7 @@
         @click.stop.prevent = "gotoLandmark"
         type="button"
         class="btn btn-sm btn-primary"
-        v-b-tooltip.hover title="Go to landmark-pair">
+        v-b-tooltip.hover title="Go to landmark pair">
         <font-awesome-icon icon = "map-marker-alt"/>
       </button>
 
@@ -58,6 +58,8 @@
 </template>
 
 <script>
+import { mapActions } from 'vuex'
+
 export default {
   name: 'Landmark',
   props: {
@@ -69,6 +71,9 @@ export default {
   watch: {
   },
   methods: {
+    ...mapActions({
+      removeLmsLmp: 'removeLmsLmp'
+    }),
     changeName: function (ev) {
       const element = ev.srcElement || ev.originalTarget
       this.$store.dispatch('changeLandmarkPairName', {
@@ -92,9 +97,10 @@ export default {
       })
     },
     removeLandmarkPair: function () {
-      this.$store.dispatch('removeLandmarkPair', { id: this.id })
-      this.$store.dispatch('removeReferenceLandmark', { id: this.refId })
-      this.$store.dispatch('removeIncomingLandmark', { id: this.incId })
+      const { id } = this
+      this.removeLmsLmp({
+        id
+      })
     }
   },
   computed: {}

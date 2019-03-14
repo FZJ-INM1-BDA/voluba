@@ -6,11 +6,8 @@
       class="card bg-light">
       <h5 class="title">
         <div>
-          History
+          {{ historyBrowserTitle }}
         </div>
-        <small>
-          Time Machine
-        </small>
       </h5>
     </div>
 
@@ -73,6 +70,9 @@
 </template>
 <script>
 import { mapState, mapActions } from 'vuex'
+
+import { HISTORY_BROWSER_TITLE } from '@/text'
+
 export default {
   methods: {
     ...mapActions({
@@ -96,6 +96,9 @@ export default {
       moreUndo: state => state.undoStack.length > 5 ? `${state.undoStack.length - 5} more undo item${state.undoStack.length - 5 > 1 ? 's' : ''}` : null,
       moreRedo: state => state.redoStack.length > 5 ? `${state.redoStack.length - 5} more redo item${state.redoStack.length - 5 > 1 ? 's' : ''}` : null
     }),
+    historyBrowserTitle: function () {
+      return HISTORY_BROWSER_TITLE
+    },
     undoText: function () {
       return this.undoStack.length > 0
         ? `undo`
@@ -129,6 +132,7 @@ export default {
 .history-container
 {
   display: flex;
+  overflow: hidden;
 }
 .history-container.undos
 {

@@ -3,6 +3,7 @@
     <div class="landmark-row">
       <div class="landmark-cell">
         <LandmarkComponent
+          :landmark="lm.temporary ? null : lm"
           @mousedownOnIcon="mousedownOnIcon({lmId: lm.id, panelIdx: 0})"
           v-for="lm in landmarks"
           class="landmark-unit"
@@ -16,6 +17,7 @@
       </div>
       <div class="landmark-cell">
         <LandmarkComponent
+          :landmark="lm.temporary ? null : lm"
           @mousedownOnIcon="mousedownOnIcon({lmId: lm.id, panelIdx: 1})"
           :zOffset="calcZOffset(1, lm)"
           class="landmark-unit"
@@ -31,6 +33,7 @@
     <div class="landmark-row">
       <div class="landmark-cell">
         <LandmarkComponent
+          :landmark="lm.temporary ? null : lm"
           @mousedownOnIcon="mousedownOnIcon({lmId: lm.id, panelIdx: 2})"
           :zOffset="calcZOffset(2, lm)"
           :active="lm.active"

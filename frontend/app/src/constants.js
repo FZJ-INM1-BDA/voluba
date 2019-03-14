@@ -10,17 +10,13 @@ export const loginMethods = [{
   href: '/orcid-oidc/auth'
 }]
 
-export const incompatibleBrowserText = `Incompatible browser detected. Please use the latest version of Chrome of Firefox.
-
-If you are using the latest version of Chrome and/or Firefox, you may have an incompatible graphics card to display webgl2.0.`
-
 export const getShader = (rgb) => `void main() {
   float x = toNormalized(getDataValue());
   emitRGB(vec3(x * ${rgb[0].toFixed(1)}, x * ${rgb[1].toFixed(1)}, x * ${rgb[2].toFixed(1)} ));
 }`
 
-export const REFERENCE_COLOR = `yellow`
-export const INCOMING_COLOR = `#ff6666`
+export const REFERENCE_COLOR = `white`
+export const INCOMING_COLOR = `#FCDC00`
 export const INACTIVE_ROW_OPACITY = 0.2
 
 export const patchSliceViewPanel = function (sliceViewPanel) {
