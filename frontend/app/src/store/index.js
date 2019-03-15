@@ -206,8 +206,6 @@ const store = new Vuex.Store({
     incomingLandmarks: [],
     landmarkPairs: [],
 
-    synchronizeZoom: false,
-    synchronizeCursor: false,
     backendURL: process.env.VUE_APP_BACKEND_URL || 'http://localhost:5000/api',
 
     backendQueryInProgress: false,

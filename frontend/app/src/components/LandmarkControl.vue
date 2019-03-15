@@ -41,7 +41,7 @@
         <!-- add lm -->
         <div
           v-if="!showV2"
-          v-b-tooltip.bottom.hover="'save landmarks'"
+          v-b-tooltip.bottom.hover="'Add a landmark pair'"
           class="footer-icon rounded-circle btn btn-sm btn-success"
           @click="addLandmarkPair">
 
@@ -65,12 +65,21 @@
 
         <!-- calculate xform -->
         <ComputeXformBtn class="footer-icon" />
+
+        <transition name="fade">
+          <small
+            style="display:inline-block"
+            v-if="showSuccessMessage"
+            class="footer-icon pt-1 pb-1 alert alert-success">
+            Success! <a @click="$store.commit('_setStep2Mode', { mode: 'overlay' })" href="#" class="alert-link">check result</a>
+          </small>
+        </transition>
       </div>
     </template>
   </nib-component>
 </template>
 <script>
-import { mapActions } from 'vuex'
+import { mapActions, mapState } from 'vuex'
 
 import NibComponent from '@/components/layout/Nib'
 import DraggableMixin from '@/mixins/DraggableMixin'
@@ -100,34 +109,37 @@ export default {
   },
   data: function () {
     return {
-      showLandmarksControl: this.initOpen
+      showLandmarksControl: this.initOpen,
+      computeXformResultAvailable: false,
+      timeoutId: null
     }
   },
   watch: {
     showLandmarksControl: function (bool) {
       this.$emit('changeNibState', bool)
     },
-    synchronizeCursor: function () {
-      this.enableSynchronizeCursor()
+    backendQueryInProgress: function (inProgress) {
+      if (!inProgress && !this.backendQueryError) {
+        this.computeXformResultAvailable = true
+        if (this.timeoutId) clearTimeout(this.timeoutId)
+        this.timeoutId = setTimeout(() => this.computeXformResultAvailable = false, 5000)
+      }
     }
   },
   computed: {
+    ...mapState({
+      backendQueryInProgress: 'backendQueryInProgress',
+      backendQueryError: 'backendQueryError'
+    }),
+    showSuccessMessage: function () {
+      return this.computeXformResultAvailable && this.mode === 'classic'
+    },
     showV2: function () {
       return this.mode === 'overlay'
     },
     mode: function () {
       return this.$store.state._step2Mode
     },
-    synchronizeZoom: {
-      get: function () {
-        return this.$store.state.synchronizeZoom
-      },
-      set: function (bool) {
-      }
-    },
-    computedTransformationAvailable: function () {
-      return this.$store.state.landmarkTransformationMatrix
-    }
   },
   methods: {
     ...mapActions({
