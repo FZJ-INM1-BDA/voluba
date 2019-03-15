@@ -64,27 +64,21 @@
         </div>
 
         <!-- calculate xform -->
-        <div
-          @click="computeXform"
-          v-b-tooltip.bottom.hover="ableToComputeTransformationMatrix ? 'Compute and display transform based on landmarks.' : 'Need at least three (3) active landmarks to compute transformation.'"
-          :class="ableToComputeTransformationMatrix && !backendQueryInProgress ? '' : 'lmr-disabled'"
-          class="footer-icon rounded-circle btn btn-sm btn-primary">
-          <font-awesome-icon
-            :class="backendQueryInProgress ? 'spinner' : ''"
-            :icon="backendQueryInProgress ? 'spinner' : 'calculator'" />
-        </div>
+        <ComputeXformBtn class="footer-icon" />
       </div>
     </template>
   </nib-component>
 </template>
 <script>
-import { mapActions, mapState } from 'vuex'
+import { mapActions } from 'vuex'
 
 import NibComponent from '@/components/layout/Nib'
 import DraggableMixin from '@/mixins/DraggableMixin'
 import LandmarkControlBody from '@/components/LandmarkControlBody'
 import LandmarkControlBodyV2 from '@/components/LandmarkControlBodyV2'
 import TransformationComponent from '@/components/TransformationComponent'
+import ComputeXformBtn from '@/components/toolbars/ComputeXformBtn'
+
 import axios from 'axios'
 
 export default {
@@ -92,7 +86,8 @@ export default {
     NibComponent,
     LandmarkControlBody,
     TransformationComponent,
-    LandmarkControlBodyV2
+    LandmarkControlBodyV2,
+    ComputeXformBtn
   },
   mixins: [
     DraggableMixin
@@ -105,8 +100,7 @@ export default {
   },
   data: function () {
     return {
-      showLandmarksControl: this.initOpen,
-      synchronizeCursor: this.$store.state.synchronizeCursor,
+      showLandmarksControl: this.initOpen
     }
   },
   watch: {
@@ -118,10 +112,6 @@ export default {
     }
   },
   computed: {
-    ...mapState({
-      ableToComputeTransformationMatrix: state => state.landmarkPairs.filter(lmp => lmp.active).length >= 3,
-      backendQueryInProgress: 'backendQueryInProgress'
-    }),
     showV2: function () {
       return this.mode === 'overlay'
     },
@@ -142,7 +132,6 @@ export default {
   methods: {
     ...mapActions({
       addLandmarkPair: 'addLandmarkPair',
-      computeXform: 'computeXform',
       saveLandmarks: 'saveLandmarks'
     })
   }
@@ -165,8 +154,4 @@ export default {
   margin-left: 1em;
 }
 
-.lmr-disabled
-{
-  opacity: 0.5;
-}
 </style>

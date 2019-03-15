@@ -26,7 +26,7 @@
         v-b-tooltip.right.hover="incVolXformTitle"
         :class="showLayerControl ? 'btn-info' : 'btn-secondary'"
         @click="showLayerControl=!showLayerControl"
-        class="addBtn rounded-circle layer-control-toggle btn btn-sm">
+        class="addBtn rounded-circle layer-control-toggle btn btn-sm btn-transition">
         
         <font-awesome-icon icon="sliders-h" />
       </div>
@@ -90,17 +90,8 @@
     </div>
 
     <!-- compute xform -->
-    <div
-      class="horizontalContainer flex-items">
-      <div
-        @click="computeXform"
-        v-b-tooltip.right.hover="ableToComputeTransformationMatrix ? 'Compute and display transform based on landmarks.' : 'Need at least three (3) active landmarks to compute transformation.'"
-        :class="ableToComputeTransformationMatrix && !backendQueryInProgress ? '' : 'lmr-disabled'"
-        class="addBtn rounded-circle landmarks-control-toggle btn btn-sm btn-primary">
-        <font-awesome-icon
-          :class="backendQueryInProgress ? 'spinner' : 'startFromScratchModal'"
-          :icon="backendQueryInProgress ? 'spinner' : 'calculator'"></font-awesome-icon>
-      </div>
+    <div class="horizontalContainer flex-items">
+      <ComputeXformBtn class="addBtn" />
     </div>
     
     <!-- save export control -->
@@ -142,6 +133,7 @@ import LayerControl from '@/components/LayerControl'
 import LandmarkControl from '@/components/LandmarkControl'
 import SaveExportControl from '@/components/SaveExportControl'
 import HistoryControl from '@/components/HistoryControl'
+import ComputeXformBtn from '@/components/toolbars/ComputeXformBtn'
 
 import { INC_VOL_XFORM_TITLE, EDIT_LANDMARKS_TITLE, HISTORY_BROWSER_TITLE } from '@/text'
 
@@ -150,22 +142,22 @@ export default {
     LandmarkControl,
     LayerControl,
     SaveExportControl,
-    HistoryControl
+    HistoryControl,
+    ComputeXformBtn
   },
   data: function () {
     return {
       showLayerControl: false,
       showSaveExportControl: false,
       showHistory: false,
-      addLmMode: 'reference'
+      addLmMode: 'reference',
+      timeoutId: null
     }
   },
   computed: {
     ...mapState({
-      backendQueryInProgress: 'backendQueryInProgress',
       addLandmarkMode: 'addLandmarkMode',
       landmarkControlVisible: 'landmarkControlVisible',
-      ableToComputeTransformationMatrix: state => state.landmarkPairs.length >= 3
     }),
     historyBrowserTitle: function () {
       return HISTORY_BROWSER_TITLE
@@ -196,17 +188,12 @@ export default {
          */
         this.$store.commit('_setStep2Mode', { mode })
       }
-    },
-    addBtnStyle: function () {
-      return {
-      }
     }
   },
   methods: {
     ...mapActions({
       landmarkControlVisibilityChanged: 'landmarkControlVisibilityChanged',
       changeLandmarkMode: 'changeLandmarkMode',
-      computeXform: 'computeXform',
       openModal: 'openModal'
     }),
     toggleAddLmMode: function () {
@@ -303,13 +290,4 @@ export default {
   box-shadow: 0 0.6em 0.6em -0.2em rgba(50, 50, 50, 0.2);
 }
 
-.btn.lmr-disabled
-{
-  opacity:0.5;
-}
-
-.btn.lmr-disabled:hover
-{
-  cursor: default;
-}
 </style>

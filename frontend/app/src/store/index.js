@@ -37,6 +37,8 @@ const restoreState = ({commit}, {incTransformMatrix, referenceLandmarks, incomin
   }
 }
 
+let errorTimeoutId = null
+
 const browserCompatible = () => 'WebGL2RenderingContext' in window
 
 const appendNehuba = () => new Promise((resolve, reject) => {
@@ -140,7 +142,6 @@ const store = new Vuex.Store({
       {
         id: 'inc-1',
         name: 'Nucleus subthalamicus (B20)',
-        // value: 'precomputed://http://imedv02.ime.kfa-juelich.de:8287/precomputed/B20_stn_l/v10'
         imageSource: 'precomputed://https://neuroglancer-dev.humanbrainproject.org/precomputed/landmark-reg/B20_stn_l/v10',
         dim: [
           16208000,
@@ -210,6 +211,7 @@ const store = new Vuex.Store({
     backendURL: process.env.VUE_APP_BACKEND_URL || 'http://localhost:5000/api',
 
     backendQueryInProgress: false,
+    backendQueryError: null,
     /**
      * response from landmark-reg server
      */
@@ -242,6 +244,10 @@ const store = new Vuex.Store({
     },
     setBackendQueryInProgress (state, { backendQueryInProgress }) {
       state.backendQueryInProgress = backendQueryInProgress
+    },
+    setBackendQueryError (state, { error }) {
+      state.backendQueryError = error
+
     },
     setUndoStack (state, { undoStack }) {
       state.undoStack = undoStack
@@ -310,12 +316,6 @@ const store = new Vuex.Store({
     },
     updateOverlayColor (state, newOverlayColor) {
       state.overlayColor = newOverlayColor
-    },
-    enableSynchronizeZoom (state, synchronizeZoom) {
-      state.synchronizeZoom = synchronizeZoom
-    },
-    enableSynchronizeCursor (state, synchronizeCursor) {
-      state.synchronizeCursor = synchronizeCursor
     },
     changeLandmarkTransformationMatrix (state, transformationMatrix) {
       state.landmarkTransformationMatrix = transformationMatrix
@@ -654,7 +654,9 @@ const store = new Vuex.Store({
         'landmark_pairs': lmPairs
       }
 
-      commit('setBackendQueryInProgress', { backendQueryInProgress : true})
+      commit('setBackendQueryInProgress', { backendQueryInProgress : true })
+      if (errorTimeoutId) clearTimeout(errorTimeoutId)
+      commit('setBackendQueryError', { error: null })
 
       console.log('sending data to backend...', {data})
       axios.post(state.backendURL + '/least-squares', data)
@@ -674,8 +676,9 @@ const store = new Vuex.Store({
           commit('setBackendQueryInProgress', { backendQueryInProgress : false})
           dispatch('applyCalculatedTransform')          
         }, error => {
-          console.log(error)
-          // TODO: handle error!
+          commit('setBackendQueryInProgress', { backendQueryInProgress : false})
+          commit('setBackendQueryError', { error })
+          errorTimeoutId = setTimeout(() => commit('setBackendQueryError', { error: null }), 5000)
         })
     },
     landmarkControlVisibilityChanged ({ commit }, { visible }) {
@@ -886,12 +889,6 @@ const store = new Vuex.Store({
       ]
       commit('setIncomingTemplateRGBA', { color })
       commit('updateOverlayColor', newOverlayColor)
-    },
-    enableSynchronizeZoom ({ commit }, synchronizeZoom) {
-      commit('enableSynchronizeZoom', synchronizeZoom)
-    },
-    enableSynchronizeCursor ({ commit }, synchronizeCursor) {
-      commit('enableSynchronizeCursor', synchronizeCursor)
     },
     computeTransformResponseReceived ({commit}, { transformationMatrix, inverseMatrix, RMSE, determinant} ) {
       commit('changeLandmarkTransformationMatrix', transformationMatrix)
