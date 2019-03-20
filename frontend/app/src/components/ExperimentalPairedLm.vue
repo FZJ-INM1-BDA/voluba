@@ -57,14 +57,14 @@
         <!-- see more icon -->
         <div
           tabindex="-1"
-          :id="'popover-' + landmark.id"
+          :id="'popover-inc-vol-' + landmark.id"
           class="input-group-text readmore-icon">
           <font-awesome-icon icon="ellipsis-v"></font-awesome-icon>
         </div>
 
         <b-popover
           triggers="click blur"
-          :target="'popover-' + landmark.id">
+          :target="'popover-inc-vol-' + landmark.id">
           <template slot="title">Edit Landmark</template>
           <EditLandmarkComponent
             volume="incoming"
@@ -81,17 +81,22 @@
     @dragenter="dragEnter"
     @dragleave="dragLeave"
     :style="dragOverFlag ? {backgroundColor: 'rgba(0, 100, 0, 0.2)'} : {}"
-    class="empty-container" v-else>
+    class="border empty-container" v-else>
     <transition name="fade">
       <span class="parent-name-container" v-if="pairLandmarkStartDragging">
         {{ parentLandmark.name }}
+      </span>
+    </transition>
+    <transition name="fade">
+      <span class="bg-secondary parent-name-container" v-if="!pairLandmarkStartDragging">
+        Unpaired
       </span>
     </transition>
   </div>
 </template>
 <script>
 import { mapActions, mapState } from 'vuex'
-import { INACTIVE_ROW_OPACITY, INCOMING_COLOR } from '@/constants'
+import { INACTIVE_ROW_OPACITY, INCOMING_COLOR, UNPAIRED_COLOR } from '@/constants'
 import LandmarkRowV2 from '@/components/LandmarkRowV2'
 import EditLandmarkComponent from '@/components/EditLandmark'
 export default {
@@ -170,7 +175,11 @@ export default {
   computed: {
     ...mapState({
       pairLandmarkStartDragging: 'pairLandmarkStartDragging',
-      overlayColorHex: state => state.overlayColor.hex || INCOMING_COLOR
+      overlayColorHex: function (state) {
+        return state._step2Mode === 'classic'
+          ? this.landmark.color || UNPAIRED_COLOR
+          : state.overlayColor.hex || INCOMING_COLOR
+      }
     }),
     inactiveOpacity: function () {
       return INACTIVE_ROW_OPACITY

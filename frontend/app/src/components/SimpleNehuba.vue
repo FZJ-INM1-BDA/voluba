@@ -34,7 +34,7 @@ import NehubaLandmarksOverlay from '@/components/NehubaLandmarksOverlay'
 import NehubaBaseMixin from '@/mixins/NehubaBase'
 import DragLandmarkMixin from '@/mixins/DragLandmarkMixin'
 import NehubaStatusCard from '@/components/NehubaStatusCard'
-
+import { UNPAIRED_COLOR } from '@/constants'
 import { mapState } from 'vuex'
 
 export default {
@@ -47,7 +47,7 @@ export default {
     NehubaStatusCard
   },
   props: {
-    config: {
+    baseConfig: {
       type: Object
     }
   },
@@ -63,23 +63,31 @@ export default {
       viewerNavigationPosition: [0, 0, 0],
       viewerMousePosition: [0, 0, 0],
 
-      subscriptions: []
+      subscriptions: [],
+      config: this.baseConfig ? JSON.parse(JSON.stringify(this.baseConfig)) : null
     }
   },
   mounted () {
-    const { quat, mat4 } = window.export_nehuba
-    const q = mat4.getRotation(quat.create(), mat4.fromValues(...this.incTransformMatrix))
-    quat.normalize(q, q)
-    quat.invert(q, q)
-
-    const additionalConfig = {
-      orientation: Array.from(q)
+    if (! ('export_nehuba' in window)) {
+      return
     }
 
+    if (this.incTransformMatrix) {
+      const { mat4 } = window.export_nehuba
+      const realXform = mat4.transpose(mat4.create(), this.incTransformMatrix)
+      const transform = [
+        Array.from(realXform.slice(0, 4)),
+        Array.from(realXform.slice(4, 8)),
+        Array.from(realXform.slice(8, 12)),
+        Array.from(realXform.slice(12, 16))
+      ]
+      this.config.dataset.initialNgState.layers.default.transform = transform
+    }
+    
+    const additionalConfig = this.viewerNavigationStateString && JSON.parse(this.viewerNavigationStateString)
+
     this.nehubaBase__initNehuba(additionalConfig)
-      .then(() => {
-        
-      })
+      .then(this.postNehubaInit)
       .catch(e => {
         console.log('nehubaBase initNehuba Error', e)
       })
@@ -106,7 +114,23 @@ export default {
   },
   computed: {
     ...mapState({
-      incTransformMatrix: 'incTransformMatrix'
+      incTransformMatrix: 'incTransformMatrix',
+      incTransformMatrixReal: 'incTransformMatrixReal',
+      viewerNavigationStateString: 'viewerNavigationStateString',
+      xformedIncLm: function (state) {
+        return state.incomingLandmarks.map(lm => {
+          let coord = lm.coord
+          if (state.appendNehubaFlag) {
+            const { vec3, mat4 } = window.export_nehuba
+            const tmpcoord = vec3.fromValues(...lm.coord)
+            coord = Array.from(vec3.transformMat4(vec3.create(), tmpcoord, state.incTransformMatrixReal))
+          } 
+          return {
+            ...lm,
+            coord
+          }
+        })
+      }
     }),
     cid: function () {
       return this.nehubaBase__cid
@@ -115,18 +139,18 @@ export default {
       return this.nehubaBase__dataToViewport
     },
     incomingLandmarks: function () {
-      return this.$store.state.landmarkPairs
-        .map(lmp => {
-          const lm = this.$store.state.incomingLandmarks.find(lm => lm.id === lmp.incId)
-          return lm
-            ? {
-              ...lm,
-              color: lmp.color,
-              active: lmp.active
-            }
-            : null
-        })
-        .filter(incLm => incLm !== null)
+      return this.xformedIncLm.map(lm => {
+        const lmp = this.$store.state.landmarkPairs.find(lmp => lmp.incId === lm.id)
+        return lmp
+          ? {
+            ...lm,
+            color: lmp.color
+          }
+          : {
+            ...lm,
+            color: UNPAIRED_COLOR
+          }
+      })
     },
     placeholderText: function () {
       return this.errorMessage
@@ -164,6 +188,9 @@ export default {
         }
         resolve()
       })
+    },
+    postNehubaInit: function () {
+      window.secondaryNehubaViewer = this.$options.nehubaBase.nehubaBase__nehubaViewer
     }
   },
   watch: {
@@ -177,9 +204,12 @@ export default {
     config: function (val) {
       this.nehubaBase__destroyNehuba()
         .then(() => {
-          console.log('init nehuba')
           if (val) {
             this.nehubaBase__initNehuba()
+              .then(this.postNehubaInit)
+              .catch(e => {
+                console.error('simple nehuba init error', e)
+              })
           }
         })
         .catch(console.error)

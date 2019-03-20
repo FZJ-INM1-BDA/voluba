@@ -68,7 +68,7 @@
 
 <script>
 import { mapState } from 'vuex'
-import { REFERENCE_COLOR, INCOMING_COLOR, annotationColorBlur, annotationColorFocus, getShader, testBigbrain, determineElement, getRotationVec3, incomingTemplateActiveOpacity } from '@//constants'
+import { REFERENCE_COLOR, UNPAIRED_COLOR, INCOMING_COLOR, annotationColorBlur, annotationColorFocus, getShader, testBigbrain, determineElement, getRotationVec3, incomingTemplateActiveOpacity } from '@//constants'
 import { incompatibleBrowserText } from '@/text'
 
 import NehubaBaseMixin from '@/mixins/NehubaBase'
@@ -462,28 +462,29 @@ export default {
       )
 
       /**
-       * ref vol orientation state
+       * ref vol navigation state
        */
       this.$options.nonReactiveData.subscriptions.push(
-        this.$options.nehubaBase.nehubaBase__nehubaViewer.navigationState.orientation
-          .subscribe(fa => {
-            const array = fa === null
+        this.$options.nehubaBase.nehubaBase__nehubaViewer.navigationState.all
+          .subscribe(state => {
+            const { orientation, perspectiveOrientation, position } = state
+            const arrOrientation = orientation === null
               ? [0, 0, 0, 1]
-              : Array.from(fa)
-            this.viewerSliceOrientation = array
-          })
-      )
+              : Array.from(orientation)
+            this.viewerSliceOrientation = arrOrientation
 
-      /**
-       * viewer perspective orientation
-       */
-      this.$options.nonReactiveData.subscriptions.push(
-        this.$options.nehubaBase.nehubaBase__nehubaViewer.navigationState.perspectiveOrientation
-          .subscribe(fa => {
-            const array = fa === null
+            const arrPerspectiveOrientation = perspectiveOrientation === null
               ? [0, 0, 0, 1]
-              : Array.from(fa)
-            this.viewerPerspectiveOrientation = array
+              : Array.from(perspectiveOrientation)
+            this.viewerPerspectiveOrientation = arrPerspectiveOrientation
+
+            const obj = {
+              ...state,
+              orientation: arrOrientation,
+              perspectiveOrientation: arrPerspectiveOrientation,
+              position: Array.from(position)
+            }
+            this.$store.commit('setViewerNavigationStateString', JSON.stringify(obj))
           })
       )
 
@@ -622,7 +623,7 @@ export default {
       const incVM = mat4.fromValues(...this.incTransformMatrix)
       return this._step2Mode === 'overlay'
         /**
-         * retturn all incoming landmarks
+         * return all incoming landmarks
          */
         ? this.$store.state.incomingLandmarks.map(lm => {
             const coord = vec3.fromValues(...lm.coord.map(v => v * 1e6))
@@ -634,28 +635,9 @@ export default {
             }
           })
         /**
-         * only returns the landmarks covered by landmark pairs
+         * if step2 mode === classic, then do not show any incoming landmarks
          */
-        : this.$store.state.landmarkPairs
-            .map(lmp => {
-              const lm = this.$store.state.incomingLandmarks.find(lm => lm.id === lmp.incId)
-              return lm
-                ? {
-                  ...lm,
-                  color: lmp.color,
-                  active: lmp.active
-                }
-                : null
-            })
-            .filter(incLm => incLm !== null)
-            .map(lm => {
-              const coord = vec3.fromValues(...lm.coord.map(v => v * 1e6))
-              vec3.transformMat4(coord, coord, incVM)
-              return {
-                ...lm,
-                coord: Array.from(coord).map(v => v / 1e6)
-              }
-            })
+        : []
     },
     incomingLandmarks: function () {
       return this.addLandmarkMode
@@ -680,18 +662,18 @@ export default {
                 color: REFERENCE_COLOR
               }
             })
-        : this.$store.state.landmarkPairs
-            .map(lmp => {
-              const lm = this.$store.state.referenceLandmarks.find(lm => lm.id === lmp.refId)
-              return lm
-                ? {
-                  ...lm,
-                  color: lmp.color,
-                  active: lmp.active
-                }
-                : null
-            })
-            .filter(refLm => refLm !== null)
+        : this.$store.state.referenceLandmarks.map(lm => {
+            const lmp = this.$store.state.landmarkPairs.find(lmp => lmp.refId === lm.id)
+            return lmp
+              ? {
+                ...lm,
+                color: lmp.color
+              }
+              : {
+                ...lm,
+                color: UNPAIRED_COLOR
+              }
+          })
     },
     referenceLandmarks: function () {
       return this.addLandmarkMode

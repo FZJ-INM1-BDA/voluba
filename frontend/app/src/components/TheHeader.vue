@@ -2,10 +2,6 @@
   <div>
     <b-navbar id = "nav" toggleable="md">
       <b-navbar-toggle target="nav_collapse"></b-navbar-toggle>
-      <b-navbar-brand href="#">
-        <img id="logo" src="../assets/HBP.png" width="32" height="32" alt="">
-        <span>Spatial Registration</span>
-      </b-navbar-brand>
 
       <progress-tracker v-if="showProgressTracker" />
 

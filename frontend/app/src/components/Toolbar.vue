@@ -1,5 +1,8 @@
 <template>
   <div id="flexcontainer">
+    <div class="horizontalContainer">
+      <img class="logo" id="logo" src="../assets/HBP_Primary_RGB_BlackText.png" alt="">
+    </div>
 
     <!-- toggle history -->
     <div
@@ -55,45 +58,6 @@
         class="row-flex-items" />
     </div>
 
-    <!-- add btn -->
-    <div
-      class="horizontalContainer flex-items">
-      <div class="btn-group">
-
-        <div
-          id="addLm"
-          @click="addLandmark"
-          v-b-tooltip.right.hover="addLmTooltipText"
-          :class="addLmBttnClass"
-          class="addBtn pointer-events rounded-circle btn btn-sm">
-          <font-awesome-icon icon="plus" />
-        </div>
-
-        <div
-          class="btn btn-sm btn-secondary additionalAddLmBtn"
-          v-if="addLandmarkMode">
-          &nbsp;
-        </div>
-        <div
-          @click="toggleAddLmMode"
-          class="btn btn-sm btn-secondary pointer-events "
-          v-if="addLandmarkMode">
-          {{ addLmMode }}
-        </div>
-        <div
-          @click="changeLandmarkMode({ mode: false })"
-          v-if="addLandmarkMode"
-          class=" pointer-events btn btn-sm btn-danger">
-          cancel
-        </div>
-      </div>
-    </div>
-
-    <!-- compute xform -->
-    <div class="horizontalContainer flex-items">
-      <ComputeXformBtn class="addBtn" />
-    </div>
-    
     <!-- save export control -->
     <div
       v-if="false"
@@ -113,17 +77,6 @@
     </div>
 
 
-    <!-- start from scratch btn -->
-    <div
-      class="horizontalContainer flex-items">
-      <div
-        @click="openModal({ modalId: 'startFromScratchModal' })"
-        class="addBtn pointer-events rounded-circle btn btn-sm btn-danger"
-        v-b-tooltip.right.hover
-        title="Start from scratch">
-        <font-awesome-icon icon="backward" />
-      </div>
-    </div>
     
   </div>
 </template>
@@ -193,8 +146,7 @@ export default {
   methods: {
     ...mapActions({
       landmarkControlVisibilityChanged: 'landmarkControlVisibilityChanged',
-      changeLandmarkMode: 'changeLandmarkMode',
-      openModal: 'openModal'
+      changeLandmarkMode: 'changeLandmarkMode'
     }),
     toggleAddLmMode: function () {
       this.addLmMode = this.addLmMode === 'reference'
@@ -290,4 +242,10 @@ export default {
   box-shadow: 0 0.6em 0.6em -0.2em rgba(50, 50, 50, 0.2);
 }
 
+.logo
+{
+  height: 7rem;
+  box-sizing: border-box;
+  padding: 1em;
+}
 </style>

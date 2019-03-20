@@ -16,6 +16,7 @@ export const getShader = (rgb) => `void main() {
 }`
 
 export const REFERENCE_COLOR = `white`
+export const UNPAIRED_COLOR = `#CCCCCC`
 export const INCOMING_COLOR = `#FCDC00`
 export const INACTIVE_ROW_OPACITY = 0.2
 
@@ -111,7 +112,40 @@ export const getDefaultNehubaConfigLight = (sourceUrl) => {
       ],
       "initialNgState": {
         "showDefaultAnnotations": true,
-        "layers": {
+        "layers": {        
+          " grey value: ": {
+            "annotationColor": "#cccccc",
+            "visible":false,
+            "type": "image",
+            // "source": "precomputed://http://imedv02.ime.kfa-juelich.de:8287/precomputed/BigBrainRelease.2015/8bit",
+            "source": "precomputed://https://neuroglancer.humanbrainproject.org/precomputed/BigBrainRelease.2015/8bit",
+            "transform": [
+              [
+                1,
+                0,
+                0,
+                -70677184
+              ],
+              [
+                0,
+                1,
+                0,
+                -70010000
+              ],
+              [
+                0,
+                0,
+                1,
+                -58788284
+              ],
+              [
+                0,
+                0,
+                0,
+                1
+              ]
+            ]
+          },
           "default": {
             "type": "image",
             "source": `${sourceUrl}`,

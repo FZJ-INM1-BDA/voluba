@@ -15,7 +15,7 @@
           ref = "templatenehuba" />
         <SimpleNehubaComponent
           v-if="primaryNehubaReady && simpleNehubaConfig && showSimpleNehuba"
-          :config="simpleNehubaConfig"
+          :baseConfig="simpleNehubaConfig"
           ref="incomingnehuba"
           v-show="showSimpleNehuba" />
       </div>
@@ -234,7 +234,6 @@ export default {
   z-index: 2;
   pointer-events: none;
 
-  margin-top: 3em;
 }
 
 .nehuba-container

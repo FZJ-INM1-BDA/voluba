@@ -21,14 +21,7 @@
       <LandmarkControlBodyV2
         id="content"
         class="landmarks-control"
-        @header-mousedown="draggingMixin__StartDragging"
-        v-if="showLandmarksControl && showV2" />
-
-      <LandmarkControlBody
-        id="content"
-        class="landmarks-control"
-        @header-mousedown="draggingMixin__StartDragging"
-        v-if="showLandmarksControl && !showV2" />
+        @header-mousedown="draggingMixin__StartDragging"/>
 
       <!-- landmark footer -->
 
@@ -83,7 +76,6 @@ import { mapActions, mapState } from 'vuex'
 
 import NibComponent from '@/components/layout/Nib'
 import DraggableMixin from '@/mixins/DraggableMixin'
-import LandmarkControlBody from '@/components/LandmarkControlBody'
 import LandmarkControlBodyV2 from '@/components/LandmarkControlBodyV2'
 import TransformationComponent from '@/components/TransformationComponent'
 import ComputeXformBtn from '@/components/toolbars/ComputeXformBtn'
@@ -93,7 +85,6 @@ import axios from 'axios'
 export default {
   components: {
     NibComponent,
-    LandmarkControlBody,
     TransformationComponent,
     LandmarkControlBodyV2,
     ComputeXformBtn

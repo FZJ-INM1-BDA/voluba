@@ -182,7 +182,19 @@ const store = new Vuex.Store({
      * read only, depend on state.incTransformMatrix
      */
     incRotQuat: [0, 0, 0, 1],
+    /**
+     * in nm
+     */
     incTransformMatrix: [
+      1.0,  0,    0,    0,
+      0,    1.0,  0,    0,
+      0,    0,    1.0,  0,
+      0,    0,    0,    1.0
+    ],
+    /**
+     * in mm, read only, dependon state.incTransformMatrix
+     */
+    incTransformMatrixReal: [
       1.0,  0,    0,    0,
       0,    1.0,  0,    0,
       0,    0,    1.0,  0,
@@ -197,7 +209,10 @@ const store = new Vuex.Store({
     primaryNehubaNavigationPosition: [0, 0, 0],
     secondaryNehubaNavigationPosition: [0, 0, 0],
     viewerMousePosition: [0, 0, 0],
+
     viewerSliceOrientation: [0, 0, 0, 1],
+    viewerNavigationStateString: null,
+
     mouseoverUserlayer: null,
 
     addLandmarkMode: false,
@@ -219,6 +234,9 @@ const store = new Vuex.Store({
     landmarkRMSE: null
   },
   mutations: {
+    setViewerNavigationStateString (state, string) {
+      state.viewerNavigationStateString = string
+    },
     setAppendNehubaFlag ( state, { flag }) {
       state.appendNehubaFlag = flag
     },
@@ -261,6 +279,11 @@ const store = new Vuex.Store({
     },
     _setStep2Mode (state, { mode }) {
       state._step2Mode = mode
+
+      /**
+       * when toggling step2 mode, landmark mode should be set off
+       */
+      state.addLandmarkMode = false
     },
     _setStep2OverlayFocus (state, {mode}) {
       state._step2OverlayFocus = mode
@@ -352,18 +375,26 @@ const store = new Vuex.Store({
     },
 
     setIncTransformMatrix (state, { matrix}) {
-      const { quat, mat4 } = window.export_nehuba
+      const { quat, mat4, vec3 } = window.export_nehuba
       const m = mat4.fromValues(...matrix)
       const q = mat4.getRotation(quat.create(), m)
       quat.invert(q, q)
+
       state.incRotQuat = Array.from(q)
       state.incTransformMatrix = matrix
+
+      const transl = mat4.getTranslation(vec3.create(), m)
+      vec3.negate(transl, transl)
+      mat4.translate(m, m, transl)
+      vec3.scale(transl, transl, -1e-6)
+      mat4.translate(m, m, transl)
+      state.incTransformMatrixReal = Array.from(m)
     },
     multiplyIncTransmMatrix (state, matrix) {
       // catch when matrix is null (happens occationally?)
       if (!matrix)
         return
-      const { mat4, quat } = window.export_nehuba
+      const { mat4, quat, vec3 } = window.export_nehuba
       const incM = mat4.fromValues(...state.incTransformMatrix)
       const mulM = mat4.fromValues(...matrix)
       mat4.mul(incM, incM, mulM)
@@ -374,6 +405,13 @@ const store = new Vuex.Store({
 
       state.incRotQuat = Array.from(q)
       state.incTransformMatrix = Array.from(incM)
+
+      const transl = mat4.getTranslation(vec3.create(), incM)
+      vec3.negate(transl, transl)
+      mat4.translate(incM, incM, transl)
+      vec3.scale(transl, transl, -1e-6)
+      mat4.translate(incM, incM, transl)
+      state.incTransformMatrixReal = Array.from(incM)
     },
     setRefLandmark (state, { id, lm: newLm }) {
       state.referenceLandmarks = state.referenceLandmarks.map(lm => lm.id === id ? newLm : lm)
@@ -405,14 +443,18 @@ const store = new Vuex.Store({
         incVolRotationLock: incVolRotationLock !== null ? incVolRotationLock : state.incVolRotationLock
       })
     },
-    addLmp: function ({commit, state}, { refId, incId }) {
+    addLmp: function ({commit, dispatch, state}, { refId, incId }) {
       const id = generateId(state.landmarkPairs)
+      dispatch('pushUndo', {
+        name: 'link landmark pair'
+      })
       commit('setLandmarkPairs', {
         landmarkPairs: state.landmarkPairs.concat({
           refId,
           incId,
           id,
-          name: id
+          name: id,
+          color: randomColor()
         })
       })
     },
@@ -435,8 +477,15 @@ const store = new Vuex.Store({
         payload.coord = Array.from(coord).map(v => v / 1e6)
       }
 
-      if (payload.coord)
-        dispatch('setPrimaryNehubaNavigation', payload)
+      if (payload.coord) {
+        if (state._step2Mode === 'overlay' || volume === 'reference') {
+          dispatch('setPrimaryNehubaNavigation', payload)
+        } 
+        if (state._step2Mode === 'classic' && volume === 'incoming') {
+          dispatch('setSecondaryNehubaNavigation', payload)
+        }
+      }
+        
     },
     removeLmp: function ({commit, dispatch, state}, { id, incId, refId }) {
       dispatch('pushUndo', {
@@ -956,11 +1005,19 @@ const store = new Vuex.Store({
         coord: state.primaryNehubaNavigationPosition.map(v => v / 1e6)
       }
       const incId = generateId(state.incomingLandmarks).toString()
+
+      const { mat4, vec3 } = window.export_nehuba
+      const xform = mat4.fromValues(...state.incTransformMatrix)
+      mat4.invert(xform, xform)
+      const newv = vec3.transformMat4(vec3.create(), vec3.fromValues(...state.secondaryNehubaNavigationPosition), xform)
+      vec3.scale(newv, newv, 1e-6)
+      const newCoord = Array.from(newv)
+      
       const newIncomingLandmark = {
         id: incId,
         name: incId,
         active: true,
-        coord: state.secondaryNehubaNavigationPosition.map(v => v / 1e6)
+        coord: newCoord
       }
       const lpId = generateId(state.landmarkPairs).toString()
       const newLandmarkPair = {
@@ -1174,7 +1231,7 @@ const store = new Vuex.Store({
        */
     },
 
-    setScaleInc ({commit, state}, {axis, value}) {
+    setScaleInc ({commit, state, getters}, {axis, value}) {
       if (axis !== 'x' && axis !== 'y' && axis !== 'z') {
         return
       }
@@ -1188,21 +1245,39 @@ const store = new Vuex.Store({
           : 2
 
       const { mat4, vec3 } = window.export_nehuba
+      const { dim } = getters
+      const dimVec = vec3.fromValues(...dim)
+
+      const cXform = mat4.fromValues(...state.incTransformMatrix)
 
       /**
        * returning mat
        */
       const xformMat = mat4.create()
 
-      const cXformMat = mat4.fromValues(...state.incTransformMatrix)
-      const cScaleVec = mat4.getScaling(vec3.create(), cXformMat)
-      const nScaleVec = vec3.clone(cScaleVec)
-      nScaleVec[idx] = value
+      /**
+       * apply scale
+       */
+      const oldScale = mat4.getScaling(vec3.create(), cXform)
+      const newScale = vec3.fromValues(1, 1, 1)
+      newScale[idx] = value / oldScale[idx]
+      const scaleMat = mat4.fromScaling(mat4.create(), newScale)
+      mat4.mul(xformMat, scaleMat, xformMat)
 
-      vec3.div(nScaleVec, nScaleVec, cScaleVec)
-      mat4.fromScaling(xformMat, nScaleVec)
+      /**
+       * apply excess transform
+       */
+      const xtraScale = vec3.sub(vec3.create(), vec3.fromValues(1,1,1), newScale)
+      vec3.scale(xtraScale, xtraScale, 0.5)
+      vec3.mul(xtraScale, xtraScale, dimVec)
+      mat4.mul(xformMat, mat4.fromTranslation(mat4.create(), xtraScale), xformMat)
       
-      commit('multiplyIncTransmMatrix', Array.from(xformMat))
+      /**
+       * apply original xform
+       */
+      mat4.mul(xformMat, cXform, xformMat)
+
+      commit("setIncTransformMatrix", { matrix: Array.from(xformMat) })
     },
     setTranslInc ({commit, state}, {axis, value : uncorrectedValue}) {
       if (axis !== 'x' && axis !== 'y' && axis !== 'z' && axis !== 'xyz') {
@@ -1353,6 +1428,53 @@ const store = new Vuex.Store({
       const { mat4 } = window.export_nehuba
       const matrix = Array.from(mat4.create())
       commit('setIncTransformMatrix', { matrix })
+    }
+  },
+  getters: {
+    dim: state => {
+      const id = state.selectedIncomingVolumeId
+      const vol = state.incomingVolumes.find(v => v.id === id)
+      return (vol && vol.dim) || [0, 0, 0]
+    },
+    undoAndTranslate: (state, getters) => {
+
+      const nullReturn = {
+        xform: null,
+        revvert: null
+      }
+
+
+      if (!state.appendNehubaFlag)
+        return nullReturn
+      
+      const { mat4, vec3 } = window.export_nehuba
+
+      /**
+       * value to return
+       */
+      const xformMat = mat4.create()
+
+
+      /**
+       * undo mirror & undo scale
+       */
+      mat4.invert(xformMat, mat4.fromValues(...state.incTransformMatrix))
+
+      /**
+       * apply translation correction
+       */
+      const dim = getters.dim
+       
+      const incTransl = vec3.scale(vec3.create(), dim, -0.5)
+      const incTranslMat = mat4.fromTranslation(mat4.create(), incTransl)
+      mat4.mul(xformMat, xformMat, incTranslMat)
+
+      const invert = mat4.invert(mat4.create(), xformMat)
+
+      return {
+        xform: Array.from(xformMat),
+        revert: Array.from(invert)
+      }
     }
   }
 })

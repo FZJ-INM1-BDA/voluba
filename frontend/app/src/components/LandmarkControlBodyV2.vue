@@ -17,7 +17,9 @@
     <div class="body bg-light">
 
       <!-- top label -->
-      <div class="lm-heading mb-3">
+      <div
+        v-if="_step2Mode === 'overlay'"
+        class="lm-heading mb-3">
         <!-- reference landmarks -->
         <div
           @click="changeLandmarkMode({ mode : addLandmarkMode === 'reference' ? false : 'reference' })"  
@@ -112,11 +114,11 @@
         <div class="ref-lm-wrapper">
           <LandmarkRowV2
             class="mb-1 landmark-row"
-            @changeName="changeLandmarkName({...$event, id: lm.id, volume: _step2OverlayFocus})"
+            @changeName="changeLandmarkName({...$event, id: lm.id, volume: 'reference'})"
             :key="lm.id"
             :landmark="lm"
             :id="'lmr-' + lm.id"
-            v-for="lm in primaryLandmarks">
+            v-for="lm in referenceLandmarks">
 
             <!-- append icons -->
             <template slot="append">
@@ -129,19 +131,19 @@
                 <!-- see more icon -->
                 <div
                   tabindex="-1"
-                  :id="'popover-' + lm.id"
+                  :id="'popover-ref-vol-' + lm.id"
                   class="input-group-text readmore-icon">
                   <font-awesome-icon icon="ellipsis-v"></font-awesome-icon>
                 </div>
 
                 <b-popover
                   triggers="click blur"
-                  :target="'popover-' + lm.id">
+                  :target="'popover-ref-vol-' + lm.id">
                   <template slot="title">Edit Landmark</template>
                   <EditLandmarkComponent
                     volume="reference"
-                    @removeLm="removeLm({ volume: _step2OverlayFocus, id: lm.id})"
-                    @changeName="changeLandmarkName({ ...$event, id: lm.id, volume: _step2OverlayFocus })"
+                    @removeLm="removeLm({ volume: 'reference', id: lm.id})"
+                    @changeName="changeLandmarkName({ ...$event, id: lm.id, volume: 'reference' })"
                     :landmark="lm"/>
                 </b-popover>
 
@@ -163,15 +165,15 @@
               <div
                 class="input-group-prepend">
                 <div
-                  @click="toggleLmActive({ volume: _step2OverlayFocus, id: lm.id })"
+                  @click="toggleLmActive({ volume: 'reference', id: lm.id })"
                   class="input-group-text">
                   <input
                     :checked="lm.active"
                     type="checkbox" />
                 </div>
                 <span
-                  @click="gotoLm({ volume: _step2OverlayFocus, id: lm.id })"
-                  :style="{...checkboxStyle, opacity: lm.active ? 1.0 : inactiveRowOpacity}"
+                  @click="gotoLm({ volume: 'reference', id: lm.id })"
+                  :style="{color: lm.color, opacity: lm.active ? 1.0 : inactiveRowOpacity}"
                   v-b-tooltip.hover.left.nofade="lm.name"
                   class="input-group-text opacity-transition">
                   <font-awesome-icon class="icon" icon="map-marker-alt"></font-awesome-icon>
@@ -215,7 +217,7 @@ import { mapActions, mapState } from 'vuex'
 import LandmarkRowV2 from '@/components/LandmarkRowV2'
 import ExperimentalPairedLm from '@/components/ExperimentalPairedLm'
 import EditLandmarkComponent from '@/components/EditLandmark'
-import { REFERENCE_COLOR, INCOMING_COLOR, INACTIVE_ROW_OPACITY } from '@/constants'
+import { REFERENCE_COLOR, INCOMING_COLOR, INACTIVE_ROW_OPACITY, UNPAIRED_COLOR } from '@/constants'
 import { EDIT_LANDMARKS_TITLE, OVERLAY_ADD_REF_LM_TEXT, OVERLAY_ADD_INC_LM_TEXT } from '@/text'
 
 export default {
@@ -260,17 +262,36 @@ export default {
       const lmp = this.getLmPair(lm)
       if (!lmp)
         return
-      return this.incomingLandmarks.find(lm => lmp.incId === lm.id)
+      return {
+        ...this.incomingLandmarks.find(lm => lmp.incId === lm.id),
+        color: this._step2Mode === 'classic' ? lmp.color : INCOMING_COLOR
+      }
     }
   },
   computed: {
     ...mapState({
       addLandmarkMode: 'addLandmarkMode',
-      referenceLandmarks: 'referenceLandmarks',
+      referenceLandmarks: state => {
+        return state._step2Mode === 'classic' 
+          ? state.referenceLandmarks.map(lm => {
+            const lmp = state.landmarkPairs.find(lmp => lmp.refId === lm.id)
+            return {
+              ...lm,
+              color: lmp ? lmp.color : UNPAIRED_COLOR
+            }
+          })
+          : state.referenceLandmarks.map(lm => {
+            return {
+              ...lm,
+              color: REFERENCE_COLOR
+            }
+          })
+      },
       incomingLandmarks: 'incomingLandmarks',
       landmarkPairs: 'landmarkPairs',
       allRefLmChecked: state => state.referenceLandmarks.every(lm => lm.active),
-      allIncLmChecked: state => state.incomingLandmarks.every(lm => lm.active)
+      allIncLmChecked: state => state.incomingLandmarks.every(lm => lm.active),
+      _step2Mode: '_step2Mode'
     }),
     editLandmarksTitle: function () {
       return EDIT_LANDMARKS_TITLE
@@ -292,44 +313,10 @@ export default {
         return this.landmarkPairs.findIndex(lmp => lmp.incId === incLm.id) < 0
       })
     },
-    popoverTitle: function () {
-      return this._step2OverlayFocus === 'reference' ? 'Incoming Volume Landmarks' : 'Reference Volume Landmarks'
-    },
-    checkboxStyle: function () {
-      return {
-        color: this._step2OverlayFocus === 'reference'
-          ? REFERENCE_COLOR
-          : INCOMING_COLOR
-      }
-    },
     incomingStyle: function () {
       return {
         color: INCOMING_COLOR
       }
-    },
-    primaryLandmarks: function () {
-      return (this._step2OverlayFocus === 'reference'
-        ? this.referenceLandmarks
-        : this.incomingLandmarks).map(lm => {
-          return {
-            ...lm,
-            showIcon: this.lmIconOpenSet.findIndex(i => i === lm.id) >= 0
-          }
-        })
-    },
-    secondaryLandmarks: function () {
-      return this._step2OverlayFocus === 'reference'
-        ? this.incomingLandmarks
-        : this.referenceLandmarks
-    },  
-    _step2OverlayFocus: function () {
-      return this.$store.state._step2OverlayFocus
-    },
-    incomingLandmarks: function () {
-      return this.$store.state.incomingLandmarks
-    },
-    referenceLandmarks: function () {
-      return this.$store.state.referenceLandmarks
     }
   }
 }

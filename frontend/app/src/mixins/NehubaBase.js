@@ -93,15 +93,23 @@ export default {
         const config = { ...this.config }
 
         if (this.nehubaBase__additionalConfig) {
-          const { orientation } = this.nehubaBase__additionalConfig
+          const { orientation, perspectiveZoom, perspectiveOrientation, zoom, position } = this.nehubaBase__additionalConfig
           const initialNgState = config.dataset.initialNgState
+          
           if (!initialNgState.navigation) 
             initialNgState.navigation = {}
           if (!initialNgState.navigation.pose)
             initialNgState.navigation.pose = {}
-            initialNgState.navigation.pose.orientation = orientation
-        }
 
+          initialNgState.navigation.pose.orientation = orientation
+          initialNgState.navigation.pose.position = {
+            voxelSize: [1, 1, 1],
+            voxelCoordinates: position
+          }
+          initialNgState.navigation.zoomFactor = zoom
+          initialNgState.perspectiveOrientation = perspectiveOrientation
+          initialNgState.perspectiveZoom = perspectiveZoom
+        }
         const nehubaViewer = window.export_nehuba.createNehubaViewer(config, (err) => {
           console.log('callback error', err)
         })

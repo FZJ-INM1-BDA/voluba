@@ -16,6 +16,19 @@
 
       <!-- control btns -->
       <div class="btn-container mb-2">
+
+        <!-- start from scratch btn -->
+        <div
+          class="horizontalContainer flex-items">
+          <div
+            @click="openModal({ modalId: 'startFromScratchModal' })"
+            class="rounded-circle btn-lg btn btn-danger"
+            v-b-tooltip.top.hover
+            title="Start from scratch">
+            <font-awesome-icon icon="backward" />
+          </div>
+        </div>
+        
         <div v-b-tooltip.top.hover="undoText">
           <div
             @click="undo"
@@ -77,7 +90,8 @@ export default {
   methods: {
     ...mapActions({
       undo: 'undo',
-      redo: 'redo'
+      redo: 'redo',
+      openModal: 'openModal'
     }),
     clickUndo: function (undo) {
       this.log(undo)
