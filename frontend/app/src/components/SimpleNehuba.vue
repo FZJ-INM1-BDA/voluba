@@ -35,7 +35,7 @@ import NehubaBaseMixin from '@/mixins/NehubaBase'
 import DragLandmarkMixin from '@/mixins/DragLandmarkMixin'
 import NehubaStatusCard from '@/components/NehubaStatusCard'
 import { UNPAIRED_COLOR } from '@/constants'
-import { mapState } from 'vuex'
+import { mapState, mapGetters } from 'vuex'
 
 export default {
   mixins: [
@@ -113,9 +113,11 @@ export default {
     }
   },
   computed: {
+    ...mapGetters({
+      incTransformMatrixReal: 'incTransformMatrixReal'
+    }),
     ...mapState({
       incTransformMatrix: 'incTransformMatrix',
-      incTransformMatrixReal: 'incTransformMatrixReal',
       viewerNavigationStateString: 'viewerNavigationStateString',
       xformedIncLm: function (state) {
         return state.incomingLandmarks.map(lm => {
@@ -123,7 +125,7 @@ export default {
           if (state.appendNehubaFlag) {
             const { vec3, mat4 } = window.export_nehuba
             const tmpcoord = vec3.fromValues(...lm.coord)
-            coord = Array.from(vec3.transformMat4(vec3.create(), tmpcoord, state.incTransformMatrixReal))
+            coord = Array.from(vec3.transformMat4(vec3.create(), tmpcoord, this.incTransformMatrixReal))
           } 
           return {
             ...lm,
@@ -139,6 +141,7 @@ export default {
       return this.nehubaBase__dataToViewport
     },
     incomingLandmarks: function () {
+      console.log('xform inc lm', this.xformedIncLm)
       return this.xformedIncLm.map(lm => {
         const lmp = this.$store.state.landmarkPairs.find(lmp => lmp.incId === lm.id)
         return lmp

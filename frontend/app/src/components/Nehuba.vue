@@ -67,7 +67,7 @@
 </template>
 
 <script>
-import { mapState } from 'vuex'
+import { mapState, mapGetters } from 'vuex'
 import { REFERENCE_COLOR, UNPAIRED_COLOR, INCOMING_COLOR, annotationColorBlur, annotationColorFocus, getShader, testBigbrain, determineElement, getRotationVec3, incomingTemplateActiveOpacity } from '@//constants'
 import { incompatibleBrowserText } from '@/text'
 
@@ -559,9 +559,11 @@ export default {
     }
   },
   computed: {
+    ...mapGetters({
+      incRotQuat: 'incRotQuat'
+    }),
     ...mapState({
       appendNehubaFlag: 'appendNehubaFlag',
-      incRotQuat: 'incRotQuat',
       translationByDragEnabled: state => !state.incVolTranslationLock,
       rotationByDragEnabled: state => !state.incVolRotationLock,
       addLandmarkMode: 'addLandmarkMode',

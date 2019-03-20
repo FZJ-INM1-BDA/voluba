@@ -179,22 +179,9 @@ const store = new Vuex.Store({
     incomingVolumeSelected: false,
 
     /**
-     * read only, depend on state.incTransformMatrix
-     */
-    incRotQuat: [0, 0, 0, 1],
-    /**
      * in nm
      */
     incTransformMatrix: [
-      1.0,  0,    0,    0,
-      0,    1.0,  0,    0,
-      0,    0,    1.0,  0,
-      0,    0,    0,    1.0
-    ],
-    /**
-     * in mm, read only, dependon state.incTransformMatrix
-     */
-    incTransformMatrixReal: [
       1.0,  0,    0,    0,
       0,    1.0,  0,    0,
       0,    0,    1.0,  0,
@@ -375,20 +362,7 @@ const store = new Vuex.Store({
     },
 
     setIncTransformMatrix (state, { matrix}) {
-      const { quat, mat4, vec3 } = window.export_nehuba
-      const m = mat4.fromValues(...matrix)
-      const q = mat4.getRotation(quat.create(), m)
-      quat.invert(q, q)
-
-      state.incRotQuat = Array.from(q)
       state.incTransformMatrix = matrix
-
-      const transl = mat4.getTranslation(vec3.create(), m)
-      vec3.negate(transl, transl)
-      mat4.translate(m, m, transl)
-      vec3.scale(transl, transl, -1e-6)
-      mat4.translate(m, m, transl)
-      state.incTransformMatrixReal = Array.from(m)
     },
     multiplyIncTransmMatrix (state, matrix) {
       // catch when matrix is null (happens occationally?)
@@ -400,18 +374,7 @@ const store = new Vuex.Store({
       mat4.mul(incM, incM, mulM)
       const det = mat4.determinant(incM)
 
-      const q = mat4.getRotation(quat.create(), incM)
-      quat.invert(q, q)
-
-      state.incRotQuat = Array.from(q)
       state.incTransformMatrix = Array.from(incM)
-
-      const transl = mat4.getTranslation(vec3.create(), incM)
-      vec3.negate(transl, transl)
-      mat4.translate(incM, incM, transl)
-      vec3.scale(transl, transl, -1e-6)
-      mat4.translate(incM, incM, transl)
-      state.incTransformMatrixReal = Array.from(incM)
     },
     setRefLandmark (state, { id, lm: newLm }) {
       state.referenceLandmarks = state.referenceLandmarks.map(lm => lm.id === id ? newLm : lm)
@@ -1431,6 +1394,35 @@ const store = new Vuex.Store({
     }
   },
   getters: {
+    incTransformMatrixReal: state => {
+      if (!state.appendNehubaFlag)
+        return state.incTransformMatrix
+      const { mat4, vec3 } = window.export_nehuba
+
+      /**
+       * problematic for now
+       */
+      const incM = mat4.fromValues(...state.incTransformMatrix)
+      const transl = mat4.getTranslation(vec3.create(), incM)
+      vec3.negate(transl, transl)
+      const translMat = mat4.fromTranslation(mat4.create(), transl)
+      mat4.mul(incM, translMat, incM)
+      vec3.scale(transl, transl, -1e-6)
+      mat4.fromTranslation(translMat, transl)
+      mat4.mul(incM, translMat, incM)
+      return Array.from(incM)
+    },
+
+    incRotQuat: state => {
+      if (!state.appendNehubaFlag)
+        return [0, 0, 0, 1]
+      const { mat4, quat } = window.export_nehuba
+      
+      const incM = mat4.fromValues(...state.incTransformMatrix)
+      const q = mat4.getRotation(quat.create(0), incM)
+      quat.invert(q, q)
+      return Array.from(q)
+    },
     dim: state => {
       const id = state.selectedIncomingVolumeId
       const vol = state.incomingVolumes.find(v => v.id === id)
