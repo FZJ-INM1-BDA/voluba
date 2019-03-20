@@ -64,13 +64,27 @@ export default {
       viewerMousePosition: [0, 0, 0],
 
       subscriptions: [],
-      config: this.baseConfig ? JSON.parse(JSON.stringify(this.baseConfig)) : null
+      config: this.baseConfig ? JSON.parse(JSON.stringify(this.baseConfig)) : null,
+      incomingLandmarks: []
     }
   },
   mounted () {
     if (! ('export_nehuba' in window)) {
       return
     }
+
+    this.incomingLandmarks =  this.xformedIncLm.map(lm => {
+      const lmp = this.landmarkPairs.find(lmp => lmp.incId === lm.id)
+      return lmp
+        ? {
+          ...lm,
+          color: lmp.color
+        }
+        : {
+          ...lm,
+          color: UNPAIRED_COLOR
+        }
+    })
 
     if (this.incTransformMatrix) {
       const { mat4 } = window.export_nehuba
@@ -119,6 +133,7 @@ export default {
     ...mapState({
       incTransformMatrix: 'incTransformMatrix',
       viewerNavigationStateString: 'viewerNavigationStateString',
+      landmarkPairs: 'landmarkPairs',
       xformedIncLm: function (state) {
         return state.incomingLandmarks.map(lm => {
           let coord = lm.coord
@@ -139,21 +154,6 @@ export default {
     },
     dataToViewport: function () {
       return this.nehubaBase__dataToViewport
-    },
-    incomingLandmarks: function () {
-      console.log('xform inc lm', this.xformedIncLm)
-      return this.xformedIncLm.map(lm => {
-        const lmp = this.$store.state.landmarkPairs.find(lmp => lmp.incId === lm.id)
-        return lmp
-          ? {
-            ...lm,
-            color: lmp.color
-          }
-          : {
-            ...lm,
-            color: UNPAIRED_COLOR
-          }
-      })
     },
     placeholderText: function () {
       return this.errorMessage
