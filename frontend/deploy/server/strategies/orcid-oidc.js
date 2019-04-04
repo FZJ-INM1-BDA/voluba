@@ -11,7 +11,8 @@ const cb = (tokenset, {id, family_name = '', given_name = '', ...rest}, done) =>
   return done(null, {
     id: `orcid:${id}`, // id is a mandatory field, used
     name: `${given_name} ${family_name}`,
-    type: 'orcid-oidc'
+    type: 'orcid-oidc',
+    idToken: (tokenset && tokenset.id_token) || null
   })
 }
 
@@ -21,7 +22,10 @@ module.exports = async (app) => {
     clientSecret,
     discoveryUrl,
     redirectUri,
-    cb
+    cb,
+    clientConfig: {
+      redirect_uris: [ redirectUri ]
+    }
   })
   
   passport.use('orcid-oidc', oidcStrategy)

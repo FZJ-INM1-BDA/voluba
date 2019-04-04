@@ -11,7 +11,8 @@ const cb = (tokenset, {sub, given_name, family_name, ...rest}, done) => {
   return done(null, {
     id: `hbp-oidc:${sub}`,
     name: `${given_name} ${family_name}`,
-    type: `hbp-oidc`
+    type: `hbp-oidc`,
+    idToken: (tokenset && tokenset.id_token) || null
   })
 }
 

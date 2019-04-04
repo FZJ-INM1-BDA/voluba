@@ -32,7 +32,7 @@ const startServer = async (app) => {
   } catch (e) {
     console.log(`error during authStrategy`, e)
     throw e
-  }
+}
   
   const publicPath = path.join(__dirname, '..',  'public')
   app.use(express.static(publicPath))

@@ -7,10 +7,6 @@
       class="dropdown-item">
       {{ loginM.name }}  
     </a>
-
-    <a class="dropdown-item" href = "#"> 
-      Register
-    </a>
   </div>
 </template>
 <script>
