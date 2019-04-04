@@ -127,10 +127,15 @@ export default {
       formData.append('image', fileInput.files[0])
       this.uploadProgress = 0
       this.uploadInProgress = true
+
+      const idToken = this.user && this.user.idToken
+      const headers = idToken
+        ? { 'Content-Type': 'multipart/form-data', 'Authorization': 'Bearer ' + idToken }
+        : { 'Content-Type': 'multipart/form-data' }
+      console.log({headers})
+
       axios.post(this.url, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        },
+        headers,
         onUploadProgress: ({loaded, total}) => {
           this.uploadProgress = loaded/total
         }
