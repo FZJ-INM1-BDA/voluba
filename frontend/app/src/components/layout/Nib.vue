@@ -1,7 +1,14 @@
 <template>
   <div
-    :style="nibStyle"
-    id="container">
+    :style="nibStyle">
+
+
+    <!-- body -->
+    <div
+      v-if="open"
+      class="layer-control">
+      <slot name="body"></slot>
+    </div>
 
     <!-- icon -->
     <div
@@ -10,17 +17,11 @@
       class="icon">
       <slot name="icon"></slot>
     </div>
-
-    <!-- body -->
-    <div
-      v-if="open"
-      class="layer-control">
-      <slot name="body"></slot>
-    </div>
   </div>
 </template>
 <script>
 export default {
+  name: 'nib-component',
   props: {
     tooltip: {
       type: String,
@@ -54,11 +55,6 @@ export default {
 }
 </script>
 <style scoped>
-#container
-{
-  position:relative;
-  display:inline-block;
-}
 
 .icon
 {

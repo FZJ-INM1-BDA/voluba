@@ -25,7 +25,10 @@
     </div>
 
     <NehubaLandmarksOverlay
+      @gotoLm="gotoLm({ id: $event.lmId, volume: 'reference' })"
       @mousedownOnIcon="dragLandmark__handleMousedownOnIcon({...$event, volume: 'reference'})"
+      @mouseenterOnIcon="handleMouseenterOnIcon({ event: $event, refId: $event.lmId, hover: true })"
+      @mouseleaveOnIcon="handleMouseleaveOnIcon({ event: $event, refId: $event.lmId, hover: false })"
       ref="lmOverlay"
       v-if="appendNehubaFlag && showReferenceLandmarkOverlay"
       :perspectiveOrientation="compoundPerspectiveOrientation"
@@ -34,7 +37,10 @@
       class="landmarks-overlay" />
 
     <nehuba-landmarks-overlay
+      @gotoLm="gotoLm({ id: $event.lmId, volume: 'incoming' })"
       @mousedownOnIcon="dragLandmark__handleMousedownOnIcon({...$event, volume: 'incoming', transform: incTransformMatrix})"
+      @mouseenterOnIcon="handleMouseenterOnIcon({ event: $event, incId: $event.lmId, hover: true })"
+      @mouseleaveOnIcon="handleMouseleaveOnIcon({ event: $event, incId: $event.lmId, hover: false })"
       ref="lmOverlay1"
       v-if="appendNehubaFlag && showIncomingLandmarkOverlay"
       :dataToViewport="dataToViewport"
@@ -63,11 +69,26 @@
         </template>
       </NehubaStatusCard>
     </div>
+
+    <div
+      v-if="showOverScreen"
+      class="overlay-screen">
+      <div class="mr-3">
+        <h3 class="text-light text-right">
+          Add landmark to the incoming volume
+        </h3>
+      </div>
+      <div>
+        <h3 class="text-light">
+          <font-awesome-icon icon="arrow-right" />
+        </h3>
+      </div>
+    </div>
   </div>
 </template>
 
 <script>
-import { mapState, mapGetters } from 'vuex'
+import { mapState, mapGetters, mapActions } from 'vuex'
 import { REFERENCE_COLOR, UNPAIRED_COLOR, INCOMING_COLOR, annotationColorBlur, annotationColorFocus, getShader, testBigbrain, determineElement, getRotationVec3, incomingTemplateActiveOpacity } from '@//constants'
 import { incompatibleBrowserText } from '@/text'
 
@@ -262,6 +283,16 @@ export default {
     timeoutId: null
   },
   methods: {
+    ...mapActions({
+      hoverLandmarkPair: 'hoverLandmarkPair',
+      gotoLm: 'gotoLm'
+    }),
+    handleMouseenterOnIcon: function ({ refId, incId, hover }) {
+      this.hoverLandmarkPair({ refId, incId, hover })
+    },
+    handleMouseleaveOnIcon: function ({ refId, incId, hover }) {
+      this.hoverLandmarkPair({ refId, incId, hover })
+    },
     mousedown: function (event) {
       if (this.addLandmarkMode) {
         /**
@@ -575,7 +606,8 @@ export default {
       incVolTranslationLock: 'incVolTranslationLock',
       incVolRotationLock: 'incVolRotationLock',
       flippedState: 'flippedState',
-      overlayColorHex: state => state.overlayColor.hex || INCOMING_COLOR
+      overlayColorHex: state => state.overlayColor.hex || INCOMING_COLOR,
+      showOverScreen: state => state.addLandmarkMode && state.addLandmarkMode === 'incoming' && state._step2Mode === 'classic',
     }),
     showRotationWidget: function () {
       return this.appendNehubaFlag && this._step2Mode === 'overlay'
@@ -630,8 +662,11 @@ export default {
         ? this.$store.state.incomingLandmarks.map(lm => {
             const coord = vec3.fromValues(...lm.coord.map(v => v * 1e6))
             vec3.transformMat4(coord, coord, incVM)
+            const lmp = this.$store.state.landmarkPairs.find(lmp => lmp.incId === lm.id)
             return {
+              ...lmp,
               ...lm,
+              ...(lmp ? { name: lmp.name } : {}),
               color: this.overlayColorHex,
               coord: Array.from(coord).map(v => v / 1e6)
             }
@@ -642,7 +677,7 @@ export default {
         : []
     },
     incomingLandmarks: function () {
-      return this.addLandmarkMode
+      return this.addLandmarkMode 
         ? this.storedIncomingLandmarks.concat([
             {
               id: 'tmplm',
@@ -656,26 +691,22 @@ export default {
         : this.storedIncomingLandmarks
     },
     storedReferenceLandmarks: function () {
-      return this._step2Mode === 'overlay'
-        ? this.$store.state.referenceLandmarks
-            .map(lm => {
-              return {
-                ...lm,
-                color: REFERENCE_COLOR
-              }
-            })
-        : this.$store.state.referenceLandmarks.map(lm => {
-            const lmp = this.$store.state.landmarkPairs.find(lmp => lmp.refId === lm.id)
-            return lmp
-              ? {
-                ...lm,
-                color: lmp.color
-              }
-              : {
-                ...lm,
-                color: UNPAIRED_COLOR
-              }
-          })
+      return this.$store.state.referenceLandmarks.map(lm => {
+        const lmp = this.$store.state.landmarkPairs.find(lmp => lmp.refId === lm.id)
+        return lmp
+          ? {
+            ...lmp,
+            ...lm,
+            name: lmp.name,
+            ...(this._step2Mode !== 'overlay'
+              ? { color : lmp.color }
+              : { color: REFERENCE_COLOR })
+          }
+          : {
+            ...lm,
+            color: UNPAIRED_COLOR
+          }
+      })
     },
     referenceLandmarks: function () {
       return this.addLandmarkMode
@@ -814,5 +845,20 @@ div.scale-bar-container
 .container-alert-box
 {
   margin: 2em 5em;
+}
+
+.overlay-screen
+{
+  display:flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+.overlay-screen > *:first-child
+{
+  flex: 0 1 0;
+}
+.overlay-screen > *:last-child
+{
+  flex: 0 0 0;
 }
 </style>

@@ -1,22 +1,26 @@
 <template>
-  <div
-    :style="styleLandmark"
-    class="icon-container">
-    <div
-      :id="'lm-icon-' + _uid"
-      @mousedown="mousedownOnIcon"
-      :style="iconStyle" class="icon"
-      v-b-tooltip="tooltipObj">
-      <font-awesome-icon :icon="icon"/>
+  <div :style="styleLandmark" class="icon-container">
+    <div :style="iconStyle" class="icon-inner-container">
+      <div
+        :id="'lm-icon-' + _uid"
+        class="icon"
+        :class="iconClass"
+        @mouseenter="mouseenter"
+        @mouseleave="mouseleave"
+        @mousedown="mousedownOnIcon"
+        v-b-tooltip="tooltipObj"
+      >
+        <font-awesome-icon :icon="icon"/>
+      </div>
     </div>
     <div :style="stalkStyle" class="stalk"/>
-    
   </div>
 </template>
 <script>
-import EditLandmarkComponent from '@/components/EditLandmark'
+import EditLandmarkComponent from "@/components/EditLandmark";
+import { LANDMARK_ICON_THRESHOLD } from '@/constants'
 
-const zOffsetThreshold = -4
+const zOffsetThreshold = -4;
 
 export default {
   components: {
@@ -53,11 +57,23 @@ export default {
     }
   },
   methods: {
+    mouseenter: function() {
+      this.$emit("mouseenterOnIcon");
+    },
+    mouseleave: function() {
+      this.$emit("mouseleaveOnIcon");
+    },
     mousedownOnIcon: function() {
       this.$emit("mousedownOnIcon");
     }
   },
   computed: {
+    iconClass: function() {
+      return (this.landmark
+        ? (this.landmark.hover ? "blink" : "") + (Math.abs(this.zOffset) < LANDMARK_ICON_THRESHOLD ? " icon-move" : " icon-link")
+        : 'no-pe'
+      );
+    },
     tooltipObj: function() {
       return this.tooltipText && !this.active
         ? {}
@@ -109,7 +125,6 @@ export default {
   position: relative;
 }
 .icon {
-  pointer-events: all;
   width: 1em;
   height: 1em;
   margin-left: -0.5em;
@@ -118,6 +133,12 @@ export default {
   position: absolute;
   left: 0;
   top: 0;
+}
+
+.icon:not(.no-pe)
+{
+
+  pointer-events: all;
 }
 
 /* .icon:hover
@@ -135,6 +156,22 @@ export default {
   position: absolute;
   left: 0;
   top: 0;
+}
+
+.icon-inner-container {
+  width: 0px;
+  height: 0px;
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: center;
+}
+
+.icon-move:hover {
+  cursor: move;
+}
+
+.icon-link:hover {
+  cursor: pointer;
 }
 
 * {

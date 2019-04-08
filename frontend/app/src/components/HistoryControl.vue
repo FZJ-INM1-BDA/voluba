@@ -1,19 +1,18 @@
 <template>
   <nib-component
+    ref="nib"
     @toggleOpen="$emit('changeNibState', $event)"
     :initOpen="initOpen"
     :style="draggingMixin__Style">
     
     <!-- icon -->
     <template slot="icon">
-      <div class="rounded-circle layer-control-toggle btn btn-sm btn-secondary">
-        <font-awesome-icon icon="times"/>
-      </div>
     </template>
 
     <!-- body -->
     <template slot="body">
       <HistoryBody
+        @close="close"
         @header-mousedown="draggingMixin__StartDragging"
         class="layer-control"/>
     </template>
@@ -38,6 +37,13 @@ export default {
     }
   },
   methods: {
+    close: function () {
+      const nib = this.$refs.nib
+      if (nib) {
+        nib.open = false
+        this.$emit('changeNibState', false)
+      }
+    }
   },
 }
 </script>

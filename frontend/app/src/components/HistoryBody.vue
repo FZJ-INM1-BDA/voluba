@@ -1,9 +1,16 @@
 <template>
-  <div>
+  <div class="bg-light">
     <!-- title -->
     <div
       @mousedown="$emit('header-mousedown', $event)"
-      class="card bg-light">
+      class="card title-container pl-3">
+      <div class="icon">
+        <div
+          @click="$emit('close')"
+          class="rounded-circle btn btn-sm btn-outline-secondary">
+          <font-awesome-icon icon="times-circle"/>
+        </div>
+      </div>
       <h5 class="title">
         <div>
           {{ historyBrowserTitle }}
@@ -130,18 +137,13 @@ export default {
 
 .title
 {
-  padding-left: 1em;
+  padding-left: 0.5em;
   padding-right: 1.5em;
-  padding-top: 3em;
+  padding-top: 0.5em;
   padding-bottom:0.5em;
   margin-bottom:0;
 
   transition: linear 150ms all;
-}
-.title:hover
-{
-  background-color: rgba(125,125,125,0.15);
-  cursor: move;
 }
 .history-container
 {
@@ -171,4 +173,17 @@ export default {
 {
   display: inline-block;
 }
+.title-container
+{
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.title-container:hover
+{
+  background-color: rgba(125,125,125,0.15);
+  cursor: move;
+}
+
 </style>

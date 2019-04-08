@@ -1,22 +1,14 @@
 <template>
   <nib-component
+    ref="nib"
     @toggleOpen="$emit('changeNibState', $event)"
     :initOpen="initOpen"
     :style="draggingMixin__Style">
 
-    <!-- icon -->
-    <template slot="icon">
-      <div
-        :class="showLayerControl ? '' : 'btn-shadow'"
-        @click="toggleShowLayerControl"
-        class="rounded-circle layer-control-toggle btn btn-sm btn-secondary">
-        <font-awesome-icon icon="times"/>
-      </div>
-    </template>
-
     <!-- body -->
     <template slot="body">
       <LayerControlBody
+        @close="close"
         @header-mousedown="draggingMixin__StartDragging"
         class="layer-control"
         v-if="computedShowLayerControl"/>
@@ -56,6 +48,13 @@ export default {
     }
   },
   methods: {
+    close: function () {
+      const nib = this.$refs.nib
+      if (nib) {
+        nib.open = false
+        this.$emit('changeNibState', false)
+      }
+    },
     toggleShowLayerControl: function () {
       this.showLayerControl = !this.showLayerControl
       if (!this.showLayerControl) {

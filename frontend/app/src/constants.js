@@ -15,6 +15,8 @@ export const getShader = (rgb) => `void main() {
   emitRGB(vec3(x * ${rgb[0].toFixed(1)}, x * ${rgb[1].toFixed(1)}, x * ${rgb[2].toFixed(1)} ));
 }`
 
+export const LANDMARK_ICON_THRESHOLD = 10
+
 export const REFERENCE_COLOR = `white`
 export const UNPAIRED_COLOR = `#CCCCCC`
 export const INCOMING_COLOR = `#FCDC00`

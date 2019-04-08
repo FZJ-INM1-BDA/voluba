@@ -7,7 +7,7 @@
 
     <!-- landmark name -->
     <input
-      v-if="false"
+      v-if="showInput"
       :style="rowStyle"
       type="text"
       :class="size ? 'form-control-' + size : ''"
@@ -22,6 +22,10 @@
 <script>
 export default {
   props: {
+    showInput: {
+      type: Boolean,
+      default: false
+    },
     showAppend: {
       type: Boolean,
       default: false
@@ -67,5 +71,8 @@ export default {
 }
 </script>
 <style scoped>
-
+.form-control
+{
+  background-color: rgba(0, 0, 0, 0);
+}
 </style>

@@ -2,23 +2,17 @@
   
   <!-- landmark controls -->
   <nib-component
+    ref="nib"
     @toggleOpen="$emit('changeNibState', $event)"
     :initOpen="initOpen"
     :style="draggingMixin__Style">
-
-    <!-- icon -->
-    <template slot="icon">
-      <div
-        class="rounded-circle landmarks-control-toggle btn-shadow btn-sm btn btn-secondary">
-        <font-awesome-icon icon="times"/>
-      </div>
-    </template>
 
     <!-- body -->
     <template slot="body">
 
       <!-- landmark-control-body -->
       <LandmarkControlBodyV2
+        @close="close"
         id="content"
         class="landmarks-control"
         @header-mousedown="draggingMixin__StartDragging"/>
@@ -33,10 +27,10 @@
 
         <!-- add lm -->
         <div
-          v-if="!showV2"
+          :class="addLandmarkMode ? 'btn-success' : 'btn-outline-secondary'"
           v-b-tooltip.bottom.hover="'Add a landmark pair'"
-          class="footer-icon rounded-circle btn btn-sm btn-success"
-          @click="addLandmarkPair">
+          class="footer-icon rounded-circle btn btn-sm"
+          @click="addLmMode">
 
           <font-awesome-icon icon="plus"/>
         </div>
@@ -120,7 +114,9 @@ export default {
   computed: {
     ...mapState({
       backendQueryInProgress: 'backendQueryInProgress',
-      backendQueryError: 'backendQueryError'
+      backendQueryError: 'backendQueryError',
+      addLandmarkMode: 'addLandmarkMode',
+      addLandmarkMode: 'addLandmarkMode'
     }),
     showSuccessMessage: function () {
       return this.computeXformResultAvailable && this.mode === 'classic'
@@ -135,8 +131,21 @@ export default {
   methods: {
     ...mapActions({
       addLandmarkPair: 'addLandmarkPair',
-      saveLandmarks: 'saveLandmarks'
-    })
+      saveLandmarks: 'saveLandmarks',
+      changeLandmarkMode: 'changeLandmarkMode'
+    }),
+    close: function () {
+      const nib = this.$refs.nib
+      if (nib) {
+        nib.open = false
+        this.$emit('changeNibState', false)
+      }
+    },
+    addLmMode: function () {
+      this.changeLandmarkMode({
+        mode: this.addLandmarkMode ? false : 'reference'
+      })
+    }
   }
 }
 </script>

@@ -106,9 +106,9 @@ export default {
 
 .title
 {
-  padding-left: 1em;
+  padding-left: 0.5em;
   padding-right: 1.5em;
-  padding-top: 3em;
+  padding-top: 0.5em;
   padding-bottom:0.5em;
   margin-bottom:0;
 

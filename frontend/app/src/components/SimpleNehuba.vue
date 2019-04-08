@@ -1,6 +1,7 @@
 <template>
   <div class="nehuba-container">
     <div
+      @mousedown.capture="mousedown"
       @sliceRenderEvent="nehubaBase__sliceRenderEvent"
       @viewportToData="nehubaBase__viewportToData"
       class = "nehubaElement"
@@ -8,7 +9,10 @@
       {{ placeholderText }}
     </div>
     <nehuba-landmarks-overlay
+      @gotoLm="gotoLm({ id: $event.lmId, volume: 'incoming' })"
       @mousedownOnIcon="dragLandmark__handleMousedownOnIcon({...$event, volume: 'incoming'})"
+      @mouseenterOnIcon="hoverLandmarkPair({ incId: $event.lmId, hover: true })"
+      @mouseleaveOnIcon="hoverLandmarkPair({ incId: $event.lmId, hover: false })"
       ref = "lmOverlay"
       v-if = "dataToViewport.length > 2"
       :dataToViewport = "dataToViewport"
@@ -27,6 +31,21 @@
         </template>
       </NehubaStatusCard>
     </div>
+
+    <div
+      v-if="showOverScreen"
+      class="overlay-screen">
+      <div>
+        <h3 class="text-light">
+          <font-awesome-icon icon="arrow-left" />
+        </h3>
+      </div>
+      <div class="ml-3">
+        <h3 class="text-light text-left">
+          Add landmark to the reference volume
+        </h3>
+      </div>
+    </div>
   </div>
 </template>
 <script>
@@ -34,8 +53,8 @@ import NehubaLandmarksOverlay from '@/components/NehubaLandmarksOverlay'
 import NehubaBaseMixin from '@/mixins/NehubaBase'
 import DragLandmarkMixin from '@/mixins/DragLandmarkMixin'
 import NehubaStatusCard from '@/components/NehubaStatusCard'
-import { UNPAIRED_COLOR } from '@/constants'
-import { mapState, mapGetters } from 'vuex'
+import { UNPAIRED_COLOR, INCOMING_COLOR } from '@/constants'
+import { mapState, mapGetters, mapActions } from 'vuex'
 
 export default {
   mixins: [
@@ -65,26 +84,12 @@ export default {
 
       subscriptions: [],
       config: this.baseConfig ? JSON.parse(JSON.stringify(this.baseConfig)) : null,
-      incomingLandmarks: []
     }
   },
   mounted () {
     if (! ('export_nehuba' in window)) {
       return
     }
-
-    this.incomingLandmarks =  this.xformedIncLm.map(lm => {
-      const lmp = this.landmarkPairs.find(lmp => lmp.incId === lm.id)
-      return lmp
-        ? {
-          ...lm,
-          color: lmp.color
-        }
-        : {
-          ...lm,
-          color: UNPAIRED_COLOR
-        }
-    })
 
     if (this.incTransformMatrix) {
       const { mat4 } = window.export_nehuba
@@ -134,6 +139,8 @@ export default {
       incTransformMatrix: 'incTransformMatrix',
       viewerNavigationStateString: 'viewerNavigationStateString',
       landmarkPairs: 'landmarkPairs',
+      addLandmarkMode: 'addLandmarkMode',
+      showOverScreen: state => state.addLandmarkMode && state.addLandmarkMode === 'reference' && state._step2Mode === 'classic',
       xformedIncLm: function (state) {
         return state.incomingLandmarks.map(lm => {
           let coord = lm.coord
@@ -149,6 +156,36 @@ export default {
         })
       }
     }),
+    incomingLandmarks: function () {
+      return this.addLandmarkMode === 'incoming'
+        ? this.storedIncomingLandmarks.concat([
+          {
+            id: 'tmplm',
+            name: 'tmplm',
+            color: INCOMING_COLOR,
+            coord: this.viewerMousePosition.map(v => v / 1e6),
+            temporary: true,
+            active: true
+          }
+        ])
+        : this.storedIncomingLandmarks
+    },
+    storedIncomingLandmarks: function () {
+      return this.xformedIncLm.map(lm => {
+        const lmp = this.landmarkPairs.find(lmp => lmp.incId === lm.id)
+        return lmp
+          ? {
+            ...lmp,
+            ...lm,
+            name: lmp.name,
+            color: lmp.color
+          }
+          : {
+            ...lm,
+            color: UNPAIRED_COLOR
+          }
+      })
+    },
     cid: function () {
       return this.nehubaBase__cid
     },
@@ -168,6 +205,20 @@ export default {
     }
   },
   methods: {
+    ...mapActions({
+      gotoLm: 'gotoLm',
+      addLandmark: 'addLandmark',
+      hoverLandmarkPair: 'hoverLandmarkPair'
+    }),
+    mousedown: function () {
+      if (this.addLandmarkMode === 'incoming') {
+        this.addLandmark({
+          landmark: {
+            coord: this.viewerMousePosition.map(v => v / 1e6)
+          }
+        })
+      }
+    },
     onError: function (e) {
       this.errorMessage = e
     },
@@ -246,6 +297,20 @@ export default {
 }
 
 .statusCardWrapper > *
+{
+  flex: 0 0 0;
+}
+.overlay-screen
+{
+  display:flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+.overlay-screen > *:first-child
+{
+  flex: 0 1 0;
+}
+.overlay-screen > *:last-child
 {
   flex: 0 0 0;
 }

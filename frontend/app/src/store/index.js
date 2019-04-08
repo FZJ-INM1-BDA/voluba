@@ -7,16 +7,17 @@ import axios from 'axios'
 
 Vue.use(Vuex)
 
-const getStateSnapshot = ({ incTransformMatrix, referenceLandmarks, incomingLandmarks, landmarkPairs }) => {
+const getStateSnapshot = ({ addLandmarkMode, incTransformMatrix, referenceLandmarks, incomingLandmarks, landmarkPairs }) => {
   return {
     incTransformMatrix: Array.from(incTransformMatrix),
     referenceLandmarks,
     incomingLandmarks,
-    landmarkPairs
+    landmarkPairs,
+    addLandmarkMode
   }
 }
 
-const restoreState = ({commit}, {incTransformMatrix, referenceLandmarks, incomingLandmarks, landmarkPairs}) => {
+const restoreState = ({commit}, {addLandmarkMode = false, incTransformMatrix, referenceLandmarks, incomingLandmarks, landmarkPairs}) => {
   if ( incTransformMatrix ) {
     commit('setIncTransformMatrix', { matrix: incTransformMatrix })
   }
@@ -35,6 +36,9 @@ const restoreState = ({commit}, {incTransformMatrix, referenceLandmarks, incomin
       landmarkPairs
     })
   }
+  commit('setLandmarkMode', {
+    mode: addLandmarkMode
+  })
 }
 
 let errorTimeoutId = null
@@ -258,6 +262,10 @@ const store = new Vuex.Store({
     setRedoStack (state, { redoStack }) {
       state.redoStack = redoStack
     },
+    /**
+     * TODO
+     * fix inconsistency
+     */
     setLandmarkMode (state, { mode }) {
       state.addLandmarkMode = mode
     },
@@ -266,11 +274,6 @@ const store = new Vuex.Store({
     },
     _setStep2Mode (state, { mode }) {
       state._step2Mode = mode
-
-      /**
-       * when toggling step2 mode, landmark mode should be set off
-       */
-      state.addLandmarkMode = false
     },
     _setStep2OverlayFocus (state, {mode}) {
       state._step2OverlayFocus = mode
@@ -397,7 +400,30 @@ const store = new Vuex.Store({
           dispatch('modalMessage', { title: 'Incompatible browser', body: incompatibleBrowserText })
         })
     },
-    changeLandmarkMode: function ({ commit }, { mode }) {
+    changeLandmarkMode: function ({ state, commit, dispatch }, { mode }) {
+      if (!mode) {
+        const pairedRefLmId = new Set(state.landmarkPairs.map(lm => lm.refId))
+        const pairedIncLmId = new Set(state.landmarkPairs.map(lm => lm.incId))
+        const refLmTobePruned = state.referenceLandmarks.filter(lm => !pairedRefLmId.has(lm.id))
+        const incLmTobePruned = state.incomingLandmarks.filter(lm => !pairedIncLmId.has(lm.id))
+        if(refLmTobePruned.length > 0 || incLmTobePruned.length > 0) {
+          dispatch('pushUndo', {
+            name: 'pruning unpaired landmarks'
+          })
+          if (incLmTobePruned.length > 0) {
+            const incLmSet = new Set(incLmTobePruned.map(lm => lm.id))
+            commit('setIncomingLandmarks', {
+              incomingLandmarks: state.incomingLandmarks.filter(lm => !incLmSet.has(lm.id))
+            })
+          }
+          if (refLmTobePruned.length > 0) {
+            const refLmSet = new Set(refLmTobePruned.map(lm => lm.id))
+            commit('setReferenceLandmarks', {
+              referenceLandmarks: state.referenceLandmarks.filter(lm => !refLmSet.has(lm.id))
+            })
+          }
+        }
+      }
       commit('setLandmarkMode', { mode })
     },
     lockIncVol: function ({ commit, state }, { incVolTranslationLock = null, incVolRotationLock = null }) {
@@ -459,7 +485,29 @@ const store = new Vuex.Store({
         incId && lmp.incId === incId ||
         refId && lmp.refId === refId
       ))
+
       commit('setLandmarkPairs', { landmarkPairs })
+
+      /**
+       * also prune the ref/inc lmp
+       */
+      const pairedRefLmId = new Set(state.landmarkPairs.map(lm => lm.refId))
+      const pairedIncLmId = new Set(state.landmarkPairs.map(lm => lm.incId))
+      const refLmTobePruned = state.referenceLandmarks.filter(lm => !pairedRefLmId.has(lm.id))
+      const incLmTobePruned = state.incomingLandmarks.filter(lm => !pairedIncLmId.has(lm.id))
+
+      if (incLmTobePruned.length > 0) {
+        const incLmSet = new Set(incLmTobePruned.map(lm => lm.id))
+        commit('setIncomingLandmarks', {
+          incomingLandmarks: state.incomingLandmarks.filter(lm => !incLmSet.has(lm.id))
+        })
+      }
+      if (refLmTobePruned.length > 0) {
+        const refLmSet = new Set(refLmTobePruned.map(lm => lm.id))
+        commit('setReferenceLandmarks', {
+          referenceLandmarks: state.referenceLandmarks.filter(lm => !refLmSet.has(lm.id))
+        })
+      }
     },
     removeAllLm: function ({ commit, dispatch }, { volume }) {
       dispatch('pushUndo', {
@@ -475,9 +523,19 @@ const store = new Vuex.Store({
     },
     removeAllLmp: function ({ dispatch, commit }) {
       dispatch('pushUndo', {
-        name: 'unlink all landmark pairs'
+        name: 'remove all landmark pairs'
       })
       commit('setLandmarkPairs', { landmarkPairs: [] })
+      /**
+       * removing all lmp also removes all ref and inc lms
+       * 
+       */
+      commit('setReferenceLandmarks', {
+        referenceLandmarks: []
+      })
+      commit('setIncomingLandmarks', {
+        incomingLandmarks: []
+      })
     },
     removeLm: function ({commit, dispatch, state}, {volume, id}) {
       let lmPair = {}
@@ -545,14 +603,17 @@ const store = new Vuex.Store({
         commit('setIncomingLandmarks', { incomingLandmarks })
       }
     },
-    pushUndo: function ({ commit, state }, { name, desc, collapse }) {
+    pushUndo: function ({ commit, state }, { name, desc, collapse, overwrite = {} }) {
       /**
        * items with the same collapseId will not generate a new undo stack 
        */
 
       if (collapse && state.undoStack.length > 0 && state.undoStack.slice(-1)[0].collapse === collapse)
         return
-      const stateSnapshot = getStateSnapshot(state)
+      const stateSnapshot = getStateSnapshot({
+        ...state,
+        ...overwrite
+      })
       const undoItem = {
         id: Date.now(),
         name,
@@ -758,7 +819,6 @@ const store = new Vuex.Store({
       const config = idToken
         ? { headers: { 'Authorization': 'Bearer ' + idToken } }
         : {}
-      console.log(config)
       axios(`${UPLOAD_URL}/user/list`, config)
         .then(({data}) => {
           const volumes = data.map(url => {
@@ -917,7 +977,16 @@ const store = new Vuex.Store({
     },
     addLandmark ({commit, dispatch, state}, {landmark = {}}) {
       dispatch('pushUndo', {
-        name: `add ${state.addLandmarkMode} landmark`
+        name: `add ${state.addLandmarkMode} landmark`,
+        /**
+         * otherwise, when user undo the adding of reference lm,
+         * addlandmarkmode will continue to be 'reference'
+         */
+        overwrite: state.addLandmarkMode === 'reference'
+          ? { addLandmarkMode: false }
+          : state.addLandmarkMode === 'incoming'
+            ? { addLandmarkMode: 'incoming' }
+            : {}
       })
       if (state.addLandmarkMode === 'reference') {
         const refId = generateId(state.referenceLandmarks).toString()
@@ -931,6 +1000,9 @@ const store = new Vuex.Store({
           active: true,
           ...landmark
         }
+        commit('setLandmarkMode', {
+          mode: 'incoming'
+        })
         commit('setReferenceLandmarks', {
           referenceLandmarks: state.referenceLandmarks.concat(newReferenceLandmark)
         })
@@ -954,10 +1026,40 @@ const store = new Vuex.Store({
           active: true,
           coord: Array.from(pos).map(v => v / 1e6)
         }
+        const refLm = state.referenceLandmarks.find(lm => state.landmarkPairs.findIndex(lmp => lmp.refId === lm.id) < 0)
+        if (refLm) {
+          const id = generateId(state.landmarkPairs)
+          const newLmp = {
+            id,
+            refId: refLm.id,
+            incId,
+            name: id,
+            active: true,
+            color: randomColor()
+          }
+          commit('setLandmarkPairs', {
+            landmarkPairs: state.landmarkPairs.concat(newLmp)
+          })
+        }
+        commit('setLandmarkMode', {
+          mode: false
+        })
         commit('setIncomingLandmarks', {
           incomingLandmarks: state.incomingLandmarks.concat(newIncomingLandmark)
         })
       }
+    },
+    hoverLandmarkPair ({ commit, state }, { id, refId, incId, hover}){
+      const lmp = state.landmarkPairs.find(lmp => lmp.id === id || lmp.refId === refId || lmp.incId === incId)
+      if (lmp)
+        commit('setLandmarkPairs', {
+          landmarkPairs: state.landmarkPairs.map(pair => pair.id === lmp.id
+            ? {
+              ...pair,
+              hover
+            }
+            : pair)
+        })
     },
     addLandmarkPair ({ commit, dispatch, state }) {
       dispatch('pushUndo', {
@@ -1106,12 +1208,20 @@ const store = new Vuex.Store({
         })
       }
     },
-    changeLandmarkPairName ({commit, state}, { id, name }) {
+    changeLandmarkPairName ({commit, state, dispatch}, { id, refId, incId, name }) {
+      dispatch('pushUndo', {
+        name: `change landmark pair name`,
+        collapse: `change landmark pair name ${id} ${refId} ${incId}`
+      })
       commit('setLandmarkPairs', {
         landmarkPairs: state.landmarkPairs.map(lmp => {
           return {
             ...lmp,
-            name: lmp.id === id ? name : lmp.name
+            name: lmp.id === id
+              || refId === lmp.refId
+              || incId === lmp.incId
+                ? name
+                : lmp.name
           }
         })
       })

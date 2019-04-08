@@ -4,9 +4,13 @@
       <div class="landmark-cell">
         <LandmarkComponent
           :landmark="lm.temporary ? null : lm"
-          @mousedownOnIcon="mousedownOnIcon({lmId: lm.id, panelIdx: 0})"
+          @mousedownOnIcon="mousedownOnIcon({lmId: lm.id, panelIdx: 0, zOffset: calcZOffset(0, lm)})"
+          @mouseenterOnIcon="mouseenterOnIcon({ lmId: lm.id, panelIdx: 0 })"
+          @mouseleaveOnIcon="mouseleaveOnIcon({ lmId: lm.id, panelIdx: 0 })"
           v-for="lm in landmarks"
+          
           class="landmark-unit"
+          
           :active="lm.active"
           :tooltipText="lm.temporary ? null : lm.name"
           :color="lm.color"
@@ -18,7 +22,9 @@
       <div class="landmark-cell">
         <LandmarkComponent
           :landmark="lm.temporary ? null : lm"
-          @mousedownOnIcon="mousedownOnIcon({lmId: lm.id, panelIdx: 1})"
+          @mousedownOnIcon="mousedownOnIcon({lmId: lm.id, panelIdx: 1, zOffset: calcZOffset(1, lm)})"
+          @mouseenterOnIcon="mouseenterOnIcon({ lmId: lm.id, panelIdx: 1 })"
+          @mouseleaveOnIcon="mouseleaveOnIcon({ lmId: lm.id, panelIdx: 1 })"
           :zOffset="calcZOffset(1, lm)"
           class="landmark-unit"
           :active="lm.active"
@@ -26,6 +32,7 @@
           :color="lm.color"
           :style="calcTransformStyle(1, lm)"
           v-for="lm in landmarks"
+          
           :key="lm.id"
           />
       </div>
@@ -34,7 +41,9 @@
       <div class="landmark-cell">
         <LandmarkComponent
           :landmark="lm.temporary ? null : lm"
-          @mousedownOnIcon="mousedownOnIcon({lmId: lm.id, panelIdx: 2})"
+          @mousedownOnIcon="mousedownOnIcon({lmId: lm.id, panelIdx: 2, zOffset: calcZOffset(2, lm)})"
+          @mouseenterOnIcon="mouseenterOnIcon({ lmId: lm.id, panelIdx: 2 })"
+          @mouseleaveOnIcon="mouseleaveOnIcon({ lmId: lm.id, panelIdx: 2 })"
           :zOffset="calcZOffset(2, lm)"
           :active="lm.active"
           :tooltipText="lm.temporary ? null : lm.name"
@@ -42,6 +51,7 @@
           class="landmark-unit"
           :style="calcTransformStyle(2, lm)"
           v-for="lm in landmarks"
+          
           :key="lm.id"
           />
       </div>
@@ -52,6 +62,7 @@
 </template>
 <script>
 import LandmarkComponent from '@/components/LandmarkUnit'
+import { LANDMARK_ICON_THRESHOLD } from '@/constants'
 
 export default {
   props: {
@@ -83,8 +94,21 @@ export default {
   computed: {
   },
   methods: {
-    mousedownOnIcon: function ({lmId, panelIdx}) {
-      this.$emit('mousedownOnIcon', {lmId, panelIdx})
+    mouseenterOnIcon: function ({ lmId, panelIdx }) {
+      this.$emit('mouseenterOnIcon', {lmId, panelIdx})
+    },
+    mouseleaveOnIcon: function ({ lmId, panelIdx }) {
+      this.$emit('mouseleaveOnIcon', {lmId, panelIdx})
+    },
+    mousedownOnIcon: function ({lmId, panelIdx, zOffset}) {
+      if (Math.abs(zOffset) > LANDMARK_ICON_THRESHOLD) {
+        /**
+         * landmark out of plane, teleport to this location
+         */
+        this.$emit('gotoLm', { lmId, zOffset })
+      } else {
+        this.$emit('mousedownOnIcon', {lmId, panelIdx})
+      }
     },
     calcZOffset: function (idx, lm) {
       return this.dataToViewport[idx](lm.coord.map(v => v * 1e6))[2]

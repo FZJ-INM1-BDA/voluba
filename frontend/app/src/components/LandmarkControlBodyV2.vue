@@ -1,10 +1,17 @@
 <template>
-  <div>
+  <div class="bg-light">
 
     <!-- header -->
     <div
-      class="card bg-light"
+      class="card title-container pl-3"
       @mousedown="$emit('header-mousedown', $event)">
+      <div class="close-icon">
+        <div
+          @click="$emit('close')"
+          class="rounded-circle btn btn-sm btn-outline-secondary">
+          <font-awesome-icon icon="times-circle"></font-awesome-icon>
+        </div>
+      </div>
       <h5 class="title">
         <div>
           {{ editLandmarksTitle }}
@@ -12,13 +19,13 @@
       </h5>
     </div>
 
-    <!-- TODO: sanitize to prevent XSS -->
+    <!-- TODO: sanitize to prevent XSS? SQL injection? -->
     <!-- primary landmarks -->
     <div class="body bg-light">
 
       <!-- top label -->
       <div
-        v-if="_step2Mode === 'overlay'"
+        v-if="false"
         class="lm-heading mb-3">
         <!-- reference landmarks -->
         <div
@@ -47,14 +54,16 @@
       </div>
 
       <!-- check del all container -->
-      <div v-if="refLmTopRowVisible || incLmTopRowVisible" class=" lm-heading mb-3">
+      <div v-if="lmpVisible" class=" lm-heading mb-3">
 
         <!-- reference landmarks -->
         <div  
           :class="refLmTopRowVisible ? '' : 'invisible'"
           class="checkDelAllContainer">
           <div class="input-group input-group-sm">
-            <div class="input-group-prepend">
+            <div
+              v-if="false"
+              class="input-group-prepend">
               <div
                 @click="setLmsActive({ volume: 'reference', active: !allRefLmChecked })"
                 class="onhoverCursorDefault input-group-text">
@@ -66,7 +75,7 @@
             </div>
             <div class="input-group-append">
               <div
-                @click="removeAllLm({ volume: 'reference' })"
+                @click="removeAllLmsLmps"
                 class="btn btn-sm btn-danger">
                 <font-awesome-icon icon="trash-alt"></font-awesome-icon>
                 All
@@ -77,6 +86,7 @@
 
         <!-- incoming landmarks -->
         <div
+          v-if="false"
           :class="incLmTopRowVisible ? '' : 'invisible'"
           class="checkDelAllContainer ml-3">
           <div class="input-group input-group-sm">
@@ -108,10 +118,66 @@
         </div>
       </div>
 
+      <div v-else>
+        <div class="text-muted">
+          Start by adding some landmarks...
+        </div>
+      </div>
+
       <div class="lm-wrapper">
 
-        <!-- all ref landmarks -->
+        <!-- only lmp -->
         <div class="ref-lm-wrapper">
+          <landmark-row-v2
+            class="mb-1 landmark-row"
+            :class="lmp.hover ? 'bg-info' : ''"
+            @mouseenter.native="hoverLandmarkPair({ id: lmp.id, hover: true })"
+            @mouseleave.native="hoverLandmarkPair({ id: lmp.id, hover: false })"
+            :landmark="lmp"
+            :show-input="true"
+            :size="'sm'"
+            :key="lmp.id"
+            @changeName="changeLandmarkPairName({ ...$event, id: lmp.id })"
+            v-for="lmp in landmarkPairs">
+
+            <!-- prepend -->
+            <template slot="prepend">
+              <div class="input-group-prepend">
+                <div
+                  @click="gotoLm({ volume: 'reference', id: lmp.refId })"
+                  :style="{color: _step2Mode === 'overlay' ? referenceColor : lmp.color, opacity: lmp.active ? 1.0 : inactiveRowOpacity}"
+                  class="btn btn-sm btn-outline-secondary">
+                  <font-awesome-icon class="icon" icon="map-marker-alt"></font-awesome-icon>
+                </div>
+                <div
+                  @click="gotoLm({ volume: 'incoming', id: lmp.incId })"
+                  :style="{color: _step2Mode === 'overlay' ? incomingColor : lmp.color, opacity: lmp.active ? 1.0 : inactiveRowOpacity}"
+                  class="btn btn-sm btn-outline-secondary">
+                  <font-awesome-icon class="icon" icon="map-marker-alt"></font-awesome-icon>
+                </div>
+              </div>
+            </template>
+
+            <!-- append -->
+            <template slot="append">
+              <div class="input-group-append">
+                <div
+                  @click="removeLmp({ id: lmp.id })"
+                  class="btn btn-sm btn-danger">
+                  <font-awesome-icon icon="trash-alt"></font-awesome-icon>
+                </div>
+              </div>
+            </template>
+
+          </landmark-row-v2>
+        </div>
+        
+        <!-- all ref landmarks -->
+        <div
+          v-if="false"
+          class="ref-lm-wrapper">
+
+          
           <LandmarkRowV2
             class="mb-1 landmark-row"
             @changeName="changeLandmarkName({...$event, id: lm.id, volume: 'reference'})"
@@ -192,7 +258,9 @@
         </div>
 
         <!-- unpaired incoming landmarks -->
-        <div class="inc-lm-wrapper">
+        <div
+          v-if="false"
+          class="inc-lm-wrapper">
 
           <ExperimentalPairedLm 
             :key="lm.id"
@@ -242,7 +310,11 @@ export default {
       removeAllLmp: 'removeAllLmp',
       removeAllLm: 'removeAllLm',
       setLmsActive: 'setLmsActive',
-      changeLandmarkMode: 'changeLandmarkMode'
+      changeLandmarkMode: 'changeLandmarkMode',
+      changeLandmarkPairName: 'changeLandmarkPairName',
+      hoverLandmarkPair: 'hoverLandmarkPair',
+      removeAllLmsLmps: 'removeAllLmsLmps',
+      removeLmp: 'removeLmp'
     }),
     toggleLmIcons: function (id) {
       const foundId = this.lmIconOpenSet.find(i => i === id)
@@ -291,7 +363,8 @@ export default {
       landmarkPairs: 'landmarkPairs',
       allRefLmChecked: state => state.referenceLandmarks.every(lm => lm.active),
       allIncLmChecked: state => state.incomingLandmarks.every(lm => lm.active),
-      _step2Mode: '_step2Mode'
+      _step2Mode: '_step2Mode',
+      incomingColor: state => (state.overlayColor && state.overlayColor.hex) || INCOMING_COLOR
     }),
     editLandmarksTitle: function () {
       return EDIT_LANDMARKS_TITLE
@@ -301,6 +374,9 @@ export default {
     },
     addIncLmText: function () {
       return OVERLAY_ADD_INC_LM_TEXT
+    },
+    lmpVisible: function () {
+      return this.landmarkPairs.length > 0
     },
     refLmTopRowVisible: function () {
       return this.referenceLandmarks.length > 0
@@ -313,10 +389,8 @@ export default {
         return this.landmarkPairs.findIndex(lmp => lmp.incId === incLm.id) < 0
       })
     },
-    incomingStyle: function () {
-      return {
-        color: INCOMING_COLOR
-      }
+    referenceColor: function () {
+      return REFERENCE_COLOR
     }
   }
 }
@@ -324,18 +398,13 @@ export default {
 <style scoped>
 .title
 {
-  padding-left: 1em;
+  padding-left: 0.5em;
   padding-right: 1.5em;
-  padding-top: 3em;
+  padding-top: 0.5em;
   padding-bottom:0.5em;
   margin-bottom:0;
 
   transition: linear 150ms all;
-}
-.title:hover
-{
-  background-color: rgba(125,125,125,0.15);
-  cursor: move;
 }
 
 .body
@@ -354,6 +423,11 @@ export default {
     drop-shadow(0px -1px rgba(0, 0, 0, 0.5))
     drop-shadow(1px 0px rgba(0, 0, 0, 0.5))
     drop-shadow(-1px 0px rgba(0, 0, 0, 0.5));
+}
+
+.landmark-row
+{
+  transition: background-color 250ms ease;
 }
 
 .landmark-row.input-group
@@ -444,5 +518,17 @@ export default {
   padding: 1em;
   font-size: 75%;
   max-width: 10em;
+}
+.title-container
+{
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.title-container:hover
+{
+  background-color: rgba(125,125,125,0.15);
+  cursor: move;
 }
 </style>

@@ -1,30 +1,25 @@
 <template>
-  <div
-    @keydown.capture="keydown"
-    id="app">
-
+  <div @keydown.capture="keydown" id="app">
     <!-- header -->
-    <header-component class = "app-header"/>
+    <header-component class="app-header"/>
 
     <main class="app-main">
-
       <!-- main container -->
       <div class="underlay">
         <nehuba-component
-          @ready = "mainNehubaReady"
-          ref = "templatenehuba" />
+          @ready="mainNehubaReady"
+          ref="templatenehuba"/>
         <SimpleNehubaComponent
           v-if="primaryNehubaReady && simpleNehubaConfig && showSimpleNehuba"
           :baseConfig="simpleNehubaConfig"
           ref="incomingnehuba"
-          v-show="showSimpleNehuba" />
+          v-show="showSimpleNehuba"
+        />
       </div>
 
       <!-- floating layer -->
-      <div
-        v-if="appendNehubaFlag"
-        class = "overlay">
-        <toolbar-component />
+      <div v-if="appendNehubaFlag" class="overlay">
+        <toolbar-component/>
       </div>
     </main>
 
@@ -33,18 +28,15 @@
       <load-landmark-pairs-modal
         ref="loadLandmarkPairsModal"
         id="loadLandmarkPairsModal"
-        ok-disabled="true" />
+        ok-disabled="true"
+      />
       <transformation-matrix-modal
         ref="transformationMatrixModal"
         id="transformationMatrixModal"
-        :transformationMatrix="this.$store.state.landmarkTransformationMatrix" />
-      <upload-modal
-        ref="uploadModal"
-        id="uploadModal" />
-      <MessageModal
-        :message="messageModalMessage"
-        id="messageModal"
-        ref="messageModal"/>
+        :transformationMatrix="this.$store.state.landmarkTransformationMatrix"
+      />
+      <upload-modal ref="uploadModal" id="uploadModal"/>
+      <MessageModal :message="messageModalMessage" id="messageModal" ref="messageModal"/>
       <b-modal
         centered
         ref="startFromScratchModal"
@@ -53,40 +45,38 @@
         @ok="startFromScratch"
         ok-variant="danger"
         ok-title="Yes, reset everything"
-        :title="startFromScratchTitle">
-          This action would 
-          <ul>
-            <li>unload the incoming volume</li>
-            <li>remove all existing landmarks</li>
-            <li>resets your current progress</li>
-          </ul>
-          Would you like to proceed?
+        :title="startFromScratchTitle"
+      >
+        This action would
+        <ul>
+          <li>unload the incoming volume</li>
+          <li>remove all existing landmarks</li>
+          <li>resets your current progress</li>
+        </ul>Would you like to proceed?
       </b-modal>
-      <SelectVolumesModal
-        v-if="showSelectVolumesModal"
-        @destroyMe="showSelectVolumesModal=false" />
+      <SelectVolumesModal v-if="showSelectVolumesModal" @destroyMe="showSelectVolumesModal=false"/>
     </div>
     <!--<footer-component/>-->
   </div>
 </template>
 
 <script>
-import { mapState, mapActions } from 'vuex'
-import HeaderComponent from '@/components/TheHeader'
-import NehubaComponent from '@/components/Nehuba'
-import SimpleNehubaComponent from '@/components/SimpleNehuba'
-import ToolbarComponent from '@/components/Toolbar'
-import { getDefaultNehubaConfigLight } from '@/constants'
-import { START_FROM_SCRATCH_MODAL_TITLE } from '@/text'
+import { mapState, mapActions } from "vuex";
+import HeaderComponent from "@/components/TheHeader";
+import NehubaComponent from "@/components/Nehuba";
+import SimpleNehubaComponent from "@/components/SimpleNehuba";
+import ToolbarComponent from "@/components/Toolbar";
+import { getDefaultNehubaConfigLight } from "@/constants";
+import { START_FROM_SCRATCH_MODAL_TITLE } from "@/text";
 
-import LoadLandmarkPairsModal from '@/components/modals/LoadLandmarkPairsModal'
-import TransformationMatrixModal from '@/components/modals/TransformationMatrixModal'
-import UploadModal from '@/components/modals/UploadModal'
-import SelectVolumesModal from '@/components/modals/SelectVolumesModal'
-import MessageModal from '@/components/modals/MessageModal'
+import LoadLandmarkPairsModal from "@/components/modals/LoadLandmarkPairsModal";
+import TransformationMatrixModal from "@/components/modals/TransformationMatrixModal";
+import UploadModal from "@/components/modals/UploadModal";
+import SelectVolumesModal from "@/components/modals/SelectVolumesModal";
+import MessageModal from "@/components/modals/MessageModal";
 
 export default {
-  name: 'App',
+  name: "App",
   components: {
     HeaderComponent,
     NehubaComponent,
@@ -99,119 +89,125 @@ export default {
     SelectVolumesModal,
     MessageModal
   },
-  data: function () {
+  data: function() {
     return {
       showSecondNehuba: true,
       primaryNehubaReady: false,
       showSelectVolumesModal: false,
-      messageModalMessage: ''
-    }
+      messageModalMessage: ""
+    };
   },
-  mounted: function () {
-    this.$store.dispatch('appendNehuba')
+  mounted: function() {
+    this.$store.dispatch("appendNehuba");
     this.$store.subscribeAction(({ type, payload }) => {
       switch (type) {
-        case 'openModal': {
-          const modalId = payload && payload.modalId
-          const modal = modalId && this.$refs[modalId]
+        case "openModal": {
+          const modalId = payload && payload.modalId;
+          const modal = modalId && this.$refs[modalId];
           if (modal) {
-            (modal.showModal && modal.showModal()) || (modal.show && modal.show())
+            (modal.showModal && modal.showModal()) ||
+              (modal.show && modal.show());
           }
-          break
+          break;
         }
-        case 'startFromScratch': {
-          this.showSelectVolumesModal = true
+        case "startFromScratch": {
+          this.showSelectVolumesModal = true;
           break;
         }
         default:
       }
-    })
+    });
   },
   computed: {
     ...mapState({
-      appendNehubaFlag: 'appendNehubaFlag',
-      undoStack: 'undoStack',
-      redoStack: 'redoStack',
-      incTransformMatrix: 'incTransformMatrix'
+      appendNehubaFlag: "appendNehubaFlag",
+      undoStack: "undoStack",
+      redoStack: "redoStack",
+      incTransformMatrix: "incTransformMatrix"
     }),
-    startFromScratchTitle: function () {
-      return START_FROM_SCRATCH_MODAL_TITLE
+    startFromScratchTitle: function() {
+      return START_FROM_SCRATCH_MODAL_TITLE;
     },
-    sidebarWidth: function () {
-      return this.$store.state.sidebarWidth
+    sidebarWidth: function() {
+      return this.$store.state.sidebarWidth;
     },
-    simpleNehubaConfig: function () {
-      const id = this.$store.state.selectedIncomingVolumeId
-      const incVol = id && this.$store.state.incomingVolumes.find(v => v.id === id)
-      return incVol && incVol.imageSource && getDefaultNehubaConfigLight(incVol.imageSource)
+    simpleNehubaConfig: function() {
+      const id = this.$store.state.selectedIncomingVolumeId;
+      const incVol =
+        id && this.$store.state.incomingVolumes.find(v => v.id === id);
+      return (
+        incVol &&
+        incVol.imageSource &&
+        getDefaultNehubaConfigLight(incVol.imageSource)
+      );
     },
-    showSimpleNehuba: function () {
-      return this.showSecondNehuba && this.primaryNehubaReady && this.$store.state._step2Mode === 'classic'
+    showSimpleNehuba: function() {
+      return (
+        this.showSecondNehuba &&
+        this.primaryNehubaReady &&
+        this.$store.state._step2Mode === "classic"
+      );
     }
   },
   methods: {
     ...mapActions({
-      startFromScratch: 'startFromScratch'
+      startFromScratch: "startFromScratch"
     }),
-    keydown: function (event) {
+    keydown: function(event) {
       /**
        * stop/prevent is needed if user focus is on one of the popover text field
-       * otherwise changeLandmarkName undo stack does not get resolved properly. 
+       * otherwise changeLandmarkName undo stack does not get resolved properly.
        */
-      const {key, ctrlKey} = event
+      const { key, ctrlKey } = event;
       if (ctrlKey) {
-        if (key === 'z') {
-          this.$store.dispatch('undo')
-          event.stopPropagation()
-          event.preventDefault()
+        if (key === "z") {
+          this.$store.dispatch("undo");
+          event.stopPropagation();
+          event.preventDefault();
         }
-        if (key === 'y') {
-          this.$store.dispatch('redo')
-          event.stopPropagation()
-          event.preventDefault()
+        if (key === "y") {
+          this.$store.dispatch("redo");
+          event.stopPropagation();
+          event.preventDefault();
         }
       }
     },
-    mainNehubaReady: function () {
-      this.primaryNehubaReady = true
+    mainNehubaReady: function() {
+      this.primaryNehubaReady = true;
     }
   },
   watch: {
-    appendNehubaFlag: function (flag) {
-      this.showSelectVolumesModal = flag
+    appendNehubaFlag: function(flag) {
+      this.showSelectVolumesModal = flag;
     },
-    showSimpleNehuba: function () {
-      this.$store.dispatch('redrawNehuba')
+    showSimpleNehuba: function() {
+      this.$store.dispatch("redrawNehuba");
     }
   }
-}
+};
 </script>
 
 <style>
-#app
-{
-  position:absolute;
+#app {
+  position: absolute;
   left: 0;
   top: 0;
 }
-.app-header
-{
+.app-header {
   width: 100%;
   height: 0;
   position: relative;
   left: 0;
   top: 0;
 }
-.app-main
-{
-  overflow:hidden;
-  position:relative;
+.app-main {
+  overflow: hidden;
+  position: relative;
   width: 100%;
   height: 100%;
 }
 
-.underlay
-{
+.underlay {
   position: relative;
   z-index: 1;
   width: 100%;
@@ -219,32 +215,27 @@ export default {
   display: flex;
 }
 
-.underlay > *
-{
+.underlay > * {
   flex: 1 1 0;
 }
 
-.overlay
-{
-  position:absolute;
+.overlay {
+  position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
   z-index: 2;
   pointer-events: none;
-
 }
 
-.nehuba-container
-{
+.nehuba-container {
   display: flex;
   flex-direction: row;
   height: 100%;
 }
 
-.nehuba-container > *
-{
+.nehuba-container > * {
   flex: 1 1 0;
 }
 
@@ -252,18 +243,49 @@ export default {
   width: 100%;
 }
 
-@keyframes spinning
-{
+@keyframes spinning {
   from {
     transform: rotate(0deg);
   }
-  to{
+  to {
     transform: rotate(359deg);
   }
 }
 
-.spinner
-{
+.spinner {
   animation: spinning 700ms linear infinite running;
+}
+
+@keyframes blink {
+  0% {
+    transform: scaleX(1);
+  }
+  50% {
+    transform: scaleX(0.2);
+  }
+  100% {
+    transform: scaleX(1);
+  }
+}
+
+.blink {
+  animation: blink 250ms infinite;
+}
+
+.no-pe
+{
+  pointer-events: none;
+}
+
+.overlay-screen
+{
+  position:absolute;
+  top:0;
+  left:0;
+  content: ' ';
+  width: 100%;
+  height: 100%;
+  background-color: rgba(128,128,128,0.8);
+  z-index: 12;
 }
 </style>

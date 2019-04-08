@@ -4,24 +4,6 @@
       <img class="logo" id="logo" src="../assets/HBP_Primary_RGB_BlackText.png" alt="">
     </div>
 
-    <!-- toggle history -->
-    <div
-      class="horizontalContainer flex-items">
-      <div
-        v-b-tooltip.right.hover="'history browser'"
-        :class="showHistory ? 'btn-info' : 'btn-secondary'"
-        @click="showHistory = !showHistory"
-        class="addBtn rounded-circle layer-control-toggle btn btn-sm">
-        <font-awesome-icon icon="history" />
-      </div>
-
-      <HistoryControl
-        @changeNibState="showHistory=$event"
-        v-if="showHistory">
-
-      </HistoryControl>
-    </div>
-
     <!-- layer control -->
     <div
       class="horizontalContainer flex-items">
@@ -31,7 +13,7 @@
         @click="showLayerControl=!showLayerControl"
         class="addBtn rounded-circle layer-control-toggle btn btn-sm btn-transition">
         
-        <font-awesome-icon icon="sliders-h" />
+        <font-awesome-icon icon="brain" />
       </div>
       <LayerControl
         @changeNibState="showLayerControl=$event"
@@ -56,6 +38,24 @@
         v-if="landmarkControlVisible"
         @changeNibState="landmarkControlVisibilityChanged({visible : $event })"
         class="row-flex-items" />
+    </div>
+
+    <!-- toggle history -->
+    <div
+      class="horizontalContainer flex-items">
+      <div
+        v-b-tooltip.right.hover="'history browser'"
+        :class="showHistory ? 'btn-info' : 'btn-secondary'"
+        @click="showHistory = !showHistory"
+        class="addBtn rounded-circle layer-control-toggle btn btn-sm">
+        <font-awesome-icon icon="history" />
+      </div>
+
+      <HistoryControl
+        @changeNibState="showHistory=$event"
+        v-if="showHistory">
+
+      </HistoryControl>
     </div>
 
     <!-- save export control -->
