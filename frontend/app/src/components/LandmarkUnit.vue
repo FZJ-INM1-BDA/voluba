@@ -1,6 +1,10 @@
 <template>
   <div :style="styleLandmark" class="icon-container">
-    <div :style="iconStyle" class="icon-inner-container">
+    <!-- icon -->
+    <div
+      :style="iconStyle"
+      class="icon-inner-container">
+
       <div
         :id="'lm-icon-' + _uid"
         class="icon"
@@ -8,11 +12,14 @@
         @mouseenter="mouseenter"
         @mouseleave="mouseleave"
         @mousedown="mousedownOnIcon"
-        v-b-tooltip="tooltipObj"
-      >
-        <font-awesome-icon :icon="icon"/>
+        v-b-tooltip="tooltipObj">
+        <font-awesome-icon
+          :class="landmark && landmark.hover ? 'blink' : ''"
+          :icon="icon"/>
       </div>
     </div>
+
+    <!-- stalk -->
     <div :style="stalkStyle" class="stalk"/>
   </div>
 </template>
@@ -70,7 +77,7 @@ export default {
   computed: {
     iconClass: function() {
       return (this.landmark
-        ? (this.landmark.hover ? "blink" : "") + (Math.abs(this.zOffset) < LANDMARK_ICON_THRESHOLD ? " icon-move" : " icon-link")
+        ? Math.abs(this.zOffset) < LANDMARK_ICON_THRESHOLD ? "icon-move" : "icon-link"
         : 'no-pe'
       );
     },

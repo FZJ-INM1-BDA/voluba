@@ -1,13 +1,15 @@
 /* eslint-disable */
 
 export const loginMethods = [{
-  name: 'HBP OIDC',
+  name: 'HBP',
   imgSrc: null,
-  href: '/hbp-oidc/auth'
+  href: '/hbp-oidc/auth',
+  disabled: true
 },{
-  name: 'ORCID OIDC',
+  name: 'ORCID',
   imgSrc: null,
-  href: '/orcid-oidc/auth'
+  href: '/orcid-oidc/auth',
+  disabled: false
 }]
 
 export const getShader = (rgb) => `void main() {
@@ -21,6 +23,29 @@ export const REFERENCE_COLOR = `white`
 export const UNPAIRED_COLOR = `#CCCCCC`
 export const INCOMING_COLOR = `#FCDC00`
 export const INACTIVE_ROW_OPACITY = 0.2
+
+export const DEFAULT_INCOMING_VOLUMES = [
+  {
+    id: 'inc-1',
+    name: 'Nucleus subthalamicus (B20)',
+    imageSource: 'precomputed://https://neuroglancer-dev.humanbrainproject.org/precomputed/landmark-reg/B20_stn_l/v10',
+    dim: [
+      16208000,
+      13056000,
+      9800000
+    ]
+  },
+  {
+    id: 'inc-2',
+    name: 'Hippocampus unmasked',
+    imageSource: 'precomputed://https://neuroglancer-dev.humanbrainproject.org/precomputed/landmark-reg/hippocampus-unmasked',
+    dim: [
+      57600000,
+      57600000,
+      52800000
+    ]
+  }
+]
 
 export const patchSliceViewPanel = function (sliceViewPanel) {
   const originalDraw = sliceViewPanel.draw
@@ -696,4 +721,4 @@ export const oldJson = [
 export const annotationColorBlur = `grey`
 export const annotationColorFocus = `yellow`
 
-export const UPLOAD_URL = `http://medpc072.ime.kfa-juelich.de:7300`
+export const UPLOAD_URL = `http://ime178.ime.kfa-juelich.de:7300`

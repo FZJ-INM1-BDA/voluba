@@ -32,7 +32,7 @@
       </div>
       <div class="input-group">
         <select
-          class = "form-control"
+          class = "form-control form-control-sm"
           v-model = "selectedIncomingVolumeId">
           <option
             v-for = "incomingVolume in incomingVolumes"
@@ -45,21 +45,38 @@
 
         <!-- incoming volume control -->
         <!-- currently only supports delete -->
-        <div v-if="selectedIncomingVolumeId" class="input-group-append">
-          <!-- wrapper required because .disabled has pointer-events: none -->
-          <!-- relevant SO issue: -->
-          <!-- https://github.com/twbs/bootstrap/issues/10049 -->
-          <!-- https://github.com/twbs/bootstrap/pull/11094 -->
+        <div v-if="selectedIncomingVolume" class="input-group-append btn-group">
           <div
+            v-if="selectedIncomingVolume && selectedIncomingVolume.extra">
+            <div
+              class="btn-sm"
+              id="infoIcon">
+              <font-awesome-icon icon="info-circle" />
+              <b-tooltip target="infoIcon" placement="right" triggers="click blur">
+                <div
+                  class="mh-20-em overflow-auto"
+                  v-if="selectedIncomingVolume.extra.nifti">
+                  <div
+                    class="text-left"
+                    :key="key"
+                    v-for="(value, key) in selectedIncomingVolume.extra.nifti">
+                    {{ key }}
+                    <div class="text-muted">
+                      {{ value ? value : 'null' }}
+                    </div>
+                  </div>
+                </div>
+              </b-tooltip>
+            </div>
+          </div>
+          <div
+            @click="removeSelectedIncVolume()"
+            :class="deleteBtnClass"
+            v-if="incomingVolumeCanBeDeleted"
+            class="btn btn-sm"
             :title="deleteBtnTooltipText"
             v-b-tooltip.hover.right>
-            <div
-              @click="removeSelectedIncVolume()"
-              :class="deleteBtnClass"
-              class="input-group-btn btn">
-              <font-awesome-icon icon="trash-alt" />
-              Delete
-            </div>
+            <font-awesome-icon icon="trash-alt" />
           </div>
         </div>
       </div>
@@ -128,7 +145,11 @@ export default {
         : 'This volume cannot be deleted.'
     },
     incomingVolumeCanBeDeleted: function () {
-      return this.selectedIncomingVolumeId && /^user-/.test(this.selectedIncomingVolumeId)
+      /**
+       * temporary disabling deletion
+       */
+      return false
+      // return this.selectedIncomingVolume && this.selectedIncomingVolume.visibility === 'private'
     },
     selectedReferenceVolumeId: {
       get: function () {
@@ -137,6 +158,9 @@ export default {
       set: function (id) {
         this.$store.dispatch('selectReferenceVolumeWithId', id)
       }
+    },
+    selectedIncomingVolume: function () {
+      return this.$store.state.incomingVolumes.find(v => v.id === this.$store.state.selectedIncomingVolumeId)
     },
     selectedIncomingVolumeId: {
       get: function () {
@@ -225,5 +249,9 @@ export default {
 .title
 {
   margin-bottom: 1em;
+}
+.mh-20-em
+{
+  max-height: 20em;
 }
 </style>

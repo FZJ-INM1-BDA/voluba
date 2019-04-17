@@ -14,6 +14,7 @@ export default {
       nehubaBase__subscriptions: [], 
       nehubaBase__appendNehubaFlag: false,
       nehubaBase__navigationPosition: null,
+      nehubaBase__navigationOrientation: null,
       nehubaBase__dataToViewport: [
         defaultXform,
         defaultXform,
@@ -123,6 +124,13 @@ export default {
               this.nehubaBase__navigationPosition = Array.from(fa)
             })
         )
+        this.nehubaBase__subscriptions.push(
+          nehubaViewer.navigationState.orientation
+            .subscribe(fa => {
+              this.nehubaBase__navigationOrientation = Array.from(fa)
+            })
+        )
+
         this.nehubaBase__subscriptions.push(
           nehubaViewer.mousePosition.inRealSpace.subscribe(fa => {
             if (fa)

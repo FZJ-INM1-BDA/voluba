@@ -32,20 +32,49 @@
       </NehubaStatusCard>
     </div>
 
-    <div
-      v-if="showOverScreen"
-      class="overlay-screen">
-      <div>
-        <h3 class="text-light">
-          <font-awesome-icon icon="arrow-left" />
-        </h3>
+    <div class="pe-none rotation-control-container">
+      <div class="h-50 row">
+        <div class="col">
+          <TwoDRotationWidget
+            :rotationQuaternion="rotQ1"
+            @clickTwoArrow="flipAxis({ axis: $event.idx })"
+            @rotateCircle="rotateCircle(0, $event)"/>
+        </div>
+        <div class="col">
+          <TwoDRotationWidget
+            @clickTwoArrow="flipAxis({ axis: $event.idx })"
+            :rotationQuaternion="rotQ2"
+            @rotateCircle="rotateCircle(1, $event)"/>
+        </div>
       </div>
-      <div class="ml-3">
-        <h3 class="text-light text-left">
-          Add landmark to the reference volume
-        </h3>
+      <div class="h-50 row">
+        <div class="col">
+          <TwoDRotationWidget
+            @clickTwoArrow="flipAxis({ axis: $event.idx })"
+            :rotationQuaternion="rotQ3"
+            @rotateCircle="rotateCircle(2, $event)"/>
+        </div>
+        <div class="col">
+        </div>
       </div>
     </div>
+
+    <transition name="fade">
+      <div
+        v-if="showOverScreen"
+        class="overlay-screen">
+        <div>
+          <h3 class="text-light">
+            <font-awesome-icon icon="arrow-left" />
+          </h3>
+        </div>
+        <div class="ml-3">
+          <h3 class="text-light text-left">
+            Add landmark to the reference volume
+          </h3>
+        </div>
+      </div>
+    </transition>
   </div>
 </template>
 <script>
@@ -55,6 +84,7 @@ import DragLandmarkMixin from '@/mixins/DragLandmarkMixin'
 import NehubaStatusCard from '@/components/NehubaStatusCard'
 import { UNPAIRED_COLOR, INCOMING_COLOR } from '@/constants'
 import { mapState, mapGetters, mapActions } from 'vuex'
+import TwoDRotationWidget from '@/components/RotationWidget/TwoDRotationWidget'
 
 export default {
   mixins: [
@@ -63,7 +93,8 @@ export default {
   ],
   components: {
     NehubaLandmarksOverlay,
-    NehubaStatusCard
+    NehubaStatusCard,
+    TwoDRotationWidget
   },
   props: {
     baseConfig: {
@@ -133,9 +164,11 @@ export default {
   },
   computed: {
     ...mapGetters({
-      incTransformMatrixReal: 'incTransformMatrixReal'
+      incTransformMatrixReal: 'incTransformMatrixReal',
+      incRotQuat: 'incRotQuat'
     }),
     ...mapState({
+      appendNehubaFlag: 'appendNehubaFlag',
       incTransformMatrix: 'incTransformMatrix',
       viewerNavigationStateString: 'viewerNavigationStateString',
       landmarkPairs: 'landmarkPairs',
@@ -156,6 +189,37 @@ export default {
         })
       }
     }),
+    rotQ1: function () {
+      if (!this.appendNehubaFlag)
+        return [0, 0, 0, 1]
+      const { quat } = window.export_nehuba
+      const adj = quat.fromEuler(quat.create(), 90, 0, 0)
+      const ori = quat.fromValues(...(this.nehubaBase__navigationOrientation || [0, 0, 0, 1]))
+      quat.mul(ori, adj, ori)
+      quat.mul(ori, quat.fromValues(...this.incRotQuat), ori)
+      quat.normalize(ori, ori)
+      return Array.from(ori)
+    },
+    rotQ2: function () {
+      if (!this.appendNehubaFlag)
+        return [0, 0, 0, 1]
+      const { quat } = window.export_nehuba
+      const adj = quat.fromEuler(quat.create(), 90, 90, 0)
+      const ori = quat.fromValues(...(this.nehubaBase__navigationOrientation || [0, 0, 0, 1]))
+      quat.mul(ori, adj, ori)
+      quat.mul(ori, quat.fromValues(...this.incRotQuat), ori)
+      quat.normalize(ori, ori)
+      return Array.from(ori)
+    },
+    rotQ3: function () {
+      if (!this.appendNehubaFlag)
+        return [0, 0, 0, 1]
+      const { quat } = window.export_nehuba
+      const ori = quat.fromValues(...(this.nehubaBase__navigationOrientation || [0, 0, 0, 1]))
+      quat.mul(ori, quat.fromValues(...this.incRotQuat), ori)
+      quat.normalize(ori, ori)
+      return Array.from(ori)
+    },
     incomingLandmarks: function () {
       return this.addLandmarkMode === 'incoming'
         ? this.storedIncomingLandmarks.concat([
@@ -208,8 +272,37 @@ export default {
     ...mapActions({
       gotoLm: 'gotoLm',
       addLandmark: 'addLandmark',
-      hoverLandmarkPair: 'hoverLandmarkPair'
+      hoverLandmarkPair: 'hoverLandmarkPair',
+      flipAxis: 'flipAxis'
     }),
+    rotateCircle: function (idx, {rot}) {
+      if (!this.appendNehubaFlag)
+        return
+
+      if (!this.nehubaBase__navigationOrientation)
+        return
+        
+      const { vec3, quat } = window.export_nehuba
+      const unitV = vec3.fromValues(
+        idx === 1 ? 1 : 0,
+        idx === 0 ? -1 : 0,
+        idx === 2 ? 1 : 0
+      )
+      const rotQuat = quat.fromValues(...this.nehubaBase__navigationOrientation)
+      const rotVec = vec3.transformQuat(vec3.create(), unitV, rotQuat)
+      const currQ = quat.fromValues(...this.incRotQuat)
+      quat.invert(currQ, currQ)
+      vec3.transformQuat(rotVec, rotVec, currQ)
+      quat.setAxisAngle(rotQuat, rotVec, rot / 180 * Math.PI)
+
+      this.$store.dispatch('pushUndo', {
+        name: `rotate by 2D widget ${idx}`,
+        collapse: `rotate by rgb widget ${idx}`
+      })
+      this.$store.dispatch('rotIncBy', {
+        quaternion: Array.from(rotQuat)
+      })
+    },
     mousedown: function () {
       if (this.addLandmarkMode === 'incoming') {
         this.addLandmark({
@@ -248,6 +341,27 @@ export default {
     }
   },
   watch: {
+    incTransformMatrix: function (val) {
+      if (!this.appendNehubaFlag) {
+        return
+      }
+      const { mat4 } = window.export_nehuba
+      const nehubaViewer = this.$options && this.$options.nehubaBase && this.$options.nehubaBase.nehubaBase__nehubaViewer
+      const layerManager = nehubaViewer && nehubaViewer.ngviewer && nehubaViewer.ngviewer && nehubaViewer.ngviewer.layerManager
+      if (!layerManager) {
+        return
+      }
+      /**
+       * because layer 0 is the template
+       */
+      const layer = layerManager.managedLayers && layerManager.managedLayers[1]
+      if (!layer) {
+        return
+      }
+      const m = mat4.fromValues(...val)
+      layer.layer.transform.transform = m
+      layer.layer.transform.changed.dispatch()
+    },
     nehubaBase__mousePosition: function (array) {
       this.viewerMousePosition = array
     },
@@ -313,5 +427,16 @@ export default {
 .overlay-screen > *:last-child
 {
   flex: 0 0 0;
+}
+
+.rotation-control-container
+{
+  position:absolute;
+  lefT: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+
+  z-index: 999;
 }
 </style>

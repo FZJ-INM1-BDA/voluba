@@ -70,20 +70,22 @@
       </NehubaStatusCard>
     </div>
 
-    <div
-      v-if="showOverScreen"
-      class="overlay-screen">
-      <div class="mr-3">
-        <h3 class="text-light text-right">
-          Add landmark to the incoming volume
-        </h3>
+    <transition name="fade">
+      <div
+        v-if="showOverScreen"
+        class="overlay-screen">
+        <div class="mr-3">
+          <h3 class="text-light text-right">
+            Add landmark to the incoming volume
+          </h3>
+        </div>
+        <div>
+          <h3 class="text-light">
+            <font-awesome-icon icon="arrow-right" />
+          </h3>
+        </div>
       </div>
-      <div>
-        <h3 class="text-light">
-          <font-awesome-icon icon="arrow-right" />
-        </h3>
-      </div>
-    </div>
+    </transition>
   </div>
 </template>
 

@@ -120,10 +120,11 @@ export default {
   },
   computed: {
     ...mapState({
-      appendNehubaFlag: "appendNehubaFlag",
-      undoStack: "undoStack",
-      redoStack: "redoStack",
-      incTransformMatrix: "incTransformMatrix"
+      appendNehubaFlag: 'appendNehubaFlag',
+      undoStack: 'undoStack',
+      redoStack: 'redoStack',
+      incTransformMatrix: 'incTransformMatrix',
+      addLandmarkMode: 'addLandmarkMode'
     }),
     startFromScratchTitle: function() {
       return START_FROM_SCRATCH_MODAL_TITLE;
@@ -145,13 +146,14 @@ export default {
       return (
         this.showSecondNehuba &&
         this.primaryNehubaReady &&
-        this.$store.state._step2Mode === "classic"
+        this.$store.state._step2Mode === 'classic'
       );
     }
   },
   methods: {
     ...mapActions({
-      startFromScratch: "startFromScratch"
+      startFromScratch: 'startFromScratch',
+      changeLandmarkMode: 'changeLandmarkMode'
     }),
     keydown: function(event) {
       /**
@@ -169,6 +171,11 @@ export default {
           this.$store.dispatch("redo");
           event.stopPropagation();
           event.preventDefault();
+        }
+      }
+      if (key.toLowerCase() === 'escape') {
+        if (this.addLandmarkMode) {
+          this.changeLandmarkMode({ mode: false })
         }
       }
     },
@@ -287,5 +294,20 @@ export default {
   height: 100%;
   background-color: rgba(128,128,128,0.8);
   z-index: 12;
+}
+
+.pe-none
+{
+  pointer-events: none;
+}
+
+.pe-all
+{
+  pointer-events: all;
+}
+
+.h-50
+{
+  height:50%;
 }
 </style>

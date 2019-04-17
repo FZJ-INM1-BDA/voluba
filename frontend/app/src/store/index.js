@@ -4,6 +4,7 @@ import { incompatibleBrowserText } from '@/text'
 import Vuex from 'vuex'
 import Vue from 'vue'
 import axios from 'axios'
+import { DEFAULT_INCOMING_VOLUMES } from '../constants';
 
 Vue.use(Vuex)
 
@@ -142,28 +143,7 @@ const store = new Vuex.Store({
     referenceTemplateTransform: null,
 
     selectedIncomingVolumeId: null,
-    incomingVolumes: [
-      {
-        id: 'inc-1',
-        name: 'Nucleus subthalamicus (B20)',
-        imageSource: 'precomputed://https://neuroglancer-dev.humanbrainproject.org/precomputed/landmark-reg/B20_stn_l/v10',
-        dim: [
-          16208000,
-          13056000,
-          9800000
-        ]
-      },
-      {
-        id: 'inc-2',
-        name: 'Hippocampus unmasked',
-        imageSource: 'precomputed://https://neuroglancer-dev.humanbrainproject.org/precomputed/landmark-reg/hippocampus-unmasked',
-        dim: [
-          57600000,
-          57600000,
-          52800000
-        ]
-      }
-    ],
+    incomingVolumes: DEFAULT_INCOMING_VOLUMES,
 
     selectedTransformationIndex: 0,
     transformationTypes: [
@@ -782,6 +762,10 @@ const store = new Vuex.Store({
       })
     },
     deleteIncomingVolume ({ dispatch }, {id}) {
+      /**
+       * TODO
+       * check endpoint still valid
+       */
       if (!/^user-/.test(id)) {
         return
       }
@@ -815,22 +799,25 @@ const store = new Vuex.Store({
        */
     },
     updateIncVolumes ({ commit, state, dispatch }, {error, message} = {error:null, message: null}) {
-      const idToken = state.user && state.user.idToken
+      const idToken = (state.user && state.user.idToken) || 'eyJraWQiOiJwcm9kdWN0aW9uLW9yY2lkLW9yZy03aGRtZHN3YXJvc2czZ2p1am84YWd3dGF6Z2twMW9qcyIsImFsZyI6IlJTMjU2In0.eyJhdF9oYXNoIjoia3V3SkhyazVZTkxybTN5OGJrTEF1USIsImF1ZCI6IkFQUC1URzY3VjQ4RTI2UkU5MzI5Iiwic3ViIjoiMDAwMC0wMDAxLTg2NTMtMDI5NiIsImF1dGhfdGltZSI6MTU1NTM0NDc3MCwiaXNzIjoiaHR0cHM6XC9cL29yY2lkLm9yZyIsImV4cCI6MjE4NjQ4MzI5MCwiZ2l2ZW5fbmFtZSI6IlhpYW8iLCJpYXQiOjE1NTUzNDQ3NzEsImZhbWlseV9uYW1lIjoiR3VpIiwianRpIjoiZWJhNDRhYmMtMGQxYy00NmUyLTkwZjctZWYwMTA2NmUxYjBmIn0.IcmRAASZA9PLrNLvMLqmFNgDY-CCSUlOfc_VRz3XmV42WJM6iUz7L4jq_uU3gnvh3g26HCdD6KztanOkyijLqOpFedlTAR6H9t02Mvx6ETE9ZZrxT-bymQwEIdSF9lA_DTGjfTGSZmEa3l46ES-5BF8AeqVd8_wTPuY7SIubDUTgC11mFqa9A79Q-U7oy8EcyO9fTTX2tixDbIua7EZ3nugnvrQz1I5Dn4e8pxc5KL7e_ylie21U5K9NPNhk7iwopar3ySOEZWnREjClRRnclvvFqQBZOuFgskCWe1AQ0IFaro2_eIZ2LwNlHuiGafNCzZxSriRBw1TxM7ZelLyCtQ'
       const config = idToken
         ? { headers: { 'Authorization': 'Bearer ' + idToken } }
         : {}
-      axios(`${UPLOAD_URL}/user/list`, config)
+      axios(`${UPLOAD_URL}/list`, config)
         .then(({data}) => {
-          const volumes = data.map(url => {
+          console.log({data})
+          const volumes = data.map(({ visibility = 'public', name = 'Untitled', links = {}, extra }) => {
+            const id = `${visibility}/${name}`
+            const imageSource = links.normalized && `precomputed://${UPLOAD_URL}${links.normalized}`
             return {
-              name: url,
-              imageSource: `precomputed://${UPLOAD_URL}/user/nifti/${url}`,
-              id: `user-${url}`
+              name,
+              visibility,
+              extra,
+              imageSource,
+              id
             }
           })
-          const newVolumes = state.incomingVolumes
-            .filter(v => !/^user-/.test(v.id))
-            .concat(volumes)
+          const newVolumes = DEFAULT_INCOMING_VOLUMES.concat(volumes)
 
           commit('setIncomingVolumes', {volumes: newVolumes})
           dispatch('updateIncVolumesResult', {
@@ -841,7 +828,7 @@ const store = new Vuex.Store({
         .catch(e => {
           dispatch('updateIncVolumesResult', {
             error: error ? error : e,
-            message: error ? message : 'GET /user/list error'
+            message: error ? message : 'GET /list error'
           })
           /**
            * should the available inc volumes be re-updated?

@@ -71,7 +71,7 @@ import { mapState } from 'vuex'
 import SigningComponent from '@/components/SigninComponent'
 /**
  * /upload
- * /user/list
+ * /list
  * /user/nifti/filename.nii
  * /user/nifti/filename.nii.gz
  */
