@@ -291,7 +291,6 @@ export default {
       const rotQuat = quat.fromValues(...this.nehubaBase__navigationOrientation)
       const rotVec = vec3.transformQuat(vec3.create(), unitV, rotQuat)
       const currQ = quat.fromValues(...this.incRotQuat)
-      quat.invert(currQ, currQ)
       vec3.transformQuat(rotVec, rotVec, currQ)
       quat.setAxisAngle(rotQuat, rotVec, rot / 180 * Math.PI)
 
