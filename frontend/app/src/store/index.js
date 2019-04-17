@@ -1491,6 +1491,8 @@ const store = new Vuex.Store({
       dispatch('selectIncomingVolumeWithId', null)
       commit('setUndoStack', { undoStack: [] })
       commit('setRedoStack', { redoStack: [] })
+      commit('setLandmarkMode', { mode: false })
+      commit('_setStep2Mode', { mode: 'overlay' })
 
       if (!state.appendNehubaFlag)
         return
