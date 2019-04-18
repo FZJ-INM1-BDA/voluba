@@ -57,19 +57,19 @@ export default {
       return this.width / 4
     },
     pathD1: function () {
-      return this.pathObj1.map(ObjToD)
+      return this.pathObj1.map(ObjToD).join('')
     },
     pathD2: function () {
-      return this.pathObj2.map(ObjToD)
+      return this.pathObj2.map(ObjToD).join('')
     },
     pathD3: function () {
-      return this.pathObj3.map(ObjToD)
+      return this.pathObj3.map(ObjToD).join('')
     },
     pathD1x: function () {
-      return this.pathObj1x.map(ObjToD)
+      return this.pathObj1x.map(ObjToD).join('')
     },
     pathD3x: function () {
-      return this.pathObj3x.map(ObjToD)
+      return this.pathObj3x.map(ObjToD).join('')
     },
     pathObj1: function () {
       return [{

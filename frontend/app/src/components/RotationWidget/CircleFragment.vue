@@ -93,7 +93,7 @@ export default {
       }]
     },
     pathD: function () {
-      return this.pathObj.map(obj => `${obj.type}${obj.coords.map(c => c.slice(0,2)).join(' ')}`)
+      return this.pathObj.map(obj => `${obj.type}${obj.coords.map(c => c.slice(0,2)).join(' ')}`).join('')
     }
   },
 }

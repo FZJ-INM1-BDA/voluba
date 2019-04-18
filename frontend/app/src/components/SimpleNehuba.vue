@@ -208,7 +208,7 @@ export default {
       if (!this.appendNehubaFlag)
         return [0, 0, 0, 1]
       const { quat } = window.export_nehuba
-      const adj = quat.fromEuler(quat.create(), 90, 0, 0)
+      const adj = quat.fromEuler(quat.create(), -90, 0, 0)
       const ori = quat.fromValues(...(this.nehubaBase__navigationOrientation || [0, 0, 0, 1]))
       quat.mul(ori, adj, ori)
       const incRot = quat.fromValues(...this.normalizedRotQuat)
