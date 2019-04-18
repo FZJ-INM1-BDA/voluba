@@ -761,7 +761,7 @@ const store = new Vuex.Store({
         }
       })
     },
-    deleteIncomingVolume ({ dispatch }, {id}) {
+    deleteIncomingVolume ({ state, dispatch }, { id, incomingVolume}) {
       /**
        * TODO
        * check endpoint still valid
@@ -771,8 +771,17 @@ const store = new Vuex.Store({
         ? { method: 'DELETE', headers: { 'Authorization': 'Bearer ' + idToken } }
         : { method: 'DELETE' }
       console.log(config)
-      const actualId = /^user-(.*?)$/.exec(id)[1]
-      axios(`${UPLOAD_URL}/user/nifti/${actualId}`, config)
+      const { payload } = incomingVolume
+      const link = payload && payload.links && payload.links.normalized
+
+      console.log(id, incomingVolume, link)
+      if (!link) {
+        /**
+         * link does not exist, return
+         */
+        return
+      }
+      axios(`${UPLOAD_URL}${link}`, config)
         .then(res => {
           /**
            * successful delete
@@ -806,7 +815,14 @@ const store = new Vuex.Store({
           const volumes = data.map(({ visibility = 'public', name = 'Untitled', links = {}, extra }) => {
             const id = `${visibility}/${name}`
             const imageSource = links.normalized && `precomputed://${UPLOAD_URL}${links.normalized}`
+            const payload = {
+              visibility,
+              name,
+              links,
+              extra
+            }
             return {
+              payload,
               name,
               visibility,
               extra,

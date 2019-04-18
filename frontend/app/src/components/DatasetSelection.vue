@@ -107,6 +107,7 @@
 
 <script>
 import UploadVolumeComponent from '@/components/UploadVolume'
+import { mapActions } from 'vuex';
 export default {
   components: {
     UploadVolumeComponent
@@ -161,7 +162,7 @@ export default {
       }
     },
     selectedIncomingVolume: function () {
-      return this.$store.state.incomingVolumes.find(v => v.id === this.$store.state.selectedIncomingVolumeId)
+      return this.$store.state.incomingVolumes.find(v => v.id === this.selectedIncomingVolumeId)
     },
     selectedIncomingVolumeId: {
       get: function () {
@@ -221,6 +222,9 @@ export default {
     })
   },
   methods: {
+    ...mapActions({
+      deleteIncomingVolume: 'deleteIncomingVolume'
+    }),
     removeSelectedIncVolume: function () {
       const confirm = window.confirm(`Are you sure you would like to delete the incoming volume: ${this.selectedIncomingVolumeId}?
       
@@ -229,7 +233,10 @@ export default {
         return
       }
       this.deletionInProgress = true
-      this.$store.dispatch('deleteIncomingVolume', { id: this.selectedIncomingVolumeId })
+      this.deleteIncomingVolume({
+        id: this.selectedIncomingVolumeId,
+        incomingVolume: this.selectedIncomingVolume
+      })
     },
     nextStep: function () {
       this.$store.dispatch('nextStep')
