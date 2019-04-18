@@ -437,6 +437,7 @@ export default {
 }
 .overlay-screen
 {
+  z-index: 1000;
   display:flex;
   align-items: center;
   justify-content: flex-start;
