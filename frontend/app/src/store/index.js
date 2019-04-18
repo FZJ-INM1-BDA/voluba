@@ -766,9 +766,6 @@ const store = new Vuex.Store({
        * TODO
        * check endpoint still valid
        */
-      if (!/^user-/.test(id)) {
-        return
-      }
       const idToken = state.user && state.user.idToken
       const config = idToken
         ? { method: 'DELETE', headers: { 'Authorization': 'Bearer ' + idToken } }

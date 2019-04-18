@@ -48,7 +48,7 @@
         <div v-if="selectedIncomingVolume" class="input-group-append btn-group">
 
           <div
-            @click="removeSelectedIncVolume()"
+            @click="removeSelectedIncVolume"
             :class="deleteBtnClass"
             v-if="incomingVolumeCanBeDeleted"
             class="btn btn-sm"
