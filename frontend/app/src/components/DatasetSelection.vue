@@ -46,6 +46,16 @@
         <!-- incoming volume control -->
         <!-- currently only supports delete -->
         <div v-if="selectedIncomingVolume" class="input-group-append btn-group">
+
+          <div
+            @click="removeSelectedIncVolume()"
+            :class="deleteBtnClass"
+            v-if="incomingVolumeCanBeDeleted"
+            class="btn btn-sm"
+            :title="deleteBtnTooltipText"
+            v-b-tooltip.hover.right>
+            <font-awesome-icon icon="trash-alt" />
+          </div>
           <div
             v-if="selectedIncomingVolume && selectedIncomingVolume.extra">
             <div
@@ -68,15 +78,6 @@
                 </div>
               </b-tooltip>
             </div>
-          </div>
-          <div
-            @click="removeSelectedIncVolume()"
-            :class="deleteBtnClass"
-            v-if="incomingVolumeCanBeDeleted"
-            class="btn btn-sm"
-            :title="deleteBtnTooltipText"
-            v-b-tooltip.hover.right>
-            <font-awesome-icon icon="trash-alt" />
           </div>
         </div>
       </div>
@@ -148,8 +149,8 @@ export default {
       /**
        * temporary disabling deletion
        */
-      return false
-      // return this.selectedIncomingVolume && this.selectedIncomingVolume.visibility === 'private'
+      // return false
+      return this.selectedIncomingVolume && this.selectedIncomingVolume.visibility === 'private'
     },
     selectedReferenceVolumeId: {
       get: function () {
