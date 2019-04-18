@@ -27,7 +27,7 @@
     <div>
       <div class = "title">
         <strong>
-          Incoming Volume
+          Incoming Volume 
         </strong>
       </div>
       <div class="input-group">

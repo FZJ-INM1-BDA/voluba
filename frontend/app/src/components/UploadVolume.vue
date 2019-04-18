@@ -1,15 +1,5 @@
 <template>
 <div class="container">
-
-  <!-- old upload btn -->
-  <div v-if="false">
-    <b-button
-      @click="$store.dispatch('uploadVolume')"
-      variant="link">
-      <font-awesome-icon icon="upload"/> 
-      <span>Upload</span>
-    </b-button>
-  </div>
   <hr />
 
   <!-- new upload container -->
@@ -29,7 +19,10 @@
         class="form-control"
         type="text" />
     </div>
-    <input ref = "fileInput" type="file" class="form-control mb-3" />
+    <input
+      ref="fileInput"
+      type="file"
+      class="form-control mb-3" />
     <div
       @click.stop.prevent="upload"
       :class="uploadInProgress?'disabled btn-secondary':'btn-primary'"
@@ -46,7 +39,9 @@
         {{ uploadProgressPercentage }}
       </div>
     </div>
-    <div v-if="uploadFinished && !uploadError" class="alert alert-success">
+    <div
+      v-if="uploadFinished && !uploadError"
+      class="alert alert-success">
       Upload Complete!
     </div>
     <div class="alert alert-danger" v-if="uploadError">
@@ -67,7 +62,8 @@
 </template>
 <script>
 import axios from 'axios'
-import { mapState } from 'vuex'
+import { mapState, mapActions } from 'vuex'
+import { processImageMetaData } from '@/constants'
 import SigningComponent from '@/components/SigninComponent'
 /**
  * /upload
@@ -98,7 +94,7 @@ export default {
     }
   },
   mounted: function() {
-    this.fetchUploadedVolumes()
+    this.updateIncVolumes()
   },
   watch: {
     uploadFinished: function (val) {
@@ -110,8 +106,16 @@ export default {
     }
   },
   methods: {
-    fetchUploadedVolumes: function () {
-      this.$store.dispatch('updateIncVolumes')
+    ...mapActions({
+      modalMessage: 'modalMessage',
+      updateIncVolumes: 'updateIncVolumes'
+    }),
+    showUploadResult: function () {
+      this.modalMessage({ 
+        title: 'hello', 
+        htmlBody: `<span style="color:red">wolrd</span>`, 
+        variant: 'info'
+      })
     },
     upload: function () {
       if (this.url === 'http://example.com') {
@@ -128,7 +132,7 @@ export default {
       this.uploadProgress = 0
       this.uploadInProgress = true
 
-      const idToken = this.user && this.user.idToken
+      const idToken = this.user && this.user.idToken || process.env.VUE_APP_ID_TOKEN
       const headers = idToken
         ? { 'Content-Type': 'multipart/form-data', 'Authorization': 'Bearer ' + idToken }
         : { 'Content-Type': 'multipart/form-data' }
@@ -139,10 +143,34 @@ export default {
         onUploadProgress: ({loaded, total}) => {
           this.uploadProgress = loaded/total
         }
-      }).then(() => {
+      }).then(({ data }) => {
         this.uploadFinished = true
         this.uploadInProgress = false
-        this.fetchUploadedVolumes()
+        const { nifti, warnings, ...rest } = data
+
+        const returnHtmlArray = []
+
+        if (warnings && warnings.forEach) {
+          warnings.forEach(warning => {
+            returnHtmlArray.push(
+              `<div class="alert alert-warning">${warning}</div>`
+            )
+          })
+        }
+        for (let key in nifti) {
+          if (nifti[key])
+            returnHtmlArray.push(
+              `<div class="text-left">${key}<div class="text-muted">${nifti[key]}</div></div>`
+            )  
+        }
+
+        this.modalMessage({
+          variant: 'success',
+          title: 'Upload Successful',
+          htmlBody: returnHtmlArray.join('\n')
+        })
+        
+        this.updateIncVolumes()
       }).catch(e => {
         console.log({e})
         this.uploadError = (e && e.response && e.response.data) || (e && e.message) ||  'Error: Canont send the file...'

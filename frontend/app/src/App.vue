@@ -23,6 +23,15 @@
       </div>
     </main>
 
+    <!-- data selection screen -->
+    <div
+      v-if="showSelectVolumesModal"
+      class="overlay-screen">
+      <DataSelection
+        @destroyMe="startRegistration"
+        class="p-5 bg-light data-selection" />
+    </div>
+
     <!-- modals -->
     <div>
       <load-landmark-pairs-modal
@@ -36,7 +45,10 @@
         :transformationMatrix="this.$store.state.landmarkTransformationMatrix"
       />
       <upload-modal ref="uploadModal" id="uploadModal"/>
-      <MessageModal :message="messageModalMessage" id="messageModal" ref="messageModal"/>
+      <MessageModal
+        :message="messageModalMessage"
+        id="messageModal"
+        ref="messageModal"/>
       <b-modal
         centered
         ref="startFromScratchModal"
@@ -54,7 +66,7 @@
           <li>resets your current progress</li>
         </ul>Would you like to proceed?
       </b-modal>
-      <SelectVolumesModal v-if="showSelectVolumesModal" @destroyMe="showSelectVolumesModal=false"/>
+      <!-- <SelectVolumesModal v-if="showSelectVolumesModal" @destroyMe="showSelectVolumesModal=false"/> -->
     </div>
     <!--<footer-component/>-->
   </div>
@@ -74,6 +86,7 @@ import TransformationMatrixModal from "@/components/modals/TransformationMatrixM
 import UploadModal from "@/components/modals/UploadModal";
 import SelectVolumesModal from "@/components/modals/SelectVolumesModal";
 import MessageModal from "@/components/modals/MessageModal";
+import DataSelection from '@/components/DatasetSelection'
 
 export default {
   name: "App",
@@ -86,7 +99,7 @@ export default {
     TransformationMatrixModal,
     LoadLandmarkPairsModal,
     UploadModal,
-    SelectVolumesModal,
+    DataSelection,
     MessageModal
   },
   data: function() {
@@ -104,6 +117,7 @@ export default {
         case "openModal": {
           const modalId = payload && payload.modalId;
           const modal = modalId && this.$refs[modalId];
+          console.log('open modal', modal)
           if (modal) {
             (modal.showModal && modal.showModal()) ||
               (modal.show && modal.show());
@@ -155,6 +169,9 @@ export default {
       startFromScratch: 'startFromScratch',
       changeLandmarkMode: 'changeLandmarkMode'
     }),
+    startRegistration: function () {
+      this.showSelectVolumesModal = false
+    },
     keydown: function(event) {
       /**
        * stop/prevent is needed if user focus is on one of the popover text field
@@ -309,5 +326,10 @@ export default {
 .h-50
 {
   height:50%;
+}
+
+.data-selection
+{
+  flex-basis: 50%!important;
 }
 </style>

@@ -722,3 +722,22 @@ export const annotationColorBlur = `grey`
 export const annotationColorFocus = `yellow`
 
 export const UPLOAD_URL = `http://ime178.ime.kfa-juelich.de:7300`
+
+export const processImageMetaData = ({ visibility = 'public', name = 'Untitled', links = {}, extra }) => {
+  const id = `${visibility}/${name}`
+  const imageSource = links.normalized && `precomputed://${UPLOAD_URL}${links.normalized}`
+  const payload = {
+    visibility,
+    name,
+    links,
+    extra
+  }
+  return {
+    payload,
+    name,
+    visibility,
+    extra,
+    imageSource,
+    id
+  }
+}

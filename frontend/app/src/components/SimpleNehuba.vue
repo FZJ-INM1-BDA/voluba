@@ -187,6 +187,21 @@ export default {
             coord
           }
         })
+      },
+      normalizedRotQuat: state => {
+        if (!state.appendNehubaFlag)
+          return [0, 0, 0, 1]
+        
+        const { quat, mat4, vec3 } = window.export_nehuba
+        
+        const incXM = mat4.fromValues(...state.incTransformMatrix)
+        if (mat4.determinant(incXM) < 0){
+          const flippedVec = vec3.fromValues(...state.flippedState)
+          const negM = mat4.create()
+          negM[0] = -1
+          mat4.mul(incXM, incXM, negM)
+        }
+        return Array.from(mat4.getRotation(quat.create(), incXM))
       }
     }),
     rotQ1: function () {
@@ -196,7 +211,9 @@ export default {
       const adj = quat.fromEuler(quat.create(), 90, 0, 0)
       const ori = quat.fromValues(...(this.nehubaBase__navigationOrientation || [0, 0, 0, 1]))
       quat.mul(ori, adj, ori)
-      quat.mul(ori, quat.fromValues(...this.incRotQuat), ori)
+      const incRot = quat.fromValues(...this.normalizedRotQuat)
+      quat.invert(incRot, incRot)
+      quat.mul(ori, ori, incRot)
       quat.normalize(ori, ori)
       return Array.from(ori)
     },
@@ -204,10 +221,12 @@ export default {
       if (!this.appendNehubaFlag)
         return [0, 0, 0, 1]
       const { quat } = window.export_nehuba
-      const adj = quat.fromEuler(quat.create(), 90, 90, 0)
+      const adj = quat.fromEuler(quat.create(), 0, -90, -90)
       const ori = quat.fromValues(...(this.nehubaBase__navigationOrientation || [0, 0, 0, 1]))
       quat.mul(ori, adj, ori)
-      quat.mul(ori, quat.fromValues(...this.incRotQuat), ori)
+      const incRot = quat.fromValues(...this.normalizedRotQuat)
+      quat.invert(incRot, incRot)
+      quat.mul(ori, ori, incRot)
       quat.normalize(ori, ori)
       return Array.from(ori)
     },
@@ -216,7 +235,9 @@ export default {
         return [0, 0, 0, 1]
       const { quat } = window.export_nehuba
       const ori = quat.fromValues(...(this.nehubaBase__navigationOrientation || [0, 0, 0, 1]))
-      quat.mul(ori, quat.fromValues(...this.incRotQuat), ori)
+      const incRot = quat.fromValues(...this.normalizedRotQuat)
+      quat.invert(incRot, incRot)
+      quat.mul(ori, ori, incRot)
       quat.normalize(ori, ori)
       return Array.from(ori)
     },
@@ -290,7 +311,8 @@ export default {
       )
       const rotQuat = quat.fromValues(...this.nehubaBase__navigationOrientation)
       const rotVec = vec3.transformQuat(vec3.create(), unitV, rotQuat)
-      const currQ = quat.fromValues(...this.incRotQuat)
+      const currQ = quat.fromValues(...this.normalizedRotQuat)
+      quat.invert(currQ, currQ)
       vec3.transformQuat(rotVec, rotVec, currQ)
       quat.setAxisAngle(rotQuat, rotVec, rot / 180 * Math.PI)
 

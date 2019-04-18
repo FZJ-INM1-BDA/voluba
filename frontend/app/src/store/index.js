@@ -4,7 +4,7 @@ import { incompatibleBrowserText } from '@/text'
 import Vuex from 'vuex'
 import Vue from 'vue'
 import axios from 'axios'
-import { DEFAULT_INCOMING_VOLUMES } from '../constants';
+import { DEFAULT_INCOMING_VOLUMES, processImageMetaData } from '../constants';
 
 Vue.use(Vuex)
 
@@ -377,7 +377,7 @@ const store = new Vuex.Store({
         .then(() => commit('setAppendNehubaFlag', {flag: true}))
         .catch(e => {
           commit('setAppendNehubaFlag', {flag: 0})
-          dispatch('modalMessage', { title: 'Incompatible browser', body: incompatibleBrowserText })
+          dispatch('modalMessage', { title: 'Incompatible browser', body: incompatibleBrowserText, variant: 'danger' })
         })
     },
     changeLandmarkMode: function ({ state, commit, dispatch }, { mode }) {
@@ -805,31 +805,14 @@ const store = new Vuex.Store({
        */
     },
     updateIncVolumes ({ commit, state, dispatch }, {error, message} = {error:null, message: null}) {
-      const idToken = (state.user && state.user.idToken) || 'eyJraWQiOiJwcm9kdWN0aW9uLW9yY2lkLW9yZy03aGRtZHN3YXJvc2czZ2p1am84YWd3dGF6Z2twMW9qcyIsImFsZyI6IlJTMjU2In0.eyJhdF9oYXNoIjoia3V3SkhyazVZTkxybTN5OGJrTEF1USIsImF1ZCI6IkFQUC1URzY3VjQ4RTI2UkU5MzI5Iiwic3ViIjoiMDAwMC0wMDAxLTg2NTMtMDI5NiIsImF1dGhfdGltZSI6MTU1NTM0NDc3MCwiaXNzIjoiaHR0cHM6XC9cL29yY2lkLm9yZyIsImV4cCI6MjE4NjQ4MzI5MCwiZ2l2ZW5fbmFtZSI6IlhpYW8iLCJpYXQiOjE1NTUzNDQ3NzEsImZhbWlseV9uYW1lIjoiR3VpIiwianRpIjoiZWJhNDRhYmMtMGQxYy00NmUyLTkwZjctZWYwMTA2NmUxYjBmIn0.IcmRAASZA9PLrNLvMLqmFNgDY-CCSUlOfc_VRz3XmV42WJM6iUz7L4jq_uU3gnvh3g26HCdD6KztanOkyijLqOpFedlTAR6H9t02Mvx6ETE9ZZrxT-bymQwEIdSF9lA_DTGjfTGSZmEa3l46ES-5BF8AeqVd8_wTPuY7SIubDUTgC11mFqa9A79Q-U7oy8EcyO9fTTX2tixDbIua7EZ3nugnvrQz1I5Dn4e8pxc5KL7e_ylie21U5K9NPNhk7iwopar3ySOEZWnREjClRRnclvvFqQBZOuFgskCWe1AQ0IFaro2_eIZ2LwNlHuiGafNCzZxSriRBw1TxM7ZelLyCtQ'
+      const idToken = (state.user && state.user.idToken) || process.env.VUE_APP_ID_TOKEN
       const config = idToken
         ? { headers: { 'Authorization': 'Bearer ' + idToken } }
         : {}
       axios(`${UPLOAD_URL}/list`, config)
         .then(({data}) => {
           console.log({data})
-          const volumes = data.map(({ visibility = 'public', name = 'Untitled', links = {}, extra }) => {
-            const id = `${visibility}/${name}`
-            const imageSource = links.normalized && `precomputed://${UPLOAD_URL}${links.normalized}`
-            const payload = {
-              visibility,
-              name,
-              links,
-              extra
-            }
-            return {
-              payload,
-              name,
-              visibility,
-              extra,
-              imageSource,
-              id
-            }
-          })
+          const volumes = data.map(processImageMetaData)
           const newVolumes = DEFAULT_INCOMING_VOLUMES.concat(volumes)
 
           commit('setIncomingVolumes', {volumes: newVolumes})
@@ -849,7 +832,7 @@ const store = new Vuex.Store({
         })
     },
     uploadVolume ({ dispatch }) {
-      dispatch('openModal', {modalId: 'uploadModal'})
+      // dispatch('openModal', {modalId: 'uploadModal'})
     },
     loadLandmarks ({ dispatch }) {
       dispatch('openModal', {modalId: 'loadLandmarkPairsModal'})
