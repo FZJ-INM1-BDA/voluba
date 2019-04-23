@@ -1,8 +1,9 @@
 const router = require('express').Router()
 
-const template = `
+const getTemplate = ({ error }) => `
 <div class="p-2">
   This is a compainion plugin for the interactive viewer.
+  ${error ? '<br />' + error : ''}
 </div>
 `
 
@@ -49,6 +50,7 @@ router.get('/:resultId', (req, res) => {
   /**
    * single use tokenid
    */
+  const displayName = 'VoluBA plugin for interactive viewer'
   if (obj) {
     map.delete(resultId)
     const { date, data } = obj
@@ -58,12 +60,18 @@ router.get('/:resultId', (req, res) => {
     const name = `fzj.xg.landmark-reg-${resultId}`
     return res.status(200).json({
       name,
-      displayName: 'VoluBA plugin for interactive viewer',
-      template,
+      displayName,
+      template: getTemplate(),
       script: getScript({ name, incVolName, imageSource, ngMatrix, opacity, shader })
     })
   } else {
-    return res.status(404).send('Not found')
+    const name = `fzj.xg.landmark-reg-not-found`
+    return res.status(200).json({
+      name,
+      displayName,
+      template: getTemplate({ error: 'One time use token expired.' }),
+      script: ''
+    })
   }
 })
 
