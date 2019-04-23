@@ -336,6 +336,9 @@ export default {
     onError: function (e) {
       this.errorMessage = e
     },
+    /**
+     * TODO hook this somewhere?
+     */
     destroyNehuba: function () {
       return new Promise((resolve, reject) => {
 

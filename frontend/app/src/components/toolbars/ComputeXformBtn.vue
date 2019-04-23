@@ -2,7 +2,7 @@
   
     <div
       @click="computeXform"
-      v-b-tooltip.right.hover="computeXformTooltipText"
+      v-b-tooltip.bottom.hover="computeXformTooltipText"
       :class="computeXformBtnClass"
       class="rounded-circle btn btn-sm">
       <font-awesome-icon
