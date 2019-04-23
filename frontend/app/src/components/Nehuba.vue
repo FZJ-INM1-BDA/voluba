@@ -524,8 +524,31 @@ export default {
       /**
        * get managedLayer for easier access
        */
-      this.$options.nonReactiveData.managedLayers = this.$options.nehubaBase.nehubaBase__nehubaViewer.ngviewer.layerManager.managedLayers
+      const mgdLayers = this.$options.nehubaBase.nehubaBase__nehubaViewer.ngviewer.layerManager.managedLayers
+      this.$options.nonReactiveData.managedLayers = mgdLayers
 
+      /**
+       * remove guiding grey boxes
+       * 
+       */
+      const hideGuidingGreyLine = ({handlers , layer}) => {
+        let flag = false
+        return () => {
+          if (flag) return
+          flag = true
+
+          const source = layer.annotationLayerState.value.source
+          source.annotationMap.clear()
+          source.changed.dispatch()
+        }
+      }
+      
+      mgdLayers.forEach(l => {
+        const layer = l.layer
+        const handlers = l.layer.annotationLayerState.changed.handlers
+        handlers.add(hideGuidingGreyLine({handlers, layer}))
+      })
+      
       /**
        * emit ready so that second nehuba can be shown if necessary
        */
@@ -733,6 +756,7 @@ export default {
   },
   beforeDestroy () {
     this.$options.nonReactiveData.subscriptions.forEach(s => s.unsubscribe())
+    this.nehubaBase__destroyNehuba()
   },
   components: {
     NehubaLandmarksOverlay,
