@@ -4,7 +4,7 @@ import { incompatibleBrowserText } from '@/text'
 import Vuex from 'vuex'
 import Vue from 'vue'
 import axios from 'axios'
-import { DEFAULT_INCOMING_VOLUMES, processImageMetaData } from '../constants';
+import { DEFAULT_INCOMING_VOLUMES, processImageMetaData, openInNewWindow, getShader } from '../constants';
 
 Vue.use(Vuex)
 
@@ -367,6 +367,33 @@ const store = new Vuex.Store({
     }
   },
   actions: {
+    viewInInteractiveViewer: function ({ state, getters }) {
+      const { selectedIncomingVolume, selectedReferenceVolume } = getters
+      const { incTransformMatrix, incomingColor } = state
+      const shader = getShader(incomingColor.map(v => v / 255))
+      const opacity = incomingColor[3]
+      const json = {
+        selectedIncomingVolume,
+        selectedReferenceVolume,
+        incTransformMatrix,
+        opacity,
+        shader
+      }
+      const host = process.env.VUE_APP_OVERWRITE_TRANSFORM_RESULT_HOST || ''
+      axios.post(`${host}transformResult`, json)
+        .then(({ data }) => {
+          const { id, url } = data
+          console.log(id)
+          if (url) {
+            openInNewWindow(url)
+          } else {
+            throw new Error('url not defined')
+          }
+        })
+        .catch(e => {
+          console.error(e)
+        })
+    },
     downloadXformResult: function ({ state, getters }) {
       const {selectedIncomingVolume, selectedReferenceVolume} = getters
       const incomingVolume = selectedIncomingVolume && selectedIncomingVolume.name
@@ -828,7 +855,6 @@ const store = new Vuex.Store({
         : {}
       axios(`${UPLOAD_URL}/list`, config)
         .then(({data}) => {
-          console.log({data})
           const volumes = data.map(processImageMetaData)
           const newVolumes = DEFAULT_INCOMING_VOLUMES.concat(volumes)
 

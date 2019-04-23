@@ -518,6 +518,18 @@ export const generateId = (arr) => {
   return i.toString()
 }
 
+export const openInNewWindow = (url) => {
+  const link = document.createElement('a')
+  link.target = '_blank'
+  link.href = url
+
+  console.log('url clicked:', url)
+  return
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+}
+
 export const saveToFile = (data, mimeType, filename) => {
   var blob = new Blob([data], {type: mimeType})
   var link = document.createElement('a')

@@ -62,11 +62,20 @@
           </small>
         </transition>
 
+        <!-- download transform as json -->
         <div
           @click="downloadXformResult"
-          v-b-tooltip.bottom.hover="'Download Transform Matrix'"
+          v-b-tooltip.bottom.hover="'Download the transform matrix'"
           class="footer-icon rounded-circle btn btn-sm btn-secondary">
           <font-awesome-icon icon="file-download"></font-awesome-icon>
+        </div>
+
+        <!-- view in nehuba -->
+        <div
+          class="footer-icon rounded-circle btn btn-sm btn-secondary"
+          v-b-tooltip.bottom.hover="'View the anchoring result in interactive viewer'"
+          @click="viewInInteractiveViewer">
+          <font-awesome-icon icon="brain"></font-awesome-icon>
         </div>
       </div>
     </template>
@@ -141,7 +150,8 @@ export default {
       addLandmarkPair: 'addLandmarkPair',
       saveLandmarks: 'saveLandmarks',
       changeLandmarkMode: 'changeLandmarkMode',
-      downloadXformResult: 'downloadXformResult'
+      downloadXformResult: 'downloadXformResult',
+      viewInInteractiveViewer: 'viewInInteractiveViewer'
     }),
     close: function () {
       const nib = this.$refs.nib
