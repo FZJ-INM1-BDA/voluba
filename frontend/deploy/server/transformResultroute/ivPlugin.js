@@ -7,21 +7,38 @@ const template = `
 `
 
 const getScript = ({ name, incVolName, imageSource, shader, opacity, ngMatrix }) => `
-setTimeout(() => {
+(() => {
 
-  window.interactiveViewer.viewerHandle.loadLayer({
-    'VoluBA volume - ${incVolName}': {
-      type: 'image',
-      source: '${imageSource}',
-      shader: \`${shader}\`,
-      opacity: ${opacity},
-      transform: ${JSON.stringify(ngMatrix)}
+  let loadLayerTimer = setInterval(() => {
+    if (window.viewer) {
+
+      clearInterval(loadLayerTimer)
+
+      window.interactiveViewer.viewerHandle.loadLayer({
+        'VoluBA volume - ${incVolName}': {
+          type: 'image',
+          source: '${imageSource}',
+          shader: \`${shader}\`,
+          opacity: ${opacity},
+          transform: ${JSON.stringify(ngMatrix)}
+        }
+      })
     }
-  })
-  window.interactiveViewer.pluginControl['${name}'].onShutdown(() => {
-    console.log('on shutdown')
-  })
-}, 404)
+  }, 1000)
+
+  let cleanUpTimer = setInterval(() => {
+    if (window.interactiveViewer.pluginControl['${name}']) {
+      clearInterval(cleanUpTimer)
+
+      window.interactiveViewer.pluginControl['${name}'].onShutdown(() => {
+        console.log('cleaning up')
+        window.interactiveViewer.viewerHandle.removeLayer({
+          name: 'VoluBA volume - ${incVolName}'
+        })
+      })
+    }
+  }, 500)
+})()
 `
 
 router.get('/:resultId', (req, res) => {

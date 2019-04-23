@@ -2,6 +2,7 @@ const router = require('express').Router()
 const bodyParser = require('body-parser')
 const crypto = require('crypto')
 const URL = require('url').URL
+const cors = require('cors')
 
 const allowCors = (process.env.ALLOW_CORS && !!JSON.parse(process.env.ALLOW_CORS)) || false
 const IV_HOST = process.env.IV_HOST || 'https://dev-next-interactive-viewer.apps-dev.hbp.eu'
@@ -9,7 +10,6 @@ const HOSTNAME = process.env.HOSTNAME || 'http://localhost:3000'
 
 const map = new Map()
 if (allowCors) {
-  const cors = require('cors')
   router.use(cors())
 }
 
@@ -63,7 +63,7 @@ router.get('/:resultId', (req, res) => {
   }
 })
 
-router.use('/iv-plugin', (req, res, next) => {
+router.use('/iv-plugin', cors(), (req, res, next) => {
   req.resultMap = map
   next()
 }, require('./ivPlugin'))
