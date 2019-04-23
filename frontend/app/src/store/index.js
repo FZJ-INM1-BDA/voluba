@@ -367,6 +367,23 @@ const store = new Vuex.Store({
     }
   },
   actions: {
+    downloadXformResult: function ({ state, getters }) {
+      const {selectedIncomingVolume, selectedReferenceVolume} = getters
+      const incomingVolume = selectedIncomingVolume && selectedIncomingVolume.name
+      const referenceVolume = selectedReferenceVolume && selectedReferenceVolume.name
+      const transformMatrixInNm = [
+        state.incTransformMatrix.slice(0,4),
+        state.incTransformMatrix.slice(4,8),
+        state.incTransformMatrix.slice(8,12),
+        state.incTransformMatrix.slice(12)
+      ]
+      const json = {
+        incomingVolume,
+        referenceVolume,
+        transformMatrixInNm
+      }
+      saveToFile(JSON.stringify(json, null, 2), 'application/json', 'transformMatrix.json')
+    },
     modalMessage: function () {
       /**
        * required for subscribe action
@@ -1571,7 +1588,9 @@ const store = new Vuex.Store({
         xform: Array.from(xformMat),
         revert: Array.from(invert)
       }
-    }
+    },
+    selectedIncomingVolume: state => state.incomingVolumes.find(v => v.id === state.selectedIncomingVolumeId),
+    selectedReferenceVolume: state => state.referenceVolumes.find(v => v.id === state.selectedReferenceVolumeId)
   }
 })
 

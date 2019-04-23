@@ -44,7 +44,7 @@
 
         <!-- load lms -->
         <div
-          @click="$store.dispatch('loadLandmarks')"
+          @click="loadLandmarks"
           v-b-tooltip.bottom.hover="'load landmarks'"
           class="footer-icon rounded-circle btn btn-sm btn-secondary">
           <font-awesome-icon icon="folder-open"></font-awesome-icon>
@@ -61,6 +61,13 @@
             Success! <a @click="$store.commit('_setStep2Mode', { mode: 'overlay' })" href="#" class="alert-link">check result</a>
           </small>
         </transition>
+
+        <div
+          @click="downloadXformResult"
+          v-b-tooltip.bottom.hover="'Download Transform Matrix'"
+          class="footer-icon rounded-circle btn btn-sm btn-secondary">
+          <font-awesome-icon icon="file-download"></font-awesome-icon>
+        </div>
       </div>
     </template>
   </nib-component>
@@ -130,9 +137,11 @@ export default {
   },
   methods: {
     ...mapActions({
+      loadLandmarks: 'loadLandmarks',
       addLandmarkPair: 'addLandmarkPair',
       saveLandmarks: 'saveLandmarks',
-      changeLandmarkMode: 'changeLandmarkMode'
+      changeLandmarkMode: 'changeLandmarkMode',
+      downloadXformResult: 'downloadXformResult'
     }),
     close: function () {
       const nib = this.$refs.nib

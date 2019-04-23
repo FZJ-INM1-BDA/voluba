@@ -35,12 +35,37 @@
           class = "form-control form-control-sm"
           v-model = "selectedIncomingVolumeId">
           <option
-            v-for = "incomingVolume in incomingVolumes"
-            :disabled = "incomingVolume.disabled"
-            :key = "incomingVolume.id"
-            :value = "incomingVolume.id">
-            {{ incomingVolume.name }}
+            :disabled="true"
+            :value="dummyIncomingVolume.id">
+            {{ dummyIncomingVolume.name }}
           </option>
+          <optgroup label="Bundled volumes">
+            <option
+              v-for = "incomingVolume in defaultIncomingVolumes"
+              :disabled = "incomingVolume.disabled"
+              :key = "incomingVolume.id"
+              :value = "incomingVolume.id">
+              {{ incomingVolume.name }}
+            </option>
+          </optgroup>
+          <optgroup v-if="publicIncomingVolumes.length > 0" label="Public volumes">
+            <option
+              v-for = "incomingVolume in publicIncomingVolumes"
+              :disabled = "incomingVolume.disabled"
+              :key = "incomingVolume.id"
+              :value = "incomingVolume.id">
+              {{ incomingVolume.name }}
+            </option>
+          </optgroup>
+          <optgroup v-if="privateIncomingVolumes.length > 0" label="Private volumes">
+            <option
+              v-for = "incomingVolume in privateIncomingVolumes"
+              :disabled = "incomingVolume.disabled"
+              :key = "incomingVolume.id"
+              :value = "incomingVolume.id">
+              {{ incomingVolume.name }}
+            </option>
+          </optgroup>
         </select>
 
         <!-- incoming volume control -->
@@ -107,7 +132,7 @@
 
 <script>
 import UploadVolumeComponent from '@/components/UploadVolume'
-import { mapActions } from 'vuex';
+import { mapActions, mapGetters, mapState } from 'vuex';
 export default {
   components: {
     UploadVolumeComponent
@@ -126,6 +151,14 @@ export default {
     }
   },
   computed: {
+    ...mapGetters({
+      selectedIncomingVolume: 'selectedIncomingVolume'
+    }),
+    ...mapState({
+      defaultIncomingVolumes: state => state.incomingVolumes.filter(v => !v.visibility),
+      publicIncomingVolumes: state => state.incomingVolumes.filter(v => v.visibility === 'public'),
+      privateIncomingVolumes: state => state.incomingVolumes.filter(v => v.visibility === 'private')
+    }),
     showAlert: function () {
       return this.deletionError || this.deletionMessage
     },
@@ -160,9 +193,6 @@ export default {
       set: function (id) {
         this.$store.dispatch('selectReferenceVolumeWithId', id)
       }
-    },
-    selectedIncomingVolume: function () {
-      return this.$store.state.incomingVolumes.find(v => v.id === this.selectedIncomingVolumeId)
     },
     selectedIncomingVolumeId: {
       get: function () {
