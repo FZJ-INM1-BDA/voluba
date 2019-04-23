@@ -522,9 +522,6 @@ export const openInNewWindow = (url) => {
   const link = document.createElement('a')
   link.target = '_blank'
   link.href = url
-
-  console.log('url clicked:', url)
-  return
   document.body.appendChild(link)
   link.click()
   document.body.removeChild(link)
