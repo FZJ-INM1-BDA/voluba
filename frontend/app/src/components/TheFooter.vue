@@ -26,7 +26,7 @@ export default {
 <style scoped>
   footer {
     text-align: center;
-  },
+  }
   a {
     text-decoration: none;
     color: black;

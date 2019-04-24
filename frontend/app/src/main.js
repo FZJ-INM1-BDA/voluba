@@ -2,7 +2,10 @@
 // (runtime-only or standalone) has been set in webpack.base.conf with an alias.
 import Vue from 'vue'
 import App from './App'
+
+// Vuex
 import router from './router'
+import store from './store'
 
 // Bootstrap
 import BootstrapVue from 'bootstrap-vue'
@@ -11,99 +14,18 @@ import 'bootstrap-vue/dist/bootstrap-vue.css'
 
 // Font awesome
 import { library } from '@fortawesome/fontawesome-svg-core'
-import { faAngleLeft, faAngleRight, faAngleUp, faAngleDown, faEye, faBars, faPlayCircle, faUpload, faDownload, faFileExport } from '@fortawesome/free-solid-svg-icons'
+import { faInfoCircle, faBrain, faFolderOpen, faUser, faSignInAlt, faPalette, faSpinner, faGripVertical, faLockOpen, faLock, faHistory, faCalculator, faUnlink, faEllipsisV, faEllipsisH, faLink, faColumns, faAnchor, faChevronDown, faChevronUp, faSave, faTable, faExclamationTriangle, faStepForward, faStepBackward, faBackward, faSlidersH, faMinus, faTimesCircle, faSearch, faEyeSlash, faMapMarkerAlt, faAngleLeft, faAngleRight, faAngleDoubleRight, faAngleUp, faAngleDown, faEye, faBars, faPlayCircle, faUpload, faDownload, faFileExport, faQuestionCircle, faTimes, faTrashAlt, faThumbtack, faPlus, faFileUpload, faFileDownload, faArrowsAltV, faArrowsAltH, faArrowUp, faArrowDown, faArrowLeft, faArrowRight, faUndo, faRedo, faCaretRight, faCaretDown } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 
-// Vuex
-import Vuex from 'vuex'
-
 Vue.use(BootstrapVue)
-Vue.use(Vuex)
 
-library.add(faAngleLeft, faAngleRight, faAngleUp, faAngleDown, faEye, faBars, faPlayCircle, faUpload, faDownload, faFileExport)
+library.add( faInfoCircle, faBrain, faFolderOpen, faUser, faSignInAlt, faPalette, faSpinner, faGripVertical, faLockOpen, faLock, faHistory, faCalculator, faUnlink, faEllipsisV, faEllipsisH, faLink,faColumns, faAnchor, faChevronDown, faChevronUp, faSave, faTable, faExclamationTriangle, faStepForward, faStepBackward, faBackward, faSlidersH, faMinus, faTimesCircle, faSearch, faEyeSlash, faMapMarkerAlt, faAngleLeft, faAngleRight, faAngleDoubleRight, faAngleUp, faAngleDown, faEye, faBars, faPlayCircle, faUpload, faDownload, faFileExport, faQuestionCircle, faTimes, faTrashAlt, faThumbtack, faPlus, faFileUpload, faFileDownload, faArrowsAltV, faArrowsAltH, faArrowUp, faArrowDown, faArrowLeft, faArrowRight, faUndo, faRedo, faCaretRight, faCaretDown)
 Vue.component('font-awesome-icon', FontAwesomeIcon)
 
 Vue.config.productionTip = false
 
-const store = new Vuex.Store({
-  state: {
-    referenceTemplate: null,
-    incomingTemplate: null,
-    incomingTransformMatrix: null,
-    incomingScale: [1, 1, 1],
-    // in nm
-    viewerNavigationPosition: [0, 0, 0],
-    viewerMousePosition: [0, 0, 0],
-    viewerSliceOrientation: [0, 0, 0, 1],
-    layers: null,
-    mouseoverUserlayer: null
-  },
-  mutations: {
-    selectReferenceTemplate (state, refTemplate) {
-      state.referenceTemplate = refTemplate
-    },
-    selectIncomingTemplate (state, incomingTemplate) {
-      state.incomingTemplate = incomingTemplate
-    },
-    setIncomingTransformMatrix (state, array) {
-      state.incomingTransformMatrix = array
-    },
-    setViewerNavigationPosition (state, array) {
-      state.viewerNavigationPosition = array
-    },
-    setViewerMousePosition (state, array) {
-      state.viewerMousePosition = array
-    },
-    setViewerSliceOrientation (state, array) {
-      state.viewerSliceOrientation = array
-    },
-    setIncomingTemplateScale (state, array) {
-      state.incomingScale = array
-    },
-    setLayers (state, obj) {
-      state.layers = obj
-    },
-    setMouseoverUserlayer (state, bool) {
-      state.mouseoverUserlayer = bool
-    }
-  },
-  actions: {
-    viewerSliceOrientationChanged ({commit}, array) {
-      commit('setViewerSliceOrientation', array)
-    },
-    incomingTransformMatrixChanged ({commit}, array) {
-      commit('setIncomingTransformMatrix', array)
-    },
-    mouseOverIncmoingLayer ({commit}) {
-      commit('setMouseoverUserlayer', true)
-    },
-    mouseOutIncomingLayer ({commit}) {
-      commit('setMouseoverUserlayer', false)
-    },
-    viewerNavigationPositionChanged ({commit}, array) {
-      commit('setViewerNavigationPosition', array)
-    },
-    viewerMousePositionChanged ({commit}, array) {
-      commit('setViewerMousePosition', array)
-    },
-    alignReference () {
-      /**
-       * required for vuex event dispatch
-       */
-    },
-    alignIncoming () {
-      /**
-       * required for vuex event dispatch
-       */
-    }
-  }
-})
-
-/* eslint-disable no-new */
 new Vue({
-  store,
-  el: '#app',
   router,
-  components: { App },
-  template: '<App/>'
-})
+  store,
+  render: h => h(App),
+}).$mount('#app')
