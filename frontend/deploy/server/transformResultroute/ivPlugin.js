@@ -1,6 +1,6 @@
 const router = require('express').Router()
 
-const getTemplate = ({ error }) => `
+const getTemplate = ({ error }={}) => `
 <div class="p-2">
   This is a compainion plugin for the interactive viewer.
   ${error ? '<br />' + error : ''}

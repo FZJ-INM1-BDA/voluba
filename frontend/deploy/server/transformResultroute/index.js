@@ -44,6 +44,21 @@ router.post('', (req, res) => {
     url.searchParams.set('templateSelected', 'Big Brain (Histology)')
     url.searchParams.set('parcellationSelected', 'Grey/White matter')
     url.searchParams.set('pluginStates', `${HOSTNAME}/transformResult/iv-plugin/${id}`)
+
+    const { incTransformMatrix, translationFromCorner } = body
+    if (incTransformMatrix.slice) {
+
+      incTransformMatrix.slice(12, 15)
+      const o = [0, 0, 0, 1]
+      const po = [0.3140767216682434, -0.7418519854545593, 0.4988985061645508, -0.3195493221282959]
+      const pz = 1922235.5293810747
+      const p = incTransformMatrix.slice(12, 15).map((v, idx) => translationFromCorner && translationFromCorner[idx]
+        ? v + translationFromCorner[idx]
+        : v)
+      const z = 271017.69911504426
+      url.searchParams.set('navigation', [o.join('_'), po.join('_'), pz, p.join('_'), z].join('__'))
+    }
+
     res.status(200).json({ id, url: url.toString() })
   })
 })

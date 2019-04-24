@@ -372,18 +372,25 @@ const store = new Vuex.Store({
       const { incTransformMatrix, incomingColor } = state
       const shader = getShader(incomingColor.map(v => v / 255))
       const opacity = incomingColor[3]
+
+      const { vec3, quat } = export_nehuba
+      const translationFromCorner = vec3.fromValues(...getters.dim)
+      vec3.scale(translationFromCorner, translationFromCorner, 0.5)
+      vec3.transformQuat(translationFromCorner, translationFromCorner, quat.invert(quat.create(), quat.fromValues(...getters.incRotQuat)))
+
       const json = {
         selectedIncomingVolume,
         selectedReferenceVolume,
         incTransformMatrix,
         opacity,
+        translationFromCorner: Array.from(translationFromCorner),
         shader
       }
+
       const host = process.env.VUE_APP_OVERWRITE_TRANSFORM_RESULT_HOST || ''
       axios.post(`${host}transformResult`, json)
         .then(({ data }) => {
           const { id, url } = data
-          console.log(id)
           if (url) {
             openInNewWindow(url)
           } else {
