@@ -6,7 +6,8 @@
     :title="title"
     :header-bg-variant="overwriteVariant || defaultVariant"
     header-text-variant="light"
-    :hide-footer="true">
+    :hide-footer="!showFooter"
+    :ok-only="okOnly">
     {{ message }}
     <div
       v-if="htmlMessage"
@@ -22,7 +23,10 @@ export default {
       message: '',
       htmlMessage: null,
       defaultVariant: 'info',
-      overwriteVariant: null
+      overwriteVariant: null,
+      showFooter: null,
+      onhideCb: null,
+      okOnly: null
     }
   },
   methods: {
@@ -31,6 +35,14 @@ export default {
       this.title = 'Node'
       this.message = ''
       this.htmlMessage = null
+      this.showFooter = null
+      if (this.onhideCb) {
+        this.onhideCb()
+      }
+      if (this.okOnly) {
+        this.okOnly = null
+      }
+      this.onhideCb = null
     }
   },
   mounted: function () {
@@ -38,9 +50,18 @@ export default {
     this.$store.subscribeAction (({type, payload}) => {
       if (type === 'modalMessage') {
         const modal = this.$refs.modal
-        const { title, body, htmlBody, variant } = payload
+        const { title, body, htmlBody, okOnly, variant, showFooter, onHiddenCallback } = payload
         if (variant) {
           this.overwriteVariant = variant
+        }
+        if (showFooter) {
+          this.showFooter = true
+        }
+        if (onHiddenCallback && onHiddenCallback instanceof Function) {
+          this.onhideCb = onHiddenCallback
+        }
+        if (okOnly) {
+          this.okOnly = okOnly
         }
         if (modal) {
           this.title = title

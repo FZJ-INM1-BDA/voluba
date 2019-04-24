@@ -20,6 +20,7 @@
         type="text" />
     </div>
     <input
+      @change="fileInputChanged"
       ref="fileInput"
       type="file"
       class="form-control mb-3" />
@@ -63,7 +64,7 @@
 <script>
 import axios from 'axios'
 import { mapState, mapActions } from 'vuex'
-import { processImageMetaData } from '@/constants'
+import { processImageMetaData, arrayBufferToBase64String } from '@/constants'
 import SigningComponent from '@/components/SigninComponent'
 /**
  * /upload
@@ -110,6 +111,40 @@ export default {
       modalMessage: 'modalMessage',
       updateIncVolumes: 'updateIncVolumes'
     }),
+    fileInputChanged: function (ev) {
+      
+      /**
+       * File reader is available in webworker
+       */
+      const fileInput = this.$refs.fileInput
+      const file = fileInput.files[0]
+
+      const blob = file.slice(0, 2048)
+      const fileReader = new FileReader()
+      fileReader.onload = ev => {
+        const result = ev && ev.target && ev.target.result
+        if (result) {
+          const _2048B64 = arrayBufferToBase64String(result)
+          const { name, size, type } = file
+          /**
+           * DO PREFLIGHT HERE
+           */
+          console.log({
+            name, size, type, _2048B64
+          })
+        } else {
+          /**
+           * TODO handle error
+           */
+        }
+      }
+      fileReader.onerror = (err) => {
+        /**
+         * TODO handle error
+         */
+      }
+      fileReader.readAsArrayBuffer(blob)
+    },
     showUploadResult: function () {
       this.modalMessage({ 
         title: 'hello', 

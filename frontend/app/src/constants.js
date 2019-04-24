@@ -1,5 +1,7 @@
 /* eslint-disable */
 
+export const AGREE_COOKIE_KEY = `landmark-reg : agreed to cookie`
+
 export const loginMethods = [{
   name: 'HBP',
   imgSrc: null,
@@ -11,6 +13,15 @@ export const loginMethods = [{
   href: '/orcid-oidc/auth',
   disabled: false
 }]
+
+export const arrayBufferToBase64String = (arraybuffer) => {
+  const bytes = new Uint8Array( arraybuffer )
+  let binary = ''
+  for (let i = 0; i < bytes.length; i ++){
+    binary += String.fromCharCode(bytes[i])
+  }
+  return window.btoa(binary)
+}
 
 export const getShader = (rgb) => `void main() {
   float x = toNormalized(getDataValue());
