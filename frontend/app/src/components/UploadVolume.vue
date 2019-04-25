@@ -77,6 +77,7 @@ export default {
   data: function () {
     return {
       url: `${UPLOAD_URL}/upload`,
+      preflightUrl: `${UPLOAD_URL}/preflightUpload`,
       uploadFinished: false,
       uploadInProgress: false,
       uploadProgress: 0,
@@ -90,6 +91,12 @@ export default {
     ...mapState({
       user: 'user'
     }),
+    uploadHeader: function () {
+      const idToken = this.user && this.user.idToken || process.env.VUE_APP_ID_TOKEN
+      return idToken
+        ? { 'Content-Type': 'multipart/form-data', 'Authorization': 'Bearer ' + idToken }
+        : { 'Content-Type': 'multipart/form-data' }
+    },
     uploadProgressPercentage: function () {
       return (this.uploadProgress * 100).toFixed(2) + '%'
     }
@@ -132,6 +139,26 @@ export default {
           console.log({
             name, size, type, _2048B64
           })
+
+          /**
+           * or use formdata
+           */
+          const blob = new Blob([new Uint8Array(result)])
+          blob.lastModifiedDate = new Date()
+          blob.name = name
+
+          const formData = new FormData()
+          formData.append('image', blob)
+          axios.post(this.preflightUrl, formData, {
+            headers: this.uploadHeader
+          })
+            .then(res => {
+              console.log(res)
+            })
+            .catch(e => {
+              this.uploadError = `error prelight`
+            })
+          
         } else {
           /**
            * TODO handle error
@@ -167,14 +194,8 @@ export default {
       this.uploadProgress = 0
       this.uploadInProgress = true
 
-      const idToken = this.user && this.user.idToken || process.env.VUE_APP_ID_TOKEN
-      const headers = idToken
-        ? { 'Content-Type': 'multipart/form-data', 'Authorization': 'Bearer ' + idToken }
-        : { 'Content-Type': 'multipart/form-data' }
-      console.log({headers})
-
       axios.post(this.url, formData, {
-        headers,
+        headers: this.uploadHeader,
         onUploadProgress: ({loaded, total}) => {
           this.uploadProgress = loaded/total
         }
