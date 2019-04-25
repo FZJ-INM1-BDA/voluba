@@ -33,6 +33,10 @@ module.exports = async (app) => {
   })
 
   app.get('/logout', (req, res) => {
+    const { user } = req
+    if (user && user.id) {
+      objStoreDb.delete(user.id)
+    }
     req.logout()
     res.redirect('/')
   })
