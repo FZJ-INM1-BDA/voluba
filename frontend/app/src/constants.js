@@ -741,11 +741,11 @@ export const oldJson = [
 export const annotationColorBlur = `grey`
 export const annotationColorFocus = `yellow`
 
-export const UPLOAD_URL = `http://ime178.ime.kfa-juelich.de:7300`
+export const UPLOAD_URL = process.env.UPLOAD_URL || `http://ime178.ime.kfa-juelich.de:7300`
 
-export const processImageMetaData = ({ visibility = 'public', name = 'Untitled', links = {}, extra }) => {
+export const processImageMetaData = ({ visibility = 'public', name = 'Untitled', links = {}, extra, uploadUrl }) => {
   const id = `${visibility}/${name}`
-  const imageSource = links.normalized && `precomputed://${UPLOAD_URL}${links.normalized}`
+  const imageSource = links.normalized && `precomputed://${uploadUrl}${links.normalized}`
   const payload = {
     visibility,
     name,

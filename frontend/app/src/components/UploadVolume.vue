@@ -8,14 +8,17 @@
       Upload a volume
     </h4>
 
-    <div class="input-group mb-1">
+    <div
+      v-if="!production"
+      class="input-group mb-1">
       <div class="input-group-prepend">
         <span class="input-group-text">
           POST URL
         </span>
       </div>
       <input
-        v-model="url"
+        :value="url"
+        @change="uploadUrlChanged"
         class="form-control"
         type="text" />
     </div>
@@ -102,8 +105,8 @@
 </template>
 <script>
 import axios from 'axios'
-import { mapState, mapActions } from 'vuex'
-import { processImageMetaData, arrayBufferToBase64String } from '@/constants'
+import { mapState, mapActions, mapMutations } from 'vuex'
+import { arrayBufferToBase64String } from '@/constants'
 import SigningComponent from '@/components/SigninComponent'
 import InfoPopover from '@/components/InfoPopover'
 /**
@@ -113,11 +116,9 @@ import InfoPopover from '@/components/InfoPopover'
  * /user/nifti/filename.nii
  * /user/nifti/filename.nii.gz
  */
-import { UPLOAD_URL } from '@/constants'
 export default {
   data: function () {
     return {
-      url: `${UPLOAD_URL}`,
       uploadFinished: false,
       uploadInProgress: false,
       uploadProgress: 0,
@@ -135,7 +136,9 @@ export default {
   },
   computed: {
     ...mapState({
-      user: 'user'
+      production: 'production',
+      user: 'user',
+      url: state => state.uploadUrl
     }),
     uploadUrl: function () {
       return `${this.url}/upload`
@@ -173,6 +176,16 @@ export default {
       modalMessage: 'modalMessage',
       updateIncVolumes: 'updateIncVolumes'
     }),
+    ...mapMutations({
+      setUploadUrl: 'setUploadUrl'
+    }),
+    uploadUrlChanged: function (ev) {
+      const value = ev && ev.target && ev.target.value
+      if (value)
+        this.setUploadUrl({
+          uploadUrl: value
+        })
+    },
     fileInputChanged: function (ev) {
       
       /**

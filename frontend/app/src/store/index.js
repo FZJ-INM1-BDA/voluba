@@ -115,6 +115,9 @@ const getMirrorMat = (flippedState, dim) => {
 
 const store = new Vuex.Store({
   state: {
+    production: process.env.NODE_ENV === 'production',
+
+    uploadUrl: UPLOAD_URL, 
     user: null,
     pairLandmarkStartDragging: false,
     agreedToCookie: localStorage.getItem(AGREE_COOKIE_KEY),
@@ -205,6 +208,9 @@ const store = new Vuex.Store({
     landmarkRMSE: null
   },
   mutations: {
+    setUploadUrl (state, { uploadUrl }) {
+      state.uploadUrl = uploadUrl
+    },
     setViewerNavigationStateString (state, string) {
       state.viewerNavigationStateString = string
     },
@@ -837,7 +843,7 @@ const store = new Vuex.Store({
          */
         return
       }
-      axios(`${UPLOAD_URL}${link}`, config)
+      axios(`${state.uploadUrl}${link}`, config)
         .then(res => {
           /**
            * successful delete
@@ -865,9 +871,16 @@ const store = new Vuex.Store({
       const config = idToken
         ? { headers: { 'Authorization': 'Bearer ' + idToken } }
         : {}
-      axios(`${UPLOAD_URL}/list`, config)
+      axios(`${state.uploadUrl}/list`, config)
         .then(({data}) => {
-          const volumes = data.map(processImageMetaData)
+          const volumes = data
+            .map(raw => {
+              return {
+                ...raw,
+                uploadUrl: state.uploadUrl
+              }
+            })
+            .map(processImageMetaData)
           const newVolumes = DEFAULT_INCOMING_VOLUMES.concat(volumes)
 
           commit('setIncomingVolumes', {volumes: newVolumes})
