@@ -19,17 +19,56 @@
         class="form-control"
         type="text" />
     </div>
+
+    <!-- file input -->
     <input
       @change="fileInputChanged"
       ref="fileInput"
       type="file"
       class="form-control mb-3" />
+
+    <!-- upload btn -->
     <div
       @click.stop.prevent="upload"
-      :class="uploadInProgress?'disabled btn-secondary':'btn-primary'"
+      :class="uploadBtnDisabled?'disabled pe-none btn-secondary':'btn-primary'"
       class="btn mb-2">
-      {{ uploadInProgress ? 'Uploading in progress...' : 'Upload to Server!'}}
+      {{ uploadInProgress ? 'Uploading in progress...' : 'Upload'}}
     </div>
+
+    <InfoPopover
+      class="text-danger"
+      icon="exclamation-triangle"
+      v-if="preflightError"
+      placement="right"
+      triggers="click blur">
+      {{ preflightError }}
+    </InfoPopover>
+
+    <InfoPopover
+      v-if="preflightNiftiInfo"
+      :popoverObj="preflightNiftiInfo"
+      placement="right"
+      triggers="click blur">
+    </InfoPopover>
+
+    <InfoPopover
+      class="text-warning"
+      icon="exclamation-triangle"
+      v-if="preflightWarnings && preflightWarnings.length > 0"
+      placement="right"
+      triggers="click blur">
+      
+      <div
+        class="text-left mb-1 mt-1"
+        :key="idx"
+        v-for="(warning,idx) in preflightWarnings">
+        <small class="d-inline-block lh-1">
+        {{ warning }}
+        </small>
+      </div>
+      
+    </InfoPopover>
+
     <div
       v-if="uploadInProgress && !uploadError"
       class="progress">
@@ -66,7 +105,9 @@ import axios from 'axios'
 import { mapState, mapActions } from 'vuex'
 import { processImageMetaData, arrayBufferToBase64String } from '@/constants'
 import SigningComponent from '@/components/SigninComponent'
+import InfoPopover from '@/components/InfoPopover'
 /**
+ * /preflight
  * /upload
  * /list
  * /user/nifti/filename.nii
@@ -76,21 +117,32 @@ import { UPLOAD_URL } from '@/constants'
 export default {
   data: function () {
     return {
-      url: `${UPLOAD_URL}/upload`,
-      preflightUrl: `${UPLOAD_URL}/preflightUpload`,
+      url: `${UPLOAD_URL}`,
       uploadFinished: false,
       uploadInProgress: false,
       uploadProgress: 0,
-      uploadError: null
+      uploadError: null,
+      preflightInProgress: false,
+      preflightError: null,
+      preflightNiftiInfo: null,
+      selectedFile: null,
+      preflightWarnings: []
     }
   },
   components: {
-    SigningComponent
+    SigningComponent,
+    InfoPopover
   },
   computed: {
     ...mapState({
       user: 'user'
     }),
+    uploadUrl: function () {
+      return `${this.url}/upload`
+    },
+    preflightUrl: function () {
+      return `${this.url}/preflight`
+    },
     uploadHeader: function () {
       const idToken = this.user && this.user.idToken || process.env.VUE_APP_ID_TOKEN
       return idToken
@@ -99,6 +151,9 @@ export default {
     },
     uploadProgressPercentage: function () {
       return (this.uploadProgress * 100).toFixed(2) + '%'
+    },
+    uploadBtnDisabled: function () {
+      return this.uploadInProgress || this.preflightError || !this.selectedFile
     }
   },
   mounted: function() {
@@ -126,6 +181,8 @@ export default {
       const fileInput = this.$refs.fileInput
       const file = fileInput.files[0]
 
+      this.selectedFile = file
+
       const blob = file.slice(0, 2048)
       const fileReader = new FileReader()
       fileReader.onload = ev => {
@@ -144,19 +201,33 @@ export default {
            * or use formdata
            */
           const blob = new Blob([new Uint8Array(result)])
-          blob.lastModifiedDate = new Date()
-          blob.name = name
+          const slicedFile = new File([blob], name)
 
           const formData = new FormData()
-          formData.append('image', blob)
+          formData.append('image', slicedFile)
+
+          this.preflightInProgress = true
+          this.preflightWarnings = []
+          this.preflightNiftiInfo = null
+          this.preflightError = null
           axios.post(this.preflightUrl, formData, {
             headers: this.uploadHeader
           })
-            .then(res => {
-              console.log(res)
+            .then(resp => {
+              const { data } = resp
+              const { warnings, nifti } = data
+              this.preflightInProgress = false
+              this.preflightError = null
+
+              this.preflightWarnings = warnings
+              this.preflightNiftiInfo = nifti
             })
-            .catch(e => {
-              this.uploadError = `error prelight`
+            .catch(error => {
+              this.preflightInProgress = false
+              console.log('Prefligght error', error)
+              const errorMessage = (error && error.response && error.response.data) || 'An unknown preflight error errored'
+              // debugger
+              this.preflightError = errorMessage
             })
           
         } else {
@@ -194,7 +265,7 @@ export default {
       this.uploadProgress = 0
       this.uploadInProgress = true
 
-      axios.post(this.url, formData, {
+      axios.post(this.uploadUrl, formData, {
         headers: this.uploadHeader,
         onUploadProgress: ({loaded, total}) => {
           this.uploadProgress = loaded/total

@@ -327,6 +327,16 @@ export default {
   height:50%;
 }
 
+.mh-20-em
+{
+  max-height: 20em;
+}
+
+.lh-1
+{
+  line-height: 1;
+}
+
 .data-selection
 {
   flex-basis: 50%!important;

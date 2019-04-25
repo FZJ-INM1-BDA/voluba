@@ -81,29 +81,11 @@
             v-b-tooltip.hover.right>
             <font-awesome-icon icon="trash-alt" />
           </div>
-          <div
-            v-if="selectedIncomingVolume && selectedIncomingVolume.extra">
-            <div
-              class="btn-sm"
-              id="infoIcon">
-              <font-awesome-icon icon="info-circle" />
-              <b-tooltip target="infoIcon" placement="right" triggers="click blur">
-                <div
-                  class="mh-20-em overflow-auto"
-                  v-if="selectedIncomingVolume.extra.nifti">
-                  <div
-                    class="text-left"
-                    :key="key"
-                    v-for="(value, key) in selectedIncomingVolume.extra.nifti">
-                    {{ key }}
-                    <div class="text-muted">
-                      {{ value ? value : 'null' }}
-                    </div>
-                  </div>
-                </div>
-              </b-tooltip>
-            </div>
-          </div>
+          <InfoPopover
+            v-if="selectedIncomingVolume && selectedIncomingVolume.extra"
+            placement="right"
+            triggers="click blur"
+            :popoverObj="selectedIncomingVolume.extra.nifti" />
         </div>
       </div>
 
@@ -123,9 +105,9 @@
     <div
       @click="$emit('destroyMe')"
       :disabled="bothSelected"
-      :class = "nextStepClass"
+      :class="nextStepClass"
       class="float-sm-right btn">
-      Start registration!
+      Start
     </div>
   </div>
 </template>
@@ -133,9 +115,12 @@
 <script>
 import UploadVolumeComponent from '@/components/UploadVolume'
 import { mapActions, mapGetters, mapState } from 'vuex';
+import InfoPopover from '@/components/InfoPopover'
+
 export default {
   components: {
-    UploadVolumeComponent
+    UploadVolumeComponent,
+    InfoPopover
   },
   data: function () {
     return {
@@ -287,9 +272,5 @@ export default {
 .title
 {
   margin-bottom: 1em;
-}
-.mh-20-em
-{
-  max-height: 20em;
 }
 </style>
