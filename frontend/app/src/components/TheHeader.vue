@@ -100,8 +100,9 @@ import ProgressTracker from '@/components/layout/ProgressTracker'
 import SigningComponent from '@/components/SigninComponent'
 import SliderComponent from '@/components/layout/Slider'
 import axios from 'axios'
-import { mapState } from 'vuex'
+import { mapState, mapActions } from 'vuex'
 import { Compact } from 'vue-color'
+import { AGREE_COOKIE_KEY } from '@/constants'
 
 export default {
   name: 'HeaderComponent',
@@ -121,6 +122,22 @@ export default {
     SliderComponent
   },
   mounted() {
+    if (!this.agreedToCookie) {
+      const onHideCB = () => {
+        const obj = {}
+        obj[AGREE_COOKIE_KEY] = true
+        this.setLocalStorage(obj)
+      }
+      this.modalMessage({
+        title: 'Cookie Disclaimer',
+        body: 'Our site saves small pieces of text information (cookies) on your device in order to deliver better content and for statistical purposes. You can disable the usage of cookies by changing the settings of your browser. By browsing our website without changing the browser settings you grant us permission to store that information on your device',
+        variant: 'info',
+        showFooter: true,
+        okOnly: true,
+        onHiddenCallback: onHideCB.bind(this)
+      })
+    }
+
     this.getUserPromise
       .then(({ data }) => {
         console.log('auth successful', { data })
@@ -135,7 +152,8 @@ export default {
     ...mapState({
       user: 'user',
       _step2Mode: '_step2Mode',
-      modeBtnVariant: state => state._step2Mode === 'overlay' ? 'outline-secondary' : 'info'
+      modeBtnVariant: state => state._step2Mode === 'overlay' ? 'outline-secondary' : 'info',
+      agreedToCookie: 'agreedToCookie'
     }),
     loginText: function () {
       return this.user
@@ -176,6 +194,10 @@ export default {
     }
   },
   methods: {
+    ...mapActions({
+      modalMessage: 'modalMessage',
+      setLocalStorage: 'setLocalStorage'
+    }),
     toggleMode: function () {
       this.mode = this.mode === 'overlay' ? 'classic' : 'overlay'
     }

@@ -1,7 +1,7 @@
 <template>
   <div @keydown.capture="keydown" id="app">
     <!-- header -->
-    <header-component class="app-header"/>
+    <header-component v-if="appendNehubaFlag" class="app-header"/>
 
     <main class="app-main">
       <!-- main container -->
@@ -13,8 +13,7 @@
           v-if="primaryNehubaReady && simpleNehubaConfig && showSimpleNehuba"
           :baseConfig="simpleNehubaConfig"
           ref="incomingnehuba"
-          v-show="showSimpleNehuba"
-        />
+          v-show="showSimpleNehuba" />
       </div>
 
       <!-- floating layer -->

@@ -4,7 +4,7 @@ import { incompatibleBrowserText } from '@/text'
 import Vuex from 'vuex'
 import Vue from 'vue'
 import axios from 'axios'
-import { DEFAULT_INCOMING_VOLUMES, processImageMetaData, openInNewWindow, getShader } from '../constants';
+import { AGREE_COOKIE_KEY, DEFAULT_INCOMING_VOLUMES, processImageMetaData, openInNewWindow, getShader } from '../constants';
 
 Vue.use(Vuex)
 
@@ -47,7 +47,6 @@ let errorTimeoutId = null
 const browserCompatible = () => 'WebGL2RenderingContext' in window
 
 const appendNehuba = () => new Promise((resolve, reject) => {
-  
   if (!browserCompatible()) {
     return reject('browser not compatible')
   }
@@ -118,6 +117,7 @@ const store = new Vuex.Store({
   state: {
     user: null,
     pairLandmarkStartDragging: false,
+    agreedToCookie: localStorage.getItem(AGREE_COOKIE_KEY),
 
     flippedState: [1, 1, 1],
 
@@ -367,6 +367,11 @@ const store = new Vuex.Store({
     }
   },
   actions: {
+    setLocalStorage: function (store, payload) {
+      for (let key in payload) {
+        localStorage.setItem(key, payload[key])
+      }
+    },
     viewInInteractiveViewer: function ({ state, getters }) {
       const { selectedIncomingVolume, selectedReferenceVolume } = getters
       const { incTransformMatrix, incomingColor } = state
