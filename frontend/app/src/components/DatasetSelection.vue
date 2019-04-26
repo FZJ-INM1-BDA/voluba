@@ -102,12 +102,20 @@
 
     <upload-volume-component />
     <hr />
-    <div
-      @click="$emit('destroyMe')"
-      :disabled="bothSelected"
-      :class="nextStepClass"
-      class="float-sm-right btn">
-      Start
+    <div class="d-flex flex-row justify-content-end align-items-center">
+
+      <span
+        @click="openModal({ modalId: 'aboutus' })"
+        class="align-middle mr-2">
+        <font-awesome-icon icon="question-circle"></font-awesome-icon>
+      </span>
+      <div
+        @click="$emit('destroyMe')"
+        :disabled="bothSelected"
+        :class="nextStepClass"
+        class="btn">
+        Start
+      </div>
     </div>
   </div>
 </template>
@@ -239,7 +247,8 @@ export default {
   },
   methods: {
     ...mapActions({
-      deleteIncomingVolume: 'deleteIncomingVolume'
+      deleteIncomingVolume: 'deleteIncomingVolume',
+      openModal:'openModal'
     }),
     removeSelectedIncVolume: function () {
       const confirm = window.confirm(`Are you sure you would like to delete the incoming volume: ${this.selectedIncomingVolumeId}?

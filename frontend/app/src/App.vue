@@ -50,6 +50,13 @@
         ref="messageModal"/>
       <b-modal
         centered
+        :hide-footer="true"
+        :hide-header="true"
+        ref="aboutus">
+        <AboutUs />
+      </b-modal>
+      <b-modal
+        centered
         ref="startFromScratchModal"
         header-bg-variant="danger"
         header-text-variant="light"
@@ -86,6 +93,7 @@ import UploadModal from "@/components/modals/UploadModal";
 import SelectVolumesModal from "@/components/modals/SelectVolumesModal";
 import MessageModal from "@/components/modals/MessageModal";
 import DataSelection from '@/components/DatasetSelection'
+import AboutUs from '@/components/AboutUs'
 
 export default {
   name: "App",
@@ -99,7 +107,8 @@ export default {
     LoadLandmarkPairsModal,
     UploadModal,
     DataSelection,
-    MessageModal
+    MessageModal,
+    AboutUs
   },
   data: function() {
     return {

@@ -8,7 +8,14 @@
       <b-collapse is-nav id="nav_collapse">
 
         <!-- Right aligned nav items -->
-        <b-navbar-nav class="pointer-events ml-auto">
+        <b-navbar-nav class="align-items-center pointer-events ml-auto">
+
+          <!-- about us -->
+          <div
+            @click="openModal({ modalId: 'aboutus' })"
+            class="mr-2">
+            <font-awesome-icon icon="question-circle"></font-awesome-icon>
+          </div>
 
           <!-- opacity -->
           <transition name="fade">
@@ -197,6 +204,7 @@ export default {
   methods: {
     ...mapActions({
       modalMessage: 'modalMessage',
+      openModal: 'openModal',
       setLocalStorage: 'setLocalStorage',
       log: 'log'
     }),
