@@ -16,6 +16,7 @@
     </div>
     
     <button
+      v-if="production"
       type="button"
       @click="loadDefaultLandmarkPairs"
       class="btn btn-primary">
@@ -37,6 +38,7 @@
 <script>
 import { oldJson, openFileDialog, loadFromFile } from '@//constants'
 import { LOAD_LM_WARNING } from '@/text'
+import { mapActions, mapState } from 'vuex'
 
 export default {
   name: 'UploadModal',
@@ -50,6 +52,9 @@ export default {
     }
   },
   methods: {
+    ...mapActions({
+      log: 'log'
+    }),
     hideModal: function () {
       this.$refs.modal.hide()
     },
@@ -89,13 +94,16 @@ export default {
         this.hideModal()
 
       } catch(e) {
-        console.log(e)
+        this.log(e)
         this.errorMessage = 'Can not load Landmark-Pairs! Error: "Invalid JSON".'
         this.showAlert = true
       }
     }
   },
   computed: {
+    ...mapState({
+      production: 'production'
+    }),
     loadLmWarning: function () {
       return LOAD_LM_WARNING
     }

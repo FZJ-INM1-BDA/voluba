@@ -140,11 +140,12 @@ export default {
 
     this.getUserPromise
       .then(({ data }) => {
-        console.log('auth successful', { data })
+
+        this.log(['auth successful', { data }])
         this.$store.commit('setUser', { user: data })
       })
       .catch(e => {
-        console.log('error', {e})
+        this.log(['error', {e}])
         this.$store.commit('setUser', { user: null })
       })
   },
@@ -196,7 +197,8 @@ export default {
   methods: {
     ...mapActions({
       modalMessage: 'modalMessage',
-      setLocalStorage: 'setLocalStorage'
+      setLocalStorage: 'setLocalStorage',
+      log: 'log'
     }),
     toggleMode: function () {
       this.mode = this.mode === 'overlay' ? 'classic' : 'overlay'

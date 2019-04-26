@@ -72,7 +72,7 @@
 </template>
 
 <script>
-import { mapState, mapActions } from "vuex";
+import { mapState, mapActions, mapMutations } from "vuex";
 import HeaderComponent from "@/components/TheHeader";
 import NehubaComponent from "@/components/Nehuba";
 import SimpleNehubaComponent from "@/components/SimpleNehuba";
@@ -110,13 +110,14 @@ export default {
     };
   },
   mounted: function() {
+    window.setProduction = (arg) => this.setProduction(arg)
     this.$store.dispatch("appendNehuba");
     this.$store.subscribeAction(({ type, payload }) => {
       switch (type) {
         case "openModal": {
           const modalId = payload && payload.modalId;
           const modal = modalId && this.$refs[modalId];
-          console.log('open modal', modal)
+          this.log('open modal', modal)
           if (modal) {
             (modal.showModal && modal.showModal()) ||
               (modal.show && modal.show());
@@ -164,9 +165,13 @@ export default {
     }
   },
   methods: {
+    ...mapMutations({
+      setProduction: 'setProduction'
+    }),
     ...mapActions({
       startFromScratch: 'startFromScratch',
-      changeLandmarkMode: 'changeLandmarkMode'
+      changeLandmarkMode: 'changeLandmarkMode',
+      log: 'log'
     }),
     startRegistration: function () {
       this.showSelectVolumesModal = false

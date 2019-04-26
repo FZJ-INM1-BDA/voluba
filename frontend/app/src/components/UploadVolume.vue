@@ -174,7 +174,8 @@ export default {
   methods: {
     ...mapActions({
       modalMessage: 'modalMessage',
-      updateIncVolumes: 'updateIncVolumes'
+      updateIncVolumes: 'updateIncVolumes',
+      log: 'log'
     }),
     ...mapMutations({
       setUploadUrl: 'setUploadUrl'
@@ -206,7 +207,7 @@ export default {
           /**
            * DO PREFLIGHT HERE
            */
-          console.log({
+          this.log({
             name, size, type, _2048B64
           })
 
@@ -237,7 +238,7 @@ export default {
             })
             .catch(error => {
               this.preflightInProgress = false
-              console.log('Prefligght error', error)
+              this.log(['Prefligght error', { error }])
               const errorMessage = (error && error.response && error.response.data) || 'An unknown preflight error errored'
               // debugger
               this.preflightError = errorMessage
@@ -312,7 +313,7 @@ export default {
         
         this.updateIncVolumes()
       }).catch(e => {
-        console.log({e})
+        this.log(['upload error', { error: e }])
         this.uploadError = (e && e.response && e.response.data) || (e && e.message) ||  'Error: Canont send the file...'
         this.uploadFinished = true
         this.uploadInProgress = false

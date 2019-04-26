@@ -153,7 +153,7 @@ export default {
           /**
            * TODO proper error catching and user feedback
            */
-          console.error('e', e)
+          this.log([ 'Nehuba.vue#mounted', {error: e} ])
           this.errorFlag = true
           this.placeholderText = incompatibleBrowserText
         })
@@ -195,7 +195,7 @@ export default {
             /**
              * TODO proper error catching and user feedback
              */
-            console.error('e', e)
+            this.log([ 'Nehuba.vue#watch#appendNehubaFlag', {error: e} ])
             this.errorFlag = true
             this.placeholderText = incompatibleBrowserText
           })
@@ -287,7 +287,8 @@ export default {
   methods: {
     ...mapActions({
       hoverLandmarkPair: 'hoverLandmarkPair',
-      gotoLm: 'gotoLm'
+      gotoLm: 'gotoLm',
+      log: 'log'
     }),
     handleMouseenterOnIcon: function ({ refId, incId, hover }) {
       this.hoverLandmarkPair({ refId, incId, hover })

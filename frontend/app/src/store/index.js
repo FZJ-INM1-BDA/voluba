@@ -208,6 +208,9 @@ const store = new Vuex.Store({
     landmarkRMSE: null
   },
   mutations: {
+    setProduction (state, { production }){
+      state.production = production
+    },
     setUploadUrl (state, { uploadUrl }) {
       state.uploadUrl = uploadUrl
     },
@@ -373,12 +376,16 @@ const store = new Vuex.Store({
     }
   },
   actions: {
+    log: function ({state}, payload) {
+      if (!state.production)
+        console.log(payload)
+    },
     setLocalStorage: function (store, payload) {
       for (let key in payload) {
         localStorage.setItem(key, payload[key])
       }
     },
-    viewInInteractiveViewer: function ({ state, getters }) {
+    viewInInteractiveViewer: function ({ state, dispatch, getters }) {
       const { selectedIncomingVolume, selectedReferenceVolume } = getters
       const { incTransformMatrix, incomingColor } = state
       const shader = getShader(incomingColor.map(v => v / 255))
@@ -408,9 +415,7 @@ const store = new Vuex.Store({
             throw new Error('url not defined')
           }
         })
-        .catch(e => {
-          console.error(e)
-        })
+        .catch(e => dispatch('log', ['store#actions#viewInInteractiveViewer', { error: e }]))
     },
     downloadXformResult: function ({ state, getters }) {
       const {selectedIncomingVolume, selectedReferenceVolume} = getters
@@ -771,7 +776,7 @@ const store = new Vuex.Store({
       if (errorTimeoutId) clearTimeout(errorTimeoutId)
       commit('setBackendQueryError', { error: null })
 
-      console.log('sending data to backend...', {data})
+      dispatch('log', ['sending data to backend...', {data}])
       axios.post(state.backendURL + '/least-squares', data)
         .then(response => {
           /**
@@ -832,11 +837,10 @@ const store = new Vuex.Store({
       const config = idToken
         ? { method: 'DELETE', headers: { 'Authorization': 'Bearer ' + idToken } }
         : { method: 'DELETE' }
-      console.log(config)
+      
       const { payload } = incomingVolume
       const link = payload && payload.links && payload.links.normalized
-
-      console.log(id, incomingVolume, link)
+      dispatch('log', ['store#actions#deleteIncomingVolume', { config, id, incomingVolume, link }])
       if (!link) {
         /**
          * link does not exist, return
@@ -905,7 +909,7 @@ const store = new Vuex.Store({
     loadLandmarks ({ dispatch }) {
       dispatch('openModal', {modalId: 'loadLandmarkPairsModal'})
     },
-    saveLandmarks ({ state }) {
+    saveLandmarks ({ state, dispatch }) {
       const { referenceVolumes, selectedReferenceVolumeId, incomingVolumes, selectedIncomingVolumeId } = state
       const refVol = referenceVolumes.find(v => v.id === selectedReferenceVolumeId)
       const incVol = incomingVolumes.find(v => v.id === selectedIncomingVolumeId)
@@ -917,7 +921,7 @@ const store = new Vuex.Store({
         incoming_landmarks: state.incomingLandmarks,
         landmark_pairs: state.landmarkPairs
       }
-      console.log('saving landmarks', data)
+      dispatch('log', ['store#actions#saveLandMarks', { data }])
       const jsonData = JSON.stringify(data, null, 2)
       saveToFile(jsonData, 'application/json', 'landmark-pairs.json')
     },
@@ -1348,7 +1352,7 @@ const store = new Vuex.Store({
       if (pair) {
         const inc = state.incomingLandmarks.find(incLm => incLm.id === pair.incId)
         const ref = state.referenceLandmarks.find(refLm => refLm.id === pair.refId)
-        console.log(ref, inc)
+        dispatch('log', ['store#actions#gotoLandmark', { ref, inc }])
         dispatch('setPrimaryNehubaNavigation', ref)
         dispatch('setSecondaryNehubaNavigation', inc)
       }

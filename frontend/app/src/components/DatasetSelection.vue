@@ -140,6 +140,7 @@ export default {
       selectedIncomingVolume: 'selectedIncomingVolume'
     }),
     ...mapState({
+      production: 'production',
       defaultIncomingVolumes: state => state.incomingVolumes.filter(v => !v.visibility),
       publicIncomingVolumes: state => state.incomingVolumes.filter(v => v.visibility === 'public'),
       privateIncomingVolumes: state => state.incomingVolumes.filter(v => v.visibility === 'private')
@@ -169,7 +170,7 @@ export default {
        * temporary disabling deletion
        */
       // return false
-      return this.selectedIncomingVolume && this.selectedIncomingVolume.visibility === 'private'
+      return !this.production && this.selectedIncomingVolume && this.selectedIncomingVolume.visibility === 'private'
     },
     selectedReferenceVolumeId: {
       get: function () {

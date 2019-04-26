@@ -139,7 +139,7 @@ export default {
     this.nehubaBase__initNehuba(additionalConfig)
       .then(this.postNehubaInit)
       .catch(e => {
-        console.log('nehubaBase initNehuba Error', e)
+        this.log(['nehubaBase initNehubaError', e])
       })
     this.$store.subscribeAction(({type, payload}) => {
       switch (type) {
@@ -294,7 +294,8 @@ export default {
       gotoLm: 'gotoLm',
       addLandmark: 'addLandmark',
       hoverLandmarkPair: 'hoverLandmarkPair',
-      flipAxis: 'flipAxis'
+      flipAxis: 'flipAxis',
+      log: 'log'
     }),
     rotateCircle: function (idx, {rot}) {
       if (!this.appendNehubaFlag)
@@ -400,11 +401,13 @@ export default {
             this.nehubaBase__initNehuba()
               .then(this.postNehubaInit)
               .catch(e => {
-                console.error('simple nehuba init error', e)
+                this.log([ 'SimpleNehuba.vue#watch#config', {error: e} ])
               })
           }
         })
-        .catch(console.error)
+        .catch(e => {
+          this.log([ 'SimpleNehuba.vue#watch#config', {error: e} ])
+        })
     }
   },
   beforeDestroy () {

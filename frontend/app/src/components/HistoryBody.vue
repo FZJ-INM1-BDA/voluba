@@ -98,16 +98,14 @@ export default {
     ...mapActions({
       undo: 'undo',
       redo: 'redo',
-      openModal: 'openModal'
+      openModal: 'openModal',
+      log: 'log'
     }),
     clickUndo: function (undo) {
       this.log(undo)
     },
     clickRedo: function (redo) {
       this.log(redo)
-    },
-    log: function (item) {
-      console.log(item)
     }
   },
   computed: {

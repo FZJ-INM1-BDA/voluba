@@ -112,7 +112,8 @@ export default {
           initialNgState.perspectiveZoom = perspectiveZoom
         }
         const nehubaViewer = window.export_nehuba.createNehubaViewer(config, (err) => {
-          console.log('callback error', err)
+          if (this.log && this.log instanceof Function)
+            this.log(['nehubaBase__init#createNehubaViewer#Callback', {error: err}])
         })
         
         this.nehubaBase__subscriptions.push(
