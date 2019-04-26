@@ -38,6 +38,13 @@
       {{ uploadInProgress ? 'Uploading in progress...' : 'Upload'}}
     </div>
 
+    <div
+      @click="cancelUpload"
+      v-if="cancelTokenSource"
+      class="btn btn-link"> 
+      cancel
+    </div>
+
     <InfoPopover
       class="text-danger"
       icon="exclamation-triangle"
@@ -92,7 +99,7 @@
     </div>    
   </div>
 
-  <div v-if="!user" class="uploadScreenOverlay">
+  <div v-if="!user && production" class="uploadScreenOverlay">
     <h5>
       You must sign in before you can upload volumes.
     </h5>
@@ -127,7 +134,8 @@ export default {
       preflightError: null,
       preflightNiftiInfo: null,
       selectedFile: null,
-      preflightWarnings: []
+      preflightWarnings: [],
+      cancelTokenSource: null
     }
   },
   components: {
@@ -156,7 +164,7 @@ export default {
       return (this.uploadProgress * 100).toFixed(2) + '%'
     },
     uploadBtnDisabled: function () {
-      return this.uploadInProgress || this.preflightError || !this.selectedFile
+      return this.uploadInProgress || this.preflightInProgress || this.preflightError || !this.selectedFile
     }
   },
   mounted: function() {
@@ -180,6 +188,10 @@ export default {
     ...mapMutations({
       setUploadUrl: 'setUploadUrl'
     }),
+    cancelUpload: function () {
+      if (this.cancelTokenSource && this.cancelTokenSource.cancel && this.cancelTokenSource.cancel instanceof Function)
+        this.cancelTokenSource.cancel('Cancelled by user')
+    },
     uploadUrlChanged: function (ev) {
       const value = ev && ev.target && ev.target.value
       if (value)
@@ -279,12 +291,19 @@ export default {
       this.uploadProgress = 0
       this.uploadInProgress = true
 
-      axios.post(this.uploadUrl, formData, {
+      this.cancelTokenSource = axios.CancelToken.source()
+      axios({
+        method: 'POST',
+        url: this.uploadUrl,
+        data: formData,
         headers: this.uploadHeader,
+        cancelToken: this.cancelTokenSource.token,
         onUploadProgress: ({loaded, total}) => {
           this.uploadProgress = loaded/total
         }
       }).then(({ data }) => {
+        fileInput.value = null
+        this.cancelTokenSource = null
         this.uploadFinished = true
         this.uploadInProgress = false
         const { nifti, warnings, ...rest } = data
@@ -313,9 +332,9 @@ export default {
         
         this.updateIncVolumes()
       }).catch(e => {
+        this.cancelTokenSource = null
         this.log(['upload error', { error: e }])
         this.uploadError = (e && e.response && e.response.data) || (e && e.message) ||  'Error: Canont send the file...'
-        this.uploadFinished = true
         this.uploadInProgress = false
       })
     }
