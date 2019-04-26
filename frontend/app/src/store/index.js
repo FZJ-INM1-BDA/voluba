@@ -4,7 +4,7 @@ import { incompatibleBrowserText } from '@/text'
 import Vuex from 'vuex'
 import Vue from 'vue'
 import axios from 'axios'
-import { AGREE_COOKIE_KEY, DEFAULT_INCOMING_VOLUMES, processImageMetaData, openInNewWindow, getShader } from '../constants';
+import { AGREE_COOKIE_KEY, DEFAULT_INCOMING_VOLUMES, processImageMetaData, openInNewWindow, getShader, transposeMat4 } from '@/constants';
 
 Vue.use(Vuex)
 
@@ -421,12 +421,7 @@ const store = new Vuex.Store({
       const {selectedIncomingVolume, selectedReferenceVolume} = getters
       const incomingVolume = selectedIncomingVolume && selectedIncomingVolume.name
       const referenceVolume = selectedReferenceVolume && selectedReferenceVolume.name
-      const transformMatrixInNm = [
-        state.incTransformMatrix.slice(0,4),
-        state.incTransformMatrix.slice(4,8),
-        state.incTransformMatrix.slice(8,12),
-        state.incTransformMatrix.slice(12)
-      ]
+      const transformMatrixInNm = transposeMat4(state.incTransformMatrix)
       const json = {
         incomingVolume,
         referenceVolume,

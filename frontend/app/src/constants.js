@@ -552,7 +552,7 @@ export const saveToFile = (data, mimeType, filename) => {
   document.body.removeChild(link)
 }
 
-export const loadFromFile = (file, contentHandler) => {
+const loadFromFile = (file, contentHandler) => {
   var reader = new FileReader()
   reader.onload = function (event) {
     var fileContent = event.target.result;
@@ -761,3 +761,5 @@ export const processImageMetaData = ({ visibility = 'public', name = 'Untitled',
     id
   }
 }
+
+export const transposeMat4 = (incM) => [0, 1, 2, 3].map(r => [0, 1, 2, 3].map(c => incM[ c * 4 + r ]))

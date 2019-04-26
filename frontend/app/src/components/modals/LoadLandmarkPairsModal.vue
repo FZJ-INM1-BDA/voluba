@@ -16,7 +16,7 @@
     </div>
     
     <button
-      v-if="production"
+      v-if="!production"
       type="button"
       @click="loadDefaultLandmarkPairs"
       class="btn btn-primary">
@@ -36,7 +36,7 @@
 </template>
 
 <script>
-import { oldJson, openFileDialog, loadFromFile } from '@//constants'
+import { oldJson, openFileDialog } from '@//constants'
 import { LOAD_LM_WARNING } from '@/text'
 import { mapActions, mapState } from 'vuex'
 
