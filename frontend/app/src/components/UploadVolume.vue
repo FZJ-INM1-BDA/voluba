@@ -165,19 +165,17 @@ export default {
     },
     uploadBtnDisabled: function () {
       return this.uploadInProgress || this.preflightInProgress || this.preflightError || !this.selectedFile
+    },
+    customHeader: function () {
+      const header = {}
+      header['X-VOLUBA-FILESIZE'] = this.selectedFile && this.selectedFile.size
+        ? this.selectedFile.size
+        : 'UNKNOWN'
+      return header
     }
   },
   mounted: function() {
     this.updateIncVolumes()
-  },
-  watch: {
-    uploadFinished: function (val) {
-      if (val) {
-        setTimeout(() => {
-          this.uploadFinished = false
-        }, 5000)
-      }
-    }
   },
   methods: {
     ...mapActions({
@@ -237,7 +235,7 @@ export default {
           this.preflightNiftiInfo = null
           this.preflightError = null
           axios.post(this.preflightUrl, formData, {
-            headers: this.uploadHeader
+            headers: { ...this.uploadHeader, ...this.customHeader }
           })
             .then(resp => {
               const { data } = resp
@@ -296,7 +294,7 @@ export default {
         method: 'POST',
         url: this.uploadUrl,
         data: formData,
-        headers: this.uploadHeader,
+        headers:  {...this.uploadHeader, ...this.customHeader },
         cancelToken: this.cancelTokenSource.token,
         onUploadProgress: ({loaded, total}) => {
           this.uploadProgress = loaded/total

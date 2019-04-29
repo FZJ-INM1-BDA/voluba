@@ -26,56 +26,44 @@
       <div class="body bg-light">
 
         <!-- add lm -->
-        <div
-          :class="addLandmarkMode ? 'btn-success' : 'btn-outline-secondary'"
-          v-b-tooltip.bottom.hover="'Add a landmark pair'"
-          class="footer-icon rounded-circle btn btn-sm"
-          @click="addLmMode">
 
-          <font-awesome-icon icon="plus"/>
-        </div>
-        <!-- save lms -->
-        <div
-          @click="saveLandmarks"
-          v-b-tooltip.bottom.hover="'save landmarks'"
-          class="footer-icon rounded-circle btn btn-sm btn-secondary">
-          <font-awesome-icon icon="save"></font-awesome-icon>
-        </div>
+        <div class="d-flex">
 
-        <!-- load lms -->
-        <div
-          @click="loadLandmarks"
-          v-b-tooltip.bottom.hover="'load landmarks'"
-          class="footer-icon rounded-circle btn btn-sm btn-secondary">
-          <font-awesome-icon icon="folder-open"></font-awesome-icon>
-        </div>
+          <div
+            :class="addLandmarkMode ? 'btn-success' : 'btn-outline-secondary'"
+            v-b-tooltip.bottom.hover="'Add a landmark pair'"
+            class="footer-icon rounded-circle btn btn-sm"
+            @click="addLmMode">
 
-        <!-- calculate xform -->
-        <ComputeXformBtn class="footer-icon" />
+            <font-awesome-icon icon="plus"/>
+          </div>
+          <!-- save lms -->
+          <div
+            @click="saveLandmarks"
+            v-b-tooltip.bottom.hover="'save landmarks'"
+            class="footer-icon rounded-circle btn btn-sm btn-secondary">
+            <font-awesome-icon icon="save"></font-awesome-icon>
+          </div>
 
-        <transition name="fade">
-          <small
-            style="display:inline-block"
-            v-if="showSuccessMessage"
-            class="footer-icon pt-1 pb-1 alert alert-success">
-            Success! <a @click="$store.commit('_setStep2Mode', { mode: 'overlay' })" href="#" class="alert-link">check result</a>
-          </small>
-        </transition>
+          <!-- load lms -->
+          <div
+            @click="loadLandmarks"
+            v-b-tooltip.bottom.hover="'load landmarks'"
+            class="footer-icon rounded-circle btn btn-sm btn-secondary">
+            <font-awesome-icon icon="folder-open"></font-awesome-icon>
+          </div>
 
-        <!-- download transform as json -->
-        <div
-          @click="downloadXformResult"
-          v-b-tooltip.bottom.hover="'Download the transform matrix'"
-          class="footer-icon rounded-circle btn btn-sm btn-secondary">
-          <font-awesome-icon icon="file-download"></font-awesome-icon>
-        </div>
+          <!-- calculate xform -->
+          <ComputeXformBtn class="footer-icon" />
 
-        <!-- view in nehuba -->
-        <div
-          class="footer-icon rounded-circle btn btn-sm btn-secondary"
-          v-b-tooltip.bottom.hover="'View the anchoring result in interactive viewer'"
-          @click="viewInInteractiveViewer">
-          <font-awesome-icon icon="brain"></font-awesome-icon>
+          <transition name="fade">
+            <small
+              style="display:inline-block"
+              v-if="showSuccessMessage"
+              class="footer-icon pt-1 pb-1 alert alert-success">
+              Success! <a @click="$store.commit('_setStep2Mode', { mode: 'overlay' })" href="#" class="alert-link">check result</a>
+            </small>
+          </transition>
         </div>
       </div>
     </template>
@@ -149,9 +137,7 @@ export default {
       loadLandmarks: 'loadLandmarks',
       addLandmarkPair: 'addLandmarkPair',
       saveLandmarks: 'saveLandmarks',
-      changeLandmarkMode: 'changeLandmarkMode',
-      downloadXformResult: 'downloadXformResult',
-      viewInInteractiveViewer: 'viewInInteractiveViewer'
+      changeLandmarkMode: 'changeLandmarkMode'
     }),
     close: function () {
       const nib = this.$refs.nib

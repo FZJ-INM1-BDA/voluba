@@ -9,7 +9,7 @@
         <div
           @click="$emit('close')"
           class="rounded-circle btn btn-sm btn-outline-secondary">
-          <font-awesome-icon icon="times-circle"></font-awesome-icon>
+          <font-awesome-icon icon="times"></font-awesome-icon>
         </div>
       </div>
       <h5 class="title">
