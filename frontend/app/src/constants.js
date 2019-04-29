@@ -35,7 +35,16 @@ export const UNPAIRED_COLOR = `#CCCCCC`
 export const INCOMING_COLOR = `#FCDC00`
 export const INACTIVE_ROW_OPACITY = 0.2
 
-export const DEFAULT_INCOMING_VOLUMES = [
+export const DEFAULT_BUNDLED_INCOMING_VOLUMES_0 = [
+  {
+    id: 'colin-1',
+    name: 'Colin 27',
+    imageSource: 'precomputed://https://neuroglancer.humanbrainproject.org/precomputed/JuBrain/v2.2c/colin27_seg',
+    dim: [76, 94, 77].map(v => v * 2e6)
+  }
+]
+
+export const DEFAULT_BUNDLED_INCOMING_VOLUMES_1 = [
   {
     id: 'inc-1',
     name: 'Nucleus subthalamicus (B20)',
