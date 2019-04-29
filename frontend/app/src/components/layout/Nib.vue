@@ -12,6 +12,7 @@
 
     <!-- icon -->
     <div
+      v-if="false"
       @click="toggleOpen"
       :class="open ? '' : 'btn-shadow'"
       class="icon">

@@ -6,7 +6,7 @@
 
     <!-- layer control -->
     <div
-      class="horizontalContainer flex-items">
+      class="horizontalContainer d-flex flex-items">
       <div
         v-b-tooltip.right.hover="incVolXformTitle"
         :class="showLayerControl ? 'btn-info' : 'btn-secondary'"
@@ -24,7 +24,7 @@
 
     <!-- landmark-control -->
     <div
-      class="horizontalContainer flex-items">
+      class="horizontalContainer d-flex flex-items">
 
       <div
         v-b-tooltip.right.hover="editLandmarksTitle"
@@ -42,7 +42,7 @@
 
     <!-- toggle history -->
     <div
-      class="horizontalContainer flex-items">
+      class="horizontalContainer d-flex flex-items">
       <div
         v-b-tooltip.right.hover="'history browser'"
         :class="showHistory ? 'btn-info' : 'btn-secondary'"
@@ -60,14 +60,14 @@
 
     <!-- save export control -->
     <div
-      v-if="false"
-      class="horizontalContainer flex-items">
+      class="horizontalContainer d-flex flex-items">
 
       <div
-        v-b-tooltip.right.hover="'Save Transformation params and results.'"
+        v-b-tooltip.right.hover="'Share/Save transformation results.'"
         @click="showSaveExportControl = !showSaveExportControl"
-        class="addBtn pointer-events rounded-circle save-control-toggle btn-shadow btn btn-sm btn-secondary">
-        <font-awesome-icon icon="save" />
+        :class="showSaveExportControl ? 'btn-info' : 'btn-secondary'"
+        class="addBtn pointer-events rounded-circle save-control-toggle btn-shadow btn btn-sm">
+        <font-awesome-icon icon="share-alt" />
       </div>
 
       <SaveExportControl
@@ -75,8 +75,6 @@
         @changeNibState="showSaveExportControl = $event"
         class="row-flex-items"/>
     </div>
-
-
     
   </div>
 </template>

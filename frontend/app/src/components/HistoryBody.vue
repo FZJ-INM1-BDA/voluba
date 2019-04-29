@@ -8,7 +8,7 @@
         <div
           @click="$emit('close')"
           class="rounded-circle btn btn-sm btn-outline-secondary">
-          <font-awesome-icon icon="times-circle"/>
+          <font-awesome-icon icon="times"/>
         </div>
       </div>
       <h5 class="title">

@@ -1,5 +1,6 @@
 <template>
   <nib-component
+    ref="nib"
     :initOpen="true"
     @toggleOpen="$emit('changeNibState', $event)"
     :style="draggingMixin__Style">
@@ -16,6 +17,7 @@
     <template slot="body">
       <SaveControl
         class="point-events"
+        @close="close"
         @header-mousedown="draggingMixin__StartDragging"
         />
     </template>
@@ -41,6 +43,13 @@ export default {
     }
   },
   methods: {
+    close: function () {
+      const nib = this.$refs.nib
+      if (nib) {
+        nib.open = false
+        this.$emit('changeNibState', false)
+      }
+    },
   },
 }
 </script>

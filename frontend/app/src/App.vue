@@ -355,4 +355,14 @@ export default {
 {
   flex-basis: 50%!important;
 }
+
+.rounded-circle.btn
+{
+  width: 2.5em;
+  height: 2.5em;
+
+  display:flex;
+  align-items: center;
+  justify-content: center;
+}
 </style>

@@ -4,7 +4,7 @@ import { incompatibleBrowserText } from '@/text'
 import Vuex from 'vuex'
 import Vue from 'vue'
 import axios from 'axios'
-import { AGREE_COOKIE_KEY, DEFAULT_INCOMING_VOLUMES, processImageMetaData, openInNewWindow, getShader, transposeMat4 } from '@/constants';
+import { AGREE_COOKIE_KEY, DEFAULT_BUNDLED_INCOMING_VOLUMES_0, DEFAULT_BUNDLED_INCOMING_VOLUMES_1, processImageMetaData, openInNewWindow, getShader, transposeMat4 } from '@/constants';
 
 Vue.use(Vuex)
 
@@ -113,6 +113,10 @@ const getMirrorMat = (flippedState, dim) => {
   }
 }
 
+const DEFAULT_BUNDLED_INCOMING_VOLUMES = process.env.NODE_ENV === 'production'
+  ? DEFAULT_BUNDLED_INCOMING_VOLUMES_0
+  : DEFAULT_BUNDLED_INCOMING_VOLUMES_0.concat(DEFAULT_BUNDLED_INCOMING_VOLUMES_1)
+
 const store = new Vuex.Store({
   state: {
     production: process.env.NODE_ENV === 'production',
@@ -146,7 +150,7 @@ const store = new Vuex.Store({
     referenceTemplateTransform: null,
 
     selectedIncomingVolumeId: null,
-    incomingVolumes: DEFAULT_INCOMING_VOLUMES,
+    incomingVolumes: DEFAULT_BUNDLED_INCOMING_VOLUMES,
 
     selectedTransformationIndex: 0,
     transformationTypes: [
@@ -880,7 +884,7 @@ const store = new Vuex.Store({
               }
             })
             .map(processImageMetaData)
-          const newVolumes = DEFAULT_INCOMING_VOLUMES.concat(volumes)
+          const newVolumes = DEFAULT_BUNDLED_INCOMING_VOLUMES.concat(volumes)
 
           commit('setIncomingVolumes', {volumes: newVolumes})
           dispatch('updateIncVolumesResult', {
