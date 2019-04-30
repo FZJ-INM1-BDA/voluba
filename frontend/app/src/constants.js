@@ -23,6 +23,9 @@ export const arrayBufferToBase64String = (arraybuffer) => {
   return window.btoa(binary)
 }
 
+export const IMAGE_SERVICE_NAME = `CHUNMA`
+export const SEGMENTATION_EXPLANATION = `A segmentation nii file can be ingested differently to an image nii file`
+
 export const getShader = (rgb) => `void main() {
   float x = toNormalized(getDataValue());
   emitRGB(vec3(x * ${rgb[0].toFixed(1)}, x * ${rgb[1].toFixed(1)}, x * ${rgb[2].toFixed(1)} ));
@@ -761,13 +764,21 @@ export const processImageMetaData = ({ visibility = 'public', name = 'Untitled',
     links,
     extra
   }
+
+  const { neuroglancer = {} } = extra
+  const { size, resolution } = neuroglancer
+  const dim = size && resolution
+    ? [0, 1, 2].map(v => size[v] * resolution[v])
+    : null
+  
   return {
     payload,
     name,
     visibility,
     extra,
     imageSource,
-    id
+    id,
+    dim
   }
 }
 
