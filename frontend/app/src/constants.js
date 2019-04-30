@@ -783,3 +783,24 @@ export const processImageMetaData = ({ visibility = 'public', name = 'Untitled',
 }
 
 export const transposeMat4 = (incM) => [0, 1, 2, 3].map(r => [0, 1, 2, 3].map(c => incM[ c * 4 + r ]))
+
+export const makeHtmlFragmentForNifti = ({ nifti, warnings }) => {
+
+  const returnHtmlArray = []
+
+  if (warnings && warnings.forEach) {
+    warnings.forEach(warning => {
+      returnHtmlArray.push(
+        `<div class="alert alert-warning">${warning}</div>`
+      )
+    })
+  }
+  for (let key in nifti) {
+    if (nifti[key])
+      returnHtmlArray.push(
+        `<div class="text-left">${key}<div class="text-muted">${nifti[key]}</div></div>`
+      )  
+  }
+
+  return returnHtmlArray.join('\n')
+}

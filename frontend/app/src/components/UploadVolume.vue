@@ -125,7 +125,7 @@
 <script>
 import axios from 'axios'
 import { mapState, mapActions, mapMutations } from 'vuex'
-import { arrayBufferToBase64String, IMAGE_SERVICE_NAME, SEGMENTATION_EXPLANATION } from '@/constants'
+import { arrayBufferToBase64String, IMAGE_SERVICE_NAME, SEGMENTATION_EXPLANATION, makeHtmlFragmentForNifti } from '@/constants'
 import SigningComponent from '@/components/SigninComponent'
 import InfoPopover from '@/components/InfoPopover'
 /**
@@ -321,26 +321,10 @@ export default {
         this.uploadInProgress = false
         const { nifti, warnings, ...rest } = data
 
-        const returnHtmlArray = []
-
-        if (warnings && warnings.forEach) {
-          warnings.forEach(warning => {
-            returnHtmlArray.push(
-              `<div class="alert alert-warning">${warning}</div>`
-            )
-          })
-        }
-        for (let key in nifti) {
-          if (nifti[key])
-            returnHtmlArray.push(
-              `<div class="text-left">${key}<div class="text-muted">${nifti[key]}</div></div>`
-            )  
-        }
-
         this.modalMessage({
           variant: 'success',
           title: 'Upload Successful',
-          htmlBody: returnHtmlArray.join('\n')
+          htmlBody: makeHtmlFragmentForNifti({ nifti, warnings })
         })
         
         this.updateIncVolumes()
