@@ -81,11 +81,14 @@
             v-b-tooltip.hover.right>
             <font-awesome-icon icon="trash-alt" />
           </div>
-          <InfoPopover
+
+          <div
             v-if="selectedIncomingVolume && selectedIncomingVolume.extra"
-            placement="right"
-            triggers="click blur"
-            :popoverObj="selectedIncomingVolume.extra.nifti" />
+            @click="showNiftiInfo(selectedIncomingVolume.extra)"
+            class="d-inline-block btn-sm">
+            <font-awesome-icon icon="info-circle"></font-awesome-icon>
+          </div>
+          
         </div>
       </div>
 
@@ -121,6 +124,7 @@
 </template>
 
 <script>
+import { makeHtmlFragmentForNifti } from '@/constants'
 import UploadVolumeComponent from '@/components/UploadVolume'
 import { mapActions, mapGetters, mapState } from 'vuex';
 import InfoPopover from '@/components/InfoPopover'
@@ -248,8 +252,16 @@ export default {
   methods: {
     ...mapActions({
       deleteIncomingVolume: 'deleteIncomingVolume',
-      openModal:'openModal'
+      openModal:'openModal',
+      modalMessage: 'modalMessage'
     }),
+    showNiftiInfo: function (extra) {
+      this.modalMessage({
+        variant: 'success',
+        title: 'Upload Successful',
+        htmlBody: makeHtmlFragmentForNifti(extra)
+      })
+    },
     removeSelectedIncVolume: function () {
       const confirm = window.confirm(`Are you sure you would like to delete the incoming volume: ${this.selectedIncomingVolumeId}?
       

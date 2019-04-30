@@ -30,6 +30,20 @@
       type="file"
       class="form-control mb-3" />
 
+    <!-- upload options -->
+    <div>
+      <input
+        v-model="isSegmentation"
+        id="segmentationCheckBox"
+        name="segmentationCheckBox"
+        type="checkbox">
+      <label
+        class="ml-2 mr-2"
+        for="segmentationCheckBox">This nii file denotes segmentations </label>
+      <font-awesome-icon
+        v-b-tooltip.hover.right="segmentationExplanation"
+        icon="question" />
+    </div>
     <!-- upload btn -->
     <div
       @click.stop.prevent="upload"
@@ -45,14 +59,12 @@
       cancel
     </div>
 
-    <InfoPopover
-      class="text-danger"
-      icon="exclamation-triangle"
+    <div
       v-if="preflightError"
-      placement="right"
-      triggers="click blur">
+      class="ml-2 d-inline-block alert alert-danger">
+      <font-awesome-icon icon="exclamation-triangle"></font-awesome-icon>
       {{ preflightError }}
-    </InfoPopover>
+    </div>
 
     <InfoPopover
       v-if="preflightNiftiInfo"
@@ -113,7 +125,7 @@
 <script>
 import axios from 'axios'
 import { mapState, mapActions, mapMutations } from 'vuex'
-import { arrayBufferToBase64String } from '@/constants'
+import { arrayBufferToBase64String, IMAGE_SERVICE_NAME, SEGMENTATION_EXPLANATION, makeHtmlFragmentForNifti } from '@/constants'
 import SigningComponent from '@/components/SigninComponent'
 import InfoPopover from '@/components/InfoPopover'
 /**
@@ -135,7 +147,9 @@ export default {
       preflightNiftiInfo: null,
       selectedFile: null,
       preflightWarnings: [],
-      cancelTokenSource: null
+      cancelTokenSource: null,
+      segmentationExplanation: SEGMENTATION_EXPLANATION,
+      isSegmentation: false
     }
   },
   components: {
@@ -168,9 +182,10 @@ export default {
     },
     customHeader: function () {
       const header = {}
-      header['X-VOLUBA-FILESIZE'] = this.selectedFile && this.selectedFile.size
+      header[`X-${IMAGE_SERVICE_NAME}-FILESIZE`] = this.selectedFile && this.selectedFile.size
         ? this.selectedFile.size
         : 'UNKNOWN'
+      header[`X-${IMAGE_SERVICE_NAME}-SEGMENTATION`] = this.isSegmentation
       return header
     }
   },
@@ -306,26 +321,10 @@ export default {
         this.uploadInProgress = false
         const { nifti, warnings, ...rest } = data
 
-        const returnHtmlArray = []
-
-        if (warnings && warnings.forEach) {
-          warnings.forEach(warning => {
-            returnHtmlArray.push(
-              `<div class="alert alert-warning">${warning}</div>`
-            )
-          })
-        }
-        for (let key in nifti) {
-          if (nifti[key])
-            returnHtmlArray.push(
-              `<div class="text-left">${key}<div class="text-muted">${nifti[key]}</div></div>`
-            )  
-        }
-
         this.modalMessage({
           variant: 'success',
           title: 'Upload Successful',
-          htmlBody: returnHtmlArray.join('\n')
+          htmlBody: makeHtmlFragmentForNifti({ nifti, warnings })
         })
         
         this.updateIncVolumes()
