@@ -117,12 +117,12 @@ const DEFAULT_BUNDLED_INCOMING_VOLUMES = process.env.NODE_ENV === 'production'
   ? DEFAULT_BUNDLED_INCOMING_VOLUMES_0
   : DEFAULT_BUNDLED_INCOMING_VOLUMES_0.concat(DEFAULT_BUNDLED_INCOMING_VOLUMES_1)
 
-const store = new Vuex.Store({
+const getStore = ({ user = null } = {}) => new Vuex.Store({
   state: {
     production: process.env.NODE_ENV === 'production',
 
     uploadUrl: UPLOAD_URL, 
-    user: null,
+    user,
     pairLandmarkStartDragging: false,
     agreedToCookie: localStorage.getItem(AGREE_COOKIE_KEY),
 
@@ -1648,4 +1648,4 @@ const store = new Vuex.Store({
   }
 })
 
-export default store
+export default getStore

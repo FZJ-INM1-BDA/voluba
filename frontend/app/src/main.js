@@ -5,7 +5,9 @@ import App from './App'
 
 // Vuex
 import router from './router'
-import store from './store'
+import getStore from './store'
+
+import axios from 'axios'
 
 // Bootstrap
 import BootstrapVue from 'bootstrap-vue'
@@ -24,8 +26,18 @@ Vue.component('font-awesome-icon', FontAwesomeIcon)
 
 Vue.config.productionTip = false
 
-new Vue({
-  router,
-  store,
-  render: h => h(App),
-}).$mount('#app')
+const initVue = ({user} = {}) => {
+  new Vue({
+    router,
+    store: getStore({ user }),
+    render: h => h(App),
+  }).$mount('#app')
+}
+
+axios.get('user')
+  .then(({data: user}) => {
+    initVue({ user })
+  })
+  .catch(e => {
+    initVue()
+  })

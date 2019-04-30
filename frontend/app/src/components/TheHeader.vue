@@ -106,7 +106,6 @@
 import ProgressTracker from '@/components/layout/ProgressTracker'
 import SigningComponent from '@/components/SigninComponent'
 import SliderComponent from '@/components/layout/Slider'
-import axios from 'axios'
 import { mapState, mapActions } from 'vuex'
 import { Compact } from 'vue-color'
 import { AGREE_COOKIE_KEY } from '@/constants'
@@ -115,8 +114,6 @@ export default {
   name: 'HeaderComponent',
   data: function () {
     return {
-      getUserPromise: axios.get('user'),
-
       opacityMin: 0,
       opacityMax: 1.0,
       opacityStep: 0.01,
@@ -144,17 +141,6 @@ export default {
         onHiddenCallback: onHideCB.bind(this)
       })
     }
-
-    this.getUserPromise
-      .then(({ data }) => {
-
-        this.log(['auth successful', { data }])
-        this.$store.commit('setUser', { user: data })
-      })
-      .catch(e => {
-        this.log(['error', {e}])
-        this.$store.commit('setUser', { user: null })
-      })
   },
   computed: {
     ...mapState({
