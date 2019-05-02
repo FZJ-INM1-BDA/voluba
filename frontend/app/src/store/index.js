@@ -117,12 +117,12 @@ const DEFAULT_BUNDLED_INCOMING_VOLUMES = process.env.NODE_ENV === 'production'
   ? DEFAULT_BUNDLED_INCOMING_VOLUMES_0
   : DEFAULT_BUNDLED_INCOMING_VOLUMES_0.concat(DEFAULT_BUNDLED_INCOMING_VOLUMES_1)
 
-const store = new Vuex.Store({
+const getStore = ({ user = null } = {}) => new Vuex.Store({
   state: {
     production: process.env.NODE_ENV === 'production',
 
     uploadUrl: UPLOAD_URL, 
-    user: null,
+    user,
     pairLandmarkStartDragging: false,
     agreedToCookie: localStorage.getItem(AGREE_COOKIE_KEY),
 
@@ -827,15 +827,17 @@ const store = new Vuex.Store({
         }
       })
     },
-    deleteIncomingVolume ({ state, dispatch }, { id, incomingVolume}) {
+    deleteIncomingVolume ({ state, dispatch, getters, commit }, { id, incomingVolume}) {
       /**
        * TODO
        * check endpoint still valid
        */
-      const idToken = state.user && state.user.idToken
-      const config = idToken
-        ? { method: 'DELETE', headers: { 'Authorization': 'Bearer ' + idToken } }
-        : { method: 'DELETE' }
+      const config = {
+          method: 'DELETE',
+          headers: {
+            ...getters.authHeader
+          }
+        }
       
       const { payload } = incomingVolume
       const link = payload && payload.links && payload.links.normalized
@@ -851,8 +853,14 @@ const store = new Vuex.Store({
           /**
            * successful delete
            */
+          
+          /**
+           * deselect incoming volume id
+           */
+          commit('setSelectedIncomingVolumeId', null)
+
           dispatch('updateIncVolumes', {
-            message: 'Delete incoming volume complete.'
+            message: `Delete incoming volume complete.`
           })
         }).catch(error => {
           /**
@@ -860,7 +868,7 @@ const store = new Vuex.Store({
            */
           dispatch('updateIncVolumes', {
             error,
-            message: 'Delete incoming volume error.'
+            message: `Delete incoming volume error: ${error}`
           })
         })
     },
@@ -869,11 +877,12 @@ const store = new Vuex.Store({
        * required for subscribe action
        */
     },
-    updateIncVolumes ({ commit, state, dispatch }, {error, message} = {error:null, message: null}) {
-      const idToken = (state.user && state.user.idToken) || process.env.VUE_APP_ID_TOKEN
-      const config = idToken
-        ? { headers: { 'Authorization': 'Bearer ' + idToken } }
-        : {}
+    updateIncVolumes ({ commit, state, dispatch, getters }, {error, message} = {error:null, message: null}) {
+      const config = {
+        headers: {
+          ...getters.authHeader
+        }
+      }
       axios(`${state.uploadUrl}/list`, config)
         .then(({data}) => {
           const volumes = data
@@ -1643,9 +1652,15 @@ const store = new Vuex.Store({
         revert: Array.from(invert)
       }
     },
+    authHeader: (state) => {
+      const idToken = state.user && state.user.idToken || process.env.VUE_APP_ID_TOKEN
+      return idToken
+        ? { Authorization: `Bearer ${idToken}` }
+        : {}
+    },
     selectedIncomingVolume: state => state.incomingVolumes.find(v => v.id === state.selectedIncomingVolumeId),
     selectedReferenceVolume: state => state.referenceVolumes.find(v => v.id === state.selectedReferenceVolumeId)
   }
 })
 
-export default store
+export default getStore

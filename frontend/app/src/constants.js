@@ -755,8 +755,9 @@ export const annotationColorFocus = `yellow`
 
 export const UPLOAD_URL = process.env.UPLOAD_URL || `http://ime178.ime.kfa-juelich.de:7300`
 
-export const processImageMetaData = ({ visibility = 'public', name = 'Untitled', links = {}, extra, uploadUrl }) => {
-  const id = `${visibility}/${name}`
+export const processImageMetaData = ({ visibility = 'public', name = 'Untitled', links = {}, extra = {}, uploadUrl } = {}) => {
+  const { fileName } = extra
+  const id = `${visibility}/${fileName}`
   const imageSource = links.normalized && `precomputed://${uploadUrl}${links.normalized}`
   const payload = {
     visibility,

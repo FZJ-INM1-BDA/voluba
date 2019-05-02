@@ -39,7 +39,7 @@
         type="checkbox">
       <label
         class="ml-2 mr-2"
-        for="segmentationCheckBox">This nii file denotes segmentations </label>
+        for="segmentationCheckBox">This nifti file denotes segmentations </label>
       <font-awesome-icon
         v-b-tooltip.hover.right="segmentationExplanation"
         icon="question" />
@@ -48,8 +48,15 @@
     <div
       @click.stop.prevent="upload"
       :class="uploadBtnDisabled?'disabled pe-none btn-secondary':'btn-primary'"
-      class="btn mb-2">
-      {{ uploadInProgress ? 'Uploading in progress...' : 'Upload'}}
+      class="d-inline-flex align-items-center justify-content-center btn mb-2">
+
+      <span
+        v-if="uploadInProgress"
+        class="d-inline-block spinnerAnimationCircle mr-2">
+      </span>
+      <span>
+        {{ uploadInProgress ? 'Uploading' : 'Upload'}}
+      </span>
     </div>
 
     <div
@@ -66,12 +73,12 @@
       {{ preflightError }}
     </div>
 
-    <InfoPopover
+    <div
       v-if="preflightNiftiInfo"
-      :popoverObj="preflightNiftiInfo"
-      placement="right"
-      triggers="click blur">
-    </InfoPopover>
+      @click="showNiftiInfo(preflightNiftiInfo)"
+      class="d-inline-block btn-sm">
+      <font-awesome-icon icon="info-circle"></font-awesome-icon>
+    </div>
 
     <InfoPopover
       class="text-warning"
@@ -196,11 +203,22 @@ export default {
     ...mapActions({
       modalMessage: 'modalMessage',
       updateIncVolumes: 'updateIncVolumes',
+      selectIncomingVolumeWithId: 'selectIncomingVolumeWithId',
       log: 'log'
     }),
     ...mapMutations({
       setUploadUrl: 'setUploadUrl'
     }),
+    showNiftiInfo: function (info) {
+      this.modalMessage({
+        variant: 'info',
+        title: 'Nifti info',
+        htmlBody: makeHtmlFragmentForNifti({
+          warnings: this.preflightWarnings,
+          nifti: this.preflightNiftiInfo
+        })
+      })
+    },
     cancelUpload: function () {
       if (this.cancelTokenSource && this.cancelTokenSource.cancel && this.cancelTokenSource.cancel instanceof Function)
         this.cancelTokenSource.cancel('Cancelled by user')
@@ -221,6 +239,9 @@ export default {
       const file = fileInput.files[0]
 
       this.selectedFile = file
+
+      if (!file)
+        return
 
       const blob = file.slice(0, 2048)
       const fileReader = new FileReader()
@@ -316,10 +337,24 @@ export default {
         }
       }).then(({ data }) => {
         fileInput.value = null
+        this.selectedFile = null
         this.cancelTokenSource = null
         this.uploadFinished = true
+        setTimeout(() => {
+          this.uploadFinished = false
+        }, 3000)
         this.uploadInProgress = false
-        const { nifti, warnings, ...rest } = data
+        
+        this.preflightNiftiInfo = null
+        this.preflightWarnings = []
+        this.preflightError = null
+
+        const { nifti, warnings, fileName, ...rest } = data
+        
+        /**
+         * select the just uploaded volume
+         */
+        this.selectIncomingVolumeWithId(`private/${fileName}`)
 
         this.modalMessage({
           variant: 'success',
@@ -361,5 +396,10 @@ export default {
   padding: 2em 1em;
   width: 100%;
   height: 100%;
+}
+.spinnerAnimationCircle
+{
+  width: 1em;
+  height: 1em;
 }
 </style>

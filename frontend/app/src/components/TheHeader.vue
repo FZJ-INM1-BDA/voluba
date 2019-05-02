@@ -106,7 +106,6 @@
 import ProgressTracker from '@/components/layout/ProgressTracker'
 import SigningComponent from '@/components/SigninComponent'
 import SliderComponent from '@/components/layout/Slider'
-import axios from 'axios'
 import { mapState, mapActions } from 'vuex'
 import { Compact } from 'vue-color'
 import { AGREE_COOKIE_KEY } from '@/constants'
@@ -115,8 +114,6 @@ export default {
   name: 'HeaderComponent',
   data: function () {
     return {
-      getUserPromise: axios.get('user'),
-
       opacityMin: 0,
       opacityMax: 1.0,
       opacityStep: 0.01,
@@ -135,26 +132,8 @@ export default {
         obj[AGREE_COOKIE_KEY] = true
         this.setLocalStorage(obj)
       }
-      this.modalMessage({
-        title: 'Cookie Disclaimer',
-        body: 'Our site saves small pieces of text information (cookies) on your device in order to deliver better content and for statistical purposes. You can disable the usage of cookies by changing the settings of your browser. By browsing our website without changing the browser settings you grant us permission to store that information on your device',
-        variant: 'info',
-        showFooter: true,
-        okOnly: true,
-        onHiddenCallback: onHideCB.bind(this)
-      })
+      this.openModal({ modalId: 'cookie' })
     }
-
-    this.getUserPromise
-      .then(({ data }) => {
-
-        this.log(['auth successful', { data }])
-        this.$store.commit('setUser', { user: data })
-      })
-      .catch(e => {
-        this.log(['error', {e}])
-        this.$store.commit('setUser', { user: null })
-      })
   },
   computed: {
     ...mapState({

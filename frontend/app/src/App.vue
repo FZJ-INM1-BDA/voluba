@@ -57,14 +57,22 @@
       </b-modal>
       <b-modal
         centered
+        title="Cookie Disclaimer"
+        header-text-variant="light"
+        ref="cookie"
+        :ok-only="true"
+        header-bg-variant="info">
+        <Cookie />
+      </b-modal>
+      <b-modal
+        centered
         ref="startFromScratchModal"
         header-bg-variant="danger"
         header-text-variant="light"
         @ok="startFromScratch"
         ok-variant="danger"
         ok-title="Yes, reset everything"
-        :title="startFromScratchTitle"
-      >
+        :title="startFromScratchTitle">
         This action would
         <ul>
           <li>unload the incoming volume</li>
@@ -94,6 +102,7 @@ import SelectVolumesModal from "@/components/modals/SelectVolumesModal";
 import MessageModal from "@/components/modals/MessageModal";
 import DataSelection from '@/components/DatasetSelection'
 import AboutUs from '@/components/AboutUs'
+import Cookie from '@/components/Cookie'
 
 export default {
   name: "App",
@@ -108,7 +117,8 @@ export default {
     UploadModal,
     DataSelection,
     MessageModal,
-    AboutUs
+    AboutUs,
+    Cookie
   },
   data: function() {
     return {
@@ -365,4 +375,25 @@ export default {
   align-items: center;
   justify-content: center;
 }
+
+@keyframes spinning
+{
+  from {
+    transform: rotate(0deg);
+  }
+  to{
+    transform: rotate(359deg);
+  }
+}
+
+.spinnerAnimationCircle
+{
+  width: 1em;
+  height:1em;
+  border-radius: 50%;
+  border: 0.2em rgba(220,220,220,0.2) solid;
+  border-top: 0.2em rgba(220,220,220,0.99) solid;
+  animation: spinning 700ms linear infinite running;
+}
+
 </style>
