@@ -169,7 +169,7 @@ export default {
     },
     deleteBtnClass: function () {
       return this.incomingVolumeCanBeDeleted
-        ? `btn-danger ${this.deletionInProgress ? 'disabled' : ''}`
+        ? `btn-danger`
         : 'btn-secondary disabled'
     },
     deleteBtnTooltipText: function() {
