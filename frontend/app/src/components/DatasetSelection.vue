@@ -178,11 +178,7 @@ export default {
         : 'This volume cannot be deleted.'
     },
     incomingVolumeCanBeDeleted: function () {
-      /**
-       * temporary disabling deletion
-       */
-      // return false
-      return !this.production && this.selectedIncomingVolume && this.selectedIncomingVolume.visibility === 'private'
+      return this.selectedIncomingVolume && this.selectedIncomingVolume.visibility === 'private'
     },
     selectedReferenceVolumeId: {
       get: function () {
@@ -242,6 +238,9 @@ export default {
         } else {
           this.deletionMessage = message
         }
+        
+        this.deletionInProgress = false
+
         this.timeoutId = setTimeout(() => {
           this.deletionError = null
           this.deletionMessage = null

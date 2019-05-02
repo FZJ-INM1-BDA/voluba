@@ -827,15 +827,17 @@ const getStore = ({ user = null } = {}) => new Vuex.Store({
         }
       })
     },
-    deleteIncomingVolume ({ state, dispatch }, { id, incomingVolume}) {
+    deleteIncomingVolume ({ state, dispatch, getters }, { id, incomingVolume}) {
       /**
        * TODO
        * check endpoint still valid
        */
-      const idToken = state.user && state.user.idToken
-      const config = idToken
-        ? { method: 'DELETE', headers: { 'Authorization': 'Bearer ' + idToken } }
-        : { method: 'DELETE' }
+      const config = {
+          method: 'DELETE',
+          headers: {
+            ...getters.authHeader
+          }
+        }
       
       const { payload } = incomingVolume
       const link = payload && payload.links && payload.links.normalized
@@ -852,7 +854,7 @@ const getStore = ({ user = null } = {}) => new Vuex.Store({
            * successful delete
            */
           dispatch('updateIncVolumes', {
-            message: 'Delete incoming volume complete.'
+            message: `Delete incoming volume complete.`
           })
         }).catch(error => {
           /**
@@ -860,7 +862,7 @@ const getStore = ({ user = null } = {}) => new Vuex.Store({
            */
           dispatch('updateIncVolumes', {
             error,
-            message: 'Delete incoming volume error.'
+            message: `Delete incoming volume error: ${error}`
           })
         })
     },
@@ -869,11 +871,12 @@ const getStore = ({ user = null } = {}) => new Vuex.Store({
        * required for subscribe action
        */
     },
-    updateIncVolumes ({ commit, state, dispatch }, {error, message} = {error:null, message: null}) {
-      const idToken = (state.user && state.user.idToken) || process.env.VUE_APP_ID_TOKEN
-      const config = idToken
-        ? { headers: { 'Authorization': 'Bearer ' + idToken } }
-        : {}
+    updateIncVolumes ({ commit, state, dispatch, getters }, {error, message} = {error:null, message: null}) {
+      const config = {
+        headers: {
+          ...getters.authHeader
+        }
+      }
       axios(`${state.uploadUrl}/list`, config)
         .then(({data}) => {
           const volumes = data
@@ -1642,6 +1645,12 @@ const getStore = ({ user = null } = {}) => new Vuex.Store({
         xform: Array.from(xformMat),
         revert: Array.from(invert)
       }
+    },
+    authHeader: (state) => {
+      const idToken = state.user && stat.user.idToken || process.env.VUE_APP_ID_TOKEN
+      return idToken
+        ? { Authorization: `Bearer ${idToken}` }
+        : {}
     },
     selectedIncomingVolume: state => state.incomingVolumes.find(v => v.id === state.selectedIncomingVolumeId),
     selectedReferenceVolume: state => state.referenceVolumes.find(v => v.id === state.selectedReferenceVolumeId)

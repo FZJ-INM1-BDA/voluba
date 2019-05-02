@@ -132,14 +132,7 @@ export default {
         obj[AGREE_COOKIE_KEY] = true
         this.setLocalStorage(obj)
       }
-      this.modalMessage({
-        title: 'Cookie Disclaimer',
-        body: 'Our site saves small pieces of text information (cookies) on your device in order to deliver better content and for statistical purposes. You can disable the usage of cookies by changing the settings of your browser. By browsing our website without changing the browser settings you grant us permission to store that information on your device',
-        variant: 'info',
-        showFooter: true,
-        okOnly: true,
-        onHiddenCallback: onHideCB.bind(this)
-      })
+      this.openModal({ modalId: 'cookie' })
     }
   },
   computed: {
