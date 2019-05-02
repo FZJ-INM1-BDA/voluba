@@ -203,6 +203,7 @@ export default {
     ...mapActions({
       modalMessage: 'modalMessage',
       updateIncVolumes: 'updateIncVolumes',
+      selectIncomingVolumeWithId: 'selectIncomingVolumeWithId',
       log: 'log'
     }),
     ...mapMutations({
@@ -238,6 +239,9 @@ export default {
       const file = fileInput.files[0]
 
       this.selectedFile = file
+
+      if (!file)
+        return
 
       const blob = file.slice(0, 2048)
       const fileReader = new FileReader()
@@ -336,13 +340,21 @@ export default {
         this.selectedFile = null
         this.cancelTokenSource = null
         this.uploadFinished = true
+        setTimeout(() => {
+          this.uploadFinished = false
+        }, 3000)
         this.uploadInProgress = false
         
         this.preflightNiftiInfo = null
         this.preflightWarnings = []
         this.preflightError = null
 
-        const { nifti, warnings, ...rest } = data
+        const { nifti, warnings, fileName, ...rest } = data
+        
+        /**
+         * select the just uploaded volume
+         */
+        this.selectIncomingVolumeWithId(`private/${fileName}`)
 
         this.modalMessage({
           variant: 'success',

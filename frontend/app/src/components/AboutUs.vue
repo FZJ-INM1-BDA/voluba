@@ -11,7 +11,7 @@
       <span
         @click="openModal({ modalId: 'cookie' })"
         class="btn btn-outline-info">
-        our cookie disclaimer
+        Cookies disclaimer
       </span>
     </div>
     Did you encounter an issue? Write us: <a href="mailto:inm1-bda@fz-juelich.de?subject=[VoluBA] Queries">inm1-bda@fz-juelich.de</a>

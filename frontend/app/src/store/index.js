@@ -827,7 +827,7 @@ const getStore = ({ user = null } = {}) => new Vuex.Store({
         }
       })
     },
-    deleteIncomingVolume ({ state, dispatch, getters }, { id, incomingVolume}) {
+    deleteIncomingVolume ({ state, dispatch, getters, commit }, { id, incomingVolume}) {
       /**
        * TODO
        * check endpoint still valid
@@ -853,6 +853,12 @@ const getStore = ({ user = null } = {}) => new Vuex.Store({
           /**
            * successful delete
            */
+          
+          /**
+           * deselect incoming volume id
+           */
+          commit('setSelectedIncomingVolumeId', null)
+
           dispatch('updateIncVolumes', {
             message: `Delete incoming volume complete.`
           })

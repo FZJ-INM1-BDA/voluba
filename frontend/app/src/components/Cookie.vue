@@ -1,7 +1,24 @@
 <template>
   <div>
     <div class="main">
-      Our site saves small pieces of text information (cookies) on your device in order to deliver better content and for statistical purposes. You can disable the usage of cookies by changing the settings of your browser. By browsing our website without changing the browser settings you grant us permission to store that information on your device.
+      <p>
+        Volume Brain Anchoring (VoluBA) uses ‘cookies’ (text files placed on your computer) to verify login details, remember user choices and preferences, and in some instances determine site permissions. Cookies also provide, in anonymous form, the number of visitors accessing the HBP Public Website, features users access during website visits, and the general location of the user based on IP address.
+      </p>
+      <p>
+        VoluBA uses at least the following cookies:
+      </p>
+      <p>
+        <strong>
+          connect.sid
+        </strong>:
+        verify login details
+      </p>
+      <p>
+        To find out more about cookies, including how to determine the cookies that have been set on your computer and how to manage or delete them, visit <a href="www.aboutcookies.org">www.aboutcookies.org</a> .
+      </p>
+      <p>
+        To opt-out of being tracked by Google Analytics across all websites, visit <a href="http://tools.google.com/dlpage/gaoptout">http://tools.google.com/dlpage/gaoptout</a> .
+      </p>
     </div>
 
     <small
