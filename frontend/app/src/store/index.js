@@ -1647,7 +1647,7 @@ const getStore = ({ user = null } = {}) => new Vuex.Store({
       }
     },
     authHeader: (state) => {
-      const idToken = state.user && stat.user.idToken || process.env.VUE_APP_ID_TOKEN
+      const idToken = state.user && state.user.idToken || process.env.VUE_APP_ID_TOKEN
       return idToken
         ? { Authorization: `Bearer ${idToken}` }
         : {}
