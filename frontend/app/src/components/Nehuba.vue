@@ -13,10 +13,11 @@
       @viewportToData="nehubaBase__viewportToData"
       class = "nehuba-element"
       :id = "cid">
-      <span
+      <div
+        class="h-100 d-flex justify-content-center align-items-center"
         v-if="!errorFlag">
-        {{ placeholderText }}
-      </span>
+        <div class="spinnerAnimationCircle home-spinner"></div>
+      </div>
       <div
         v-if="errorFlag"
         class="container-alert-box alert alert-danger">

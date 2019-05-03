@@ -21,13 +21,46 @@
       {
         display:none;
       }
+
+      @keyframes spinning
+      {
+        from {
+          transform: rotate(0deg);
+        }
+        to{
+          transform: rotate(359deg);
+        }
+      }
+
+      .spinnerAnimationCircle
+      {
+        width: 1em;
+        height:1em;
+        border-radius: 50%;
+        border: 0.2em rgba(220,220,220,0.2) solid;
+        border-top: 0.2em rgba(220,220,220,0.99) solid;
+        animation: spinning 700ms linear infinite running;
+      }
+
+      .home-spinner
+      {
+        font-size:500%;
+      }
+
+      .preinit-container
+      {
+        display:flex;
+        height: 100%;
+        justify-content: center;
+        align-items: center;
+      }
+
     </style>
   </head>
   <body>
     <div id="app">
-      <div class="d-flex justify-content-center align-items-center">
-        <div>
-          Loading VoluBA
+      <div class="preinit-container">
+        <div class="home-spinner spinnerAnimationCircle">
         </div>
       </div>
     </div>

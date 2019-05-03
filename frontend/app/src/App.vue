@@ -376,24 +376,4 @@ export default {
   justify-content: center;
 }
 
-@keyframes spinning
-{
-  from {
-    transform: rotate(0deg);
-  }
-  to{
-    transform: rotate(359deg);
-  }
-}
-
-.spinnerAnimationCircle
-{
-  width: 1em;
-  height:1em;
-  border-radius: 50%;
-  border: 0.2em rgba(220,220,220,0.2) solid;
-  border-top: 0.2em rgba(220,220,220,0.99) solid;
-  animation: spinning 700ms linear infinite running;
-}
-
 </style>
