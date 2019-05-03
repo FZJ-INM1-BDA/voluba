@@ -129,7 +129,9 @@ export default {
     };
   },
   mounted: function() {
-    window.setProduction = (arg) => this.setProduction(arg)
+    if (!this.production) {
+      window.setProduction = (arg) => this.setProduction(arg)
+    }
     this.$store.dispatch("appendNehuba");
     this.$store.subscribeAction(({ type, payload }) => {
       switch (type) {
@@ -153,6 +155,7 @@ export default {
   },
   computed: {
     ...mapState({
+      production: 'production',
       appendNehubaFlag: 'appendNehubaFlag',
       undoStack: 'undoStack',
       redoStack: 'redoStack',

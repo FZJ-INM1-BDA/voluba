@@ -103,7 +103,7 @@
 
     </div>
 
-    <upload-volume-component />
+    <upload-volume-component v-if="allowUpload" />
     <hr />
     <div class="d-flex flex-row justify-content-end align-items-center">
 
@@ -152,7 +152,7 @@ export default {
       selectedIncomingVolume: 'selectedIncomingVolume'
     }),
     ...mapState({
-      production: 'production',
+      allowUpload: 'allowUpload',
       defaultIncomingVolumes: state => state.incomingVolumes.filter(v => !v.visibility),
       publicIncomingVolumes: state => state.incomingVolumes.filter(v => v.visibility === 'public'),
       privateIncomingVolumes: state => state.incomingVolumes.filter(v => v.visibility === 'private')
