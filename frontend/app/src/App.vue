@@ -129,7 +129,9 @@ export default {
     };
   },
   mounted: function() {
-    window.setProduction = (arg) => this.setProduction(arg)
+    if (!this.production) {
+      window.setProduction = (arg) => this.setProduction(arg)
+    }
     this.$store.dispatch("appendNehuba");
     this.$store.subscribeAction(({ type, payload }) => {
       switch (type) {
@@ -153,6 +155,7 @@ export default {
   },
   computed: {
     ...mapState({
+      production: 'production',
       appendNehubaFlag: 'appendNehubaFlag',
       undoStack: 'undoStack',
       redoStack: 'redoStack',
@@ -374,26 +377,6 @@ export default {
   display:flex;
   align-items: center;
   justify-content: center;
-}
-
-@keyframes spinning
-{
-  from {
-    transform: rotate(0deg);
-  }
-  to{
-    transform: rotate(359deg);
-  }
-}
-
-.spinnerAnimationCircle
-{
-  width: 1em;
-  height:1em;
-  border-radius: 50%;
-  border: 0.2em rgba(220,220,220,0.2) solid;
-  border-top: 0.2em rgba(220,220,220,0.99) solid;
-  animation: spinning 700ms linear infinite running;
 }
 
 </style>

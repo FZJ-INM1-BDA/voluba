@@ -73,6 +73,7 @@
 
           <!-- authentication -->
           <b-nav-item-dropdown
+            v-if="allowUpload"
             :no-caret="true"
             right>
             <template slot="button-content">
@@ -142,6 +143,7 @@ export default {
     ...mapState({
       user: 'user',
       _step2Mode: '_step2Mode',
+      allowUpload: 'allowUpload',
       modeBtnVariant: state => state._step2Mode === 'overlay' ? 'outline-secondary' : 'info',
       agreedToCookie: 'agreedToCookie'
     }),

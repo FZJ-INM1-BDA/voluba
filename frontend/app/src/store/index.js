@@ -117,8 +117,11 @@ const DEFAULT_BUNDLED_INCOMING_VOLUMES = process.env.NODE_ENV === 'production'
   ? DEFAULT_BUNDLED_INCOMING_VOLUMES_0
   : DEFAULT_BUNDLED_INCOMING_VOLUMES_0.concat(DEFAULT_BUNDLED_INCOMING_VOLUMES_1)
 
+const ALLOW_UPLOAD = process.env.VUE_APP_ALLOW_UPLOAD
+
 const getStore = ({ user = null } = {}) => new Vuex.Store({
   state: {
+    allowUpload: process.env.NODE_ENV !== 'production' || ALLOW_UPLOAD,
     production: process.env.NODE_ENV === 'production',
 
     uploadUrl: UPLOAD_URL, 

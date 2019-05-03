@@ -17,7 +17,6 @@ const getScript = ({ name, incVolName, imageSource, shader, opacity, ngMatrix })
 
       window.interactiveViewer.viewerHandle.loadLayer({
         'VoluBA volume - ${incVolName}': {
-          type: 'image',
           source: '${imageSource}',
           shader: \`${shader}\`,
           opacity: ${opacity},
