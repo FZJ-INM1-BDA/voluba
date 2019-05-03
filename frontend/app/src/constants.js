@@ -197,8 +197,7 @@ export const getDefaultNehubaConfigLight = (sourceUrl) => {
             ]
           },
           "default": {
-            "type": "image",
-            "source": `${sourceUrl}`,
+            "source": `${sourceUrl}`
           }
         },
         "perspectiveOrientation": [

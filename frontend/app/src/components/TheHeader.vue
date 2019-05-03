@@ -20,7 +20,7 @@
           <!-- opacity -->
           <transition name="fade">
             <b-nav-form
-              v-if="_step2Mode === 'overlay'">
+              v-if="_step2Mode === 'overlay' && selectedIncomingVolumeType === 'image'">
 
               <SliderComponent
                 v-b-tooltip.hover.bottom="'incoming volume opacity'"
@@ -41,7 +41,7 @@
             <b-nav-item-dropdown
               :no-caret="true"
               right
-              v-if="_step2Mode === 'overlay'">
+              v-if="_step2Mode === 'overlay' && selectedIncomingVolumeType === 'image'">
               <template slot="button-content">
                 <div
                   :style="{color: overlayColor.hex}"
@@ -106,7 +106,7 @@
 import ProgressTracker from '@/components/layout/ProgressTracker'
 import SigningComponent from '@/components/SigninComponent'
 import SliderComponent from '@/components/layout/Slider'
-import { mapState, mapActions } from 'vuex'
+import { mapState, mapActions, mapGetters } from 'vuex'
 import { Compact } from 'vue-color'
 import { AGREE_COOKIE_KEY } from '@/constants'
 
@@ -136,6 +136,9 @@ export default {
     }
   },
   computed: {
+    ...mapGetters({
+      selectedIncomingVolumeType: 'selectedIncomingVolumeType'
+    }),
     ...mapState({
       user: 'user',
       _step2Mode: '_step2Mode',

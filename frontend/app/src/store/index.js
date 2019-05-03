@@ -1659,7 +1659,15 @@ const getStore = ({ user = null } = {}) => new Vuex.Store({
         : {}
     },
     selectedIncomingVolume: state => state.incomingVolumes.find(v => v.id === state.selectedIncomingVolumeId),
-    selectedReferenceVolume: state => state.referenceVolumes.find(v => v.id === state.selectedReferenceVolumeId)
+    selectedReferenceVolume: state => state.referenceVolumes.find(v => v.id === state.selectedReferenceVolumeId),
+    selectedIncomingVolumeType: (state, getters) => {
+      const volume = getters.selectedIncomingVolume || {}
+      const { payload = {} } = volume
+      const { extra = {} } = payload
+      const { neuroglancer = {} } = extra
+      const { type = 'image' } = neuroglancer
+      return type
+    }
   }
 })
 

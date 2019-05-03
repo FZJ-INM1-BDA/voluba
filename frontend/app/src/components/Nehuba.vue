@@ -243,8 +243,13 @@ export default {
     },
     incomingColor: function (rgba) {
       if (this.$options.nonReactiveData.ngUserLayer) {
-        this.$options.nonReactiveData.ngUserLayer.layer.fragmentMain.restoreState(getShader(rgba))
-        this.$options.nonReactiveData.ngUserLayer.layer.opacity.restoreState(rgba[3])
+        const layer = this.$options.nonReactiveData.ngUserLayer
+        if (layer.layer) {
+          if (layer.layer.fragmentMain)
+            layer.layer.fragmentMain.restoreState(getShader(rgba))
+          if (layer.layer.opacity)
+            layer.layer.opacity.restoreState(rgba[3])
+        }
       }
     },
     selectedIncomingVolume: function (vol) {
@@ -255,10 +260,12 @@ export default {
       }
     },
     mouseOverIncoming: function (val) {
-      if (val) {
-        this.$options.nonReactiveData.ngUserLayer.layer.opacity.restoreState(this.incomingColor[3] * 0.8)
-      } else {
-        this.$options.nonReactiveData.ngUserLayer.layer.opacity.restoreState(this.incomingColor[3])
+      if (this.$options.nonReactiveData.ngUserLayer.layer.opacity) {
+        if (val) {
+          this.$options.nonReactiveData.ngUserLayer.layer.opacity.restoreState(this.incomingColor[3] * 0.8)
+        } else {
+          this.$options.nonReactiveData.ngUserLayer.layer.opacity.restoreState(this.incomingColor[3])
+        }
       }
 
       this.nehubaInputBinding({
@@ -486,7 +493,7 @@ export default {
        * user mouseover inc vol state
        */
       this.$options.nonReactiveData.subscriptions.push(
-        this.$options.nehubaBase.nehubaBase__nehubaViewer.mouseOver.image
+        this.$options.nehubaBase.nehubaBase__nehubaViewer.mouseOver.layer
           .filter(v => v.layer.name === 'userlayer-0')
           .filter(v => typeof v !== 'undefined')
           .map(ev => ev.value !== null)
