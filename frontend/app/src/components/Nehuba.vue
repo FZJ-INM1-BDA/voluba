@@ -183,6 +183,14 @@ export default {
           const newQuat = mat4.getRotation(quat.create(), mat4.fromValues(...this.committedTransform))
           this.$options.nehubaBase.nehubaBase__nehubaViewer.ngviewer.navigationState.pose.orientation.restoreState(Array.from(newQuat))
           break
+        case 'deleteIncomingVolume':
+          const { incomingVolume = {} } = payload
+          const { imageSource } = incomingVolume
+          if (!imageSource)
+            return
+          const key = `{"baseUrls":["${imageSource.replace('precomputed://', '')}"],"path":"","type":"precomputed:MultiscaleVolumeChunkSource"}`
+          this.$options.nehubaBase.nehubaBase__nehubaViewer.ngviewer.chunkManager.memoize.map.delete(key)
+          break
         default:
       }
     })
@@ -628,6 +636,7 @@ export default {
       incRotQuat: 'incRotQuat'
     }),
     ...mapState({
+      uploadUrl: 'uploadUrl',
       appendNehubaFlag: 'appendNehubaFlag',
       translationByDragEnabled: state => !state.incVolTranslationLock,
       rotationByDragEnabled: state => !state.incVolRotationLock,
