@@ -19,6 +19,9 @@
       <p>
         To opt-out of being tracked by Google Analytics across all websites, visit <a href="http://tools.google.com/dlpage/gaoptout">http://tools.google.com/dlpage/gaoptout</a> .
       </p>
+      <p>
+        Human Brain Project has a dedicated Data Protection Officer, where you can direct your queries: <a href="mailto:data.protection@humanbrainproject.eu">data.protection@humanbrainproject.eu</a>
+      </p>
     </div>
 
     <small
