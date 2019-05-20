@@ -804,3 +804,5 @@ export const makeHtmlFragmentForNifti = ({ nifti, warnings }) => {
 
   return returnHtmlArray.join('\n')
 }
+
+export const makeHtmlFragmentForWarning = ({serverWarnings = []} = {}) => serverWarnings.map(warning => `<div class="alert alert-warning">${warning}</div>`).join('\n')

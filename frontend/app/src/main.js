@@ -26,17 +26,26 @@ Vue.component('font-awesome-icon', FontAwesomeIcon)
 
 Vue.config.productionTip = false
 
-const initVue = ({user} = {}) => {
+const initVue = ({user, serverWarnings} = {}) => {
   new Vue({
     router,
-    store: getStore({ user }),
+    store: getStore({ user, serverWarnings }),
     render: h => h(App),
   }).$mount('#app')
 }
 
-axios.get('user')
-  .then(({data: user}) => {
-    initVue({ user })
+const getUserServerWarning = (url) => new Promise((resolve) => 
+  axios(url)
+    .then(({data}) => resolve(data))
+    .catch((err) => {
+      resolve()
+    }))
+
+Promise.all([
+  getUserServerWarning('user'),
+  getUserServerWarning('serverWarnings')
+]).then(([ user, serverWarnings ]) => {
+    initVue({ user, serverWarnings })
   })
   .catch(e => {
     initVue()
