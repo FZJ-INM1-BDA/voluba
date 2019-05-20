@@ -30,6 +30,9 @@ export default {
     }
   },
   methods: {
+    show: function () {
+      this.$refs.modal.show()
+    },
     onHiddenCleanup: function () {
       this.overwriteVariant = null
       this.title = 'Node'
@@ -43,6 +46,8 @@ export default {
         this.okOnly = null
       }
       this.onhideCb = null
+
+      this.$emit('hidden')
     }
   },
   mounted: function () {
@@ -50,25 +55,6 @@ export default {
     this.$store.subscribeAction (({type, payload}) => {
       if (type === 'modalMessage') {
         const modal = this.$refs.modal
-        const { title, body, htmlBody, okOnly, variant, showFooter, onHiddenCallback } = payload
-        if (variant) {
-          this.overwriteVariant = variant
-        }
-        if (showFooter) {
-          this.showFooter = true
-        }
-        if (onHiddenCallback && onHiddenCallback instanceof Function) {
-          this.onhideCb = onHiddenCallback
-        }
-        if (okOnly) {
-          this.okOnly = okOnly
-        }
-        if (modal) {
-          this.title = title
-          this.message = body
-          this.htmlMessage = htmlBody
-          modal.show()
-        }
       }
     }) 
   }

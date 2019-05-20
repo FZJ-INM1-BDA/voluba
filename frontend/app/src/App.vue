@@ -46,10 +46,12 @@
       <upload-modal ref="uploadModal" id="uploadModal"/>
       <MessageModal
         :message="messageModalMessage"
+        @hidden="modalOpen = false; checkModalQueue()"
         id="messageModal"
         ref="messageModal"/>
       <b-modal
         centered
+        @hidden="modalOpen = false; checkModalQueue()"
         :hide-footer="true"
         :hide-header="true"
         ref="aboutus">
@@ -57,6 +59,7 @@
       </b-modal>
       <b-modal
         centered
+        @hidden="modalOpen = false; checkModalQueue()"
         title="Cookie Disclaimer"
         header-text-variant="light"
         ref="cookie"
@@ -66,6 +69,7 @@
       </b-modal>
       <b-modal
         centered
+        @hidden="modalOpen = false; checkModalQueue()"
         ref="startFromScratchModal"
         header-bg-variant="danger"
         header-text-variant="light"
@@ -87,6 +91,7 @@
 </template>
 
 <script>
+import Vue from 'vue'
 import { mapState, mapActions, mapMutations } from "vuex";
 import HeaderComponent from "@/components/TheHeader";
 import NehubaComponent from "@/components/Nehuba";
@@ -125,7 +130,9 @@ export default {
       showSecondNehuba: true,
       primaryNehubaReady: false,
       showSelectVolumesModal: false,
-      messageModalMessage: ""
+      messageModalMessage: "",
+      modalQueue: [],
+      modalOpen: false
     };
   },
   mounted: function() {
@@ -140,9 +147,38 @@ export default {
           const modal = modalId && this.$refs[modalId];
           this.log('open modal', modal)
           if (modal) {
-            (modal.showModal && modal.showModal()) ||
-              (modal.show && modal.show());
+            this.modalQueue.push({
+              show: modal.showModal || modal.show
+            })
+            this.checkModalQueue()
           }
+          break;
+        }
+        case 'modalMessage': {
+
+          const { title, body, htmlBody, okOnly, variant, showFooter, onHiddenCallback } = payload
+          const messageModal = {}
+          if (variant) {
+            messageModal.overwriteVariant = variant
+          }
+          if (showFooter) {
+            messageModal.showFooter = true
+          }
+          if (onHiddenCallback && onHiddenCallback instanceof Function) {
+            messageModal.onhideCb = onHiddenCallback
+          }
+          if (okOnly) {
+            messageModal.okOnly = okOnly
+          }
+          messageModal.title = title
+          messageModal.message = body
+          messageModal.htmlMessage = htmlBody
+          
+          this.modalQueue.push({
+            show: this.$refs.messageModal.show,
+            messageModal
+          })
+          this.checkModalQueue()
           break;
         }
         case "startFromScratch": {
@@ -195,6 +231,18 @@ export default {
       changeLandmarkMode: 'changeLandmarkMode',
       log: 'log'
     }),
+    checkModalQueue: function () {
+      if (this.modalQueue.length > 0 && !this.modalOpen) {
+        const { show, messageModal } = this.modalQueue.pop()
+        if (messageModal) {
+          for (let key in messageModal) {
+            this.$refs.messageModal[key] = messageModal[key]
+          }
+        }
+        show()
+        this.modalOpen = true
+      }
+    },
     startRegistration: function () {
       this.showSelectVolumesModal = false
     },

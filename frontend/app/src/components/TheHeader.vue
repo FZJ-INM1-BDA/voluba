@@ -133,9 +133,11 @@ export default {
         obj[AGREE_COOKIE_KEY] = true
         this.setLocalStorage(obj)
       }
+
       this.openModal({ modalId: 'cookie' })
     }
     if (this.serverWarnings && this.serverWarnings.length > 0) {
+      
       this.modalMessage({
         variant: 'warning',
         title: 'Image Server Warning',
