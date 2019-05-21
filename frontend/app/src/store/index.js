@@ -119,14 +119,13 @@ const DEFAULT_BUNDLED_INCOMING_VOLUMES = process.env.NODE_ENV === 'production'
 
 const ALLOW_UPLOAD = process.env.VUE_APP_ALLOW_UPLOAD
 
-const getStore = ({ user = null, serverWarnings = [] } = {}) => new Vuex.Store({
+const getStore = ({ user = null } = {}) => new Vuex.Store({
   state: {
     allowUpload: process.env.NODE_ENV !== 'production' || ALLOW_UPLOAD,
     production: process.env.NODE_ENV === 'production',
 
     uploadUrl: UPLOAD_URL, 
     user,
-    serverWarnings,
     pairLandmarkStartDragging: false,
     agreedToCookie: localStorage.getItem(AGREE_COOKIE_KEY),
 
