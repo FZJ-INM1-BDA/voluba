@@ -127,20 +127,30 @@ export default {
     SliderComponent
   },
   mounted() {
+    const showCookie = (cb = () => {}) => {
+      this.openModal({ modalId: 'cookie', onHiddenCb: cb })
+    }
+
+    const showServerWarning = () => {
+      if (this.serverWarnings && this.serverWarnings.length > 0) {
+        this.modalMessage({
+          variant: 'warning',
+          title: 'Image Server Warning',
+          htmlBody: makeHtmlFragmentForWarning({ serverWarnings: this.serverWarnings})
+        })
+      }
+    }
+
     if (!this.agreedToCookie) {
       const onHideCB = () => {
         const obj = {}
         obj[AGREE_COOKIE_KEY] = true
         this.setLocalStorage(obj)
+        showServerWarning()
       }
-      this.openModal({ modalId: 'cookie' })
-    }
-    if (this.serverWarnings && this.serverWarnings.length > 0) {
-      this.modalMessage({
-        variant: 'warning',
-        title: 'Image Server Warning',
-        htmlBody: makeHtmlFragmentForWarning({ serverWarnings: this.serverWarnings})
-      })
+      showCookie(() => onHideCB())
+    } else {
+      showServerWarning()
     }
   },
   computed: {

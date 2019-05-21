@@ -45,10 +45,12 @@
       />
       <upload-modal ref="uploadModal" id="uploadModal"/>
       <MessageModal
+        @hidden="onModalHide"
         :message="messageModalMessage"
         id="messageModal"
         ref="messageModal"/>
       <b-modal
+        @hidden="onModalHide"
         centered
         :hide-footer="true"
         :hide-header="true"
@@ -57,6 +59,7 @@
       </b-modal>
       <b-modal
         centered
+        @hidden="onModalHide"
         title="Cookie Disclaimer"
         header-text-variant="light"
         ref="cookie"
@@ -66,6 +69,7 @@
       </b-modal>
       <b-modal
         centered
+        @hidden="onModalHide"
         ref="startFromScratchModal"
         header-bg-variant="danger"
         header-text-variant="light"
@@ -125,7 +129,8 @@ export default {
       showSecondNehuba: true,
       primaryNehubaReady: false,
       showSelectVolumesModal: false,
-      messageModalMessage: ""
+      messageModalMessage: "",
+      onModalHide: () => {}
     };
   },
   mounted: function() {
@@ -133,15 +138,19 @@ export default {
       window.setProduction = (arg) => this.setProduction(arg)
     }
     this.$store.dispatch("appendNehuba");
-    this.$store.subscribeAction(({ type, payload }) => {
+    this.$store.subscribeAction(({ type = '', payload = {} } = {}) => {
       switch (type) {
         case "openModal": {
-          const modalId = payload && payload.modalId;
-          const modal = modalId && this.$refs[modalId];
+          const { modalId, onHiddenCb } = payload
+          const modal = modalId && this.$refs[modalId]
           this.log('open modal', modal)
           if (modal) {
             (modal.showModal && modal.showModal()) ||
-              (modal.show && modal.show());
+              (modal.show && modal.show())
+
+            if (onHiddenCb && onHiddenCb instanceof Function) {
+              modal.$on('hidden', onHiddenCb)
+            }
           }
           break;
         }
