@@ -7,43 +7,23 @@
     <p>
       Volumetric Brain Anchoring (VoluBA), was formerly known as Landmark-Reg.
     </p>
-    <div class="btn-group">
+    <div>
       <span
         @click="openModal({ modalId: 'cookie' })"
         class="btn btn-outline-info">
         Cookies disclaimer
       </span>
-      <span
-        v-if="serverWarnings && serverWarnings.length > 0"
-        @click="showServerWarning"
-        class="btn btn-outline-warning">
-        Image Server Warning
-      </span>
     </div>
-    <div>
-      Did you encounter an issue? Write us: <a href="mailto:inm1-bda@fz-juelich.de?subject=[VoluBA] Queries">inm1-bda@fz-juelich.de</a>
-    </div>
+    Did you encounter an issue? Write us: <a href="mailto:inm1-bda@fz-juelich.de?subject=[VoluBA] Queries">inm1-bda@fz-juelich.de</a>
   </div>
 </template>
 <script>
-import { mapActions, mapState } from 'vuex'
-import { makeHtmlFragmentForWarning } from '@/constants'
+import { mapActions } from 'vuex'
 export default {
-  computed: {
-    ...mapState(['serverWarnings'])
-  },
   methods: {
     ...mapActions({
-      openModal:'openModal',
-      modalMessage: 'modalMessage'
-    }),
-    showServerWarning: function () {
-      this.modalMessage({
-        variant: 'warning',
-        title: 'Image Server Warning',
-        htmlBody: makeHtmlFragmentForWarning({ serverWarnings: this.serverWarnings})
-      })
-    }
+      openModal:'openModal'
+    })
   },
 }
 </script>

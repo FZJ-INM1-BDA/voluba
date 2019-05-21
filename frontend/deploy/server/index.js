@@ -35,15 +35,6 @@ const startServer = async (app) => {
   }
 
   app.use('/transformResult', require('./transformResultroute'))
-
-  /**
-   * currently hardcoded
-   */
-  app.get('/serverWarnings', (req, res) => {
-    res.status(200).json([
-      `There will be a downtime for the nifti upload service on June 5, 2019 between 12:30 and 13:00 CEST. You may experience interruption uploading and retrieving the uploaded volume during this time. We thank you for your understanding.`
-    ])
-  })
   
   const publicPath = path.join(__dirname, '..',  'public')
   app.use(express.static(publicPath))
