@@ -109,7 +109,7 @@ import SigningComponent from '@/components/SigninComponent'
 import SliderComponent from '@/components/layout/Slider'
 import { mapState, mapActions, mapGetters } from 'vuex'
 import { Compact } from 'vue-color'
-import { AGREE_COOKIE_KEY, makeHtmlFragmentForWarning } from '@/constants'
+import { AGREE_COOKIE_KEY } from '@/constants'
 
 export default {
   name: 'HeaderComponent',
@@ -135,13 +135,6 @@ export default {
       }
       this.openModal({ modalId: 'cookie' })
     }
-    if (this.serverWarnings && this.serverWarnings.length > 0) {
-      this.modalMessage({
-        variant: 'warning',
-        title: 'Image Server Warning',
-        htmlBody: makeHtmlFragmentForWarning({ serverWarnings: this.serverWarnings})
-      })
-    }
   },
   computed: {
     ...mapGetters({
@@ -152,8 +145,7 @@ export default {
       _step2Mode: '_step2Mode',
       allowUpload: 'allowUpload',
       modeBtnVariant: state => state._step2Mode === 'overlay' ? 'outline-secondary' : 'info',
-      agreedToCookie: 'agreedToCookie',
-      serverWarnings: 'serverWarnings'
+      agreedToCookie: 'agreedToCookie'
     }),
     loginText: function () {
       return this.user
