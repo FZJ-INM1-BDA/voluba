@@ -30,6 +30,10 @@ export default {
     }
   },
   methods: {
+    hide: function () {
+      if (this.$refs.modal)
+        this.$refs.modal.hide()
+    },
     onHiddenCleanup: function () {
       this.overwriteVariant = null
       this.title = 'Node'
@@ -43,6 +47,7 @@ export default {
         this.okOnly = null
       }
       this.onhideCb = null
+      this.$emit('hidden')
     }
   },
   mounted: function () {
