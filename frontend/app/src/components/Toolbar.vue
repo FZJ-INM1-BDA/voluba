@@ -40,6 +40,21 @@
         class="row-flex-items" />
     </div>
 
+    <!-- cortical alignment btn -->
+    <div class="horizontalContainer d-flex flex-items">
+      <div
+        v-b-tooltip.right.hover="corticalPatchAlignmentTitle"
+        @click="corticalAlignmentVisibilityChanged({ visible: !corticalAlignmentVisible })"
+        :class="corticalAlignmentVisible ? 'btn-info' : 'btn-secondary'"
+        class="addBtn rounded-circle landmarks-control-toggle btn-shadow btn-sm btn">
+        <font-awesome-icon icon="ruler"></font-awesome-icon>
+      </div>
+      
+      <CorticalAlignment
+        @close="corticalAlignmentVisibilityChanged({ visible: false })"
+        v-if="corticalAlignmentVisible"/>
+    </div>
+
     <!-- toggle history -->
     <div
       class="horizontalContainer d-flex flex-items">
@@ -59,8 +74,7 @@
     </div>
 
     <!-- save export control -->
-    <div
-      class="horizontalContainer d-flex flex-items">
+    <div class="horizontalContainer d-flex flex-items">
 
       <div
         v-b-tooltip.right.hover="'Share/Save transformation results.'"
@@ -84,9 +98,10 @@ import LayerControl from '@/components/LayerControl'
 import LandmarkControl from '@/components/LandmarkControl'
 import SaveExportControl from '@/components/SaveExportControl'
 import HistoryControl from '@/components/HistoryControl'
+import CorticalAlignment from '@/components/CorticalAlignment'
 import ComputeXformBtn from '@/components/toolbars/ComputeXformBtn'
 
-import { INC_VOL_XFORM_TITLE, EDIT_LANDMARKS_TITLE, HISTORY_BROWSER_TITLE } from '@/text'
+import { INC_VOL_XFORM_TITLE, EDIT_LANDMARKS_TITLE, HISTORY_BROWSER_TITLE, CORTICAL_ALIGNMENT } from '@/text'
 
 export default {
   components: {
@@ -94,7 +109,8 @@ export default {
     LayerControl,
     SaveExportControl,
     HistoryControl,
-    ComputeXformBtn
+    ComputeXformBtn,
+    CorticalAlignment
   },
   data: function () {
     return {
@@ -109,6 +125,7 @@ export default {
     ...mapState({
       addLandmarkMode: 'addLandmarkMode',
       landmarkControlVisible: 'landmarkControlVisible',
+      corticalAlignmentVisible: 'corticalAlignmentVisible'
     }),
     historyBrowserTitle: function () {
       return HISTORY_BROWSER_TITLE
@@ -118,6 +135,9 @@ export default {
     },
     editLandmarksTitle: function () {
       return EDIT_LANDMARKS_TITLE
+    },
+    corticalPatchAlignmentTitle: function () {
+      return CORTICAL_ALIGNMENT
     },
     addLmTooltipText: function(){
       return this.mode === 'overlay'
@@ -144,7 +164,8 @@ export default {
   methods: {
     ...mapActions({
       landmarkControlVisibilityChanged: 'landmarkControlVisibilityChanged',
-      changeLandmarkMode: 'changeLandmarkMode'
+      changeLandmarkMode: 'changeLandmarkMode',
+      corticalAlignmentVisibilityChanged: 'corticalAlignmentVisibilityChanged'
     }),
     toggleAddLmMode: function () {
       this.addLmMode = this.addLmMode === 'reference'

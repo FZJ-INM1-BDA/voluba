@@ -202,6 +202,8 @@ const getStore = ({ user = null } = {}) => new Vuex.Store({
     incomingLandmarks: [],
     landmarkPairs: [],
 
+    corticalAlignmentVisible: false,
+
     backendURL: process.env.VUE_APP_BACKEND_URL || 'http://localhost:5000/api',
 
     backendQueryInProgress: false,
@@ -267,6 +269,9 @@ const getStore = ({ user = null } = {}) => new Vuex.Store({
     },
     setLandmarkControlVisibility (state, { visible }) {
       state.landmarkControlVisible = visible
+    },
+    setCorticalAlignmentVisibility (state, { visible }) {
+      state.corticalAlignmentVisible = visible
     },
     _setStep2Mode (state, { mode }) {
       state._step2Mode = mode
@@ -803,6 +808,9 @@ const getStore = ({ user = null } = {}) => new Vuex.Store({
     },
     landmarkControlVisibilityChanged ({ commit }, { visible }) {
       commit('setLandmarkControlVisibility', { visible })
+    },
+    corticalAlignmentVisibilityChanged ({ commit }, { visible }) {
+      commit('setCorticalAlignmentVisibility', { visible })
     },
     translateLandmarkPosBy ({commit, dispatch, state}, { volume, id, value}) {
 
