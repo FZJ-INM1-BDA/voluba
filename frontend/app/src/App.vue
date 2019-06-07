@@ -388,4 +388,10 @@ export default {
   justify-content: center;
 }
 
+.hover-move:hover
+{
+  background-color: rgba(125,125,125,0.15);
+  cursor: move;
+}
+
 </style>

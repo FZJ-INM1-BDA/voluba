@@ -17,3 +17,5 @@ export const OVERLAY_ADD_REF_LM_TEXT = `No landmarks in reference volume. Click 
 export const OVERLAY_ADD_INC_LM_TEXT = `No landmarks in incoming volume. Click the add button and click the viewer to add a landmark`
 
 export const LOAD_LM_WARNING = `Loading landmarks will overwrite current landmarks.`
+
+export const CORTICAL_ALIGNMENT = `Cortical patch alignment`
