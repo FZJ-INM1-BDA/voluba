@@ -22,7 +22,7 @@
             <b-nav-form
               v-if="_step2Mode === 'overlay' && selectedIncomingVolumeType === 'image'">
 
-              <SliderComponent
+              <DoubleSliderComponent
                 v-b-tooltip.hover.bottom="'incoming volume opacity'"
                 class="transparent"
                 @minus="opacity = opacity - 0.05 < opacityMin ? opacityMin : opacity - 0.05"
@@ -107,6 +107,7 @@
 import ProgressTracker from '@/components/layout/ProgressTracker'
 import SigningComponent from '@/components/SigninComponent'
 import SliderComponent from '@/components/layout/Slider'
+import DoubleSliderComponent from '@/components/layout/DoubleSlider'
 import { mapState, mapActions, mapGetters } from 'vuex'
 import { Compact } from 'vue-color'
 import { AGREE_COOKIE_KEY } from '@/constants'
@@ -124,7 +125,8 @@ export default {
     ProgressTracker,
     SigningComponent,
     CompactPicker: Compact,
-    SliderComponent
+    SliderComponent,
+    DoubleSliderComponent
   },
   mounted() {
     const showCookie = (cb = () => {}) => {
