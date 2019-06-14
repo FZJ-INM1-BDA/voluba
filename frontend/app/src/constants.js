@@ -783,6 +783,7 @@ export const processImageMetaData = ({ visibility = 'public', name = 'Untitled',
 }
 
 export const transposeMat4 = (incM) => [0, 1, 2, 3].map(r => [0, 1, 2, 3].map(c => incM[ c * 4 + r ]))
+export const reverseTransposeMat4 = (jsonMatrix) => [0, 1, 2, 3].map(r => [0, 1, 2, 3].map(c => jsonMatrix[c][r])).reduce((acc, curr) => acc.concat(curr), [])
 
 export const makeHtmlFragmentForNifti = ({ nifti, warnings }) => {
 

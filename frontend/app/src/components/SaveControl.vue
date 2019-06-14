@@ -18,29 +18,54 @@
     </div>
     <!-- body -->
     <div class="card card-body body bg-light">
-      <div class="d-inline-block btn-group">
-        
-        <div
-          v-b-tooltip.hover.bottom="'Save transform as JSON'"
-          @click="downloadXformResult"
-          class="btn btn-outline-secondary btn-sm">
-          <font-awesome-icon icon="download"/>
-        </div>
 
-        <div
-          @click="viewInInteractiveViewer"
-          v-b-tooltip.hover.bottom="'View the anchoring result in the interactive viewer'"
-          class="btn btn-sm btn-outline-secondary">
-          <font-awesome-icon icon="brain"></font-awesome-icon>
+      <!-- load -->
+      <div class="input-group input-group-sm">
+        <div class="input-group-prepend">
+          <span class="input-group-text">
+            Load
+          </span>
         </div>
-        
-        <div
-          @click="exportToHBP"
-          @mouseenter="showExportToHBPTooltip = true"
-          @mouseleave="showExportToHBPTooltip = false"
-          ref="exportToHBP"
-          class="btn btn-outline-secondary btn-sm disabled">
-          <font-awesome-icon icon="file-export"/>
+        <div class="input-group-append">
+          <div
+            @click="loadXformJson"
+            v-b-tooltip.hover.bottom="'Load JSON Transformation'"
+            class="btn btn-outline-secondary btn-sm">
+            <font-awesome-icon icon="folder-open"></font-awesome-icon>
+          </div>
+        </div>
+      </div>
+
+      <!-- save -->
+      <div class="mt-2 input-group input-group-sm">
+        <div class="input-group-prepend">
+          <span class="input-group-text">
+            Save
+          </span>
+        </div>
+        <div class="input-group-append">
+          <div
+            v-b-tooltip.hover.bottom="'Save transform as JSON'"
+            @click="downloadXformResult"
+            class="btn btn-outline-secondary btn-sm">
+            <font-awesome-icon icon="download"/>
+          </div>
+
+          <div
+            @click="viewInInteractiveViewer"
+            v-b-tooltip.hover.bottom="'View the anchoring result in the interactive viewer'"
+            class="btn btn-sm btn-outline-secondary">
+            <font-awesome-icon icon="brain"></font-awesome-icon>
+          </div>
+          
+          <div
+            @click="exportToHBP"
+            @mouseenter="showExportToHBPTooltip = true"
+            @mouseleave="showExportToHBPTooltip = false"
+            ref="exportToHBP"
+            class="btn btn-outline-secondary btn-sm disabled">
+            <font-awesome-icon icon="file-export"/>
+          </div>
         </div>
       </div>
     </div>
@@ -57,6 +82,7 @@
 </template>
 <script>
 import { mapActions } from 'vuex'
+import { openFileDialog } from '@//constants'
 
 export default {
   data: function () {
@@ -67,13 +93,29 @@ export default {
   methods: {
     ...mapActions([
       'downloadXformResult',
-      'viewInInteractiveViewer'
+      'viewInInteractiveViewer',
+      'loadXformJsonFile',
+      `modalMessage`
       ]),
     exportToHBP: function () {
       /**
        * TODO
        * enable export data to HBP curation pipeline
        */
+    },
+    loadXformJson: function () {
+      openFileDialog('file', 'application/json', null, (content) => {
+        try {
+          const json = JSON.parse(content)
+          this.loadXformJsonFile({ json })
+        }catch(e) {
+          this.modalMessage({
+            title: `Loading JSON file error!`,
+            variant: `danger`,
+            body: `loading JSON file error, ${e.toString()}`
+          })
+        }
+      })
     }
   }
 }
