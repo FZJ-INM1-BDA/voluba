@@ -276,6 +276,29 @@
         </div>
       </div>
 
+      <!-- xform type -->
+      <div v-if="lmpVisible" class="lm-wrapper">
+        <div class="mt-2 input-group input-group-sm">
+          <div class="input-group-prepend">
+            <label for="xform-type-selection" class="input-group-text">
+              Transformation Type
+            </label>
+          </div>
+          <select
+            v-model="selectedXform"
+            name="xform-type-selection"
+            id="xform-type-selection"
+            class="form-control form-control-sm">
+            <option
+              v-for="xformType in transformationTypes"
+              :key="xformType.id"
+              :value="xformType.value">
+              {{ xformType.text }}  
+            </option>  
+          </select>
+        </div>
+      </div>
+
     </div>
   </div>
 </template>
@@ -314,7 +337,8 @@ export default {
       changeLandmarkPairName: 'changeLandmarkPairName',
       hoverLandmarkPair: 'hoverLandmarkPair',
       removeAllLmsLmps: 'removeAllLmsLmps',
-      removeLmp: 'removeLmp'
+      removeLmp: 'removeLmp',
+      selectMethodIndex: 'selectMethodIndex'
     }),
     toggleLmIcons: function (id) {
       const foundId = this.lmIconOpenSet.find(i => i === id)
@@ -343,6 +367,8 @@ export default {
   computed: {
     ...mapState({
       addLandmarkMode: 'addLandmarkMode',
+      transformationTypes: 'transformationTypes',
+      selectedTransformationIndex: 'selectedTransformationIndex',
       referenceLandmarks: state => {
         return state._step2Mode === 'classic' 
           ? state.referenceLandmarks.map(lm => {
@@ -366,6 +392,16 @@ export default {
       _step2Mode: '_step2Mode',
       incomingColor: state => (state.overlayColor && state.overlayColor.hex) || INCOMING_COLOR
     }),
+    selectedXform: {
+      get: function () {
+        const o = this.transformationTypes[this.selectedTransformationIndex]
+        return (o || this.transformationTypes[0]).value
+      },
+      set: function (value) {
+        const idx = this.transformationTypes.findIndex(({ value: v }) => v === value)
+        this.selectMethodIndex(idx >= 0 ? idx : 0)
+      }
+    },
     editLandmarksTitle: function () {
       return EDIT_LANDMARKS_TITLE
     },
