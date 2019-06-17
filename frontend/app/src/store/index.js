@@ -1,5 +1,5 @@
 
-import { randomColor, generateId, UPLOAD_URL, computeDeterminant, saveToFile } from '@//constants'
+import { randomColor, generateId, UPLOAD_URL, computeDeterminant, saveToFile, reverseTransposeMat4 } from '@//constants'
 import { incompatibleBrowserText } from '@/text'
 import Vuex from 'vuex'
 import Vue from 'vue'
@@ -390,6 +390,30 @@ const getStore = ({ user = null } = {}) => new Vuex.Store({
     setLocalStorage: function (store, payload) {
       for (let key in payload) {
         localStorage.setItem(key, payload[key])
+      }
+    },
+    loadXformJsonFile: function ({ dispatch, commit }, { json }) {
+      /**
+       * TODO check incoming/ref volume
+       * TODO sanitize transformMatrixInNm. string? NaN?
+       */
+      try {
+        const { transformMatrixInNm } = json
+        const matrix = reverseTransposeMat4(transformMatrixInNm)
+
+        dispatch('pushUndo', {
+          name: 'load transform json file'
+        })
+        
+        commit('setIncTransformMatrix', {
+          matrix
+        })
+      }catch(e) {
+        dispatch('modalMessage', {
+          title: `Loading JSON file error!`,
+          variant: `danger`,
+          body: `Converting matrix error, ${e.toString()}`
+        })
       }
     },
     viewInInteractiveViewer: function ({ state, dispatch, getters }) {
