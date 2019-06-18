@@ -753,6 +753,7 @@ export const annotationColorBlur = `grey`
 export const annotationColorFocus = `yellow`
 
 export const UPLOAD_URL = process.env.VUE_APP_UPLOAD_URL || `http://ime178.ime.kfa-juelich.de:7300`
+export const NONLINEAR_BACKEND = process.env.VUE_APP_NONLINEAR_BACKEND || `http://localhost:5000`
 
 export const processImageMetaData = ({id:defaultId, visibility = 'public', name = 'Untitled', links = {}, extra = {}, uploadUrl } = {}) => {
   const { fileName } = extra
@@ -784,6 +785,9 @@ export const processImageMetaData = ({id:defaultId, visibility = 'public', name 
 
 export const transposeMat4 = (incM) => [0, 1, 2, 3].map(r => [0, 1, 2, 3].map(c => incM[ c * 4 + r ]))
 
+/**
+ * TODO sanitize inputs to avoid XSS
+ */
 export const makeHtmlFragmentForNifti = ({ nifti, warnings }) => {
 
   const returnHtmlArray = []
@@ -804,3 +808,42 @@ export const makeHtmlFragmentForNifti = ({ nifti, warnings }) => {
 
   return returnHtmlArray.join('\n')
 }
+
+export const getNiftiDownloadLink = ({uploadUrl, data: niftiExtra} = {}) => {
+  const fileName = getFilenameFromNiftiExtra(niftiExtra)
+  if (!fileName) throw new Error('getNiftiDownloadLink#fileName not defined')
+  return `${uploadUrl}download/${fileName}`
+}
+
+export const getFilenameFromNiftiExtra = ({ fileName } = {}) => {
+  if (!fileName) throw new Error('getFilenameFromNiftiExtra#fileName does not exist')
+  return fileName
+}
+
+export const getBackendLandmarkPairs = ({landmarkPairs, referenceLandmarks, incomingLandmarks}) => {
+  return landmarkPairs
+    .map(pair => {
+      const refLm = referenceLandmarks.find(rLm => rLm.id === pair.refId)
+      const incLm = incomingLandmarks.find(iLm => iLm.id === pair.incId)
+      return refLm && incLm
+        ? {
+          active: pair.active,
+          colour: pair.active,
+          name: pair.name,
+          'source_point': refLm.coord,
+          'target_point': incLm.coord
+        }
+        : null
+    })
+    .filter(lm => lm !== null)
+}
+
+export const invertMat4FromArr = (arr) => {
+  if (!('export_nehuba' in window)) throw new Error('export_nehuba not in window object')
+  const { mat4 } = export_nehuba
+  const input = mat4.fromValues(...arr)
+  mat4.invert(input, input)
+  return Array.from(input)
+}
+
+export const getTransformMatrixInNm = (incXformMatrix) => transposeMat4(incXformMatrix)

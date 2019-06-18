@@ -103,7 +103,11 @@
 
     </div>
 
-    <upload-volume-component v-if="allowUpload" />
+    <hr>
+
+    <upload-volume-component
+      v-if="allowUpload"
+      @upload="handleUploadEvent" />
     <hr />
     <div class="d-flex flex-row justify-content-end align-items-center">
 
@@ -195,7 +199,7 @@ export default {
         return (selIncVol && selIncVol.id) || null
       },
       set: function (id) {
-        this.$store.dispatch('selectIncomingVolumeWithId', id)
+        this.selectIncomingVolumeWithId(id)
       }
     },
     nextStepClass: function () {
@@ -221,6 +225,8 @@ export default {
     }
   },
   mounted() {
+    this.updateIncVolumes()
+
     this.$store.subscribeAction(({type, payload}) => {
       if (type === 'updateIncVolumesResult') {
         const {message, error} = payload
@@ -252,8 +258,29 @@ export default {
     ...mapActions({
       deleteIncomingVolume: 'deleteIncomingVolume',
       openModal:'openModal',
-      modalMessage: 'modalMessage'
+      modalMessage: 'modalMessage',
+      updateIncVolumes: 'updateIncVolumes',
+      selectIncomingVolumeWithId: 'selectIncomingVolumeWithId',
     }),
+    handleUploadEvent: function ({ complete, data } = {}) {
+      if (complete) {
+
+        const { nifti, warnings, fileName, ...rest } = data
+        
+        /**
+         * select the just uploaded volume
+         */
+        this.selectIncomingVolumeWithId(`private/${fileName}`)
+
+        this.modalMessage({
+          variant: 'success',
+          title: 'Upload Successful',
+          htmlBody: makeHtmlFragmentForNifti({ nifti, warnings })
+        })
+        
+        this.updateIncVolumes()
+      }
+    },
     showNiftiInfo: function (extra) {
       this.modalMessage({
         variant: 'success',

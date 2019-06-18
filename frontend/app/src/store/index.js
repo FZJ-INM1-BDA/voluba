@@ -4,7 +4,8 @@ import { incompatibleBrowserText } from '@/text'
 import Vuex from 'vuex'
 import Vue from 'vue'
 import axios from 'axios'
-import { AGREE_COOKIE_KEY, DEFAULT_BUNDLED_INCOMING_VOLUMES_0, DEFAULT_BUNDLED_INCOMING_VOLUMES_1, processImageMetaData, openInNewWindow, getShader, transposeMat4 } from '@/constants';
+import { NONLINEAR_BACKEND, AGREE_COOKIE_KEY, DEFAULT_BUNDLED_INCOMING_VOLUMES_0, DEFAULT_BUNDLED_INCOMING_VOLUMES_1, processImageMetaData, openInNewWindow, getShader } from '@/constants';
+import { getBackendLandmarkPairs } from '../constants';
 
 Vue.use(Vuex)
 
@@ -124,7 +125,10 @@ const getStore = ({ user = null } = {}) => new Vuex.Store({
     allowUpload: process.env.NODE_ENV !== 'production' || ALLOW_UPLOAD,
     production: process.env.NODE_ENV === 'production',
 
-    uploadUrl: UPLOAD_URL, 
+    uploadUrl: UPLOAD_URL,
+    nonLinearBackendUrl: NONLINEAR_BACKEND,
+    selectedDepthMap: null,
+
     user,
     pairLandmarkStartDragging: false,
     agreedToCookie: localStorage.getItem(AGREE_COOKIE_KEY),
@@ -219,6 +223,9 @@ const getStore = ({ user = null } = {}) => new Vuex.Store({
   mutations: {
     setProduction (state, { production }){
       state.production = production
+    },
+    setSelectedDepthMap (state, { depthMap }) {
+      state.selectedDepthMap = depthMap
     },
     setUploadUrl (state, { uploadUrl }) {
       state.uploadUrl = uploadUrl
@@ -392,6 +399,9 @@ const getStore = ({ user = null } = {}) => new Vuex.Store({
       if (!state.production)
         console.log(payload)
     },
+    selectDepthMap: function ({ commit }, { depthMap }) {
+      commit('setSelectedDepthMap', { depthMap })
+    },
     setLocalStorage: function (store, payload) {
       for (let key in payload) {
         localStorage.setItem(key, payload[key])
@@ -430,10 +440,12 @@ const getStore = ({ user = null } = {}) => new Vuex.Store({
         .catch(e => dispatch('log', ['store#actions#viewInInteractiveViewer', { error: e }]))
     },
     downloadXformResult: function ({ state, getters }) {
-      const {selectedIncomingVolume, selectedReferenceVolume} = getters
+      const {selectedIncomingVolume, selectedReferenceVolume } = getters
       const incomingVolume = selectedIncomingVolume && selectedIncomingVolume.name
       const referenceVolume = selectedReferenceVolume && selectedReferenceVolume.name
-      const transformMatrixInNm = transposeMat4(state.incTransformMatrix)
+      
+      const transformMatrixInNm = getTransformMatrixInNm(state.incTransformMatrix)
+      
       const json = {
         incomingVolume,
         referenceVolume,
@@ -755,22 +767,8 @@ const getStore = ({ user = null } = {}) => new Vuex.Store({
       if (state.backendQueryInProgress) {
         return
       }
-      
-      const lmPairs = state.landmarkPairs
-        .map(pair => {
-          const refLm = state.referenceLandmarks.find(rLm => rLm.id === pair.refId)
-          const incLm = state.incomingLandmarks.find(iLm => iLm.id === pair.incId)
-          return refLm && incLm
-            ? {
-              active: pair.active,
-              colour: pair.active,
-              name: pair.name,
-              'source_point': refLm.coord,
-              'target_point': incLm.coord
-            }
-            : null
-        })
-        .filter(lm => lm !== null)
+
+      const lmPairs = getBackendLandmarkPairs(state)
       
       const data = {
         'source_image': state.selectReference, // TODO update

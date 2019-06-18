@@ -1,11 +1,9 @@
 <template>
 <div class="container">
-  <hr />
-
   <!-- new upload container -->
   <div class="uploadUI">
     <h4>
-      Upload a volume
+      {{ inputTitle }}
     </h4>
 
     <div
@@ -31,19 +29,24 @@
       class="form-control mb-3" />
 
     <!-- upload options -->
-    <div>
+    <!-- is segment -->
+    <div v-if="showNiftiCheckbox">
       <input
         v-model="isSegmentation"
+        :disabled="!allowNiftiCheckboxToggle"
         id="segmentationCheckBox"
         name="segmentationCheckBox"
         type="checkbox">
       <label
         class="ml-2 mr-2"
+        :class="allowNiftiCheckboxToggle ? '' : 'text-muted'"
         for="segmentationCheckBox">This nifti file denotes segmentations </label>
       <font-awesome-icon
+        :class="allowNiftiCheckboxToggle ? '' : 'text-muted'"
         v-b-tooltip.hover.right="segmentationExplanation"
         icon="question" />
     </div>
+
     <!-- upload btn -->
     <div
       @click.stop.prevent="upload"
@@ -143,6 +146,28 @@ import InfoPopover from '@/components/InfoPopover'
  * /user/nifti/filename.nii.gz
  */
 export default {
+
+  /**
+   * TODO write tests for props
+   */
+  props: {
+    inputTitle: {
+      type: String,
+      default: 'Upload a volume'
+    },
+    showNiftiCheckbox: {
+      type: Boolean,
+      default: true
+    },
+    defaultNiftiCheckboxState: {
+      type: Boolean,
+      default: false
+    },
+    allowNiftiCheckboxToggle: {
+      type: Boolean,
+      default: true
+    }
+  },
   data: function () {
     return {
       uploadFinished: false,
@@ -156,7 +181,7 @@ export default {
       preflightWarnings: [],
       cancelTokenSource: null,
       segmentationExplanation: SEGMENTATION_EXPLANATION,
-      isSegmentation: false
+      isSegmentation: this.defaultNiftiCheckboxState
     }
   },
   components: {
@@ -196,14 +221,9 @@ export default {
       return header
     }
   },
-  mounted: function() {
-    this.updateIncVolumes()
-  },
   methods: {
     ...mapActions({
       modalMessage: 'modalMessage',
-      updateIncVolumes: 'updateIncVolumes',
-      selectIncomingVolumeWithId: 'selectIncomingVolumeWithId',
       log: 'log'
     }),
     ...mapMutations({
@@ -220,8 +240,12 @@ export default {
       })
     },
     cancelUpload: function () {
-      if (this.cancelTokenSource && this.cancelTokenSource.cancel && this.cancelTokenSource.cancel instanceof Function)
+      if (this.cancelTokenSource && this.cancelTokenSource.cancel && this.cancelTokenSource.cancel instanceof Function) {
         this.cancelTokenSource.cancel('Cancelled by user')
+        this.$emit('upload', {
+          cancelled: 'Cancelled by user'
+        })
+      }
     },
     uploadUrlChanged: function (ev) {
       const value = ev && ev.target && ev.target.value
@@ -281,6 +305,8 @@ export default {
 
               this.preflightWarnings = warnings
               this.preflightNiftiInfo = nifti
+
+              this.$emit('preflight', { data })
             })
             .catch(error => {
               this.preflightInProgress = false
@@ -288,6 +314,8 @@ export default {
               const errorMessage = (error && error.response && error.response.data) || 'An unknown preflight error errored'
               // debugger
               this.preflightError = errorMessage
+
+              this.$emit('preflight', {error: errorMessage})
             })
           
         } else {
@@ -326,6 +354,11 @@ export default {
       this.uploadInProgress = true
 
       this.cancelTokenSource = axios.CancelToken.source()
+
+      this.$emit('upload', {
+        started: true
+      })
+
       axios({
         method: 'POST',
         url: this.uploadUrl,
@@ -349,25 +382,20 @@ export default {
         this.preflightWarnings = []
         this.preflightError = null
 
-        const { nifti, warnings, fileName, ...rest } = data
-        
-        /**
-         * select the just uploaded volume
-         */
-        this.selectIncomingVolumeWithId(`private/${fileName}`)
-
-        this.modalMessage({
-          variant: 'success',
-          title: 'Upload Successful',
-          htmlBody: makeHtmlFragmentForNifti({ nifti, warnings })
+        this.$emit('upload', { 
+          complete: true,
+          data
         })
-        
-        this.updateIncVolumes()
+
       }).catch(e => {
         this.cancelTokenSource = null
         this.log(['upload error', { error: e }])
         this.uploadError = (e && e.response && e.response.data) || (e && e.message) ||  'Error: Canont send the file...'
         this.uploadInProgress = false
+        
+        this.$emit('upload', {
+          error: this.uploadError
+        })
       })
     }
   }
