@@ -29,82 +29,38 @@
         <!-- body -->
         <div class="body bg-light">
           <div class="p-3">
-            <!-- compute depth map -->
-            <div>
-              <h4>
-                compute depth map
-              </h4>
-
-              <!-- select/upload -->
-              <div class="input-group input-group-sm">
-
-                <!-- select segment volume to compute depth map -->
-                <select
-                  v-model="selectedVolume"
-                  class="custom-select">
-                  <!-- dummy opt -->
-                  <option
-                    :value="dummyIncomingVolume.id"
-                    :disabled="true">
-                    {{ dummyIncomingVolume.name }}  
-                  </option>
-                  
-                  <!-- incoming volumes sorted by group -->
-                  <optgroup
-                    :key="idx"
-                    :label="arr[0]"
-                    v-for="(arr, idx) in groupedPVolumes">
-
-                    <option
-                      v-for="volume in arr[1]"
-                      :key="volume.id"
-                      :value="volume.id"
-                      :disabled="!volume.isSegment">
-                      {{ volume.name }} {{ volume.isSegment ? '' : '(not a segment)' }}
-                    </option>
-                  </optgroup>
-
-                </select>
-
-                <div class="input-group-append">
-
-                  <!-- upload btn -->
-                  <div class="btn btn-primary">
-                    upload
-                  </div>
-                </div>
-              </div>
-
-              <div class="p-1">
-              </div>
-
-              <!-- compute/select -->
-              <div
-                :class="selectedVolume ? '' : 'disabled'"
-                class="btn btn-sm btn-block btn-warning">
-                compute depth map
-              </div>
-            </div>
-
-            <hr>
 
             <!-- non linear reg -->
             <div>
-              <h4>
-                non-linear registration
-              </h4>
 
               <!-- depth map -->
               <div class="input-group-sm input-group">
-                <div class="input-group-prepend">
+
+                <!-- TODO remove flex-grow-1 here when /list endpoint is ready and select is reimplemented -->
+                <div class="input-group-prepend flex-grow-1">
                   <label
-                    class="input-group-text"
+                    class="input-group-text flex-grow-1"
                     for="select-depth-map">
-                    depth map
+
+                    <!-- icon -->
+                    <font-awesome-icon
+                      :class="depthMapIconClass"
+                      :icon="depthMapIcon">
+                    </font-awesome-icon>
+                    
+                    <!-- text -->
+                    <span>
+                      depth map
+                      <small v-if="selectedDepthMap" class="ml-1 text-muted">
+                        ({{ selectedDepthMap.depth_map_name }})
+                      </small>
+                    </span>
                   </label>
                 </div>
+
+                <!-- TODO disable depth map selection until /list endpoint is ready -->
                 <select
-                  v-model="selectedDepthMap"
+                  v-if="false"
                   id="select-depth-map"
                   name="select-depth-map"
                   class="custom-select">
@@ -129,6 +85,14 @@
                     </option>
                   </optgroup>
                 </select>
+
+                <div class="input-group-append">
+                  <div
+                    @click="openModal({modalId: 'uploadModal'})"
+                    class="btn-sm btn btn-primary">
+                    <font-awesome-icon icon="upload"></font-awesome-icon>
+                  </div>
+                </div>
               </div>
 
               <!-- approxmiate affine transformation -->
@@ -136,29 +100,44 @@
                 <div class="input-group-prepend flex-grow-1">
                   <span
                     class="input-group-text w-100">
-                    affine 
+
+                    <!-- icon -->
+                    <font-awesome-icon
+                      :class="affineIconClass"
+                      :icon="affineIcon">
+                    </font-awesome-icon>
+
+                    <!-- label -->
+                    <span>
+                      affine
+                    </span> 
                     <font-awesome-icon
                       class="ml-2"
                       v-b-tooltip.hover="affineExplanation"
                       icon="question" />
                   </span>
                 </div>
-                <div class="input-group-append">
-
-                  <div class="btn btn-outline-primary">
-                    use current
-                  </div>
-                  <div class="btn btn-outline-primary">
-                    load json
-                  </div>
-                </div>
               </div>
 
               <!-- landmarks -->
               <div class="input-group-sm input-group mt-1">
                 <div class="input-group-prepend flex-grow-1">
+                  
                   <div class="input-group-text w-100">
-                    landmarks
+
+                    <!-- icon -->
+                    <font-awesome-icon
+                      :class="landmarkIconClass"
+                      :icon="landmarkIcon">
+                    </font-awesome-icon>
+
+                    <!-- label -->
+                    <span>
+                      landmarks
+                    </span>
+                    <small class="ml-1 text-muted">
+                      ({{ landmarkPairs.length }} pairs)
+                    </small>
                     <font-awesome-icon
                       class="ml-2"
                       v-b-tooltip.hover="landmarksExplanation"
@@ -166,45 +145,59 @@
 
                   </div>
                 </div>
+              </div>
 
-                <div class="input-group-append">
-                  <div class="btn btn-outline-primary">
-                    use current
-                  </div>
-                  <div class="btn btn-outline-primary">
-                    load json
+              <!-- compute alignment -->
+              <div class="mt-2 input-group input-group-sm">
+                <div class="input-group-prepend">
+
+                  <!-- compute btn -->
+                  <div
+                    @click="computeAlignments"
+                    :class="computeAlignmentBtnEnabled ? '' : 'disabled'"
+                    class="btn btn-outline-primary btn-block">
+                    Compute alignment
                   </div>
                 </div>
-              </div>
 
-              <div class="mt-2 btn btn-outline-primary btn-block btn-sm">
-                Compute alignment
-              </div>
-            </div>
+                <div class="flex-grow-1 input-group-append">
 
-            <hr>
-            <!-- view result -->
-            <div>
-              <h4>
-                visualise registered volume
-              </h4>
-              <div class="input-group input-group-sm">
-                <div class="input-group-prepend flex-grow-1">
-                  <span class="input-group-text w-100">
-                    show image
+                  <!-- message -->
+                  <span class="flex-grow-1 input-group-text">
+                    {{ computeAlignmentText }}
                   </span>
                 </div>
-                <div class="input-group-append">
+              </div>
+            </div>
 
-                  <div class="btn btn-outline-primary">
-                    original
+            <!-- view result -->
+            <div class="mt-2 card" v-if="pollingResults">
+              <div class="card-body">
+                <h5 class="card-title">
+                  Cortical Alignment Completed
+                </h5>
+                <p>
+                  Name: {{ pollingResults.transformed_image_name ? pollingResults.transformed_image_name : 'Untitled' }}
+                </p>
+
+                <div class="input-group input-group-sm">
+                  <div class="input-group-prepend flex-grow-1">
+                    <span class="input-group-text w-100">
+                      visualise
+                    </span>
                   </div>
-                  <div class="btn btn-outline-primary">
-                    registered
+                  <div class="input-group-append">
+                    <div class="btn btn-outline-primary">
+                      original
+                    </div>
+                    <div class="btn btn-outline-primary">
+                      registered
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
+
           </div>
         </div>
       </div>
@@ -213,13 +206,18 @@
 </template>
 <script>
 
-import { mapState } from 'vuex'
+import { mapState, mapActions, mapGetters } from 'vuex'
 
 import { CORTICAL_ALIGNMENT } from '@/text'
 
+import  {getBackendLandmarkPairs, getTransformMatrixInNm, invertMat4FromArr } from '@/constants'
+
 import NibComponent from '@/components/layout/Nib'
 import DraggableMixin from '@/mixins/DraggableMixin'
+import PollingMixin from '@/mixins/PollingMixin'
+import UploadVolume from '@/components/UploadVolume'
 
+import axios from 'axios'
 
 const TEMP_FETCHED = [
   {
@@ -433,15 +431,16 @@ const TEMP_FETCHED = [
 
 export default {
   components: {
-    NibComponent
+    NibComponent,
+    UploadVolume
   },
   mixins:[
+    PollingMixin,
     DraggableMixin
   ],
   data: function () {
     return {
       selectedVolume: null,
-      selectedDepthMap: null,
       affineExplanation: 'Approximate affine transform',
       landmarksExplanation: 'Landmarks for longitudinal alignment',
       dummyDepthMap: {
@@ -454,11 +453,29 @@ export default {
         name: '-- Please select an incoming volume --',
         disabled: true
       },
+
+      contactingPollingUrl: false,
+
+      nonLinearAlignmentAvailable: false,
     }
   },
   computed: {
+    ...mapGetters([
+      'authHeader',
+      'selectedIncomingVolume'
+    ]),
     ...mapState([
-      'incomingVolumes'
+      'uploadUrl',
+      'incomingVolumes',
+      'landmarkPairs',
+      'nonLinearBackendUrl',
+      'selectedDepthMap',
+
+      'incTransformMatrix',
+
+      'landmarkPairs',
+      'referenceLandmarks',
+      'incomingLandmarks'
     ]),
     processedVolumes: function () {
       return this.incomingVolumes.map(v => {
@@ -526,11 +543,103 @@ export default {
     },
     corticalPatchAlignmentTitle: function () {
       return CORTICAL_ALIGNMENT
+    },
+    depthMapIcon: function () {
+      return this.selectedDepthMap
+        ? ['far', 'check-circle']
+        : ['far', 'circle']
+    },
+    affineIcon: function () {
+      return ['far', 'check-circle']
+    },
+    landmarkIcon: function () {
+      return ['far', 'check-circle']
+    },
+    depthMapIconClass: function () {
+      return this.selectedDepthMap
+        ? ['mr-1', 'text-success']
+        : ['mr-1']
+    },
+    affineIconClass: function () {
+      return ['mr-1', 'text-success']
+    },
+    landmarkIconClass: function () {
+      return ['mr-1', 'text-success']
+    },
+    alignmentCanBeComputed: function () {
+      /**
+       * check depthmap availability, number of landmarks available etc
+       */
+      return !!this.selectedDepthMap
+    },
+    computeAlignmentBtnEnabled: function () {
+      return this.alignmentCanBeComputed
+        && !this.pollingMixin__pollingInProgress
+        && !this.contactingPollingUrl
+    },
+    computeAlignmentText: function () {
+      if (!this.alignmentCanBeComputed) return `Vital ingredients missing`
+
+      if (this.pollingMixin__pollingComplete) return `Alignment completed`
+
+      if (!this.pollingMixin__pollingInProgress && !this.contactingPollingUrl) return `Ready to compute`
+      if (this.contactingPollingUrl) return `Contacting cortical alignment server`
+      if (this.pollingMixin__pollingInProgress)
+        return this.pollingMixin__pollingMesssage || `Alignment in progress`
+      if (this.pollingMixin__pollingError)
+        return `Alignment error:` + (this.pollingMixin__pollingMesssage || ``)
+      return `Unknown Status`
+    },
+    pollingResults: function () {
+      return this.pollingMixin__results
     }
   },
   methods: {
+    ...mapActions({
+      openModal: 'openModal'
+    }),
     close: function () {
       this.$emit('close')
+    },
+    computeAlignments: function () {
+      if (!this.computeAlignmentBtnEnabled) return
+      this.contactingPollingUrl = true
+
+      const {landmarkPairs, referenceLandmarks, incomingLandmarks} = this
+      const lmp = getBackendLandmarkPairs({ landmarkPairs, referenceLandmarks, incomingLandmarks })
+      const xformMatrixMm = getTransformMatrixInNm(invertMat4FromArr(this.incTransformMatrix)).map((arr, i) => i === 3 ? arr : arr.map((v, idx) => idx === 3 ? v / 1e6 : v))
+      const corticalAlignmentBody = {
+        image_service_base_url: this.uploadUrl,
+        image_name: this.selectedIncomingVolume.name,
+        depth_map_name: this.selectedDepthMap.depth_map_name,
+        landmark_pairs: lmp,
+        transformation_matrix: xformMatrixMm
+      }
+
+      axios(`${this.nonLinearBackendUrl}/v0/alignment-computation`, {
+        method: `POST`,
+        headers: { ...this.authHeader },
+        data: corticalAlignmentBody
+      })
+        .then(({ data }) => {
+          const { status_polling_url: _pollingUrl } = data 
+          const pollingUrl = `${this.nonLinearBackendUrl}${_pollingUrl}`
+
+          this.contactingPollingUrl = false
+
+          this.pollingMixin__poll(pollingUrl, {
+            method: 'GET',
+            headers: {
+              ...this.authHeader
+            }
+          })
+        })
+        .catch(err => {
+          console.error('error', err)
+          this.pollingMixin__pollingMesssage = err
+          this.pollingMixin__pollingError = err
+        })
+      
     }
   },
 }
