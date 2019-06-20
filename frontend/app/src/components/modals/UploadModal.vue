@@ -143,7 +143,7 @@ export default {
         headers: { ...this.authHeader },
         data: depthMapComputationBody
       }
-      axios(`${this.nonLinearBackendUrl}/v0/depth-map-computation`, config)
+      axios(`${this.nonLinearBackendUrl}/v0/depth-map-computation/`, config)
         .then(({ data }) => {
           const { status_polling_url: pollingUrl } = data 
           this.pollingUrl = `${this.nonLinearBackendUrl}${pollingUrl}`

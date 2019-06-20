@@ -616,7 +616,7 @@ export default {
         transformation_matrix: xformMatrixMm
       }
 
-      axios(`${this.nonLinearBackendUrl}/v0/alignment-computation`, {
+      axios(`${this.nonLinearBackendUrl}/v0/alignment-computation/`, {
         method: `POST`,
         headers: { ...this.authHeader },
         data: corticalAlignmentBody
