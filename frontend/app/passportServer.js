@@ -21,7 +21,6 @@ const configureAuthentication = async () => {
     client,
     redirect_uri: 'http://localhost:3001/oidcCallback'
   }, (tokenset, userinfo, done) => {
-    console.log(tokenset)
     return done(null, userinfo)
   })
   passport.use('oidc', oidcStrategy)
