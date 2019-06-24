@@ -188,6 +188,7 @@ const getStore = ({ user = null } = {}) => new Vuex.Store({
 
     incVolTranslationLock: false,
     incVolRotationLock: false,
+    incVolScaleLock: false,
 
     overlayColor: {hex: '#FCDC00', rgba: {r: 252, g: 220, b: 0, a: 1}},
     // in nm
@@ -247,9 +248,10 @@ const getStore = ({ user = null } = {}) => new Vuex.Store({
     setPairLandmarkStartDragging (state, { pairLandmarkStartDragging }){
       state.pairLandmarkStartDragging = pairLandmarkStartDragging
     },
-    setIncVolLoc (state, { incVolTranslationLock, incVolRotationLock }) {
+    setIncVolLoc (state, { incVolTranslationLock, incVolRotationLock, incVolScaleLock }) {
       state.incVolRotationLock = incVolRotationLock
       state.incVolTranslationLock = incVolTranslationLock
+      state.incVolScaleLock = incVolScaleLock
     },
     setUser (state, { user }) {
       state.user = user
@@ -399,7 +401,22 @@ const getStore = ({ user = null } = {}) => new Vuex.Store({
       if (!state.production)
         console.log(payload)
     },
-    selectDepthMap: function ({ commit }, { depthMap }) {
+    selectDepthMap: function ({ state, commit, dispatch }, { depthMap }) {
+
+      /**
+       * update inc volume
+       */
+      dispatch('updateIncVolumes')
+
+      /**
+       * concat the depthMap as a part of the incoming volume temporarily, whilst waiting for update inc volumes
+       */
+      const { incomingVolumes } = state
+      commit('setIncomingVolumes', { volumes: incomingVolumes.concat(depthMap) })
+
+      /**
+       * set depth map
+       */
       commit('setSelectedDepthMap', { depthMap })
     },
     setLocalStorage: function (store, payload) {
@@ -492,10 +509,11 @@ const getStore = ({ user = null } = {}) => new Vuex.Store({
       }
       commit('setLandmarkMode', { mode })
     },
-    lockIncVol: function ({ commit, state }, { incVolTranslationLock = null, incVolRotationLock = null }) {
+    lockIncVol: function ({ commit, state }, { incVolTranslationLock = null, incVolRotationLock = null, incVolScaleLock = null }) {
       commit('setIncVolLoc', {
         incVolTranslationLock : incVolTranslationLock !== null ? incVolTranslationLock : state.incVolTranslationLock,
-        incVolRotationLock: incVolRotationLock !== null ? incVolRotationLock : state.incVolRotationLock
+        incVolRotationLock: incVolRotationLock !== null ? incVolRotationLock : state.incVolRotationLock,
+        incVolScaleLock: incVolScaleLock !== null ? incVolScaleLock : state.incVolScaleLock
       })
     },
     addLmp: function ({commit, dispatch, state}, { refId, incId }) {

@@ -24,6 +24,10 @@ export default {
   props: {
     id: String,
     title: String,
+    forceHide: {
+      type: Boolean,
+      default: false
+    },
     showContent: {
       type: Boolean,
       default: false
@@ -36,12 +40,20 @@ export default {
   },
   methods: {
     toggle: function () {
+      if (this.forceHide) return
       this.opened = !this.opened
     }
   },
   computed: {
     transformIcon: function () {
       return this.opened ? 'icon iconVisible' : 'icon iconNotVisible'
+    }
+  },
+  watch:{
+    forceHide: function (flag) {
+      if (flag) {
+        this.opened = false
+      }
     }
   }
 }

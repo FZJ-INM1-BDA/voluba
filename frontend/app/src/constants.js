@@ -847,3 +847,30 @@ export const invertMat4FromArr = (arr) => {
 }
 
 export const getTransformMatrixInNm = (incXformMatrix) => transposeMat4(incXformMatrix)
+
+export const volumeIsDepthMap = (v) => /-equivolumetric-depth/.test(v.name)
+
+export const groupByVisibility = (volumes) => {
+  const getLabelFromVolume = (volume) => {
+    return volume.visibility === 'public'
+      ? 'Public volumes'
+      : volume.visibility === 'private'
+        ? 'Private volumes'
+        : 'Bundled volumes'
+  }
+  return volumes
+    .reduce((acc, curr) => {
+      const returnArr = Array.from(acc)
+      const label = getLabelFromVolume(curr)
+      const entry = returnArr.find(arr => label === arr[0])
+      if (entry) {
+        entry[1].push(curr)
+      } else {
+        returnArr.push([
+          label,
+          [ curr ]
+        ])
+      }
+      return returnArr
+    }, [])
+}

@@ -34,12 +34,12 @@
             <div>
 
               <!-- depth map -->
-              <div class="input-group-sm input-group">
+              <div class="input-group-sm input-group flex-nowrap">
 
                 <!-- TODO remove flex-grow-1 here when /list endpoint is ready and select is reimplemented -->
-                <div class="input-group-prepend flex-grow-1">
+                <div class="input-group-prepend">
                   <label
-                    class="input-group-text flex-grow-1"
+                    class="input-group-text"
                     for="select-depth-map">
 
                     <!-- icon -->
@@ -51,18 +51,16 @@
                     <!-- text -->
                     <span>
                       depth map
-                      <small v-if="selectedDepthMap" class="ml-1 text-muted">
-                        ({{ selectedDepthMap.depth_map_name }})
-                      </small>
                     </span>
                   </label>
                 </div>
 
                 <!-- TODO disable depth map selection until /list endpoint is ready -->
                 <select
-                  v-if="false"
                   id="select-depth-map"
                   name="select-depth-map"
+                  @change="selectDepthMapOnChangeHandler"
+                  :value="selectedDepthMapId"
                   class="custom-select">
                   <option
                     :value="dummyDepthMap.id"
@@ -80,8 +78,8 @@
                       v-for="volume in arr[1]"
                       :key="volume.id"
                       :value="volume.id"
-                      :disabled="volume.pending">
-                      {{ volume.name }} {{ volume.pending ? '(calculation in progress)' : '' }}
+                      :disabled="volume.pending || volume.disabled">
+                      {{ volume.name }} {{ volume.pending ? '(calculation in progress)' : '' }} {{ volume.disabled ? '(not a depth map)' : '' }}
                     </option>
                   </optgroup>
                 </select>
@@ -210,7 +208,7 @@ import { mapState, mapActions, mapGetters } from 'vuex'
 
 import { CORTICAL_ALIGNMENT } from '@/text'
 
-import  {getBackendLandmarkPairs, getTransformMatrixInNm, invertMat4FromArr } from '@/constants'
+import  {getBackendLandmarkPairs, getTransformMatrixInNm, invertMat4FromArr, volumeIsDepthMap, groupByVisibility } from '@/constants'
 
 import NibComponent from '@/components/layout/Nib'
 import DraggableMixin from '@/mixins/DraggableMixin'
@@ -218,216 +216,6 @@ import PollingMixin from '@/mixins/PollingMixin'
 import UploadVolume from '@/components/UploadVolume'
 
 import axios from 'axios'
-
-const TEMP_FETCHED = [
-  {
-    "name": "colin27_t1_tal_lin_mask",
-    "visibility": "private",
-    "links": {
-      "normalized": "/nifti/3323022859c2ceb9b99455f20c2feb5d510a97f0aad97cd92d82c7eb/colin27_t1_tal_lin_mask"
-    },
-    "extra": {
-      "fileName": "colin27_t1_tal_lin_mask.nii.gz",
-      "fileSize": 85471,
-      "fileSizeUncompressed": 14218626,
-      "uploaded": "2019-06-03T14:30:47.756927Z",
-      "nifti": {
-        "niftiVersion": "Nifti1",
-        "byteOrder": "LITTLE_ENDIAN",
-        "size": [
-          181,
-          217,
-          181
-        ],
-        "voxelSize": [
-          1,
-          1,
-          1
-        ],
-        "spatialUnits": "Millimeter",
-        "temporalUnits": "Seconds",
-        "dataType": "signed_short",
-        "description": "mnc2nii minc2/colin27_t1_tal_lin_mask.mnc nifti/colin27_t1_tal_lin_mask.nii",
-        "coordinateSystem": "SCANNER_ANAT",
-        "affineMatrix": [
-          [
-            1,
-            0,
-            0,
-            -90
-          ],
-          [
-            0,
-            1,
-            0,
-            -126
-          ],
-          [
-            0,
-            0,
-            1,
-            -72
-          ],
-          [
-            0,
-            0,
-            0,
-            1
-          ]
-        ]
-      },
-      "data": {
-        "minValue": "0",
-        "maxValue": "1"
-      },
-      "neuroglancer": {
-        "type": "segmentation",
-        "data_type": "uint16",
-        "size": [
-          181,
-          217,
-          181
-        ],
-        "resolution": [
-          1000000,
-          1000000,
-          1000000
-        ],
-        "transform": [
-          [
-            1,
-            0,
-            0,
-            -90500000
-          ],
-          [
-            0,
-            1,
-            0,
-            -126500000
-          ],
-          [
-            0,
-            0,
-            1,
-            -72500000
-          ],
-          [
-            0,
-            0,
-            0,
-            1
-          ]
-        ]
-      },
-      "warnings": []
-    }
-  },
-  {
-    "name": "colin27_t1_tal_lin_headmask",
-    "visibility": "private",
-    "links": {
-      "normalized": "/nifti/3323022859c2ceb9b99455f20c2feb5d510a97f0aad97cd92d82c7eb/colin27_t1_tal_lin_headmask"
-    },
-    "extra": {
-      "fileName": "colin27_t1_tal_lin_headmask.nii.gz",
-      "fileSize": 108651,
-      "fileSizeUncompressed": 14218626,
-      "uploaded": "2019-06-03T14:29:50.162072Z",
-      "nifti": {
-        "niftiVersion": "Nifti1",
-        "byteOrder": "LITTLE_ENDIAN",
-        "size": [
-          181,
-          217,
-          181
-        ],
-        "voxelSize": [
-          1,
-          1,
-          1
-        ],
-        "spatialUnits": "Millimeter",
-        "temporalUnits": "Seconds",
-        "dataType": "signed_short",
-        "description": "mnc2nii minc2/colin27_t1_tal_lin_headmask.mnc nifti/colin27_t1_tal_lin_headmask",
-        "coordinateSystem": "SCANNER_ANAT",
-        "affineMatrix": [
-          [
-            1,
-            0,
-            0,
-            -90
-          ],
-          [
-            0,
-            1,
-            0,
-            -126
-          ],
-          [
-            0,
-            0,
-            1,
-            -72
-          ],
-          [
-            0,
-            0,
-            0,
-            1
-          ]
-        ]
-      },
-      "data": {
-        "minValue": "0",
-        "maxValue": "1"
-      },
-      "neuroglancer": {
-        "type": "segmentation",
-        "data_type": "uint16",
-        "size": [
-          181,
-          217,
-          181
-        ],
-        "resolution": [
-          1000000,
-          1000000,
-          1000000
-        ],
-        "transform": [
-          [
-            1,
-            0,
-            0,
-            -90500000
-          ],
-          [
-            0,
-            1,
-            0,
-            -126500000
-          ],
-          [
-            0,
-            0,
-            1,
-            -72500000
-          ],
-          [
-            0,
-            0,
-            0,
-            1
-          ]
-        ]
-      },
-      "warnings": []
-    }
-  }
-]
-
 
 export default {
   components: {
@@ -444,7 +232,7 @@ export default {
       affineExplanation: 'Approximate affine transform',
       landmarksExplanation: 'Landmarks for longitudinal alignment',
       dummyDepthMap: {
-        id: null,
+        id: 'dummy',
         name: '-- Select a depth map for non linear alignment --',
         disabled: true
       },
@@ -469,13 +257,13 @@ export default {
       'incomingVolumes',
       'landmarkPairs',
       'nonLinearBackendUrl',
-      'selectedDepthMap',
 
       'incTransformMatrix',
 
       'landmarkPairs',
       'referenceLandmarks',
-      'incomingLandmarks'
+      'incomingLandmarks',
+      'selectedDepthMap'
     ]),
     processedVolumes: function () {
       return this.incomingVolumes.map(v => {
@@ -488,58 +276,23 @@ export default {
         }
       })
     },
+    selectedDepthMapId: function () {
+      return (this.selectedDepthMap && this.selectedDepthMap.id) || 'dummy'
+    },
     depthMaps: function () {
       /**
        * retrieve from non linear backend next time
        */
-
-      return [
-          ['Private volumes', TEMP_FETCHED]
-        ]
-        .map(( [label, volumes] ) => {
-          return [
-            label,
-            volumes.map((v, idx) => {
-              return {
-                ...v,
-                pending: idx % 2 === 0
-              }
-            })
-          ]
-        })
+      const appendProperty = this.processedVolumes.map(v => {
+        return {
+          ...v,
+          disabled: v.isSegment || !volumeIsDepthMap(v)
+        }
+      })
+      return groupByVisibility(appendProperty)
     },
     groupedPVolumes: function () {
-      const getLabelFromVolume = (volume) => {
-        return volume.visibility === 'public'
-          ? 'Public volumes'
-          : volume.visibility === 'private'
-            ? 'Private volumes'
-            : 'Bundled volumes'
-      }
-      return this.processedVolumes
-        .reduce((acc, curr) => {
-          const returnArr = Array.from(acc)
-          const label = getLabelFromVolume(curr)
-          const entry = returnArr.find(arr => label === arr[0])
-          if (entry) {
-            entry[1].push(curr)
-          } else {
-            returnArr.push([
-              label,
-              [ curr ]
-            ])
-          }
-          return returnArr
-        }, [])
-    },
-    defaultPVolumes: function () {
-      return this.processedVolumes.filter(v => !v.visibility)
-    },
-    publicPVolumes: function () {
-      return this.processedVolumes.filter(v => v.visibility === 'public')
-    },
-    privatePVolumes: function () {
-      return this.processedVolumes.filter(v => v.visibility === 'private')
+      return groupByVisibility(this.processedVolumes)
     },
     corticalPatchAlignmentTitle: function () {
       return CORTICAL_ALIGNMENT
@@ -595,9 +348,15 @@ export default {
     }
   },
   methods: {
-    ...mapActions({
-      openModal: 'openModal'
-    }),
+    ...mapActions([
+      'openModal',
+      'selectDepthMap'
+    ]),
+    selectDepthMapOnChangeHandler: function (event) {
+      const selectedId = event.target.value
+      const depthMap = this.incomingVolumes.find(({ id }) => id === selectedId )
+      this.selectDepthMap({ depthMap })
+    },
     close: function () {
       this.$emit('close')
     },
@@ -611,7 +370,7 @@ export default {
       const corticalAlignmentBody = {
         image_service_base_url: this.uploadUrl,
         image_name: this.selectedIncomingVolume.name,
-        depth_map_name: this.selectedDepthMap.depth_map_name,
+        depth_map_name: this.selectedDepthMap.name,
         landmark_pairs: lmp,
         transformation_matrix: xformMatrixMm
       }

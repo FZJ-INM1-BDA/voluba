@@ -89,14 +89,17 @@
       <!-- scale -->
       <div class="section-wrapper mb-1">
         <div
-          class="invisible"
-          :class="false?'':'text-muted'">
-          <font-awesome-icon
-            :icon="lockIconScale"></font-awesome-icon>
+          @click="lockIncVol({ incVolScaleLock: !incVolScaleLock})">
+          <font-awesome-icon :icon="lockIconScale" />
         </div>
         <section-component
-          id="scale-section"
-          title="Scale">
+          :forceHide="incVolScaleLock"
+          id="scale-section">
+          <template slot="header">
+            <strong :class="incVolScaleLock ? 'text-muted' : ''">
+              Scale
+            </strong>
+          </template>
           <template slot="body">
             <input
               v-model="isotropic"
@@ -159,8 +162,13 @@
           <font-awesome-icon :icon="lockIconTranslation"></font-awesome-icon>
         </div>
         <section-component
-          title="Translation"
+          :forceHide="incVolTranslationLock"
           id="translation-component">
+          <template slot="header">
+            <strong :class="incVolTranslationLock ? 'text-muted' : ''">
+              Translation
+            </strong>
+          </template>
           <template slot="body">
             <SliderComponent
               @minus="translationEvent({ axis: 'x', event:$event, delta: testTranslX - 0.1 < translMin ? 0 :  - 0.1 })"
@@ -206,8 +214,13 @@
           <font-awesome-icon :icon="lockIconRotation" />
         </div>
         <section-component
-          title="Rotation"
+          :forceHide="incVolRotationLock"
           id="rotation-component">
+          <template slot="header">
+            <strong :class="incVolRotationLock ? 'text-muted' : ''">
+              Rotation
+            </strong>
+          </template>
           <template slot="body">
             <SliderComponent
               @minus="rotationEvent({axis : 'x', delta: testRotateX - 0.1 < rotateMin ? 0 : - 0.1})"
@@ -292,9 +305,10 @@ export default {
       flippedState: 'flippedState',
       incVolTranslationLock: 'incVolTranslationLock',
       incVolRotationLock: 'incVolRotationLock',
+      incVolScaleLock: 'incVolScaleLock',
       lockIconTranslation: state => state.incVolTranslationLock ? 'lock' : 'lock-open',
       lockIconRotation: state => state.incVolRotationLock ? 'lock' : 'lock-open',
-      lockIconScale: () => 'lock-open'
+      lockIconScale: state => state.incVolScaleLock ? 'lock' : 'lock-open'
     }),
     incVolXformTitle: function () {
       return INC_VOL_XFORM_TITLE

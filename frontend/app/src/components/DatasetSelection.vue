@@ -39,31 +39,16 @@
             :value="dummyIncomingVolume.id">
             {{ dummyIncomingVolume.name }}
           </option>
-          <optgroup label="Bundled volumes">
+          <optgroup
+            v-for="groupV in groupedVolumes"
+            :key="groupV[0]"
+            :label="groupV[0]">
             <option
-              v-for = "incomingVolume in defaultIncomingVolumes"
-              :disabled = "incomingVolume.disabled"
-              :key = "incomingVolume.id"
-              :value = "incomingVolume.id">
-              {{ incomingVolume.name }}
-            </option>
-          </optgroup>
-          <optgroup v-if="publicIncomingVolumes.length > 0" label="Public volumes">
-            <option
-              v-for = "incomingVolume in publicIncomingVolumes"
-              :disabled = "incomingVolume.disabled"
-              :key = "incomingVolume.id"
-              :value = "incomingVolume.id">
-              {{ incomingVolume.name }}
-            </option>
-          </optgroup>
-          <optgroup v-if="privateIncomingVolumes.length > 0" label="Private volumes">
-            <option
-              v-for = "incomingVolume in privateIncomingVolumes"
-              :disabled = "incomingVolume.disabled"
-              :key = "incomingVolume.id"
-              :value = "incomingVolume.id">
-              {{ incomingVolume.name }}
+              v-for="volume in groupV[1]"
+              :disabled="volume.disabled"
+              :key="volume.id"
+              :value="volume.id">
+              {{ volume.name }}  
             </option>
           </optgroup>
         </select>
@@ -128,7 +113,7 @@
 </template>
 
 <script>
-import { makeHtmlFragmentForNifti } from '@/constants'
+import { makeHtmlFragmentForNifti, groupByVisibility } from '@/constants'
 import UploadVolumeComponent from '@/components/UploadVolume'
 import { mapActions, mapGetters, mapState } from 'vuex';
 import InfoPopover from '@/components/InfoPopover'
@@ -157,10 +142,14 @@ export default {
     }),
     ...mapState({
       allowUpload: 'allowUpload',
+      incomingVolumes: 'incomingVolumes',
       defaultIncomingVolumes: state => state.incomingVolumes.filter(v => !v.visibility),
       publicIncomingVolumes: state => state.incomingVolumes.filter(v => v.visibility === 'public'),
       privateIncomingVolumes: state => state.incomingVolumes.filter(v => v.visibility === 'private')
     }),
+    groupedVolumes: function () {
+      return groupByVisibility(this.incomingVolumes)
+    },
     showAlert: function () {
       return this.deletionError || this.deletionMessage
     },
@@ -212,9 +201,6 @@ export default {
     },
     referenceVolumes: function () {
       return this.$store.state.referenceVolumes
-    },
-    incomingVolumes: function () {
-      return [this.dummyIncomingVolume, ...this.$store.state.incomingVolumes]
     }
   },
   beforeRouteLeave: function (to, from, next) {
