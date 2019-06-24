@@ -43,15 +43,15 @@
       :defaultNiftiCheckboxState="true"
       :allowNiftiCheckboxToggle="false" />
 
-    <div class="card" v-if="pollingResults">
+    <div class="card" v-if="computedDepthMap">
       <div class="card-body">
         <h5 class="card-title">
           Depth Map ready
         </h5>
         <p>
-          Name: {{ pollingResults.depth_map_name ? pollingResults.depth_map_name : 'Untitled' }}
+          Name: {{ computedDepthMap.name || 'Untitled' }}
         </p>
-        <div @click="selectDepthMap({depthMap: pollingResults}); hideModal()" class="btn btn-primary">
+        <div @click="selectDepthMap({depthMap: computedDepthMap}); hideModal()" class="btn btn-primary">
           use this depth map
         </div>
       </div>
@@ -179,8 +179,13 @@ export default {
       'uploadUrl',
       'nonLinearBackendUrl'
     ]),
-    pollingResults: function () {
-      return this.pollingMixin__results
+    computedDepthMap: function () {
+      return this.pollingMixin__results && {
+        name: this.pollingMixin__results.depth_map_name,
+        visibility: 'private',
+        id: `private/${this.pollingMixin__results.depth_map_name}`,
+        imageSource: this.pollingMixin__results.depth_map_neuroglancer_url
+      }
     },
     pollingInProgress: function () {
       return this.pollingMixin__pollingInProgress || this.contactingPollingUrl

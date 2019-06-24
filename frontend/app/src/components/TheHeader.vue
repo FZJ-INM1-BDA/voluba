@@ -12,9 +12,20 @@
 
           <!-- about us -->
           <div
+            v-b-tooltip.hover.bottom="'About Voluba'"
             @click="openModal({ modalId: 'aboutus' })"
             class="mr-2">
             <font-awesome-icon icon="question-circle"></font-awesome-icon>
+          </div>
+
+          <!-- global lock -->
+          <div
+            v-b-tooltip.hover.bottom="'Lock Incoming Volume'"
+            @click="toggleGlobalLock"
+            class="mr-2 w-1em">
+            <font-awesome-icon
+              :icon="globalLockIcon">
+            </font-awesome-icon>
           </div>
 
           <!-- opacity -->
@@ -162,8 +173,12 @@ export default {
       _step2Mode: '_step2Mode',
       allowUpload: 'allowUpload',
       modeBtnVariant: state => state._step2Mode === 'overlay' ? 'outline-secondary' : 'info',
-      agreedToCookie: 'agreedToCookie'
+      agreedToCookie: 'agreedToCookie',
+      globalIncLock: state => state.incVolRotationLock && state.incVolTranslationLock && state.incVolScaleLock
     }),
+    globalLockIcon: function () {
+      return this.globalIncLock ?  'lock' : 'lock-open'
+    },
     loginText: function () {
       return this.user
         ? `Hi ${(this.user && this.user.name) || 'Loris Ipsum'}`
@@ -207,8 +222,24 @@ export default {
       modalMessage: 'modalMessage',
       openModal: 'openModal',
       setLocalStorage: 'setLocalStorage',
-      log: 'log'
+      log: 'log',
+      lockIncVol: 'lockIncVol'
     }),
+    toggleGlobalLock: function () {
+      if (this.globalIncLock) {
+        this.lockIncVol({
+          incVolTranslationLock: false,
+          incVolRotationLock: false,
+          incVolScaleLock: false
+        })
+      } else {
+        this.lockIncVol({
+          incVolTranslationLock: true,
+          incVolRotationLock: true,
+          incVolScaleLock: true
+        })
+      }
+    },
     toggleMode: function () {
       this.mode = this.mode === 'overlay' ? 'classic' : 'overlay'
     }
@@ -264,5 +295,10 @@ export default {
 .transparent:hover
 {
   opacity: 1.0;
+}
+
+.w-1em
+{
+  width:1em!important;
 }
 </style>
