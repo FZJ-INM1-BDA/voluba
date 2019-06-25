@@ -208,7 +208,7 @@ import { mapState, mapActions, mapGetters } from 'vuex'
 
 import { CORTICAL_ALIGNMENT } from '@/text'
 
-import  {getBackendLandmarkPairs, getTransformMatrixInNm, invertMat4FromArr, volumeIsDepthMap, groupByVisibility } from '@/constants'
+import  {getBackendLandmarkPairs, getTransformMatrixInNm, volumeIsDepthMap, groupByVisibility } from '@/constants'
 
 import NibComponent from '@/components/layout/Nib'
 import DraggableMixin from '@/mixins/DraggableMixin'
