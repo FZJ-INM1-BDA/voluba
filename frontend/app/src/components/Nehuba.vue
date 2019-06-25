@@ -101,6 +101,8 @@ import NehubaLandmarksOverlay from '@/components/NehubaLandmarksOverlay'
 import NehubaStatusCard from '@/components/NehubaStatusCard'
 import RotationWidgetComponent from '@/components/RotationWidget/RotationWidgetComponent'
 
+const DEFAULT_SHADER = getShader()
+
 export default {
   mixins: [
     NehubaBaseMixin,
@@ -132,6 +134,7 @@ export default {
        * TODO perhaps not necessary? since there is only a single user layer
        */
       userLayers: [],
+      previewLayerNames: [], 
       translation: null,
       rotation: null,
       committedTransform: null,
@@ -196,6 +199,33 @@ export default {
     })
   },
   watch: {
+    showOriginal: function (flag) {
+      if (this.$options.nonReactiveData.ngUserLayer) this.$options.nonReactiveData.ngUserLayer.setVisible(flag)
+    },
+    previewImage: function (dateObj) {
+      if (!dateObj) {
+        /**
+         * remove preview layer
+         */
+        this.clearUserLayers(this.previewLayerNames)
+      } else {
+        /**
+         * add preview layer
+         */
+         const layerObj = {
+           name: Date.now().toString(),
+           ...dateObj
+         }
+         const { name, imageSource: uri  } = layerObj
+         this.addUserLayer({
+           uri,
+           shader: getShader(this.incomingColor),
+           opacity: this.incomingColor[3],
+           name
+         })
+         this.previewLayerNames.push(name)
+      }
+    },
     appendNehubaFlag: function (flag) {
       if (flag === true) {
         this.nehubaBase__initNehuba()
@@ -263,9 +293,15 @@ export default {
     },
     selectedIncomingVolume: function (vol) {
       this.clearUserLayers()
+      this.$options.nonReactiveData.ngUserLayer = null
       if (vol) {
-        const url = vol.imageSource
-        this.addUserLayer(url)
+        const uri = vol.imageSource
+        const ngUserLayer = this.addUserLayer({
+          uri,
+          shader: getShader(this.incomingColor),
+          opacity: this.incomingColor[3]
+        })
+        this.$options.nonReactiveData.ngUserLayer = ngUserLayer
       }
     },
     mouseOverIncoming: function (val) {
@@ -482,8 +518,13 @@ export default {
        * if an incoming volume has already been selected, add the user layer
        */
       if (this.selectedIncomingVolume) {
-        const url = this.selectedIncomingVolume.imageSource
-        this.addUserLayer(url)
+        const uri = this.selectedIncomingVolume.imageSource
+        const ngUserLayer = this.addUserLayer({
+          uri,
+          shader: getShader(this.incomingColor),
+          opacity: this.incomingColor[3]
+        })
+        this.$options.nonReactiveData.ngUserLayer = ngUserLayer
       }
 
       /**
@@ -595,32 +636,42 @@ export default {
       }
 
     },
-    clearUserLayers: function () {
-      if (!this.$options.nehubaBase || !this.$options.nehubaBase.nehubaBase__nehubaViewer) {
-        return
-      }
-      this.$options.nonReactiveData.ngUserLayer = null
+    clearNamedLayers: function (arrOfNames) {
+
       const lm = this.$options.nehubaBase.nehubaBase__nehubaViewer.ngviewer.layerManager
-      this.userLayers
-        .map(ul => ul.name)
+      return arrOfNames
         .map(layerName => lm.getLayerByName(layerName))
-        .forEach(layer => lm.removeManagedLayer(layer))
-      this.userLayers = []
+        .map(layer => lm.removeManagedLayer(layer))
     },
-    addUserLayer: function (uri) {
+    clearUserLayers: function (arrOfNames) {
+      if (!this.$options.nehubaBase || !this.$options.nehubaBase.nehubaBase__nehubaViewer) {
+        throw new Error('nehubaBase not initialized')
+      }
+
+      if (!arrOfNames) {
+        this.clearNamedLayers(
+          this.userLayers.map(ul => ul.name)
+        )
+        this.userLayers = []
+      } else {
+        this.clearNamedLayers(arrOfNames)
+        this.userLayers = this.userLayers
+          .filter(({ name }) => arrOfNames.indexOf(name) < 0)
+      }
+    },
+    addUserLayer: function ({ uri, name = `userlayer-0`, opacity = 1.0, shader = DEFAULT_SHADER }) {
       if (!this.$options.nehubaBase ||  !this.$options.nehubaBase.nehubaBase__nehubaViewer) {
-        return
+        throw new Error('nehuba not yet initialized')
       }
       if (!uri) {
-        return
+        throw new Error('uri must be defined')
       }
       const viewer = this.$options.nehubaBase.nehubaBase__nehubaViewer.ngviewer
-      const name = `userlayer-0`
       const newLayer = {
         annotationColor: annotationColorFocus,
         source: uri,
-        opacity: this.incomingColor[3],
-        shader: getShader(this.incomingColor)
+        opacity,
+        shader
       }
       const newNgLayer = viewer.layerSpecification.getLayer(name, newLayer)
       const ngUserLayer = viewer.layerManager.addManagedLayer(newNgLayer)
@@ -628,7 +679,7 @@ export default {
         ...newLayer,
         name
       })
-      this.$options.nonReactiveData.ngUserLayer = ngUserLayer
+      return ngUserLayer
     }
   },
   computed: {
@@ -652,6 +703,10 @@ export default {
       overlayColorHex: state => state.overlayColor.hex || INCOMING_COLOR,
       showOverScreen: state => state.addLandmarkMode && state.addLandmarkMode === 'incoming' && state._step2Mode === 'classic',
     }),
+    ...mapState('viewerStore', [
+      'showOriginal',
+      'previewImage'
+    ]),
     showRotationWidget: function () {
       return this.appendNehubaFlag && this._step2Mode === 'overlay'
     },

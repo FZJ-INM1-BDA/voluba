@@ -4,8 +4,11 @@ import { incompatibleBrowserText } from '@/text'
 import Vuex from 'vuex'
 import Vue from 'vue'
 import axios from 'axios'
-import { NONLINEAR_BACKEND, AGREE_COOKIE_KEY, DEFAULT_BUNDLED_INCOMING_VOLUMES_0, DEFAULT_BUNDLED_INCOMING_VOLUMES_1, processImageMetaData, openInNewWindow, getShader } from '@/constants';
+import { AGREE_COOKIE_KEY, DEFAULT_BUNDLED_INCOMING_VOLUMES_0, DEFAULT_BUNDLED_INCOMING_VOLUMES_1, processImageMetaData, openInNewWindow, getShader } from '@/constants';
 import { getBackendLandmarkPairs } from '../constants';
+
+import nonLinear from './nonLinear'
+import viewerStore from './viewerStore'
 
 Vue.use(Vuex)
 
@@ -121,13 +124,15 @@ const DEFAULT_BUNDLED_INCOMING_VOLUMES = process.env.NODE_ENV === 'production'
 const ALLOW_UPLOAD = process.env.VUE_APP_ALLOW_UPLOAD
 
 const getStore = ({ user = null } = {}) => new Vuex.Store({
+  modules: {
+    nonLinear,
+    viewerStore
+  },
   state: {
     allowUpload: process.env.NODE_ENV !== 'production' || ALLOW_UPLOAD,
     production: process.env.NODE_ENV === 'production',
 
     uploadUrl: UPLOAD_URL,
-    nonLinearBackendUrl: NONLINEAR_BACKEND,
-    selectedDepthMap: null,
 
     user,
     pairLandmarkStartDragging: false,
@@ -224,9 +229,6 @@ const getStore = ({ user = null } = {}) => new Vuex.Store({
   mutations: {
     setProduction (state, { production }){
       state.production = production
-    },
-    setSelectedDepthMap (state, { depthMap }) {
-      state.selectedDepthMap = depthMap
     },
     setUploadUrl (state, { uploadUrl }) {
       state.uploadUrl = uploadUrl
@@ -400,24 +402,6 @@ const getStore = ({ user = null } = {}) => new Vuex.Store({
     log: function ({state}, payload) {
       if (!state.production)
         console.log(payload)
-    },
-    selectDepthMap: function ({ state, commit, dispatch }, { depthMap }) {
-
-      /**
-       * update inc volume
-       */
-      dispatch('updateIncVolumes')
-
-      /**
-       * concat the depthMap as a part of the incoming volume temporarily, whilst waiting for update inc volumes
-       */
-      const { incomingVolumes } = state
-      commit('setIncomingVolumes', { volumes: incomingVolumes.concat(depthMap) })
-
-      /**
-       * set depth map
-       */
-      commit('setSelectedDepthMap', { depthMap })
     },
     setLocalStorage: function (store, payload) {
       for (let key in payload) {
@@ -921,7 +905,9 @@ const getStore = ({ user = null } = {}) => new Vuex.Store({
             })
             .map(processImageMetaData)
           const newVolumes = DEFAULT_BUNDLED_INCOMING_VOLUMES.concat(volumes)
-
+          
+          dispatch('log', ['updateIncVolumes#axios#postprocess', newVolumes])
+          
           commit('setIncomingVolumes', {volumes: newVolumes})
           dispatch('updateIncVolumesResult', {
             error: error ? error : null,

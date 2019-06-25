@@ -111,7 +111,7 @@ export default {
     }
   },
   methods: {
-    ...mapActions([
+    ...mapActions('nonLinear', [
       'selectDepthMap'
     ]),
     showModal: function () {
@@ -177,6 +177,8 @@ export default {
     ]),
     ...mapState([
       'uploadUrl',
+    ]),
+    ...mapState('nonLinear',[
       'nonLinearBackendUrl'
     ]),
     computedDepthMap: function () {
