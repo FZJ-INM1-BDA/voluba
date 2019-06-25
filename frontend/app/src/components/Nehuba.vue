@@ -126,6 +126,7 @@ export default {
       subscriptions: [],
       viewportToDatas: [],
       incomingVolumeSelected: false,
+      selectedIncomingVolume: null,
 
       /**
        * all managed layers
@@ -196,6 +197,10 @@ export default {
     })
   },
   watch: {
+    selectedIncomingVolumeId: function (newId, oldId) {
+      if (newId === oldId) return
+      this.selectedIncomingVolume = this.incomingVolumes.find(v => v.id === newId)
+    },
     appendNehubaFlag: function (flag) {
       if (flag === true) {
         this.nehubaBase__initNehuba()
@@ -645,7 +650,8 @@ export default {
       _step2Mode: '_step2Mode',
       _step2OverlayFocus: '_step2OverlayFocus',
       incTransformMatrix: 'incTransformMatrix',
-      selectedIncomingVolume: state => state.incomingVolumes.find(v => v.id === state.selectedIncomingVolumeId),
+      incomingVolumes: 'incomingVolumes',
+      selectedIncomingVolumeId: 'selectedIncomingVolumeId',
       incVolTranslationLock: 'incVolTranslationLock',
       incVolRotationLock: 'incVolRotationLock',
       flippedState: 'flippedState',
