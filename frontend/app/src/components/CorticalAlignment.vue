@@ -208,7 +208,7 @@ import { mapState, mapActions, mapGetters } from 'vuex'
 
 import { CORTICAL_ALIGNMENT } from '@/text'
 
-import  {getBackendLandmarkPairs, getTransformMatrixInNm, invertMat4FromArr, volumeIsDepthMap, groupByVisibility } from '@/constants'
+import  {getBackendLandmarkPairs, getTransformMatrixInNm, volumeIsDepthMap, groupByVisibility } from '@/constants'
 
 import NibComponent from '@/components/layout/Nib'
 import DraggableMixin from '@/mixins/DraggableMixin'
@@ -366,7 +366,8 @@ export default {
 
       const {landmarkPairs, referenceLandmarks, incomingLandmarks} = this
       const lmp = getBackendLandmarkPairs({ landmarkPairs, referenceLandmarks, incomingLandmarks })
-      const xformMatrixMm = getTransformMatrixInNm(invertMat4FromArr(this.incTransformMatrix)).map((arr, i) => i === 3 ? arr : arr.map((v, idx) => idx === 3 ? v / 1e6 : v))
+      const xformMatrixMm = getTransformMatrixInNm(this.incTransformMatrix)
+        .map((arr, i) => i === 3 ? arr : arr.map((v, idx) => idx === 3 ? v / 1e6 : v))
       const corticalAlignmentBody = {
         image_service_base_url: this.uploadUrl,
         image_name: this.selectedIncomingVolume.name,
