@@ -427,6 +427,9 @@ export default {
         capture: true
       })
     },
+    /**
+     * TODO work with collapse flag in future (?)
+     */
     pushUndo: function (meta = {}) {
       if (!this.pushUndoFlag) {
         return

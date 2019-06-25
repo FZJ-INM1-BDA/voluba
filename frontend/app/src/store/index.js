@@ -9,42 +9,9 @@ import { getBackendLandmarkPairs } from '../constants';
 
 import nonLinear from './nonLinear'
 import viewerStore from './viewerStore'
+import undoStore from './undoStore'
 
 Vue.use(Vuex)
-
-const getStateSnapshot = ({ addLandmarkMode, incTransformMatrix, referenceLandmarks, incomingLandmarks, landmarkPairs }) => {
-  return {
-    incTransformMatrix: Array.from(incTransformMatrix),
-    referenceLandmarks,
-    incomingLandmarks,
-    landmarkPairs,
-    addLandmarkMode
-  }
-}
-
-const restoreState = ({commit}, {addLandmarkMode = false, incTransformMatrix, referenceLandmarks, incomingLandmarks, landmarkPairs}) => {
-  if ( incTransformMatrix ) {
-    commit('setIncTransformMatrix', { matrix: incTransformMatrix })
-  }
-  if ( referenceLandmarks ) {
-    commit('setReferenceLandmarks', {
-      referenceLandmarks
-    })
-  }
-  if ( incomingLandmarks ) {
-    commit('setIncomingLandmarks', {
-      incomingLandmarks
-    })
-  }
-  if ( landmarkPairs ) {
-    commit('setLandmarkPairs', {
-      landmarkPairs
-    })
-  }
-  commit('setLandmarkMode', {
-    mode: addLandmarkMode
-  })
-}
 
 let errorTimeoutId = null
 
@@ -126,7 +93,8 @@ const ALLOW_UPLOAD = process.env.VUE_APP_ALLOW_UPLOAD
 const getStore = ({ user = null } = {}) => new Vuex.Store({
   modules: {
     nonLinear,
-    viewerStore
+    viewerStore,
+    undoStore
   },
   state: {
     allowUpload: process.env.NODE_ENV !== 'production' || ALLOW_UPLOAD,
@@ -139,9 +107,6 @@ const getStore = ({ user = null } = {}) => new Vuex.Store({
     agreedToCookie: localStorage.getItem(AGREE_COOKIE_KEY),
 
     flippedState: [1, 1, 1],
-
-    undoStack: [],
-    redoStack: [],
 
     /**
      * default: false
@@ -264,12 +229,6 @@ const getStore = ({ user = null } = {}) => new Vuex.Store({
     setBackendQueryError (state, { error }) {
       state.backendQueryError = error
 
-    },
-    setUndoStack (state, { undoStack }) {
-      state.undoStack = undoStack
-    },
-    setRedoStack (state, { redoStack }) {
-      state.redoStack = redoStack
     },
     /**
      * TODO
@@ -670,85 +629,6 @@ const getStore = ({ user = null } = {}) => new Vuex.Store({
         })
         commit('setIncomingLandmarks', { incomingLandmarks })
       }
-    },
-    pushUndo: function ({ commit, state }, { name, desc, collapse, overwrite = {} }) {
-      /**
-       * items with the same collapseId will not generate a new undo stack 
-       */
-
-      if (collapse && state.undoStack.length > 0 && state.undoStack.slice(-1)[0].collapse === collapse)
-        return
-      const stateSnapshot = getStateSnapshot({
-        ...state,
-        ...overwrite
-      })
-      const undoItem = {
-        id: Date.now(),
-        name,
-        desc,
-        collapse,
-        state: stateSnapshot
-      }
-      /**
-       * older undo items, remove collapseid. when new item is added on top, they should have no collapsability
-       */
-      const undoStack = state.undoStack
-        .map(({ collapse, ...rest }) => rest)
-        .concat(undoItem)
-      commit('setUndoStack', { undoStack })
-      commit('setRedoStack', { redoStack: [] })
-    },
-    undo: function ({commit, state}) {
-      if (state.undoStack.length === 0) {
-        /**
-         * nothing in the undo stack
-         */
-        return
-      }
-
-      /**
-       * collapse state is not to be pushed onto the redo stack
-       */
-      const {id, state: _state, collapse, ...rest} = state.undoStack.slice(-1)[0]
-
-      const stateSnapshot = getStateSnapshot(state)
-
-      const newRedoItem = {
-        id: Date.now(),
-        state: stateSnapshot,
-        ...rest
-      }
-
-      const redoStack = state.redoStack.concat(newRedoItem)
-      const undoStack = state.undoStack.slice(0, -1)
-
-      restoreState({commit}, _state)
-      
-      commit('setUndoStack', { undoStack })
-      commit('setRedoStack', { redoStack })
-    },
-    redo: function ({commit, state}) {
-      if (state.redoStack.length === 0) {
-        return
-      }
-
-      const {id, state: _state, ...rest} = state.redoStack.slice(-1)[0]
-
-      const stateSnapshot = getStateSnapshot(state)
-
-      const newUndoItem = {
-        id: Date.now(),
-        state: stateSnapshot,
-        ...rest
-      }
-
-      const undoStack = state.undoStack.concat(newUndoItem)
-      const redoStack = state.redoStack.slice(0, -1)
-
-      restoreState({commit}, _state)
-
-      commit('setUndoStack', { undoStack })
-      commit('setRedoStack', { redoStack })
     },
     applyCalculatedTransform ({ commit, state }) {
 
@@ -1578,8 +1458,12 @@ const getStore = ({ user = null } = {}) => new Vuex.Store({
       commit('setIncomingLandmarks', { incomingLandmarks: [] })
       commit('setLandmarkPairs', { landmarkPairs: [] })
       dispatch('selectIncomingVolumeWithId', null)
-      commit('setUndoStack', { undoStack: [] })
-      commit('setRedoStack', { redoStack: [] })
+
+      /**
+       * maybe move to undoStore? subscribe to root actions?
+       */
+      commit('undoStore/setUndoStack', { undoStack: [] })
+      commit('undoStore/setRedoStack', { redoStack: [] })
       commit('setLandmarkMode', { mode: false })
       commit('_setStep2Mode', { mode: 'overlay' })
 

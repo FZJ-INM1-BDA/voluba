@@ -166,11 +166,13 @@ export default {
     ...mapState({
       production: 'production',
       appendNehubaFlag: 'appendNehubaFlag',
-      undoStack: 'undoStack',
-      redoStack: 'redoStack',
       incTransformMatrix: 'incTransformMatrix',
       addLandmarkMode: 'addLandmarkMode'
     }),
+    ...mapState('undoStore', [
+      'undoStack',
+      'redoStack'
+    ]),
     startFromScratchTitle: function() {
       return START_FROM_SCRATCH_MODAL_TITLE;
     },
@@ -199,11 +201,15 @@ export default {
     ...mapMutations({
       setProduction: 'setProduction'
     }),
-    ...mapActions({
-      startFromScratch: 'startFromScratch',
-      changeLandmarkMode: 'changeLandmarkMode',
-      log: 'log'
-    }),
+    ...mapActions([
+      'startFromScratch',
+      'changeLandmarkMode',
+      'log'
+    ]),
+    ...mapActions('undoStore', [
+      'undo',
+      'redo'
+    ]),
     startRegistration: function () {
       this.showSelectVolumesModal = false
     },
@@ -215,12 +221,12 @@ export default {
       const { key, ctrlKey } = event;
       if (ctrlKey) {
         if (key === "z") {
-          this.$store.dispatch("undo");
+          this.undo()
           event.stopPropagation();
           event.preventDefault();
         }
         if (key === "y") {
-          this.$store.dispatch("redo");
+          this.redo()
           event.stopPropagation();
           event.preventDefault();
         }

@@ -515,7 +515,7 @@ export default {
       this.rotIncBy({ quaternion })
     },
     isotropicScaleEvent: function ({value}) {
-      this.$store.dispatch('pushUndo', {
+      this.pushUndo({
         name: `isotropic scale by slider`,
         collapse: `scaleBySliderIsotropic`
       })
@@ -562,7 +562,7 @@ export default {
         quat.invert(incRot, incRot)
         vec3.transformQuat(pos, pos, incRot)
 
-        this.$store.dispatch('pushUndo', {
+        this.pushUndo({
           name: 'translate by slider delta',
           collapse: 'translateBySliderDelta'
         })
@@ -573,7 +573,7 @@ export default {
         })
       } else if (value) {
         
-        this.$store.dispatch('pushUndo', {
+        this.pushUndo({
           name: 'translate by slider value',
           collapse: 'translateBySliderValue'
         })
@@ -586,7 +586,7 @@ export default {
 
     },
     rotationEvent: function ({ axis, delta }) {
-      this.$store.dispatch('pushUndo', {
+      this.pushUndo({
         name: `rotate ${axis} by slider`,
         collapse: `rotateBySlider${axis}`
       })
@@ -604,7 +604,7 @@ export default {
       })
     },
     scaleEvent: function ({ axis, value }) {
-      this.$store.dispatch('pushUndo', {
+      this.pushUndo({
         name: `scale ${axis} by slider`,
         collapse: `scaleBySlider${axis}`
       })
@@ -615,7 +615,7 @@ export default {
       })
     },
     flipAxis: function (axis) {
-      this.$store.dispatch('pushUndo', {
+      this.pushUndo({
         name: `flip on axis ${axis}`
       })
       this.$store.dispatch('flipAxis', { axis })
