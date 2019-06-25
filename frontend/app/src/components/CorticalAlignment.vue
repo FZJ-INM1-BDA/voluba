@@ -146,14 +146,14 @@
               </div>
 
               <!-- compute alignment -->
-              <div class="mt-2 input-group input-group-sm">
+              <div class="mt-2 input-group input-group-sm w-100 flex-nowrap overflow-hidden">
                 <div class="input-group-prepend">
 
                   <!-- compute btn -->
                   <div
                     @click="computeAlignments"
                     :class="computeAlignmentBtnEnabled ? '' : 'disabled'"
-                    class="btn btn-outline-primary btn-block">
+                    class="btn btn-outline-primary btn-block white text-nowrap">
                     Compute alignment
                   </div>
                 </div>
@@ -169,13 +169,13 @@
             </div>
 
             <!-- view result -->
-            <div class="mt-2 card" v-if="pollingResults">
+            <div class="mt-2 card" v-if="computedNonLinearAlignedImage || true">
               <div class="card-body">
                 <h5 class="card-title">
                   Cortical Alignment Completed
                 </h5>
                 <p>
-                  Name: {{ pollingResults.transformed_image_name ? pollingResults.transformed_image_name : 'Untitled' }}
+                  Name: {{ (computedNonLinearAlignedImage && computedNonLinearAlignedImage.name) || 'Untitled' }}
                 </p>
 
                 <div class="input-group input-group-sm">
@@ -185,11 +185,17 @@
                     </span>
                   </div>
                   <div class="input-group-append">
-                    <div class="btn btn-outline-primary">
-                      original
+                    <div
+                      @click="toggleShowOriginal"
+                      :class="visualiseLinearBtnClass"
+                      class="btn">
+                      linear
                     </div>
-                    <div class="btn btn-outline-primary">
-                      registered
+                    <div
+                      @click="togglePreview"
+                      :class="visualiseNonLinearBtnClass"
+                      class="btn">
+                      non-linear
                     </div>
                   </div>
                 </div>
@@ -256,13 +262,21 @@ export default {
       'uploadUrl',
       'incomingVolumes',
       'landmarkPairs',
-      'nonLinearBackendUrl',
 
       'incTransformMatrix',
 
       'landmarkPairs',
       'referenceLandmarks',
-      'incomingLandmarks',
+      'incomingLandmarks'
+    ]),
+    ...mapState('nonLinear', [
+      'nonLinearBackendUrl',
+    ]),
+    ...mapState('viewerStore', [
+      'showOriginal',
+      'previewImage'
+    ]),
+    ...mapGetters('nonLinear', [
       'selectedDepthMap'
     ]),
     processedVolumes: function () {
@@ -345,11 +359,36 @@ export default {
     },
     pollingResults: function () {
       return this.pollingMixin__results
+    },
+    computedNonLinearAlignedImage: function () {
+      return this.pollingMixin__results && {
+        name: this.pollingMixin__results.transformed_image_name,
+        visibility: 'private',
+        id: `private/${this.pollingMixin__results.transformed_image_name}`,
+        imageSource: this.pollingMixin__results.transformed_image_neuroglancer_url,
+        transform: this.pollingMixin__results.transformation_matrix
+      }
+    },
+    visualiseLinearBtnClass: function () {
+      return this.showOriginal
+        ? `btn-primary`
+        : `btn-outline-secondary`
+    },
+    visualiseNonLinearBtnClass: function () {
+      return this.previewImage
+        ? 'btn-primary'
+        : 'btn-outline-secondary'
     }
   },
   methods: {
     ...mapActions([
-      'openModal',
+      'openModal'
+    ]),
+    ...mapActions('viewerStore', [
+      'toggleShowOriginal',
+      'showPreviewImage'
+    ]),
+    ...mapActions('nonLinear', [
       'selectDepthMap'
     ]),
     selectDepthMapOnChangeHandler: function (event) {
@@ -400,6 +439,12 @@ export default {
           this.pollingMixin__pollingError = err
         })
       
+    },
+    togglePreview: function ({ uri }) {
+      if (this.previewImage) return this.showPreviewImage({ previewImage: null })
+      this.showPreviewImage({
+        previewImage: this.computedNonLinearAlignedImage
+      })
     }
   },
 }

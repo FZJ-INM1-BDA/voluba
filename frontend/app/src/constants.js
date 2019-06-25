@@ -26,7 +26,7 @@ export const arrayBufferToBase64String = (arraybuffer) => {
 export const IMAGE_SERVICE_NAME = `CHUNMA`
 export const SEGMENTATION_EXPLANATION = `A segmentation nii file can be ingested differently to an image nii file`
 
-export const getShader = (rgb) => `void main() {
+export const getShader = (rgb = [1.0, 1.0, 1.0]) => `void main() {
   float x = toNormalized(getDataValue());
   emitRGB(vec3(x * ${rgb[0].toFixed(1)}, x * ${rgb[1].toFixed(1)}, x * ${rgb[2].toFixed(1)} ));
 }`
@@ -756,8 +756,7 @@ export const UPLOAD_URL = process.env.VUE_APP_UPLOAD_URL || `http://ime178.ime.k
 export const NONLINEAR_BACKEND = process.env.VUE_APP_NONLINEAR_BACKEND || `http://localhost:5000`
 
 export const processImageMetaData = ({id:defaultId, visibility = 'public', name = 'Untitled', links = {}, extra = {}, uploadUrl } = {}) => {
-  const { fileName } = extra
-  const id = `${visibility}/${fileName}`
+  const id = `${visibility}/${name}`
   const imageSource = links.normalized && `precomputed://${uploadUrl}${links.normalized}`
   const payload = {
     visibility,
