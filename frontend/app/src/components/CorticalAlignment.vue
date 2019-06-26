@@ -169,7 +169,7 @@
             </div>
 
             <!-- view result -->
-            <div class="mt-2 card" v-if="computedNonLinearAlignedImage || true">
+            <div class="mt-2 card" v-if="computedNonLinearAlignedImage">
               <div class="card-body">
                 <h5 class="card-title">
                   Cortical Alignment Completed
