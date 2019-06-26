@@ -61,6 +61,7 @@
 </template>
 <script>
 import axios from 'axios'
+import { mapState } from 'vuex';
 export default {
   data: function () {
     return {
@@ -68,6 +69,10 @@ export default {
     }
   },
   computed: {
+    ...mapState('landmarksStore', [
+      'referenceLandmarks',
+      'incomingLandmarks'
+    ]),
     selectedTransformationIndex: function () {
       return this.$store.state.selectedTransformationIndex
     },
@@ -144,8 +149,8 @@ export default {
     createBackendData: function () {
       const lmPairs = this.$store.state.landmarkPairs
         .map(pair => {
-          const refLm = this.$store.state.referenceLandmarks.find(rLm => rLm.id === pair.refId)
-          const incLm = this.$store.state.incomingLandmarks.find(iLm => iLm.id === pair.incId)
+          const refLm = this.referenceLandmarks.find(rLm => rLm.id === pair.refId)
+          const incLm = this.incomingLandmarks.find(iLm => iLm.id === pair.incId)
           return refLm && incLm
             ? {
               active: pair.active,

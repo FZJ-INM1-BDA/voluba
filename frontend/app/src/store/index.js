@@ -1,5 +1,5 @@
 
-import { randomColor, generateId, UPLOAD_URL, computeDeterminant, saveToFile } from '@//constants'
+import { UPLOAD_URL, computeDeterminant, saveToFile } from '@//constants'
 import { incompatibleBrowserText } from '@/text'
 import Vuex from 'vuex'
 import Vue from 'vue'
@@ -10,6 +10,7 @@ import { getBackendLandmarkPairs } from '../constants';
 import nonLinear from './nonLinear'
 import viewerStore from './viewerStore'
 import undoStore from './undoStore'
+import landmarksStore from './landmarksStore'
 
 Vue.use(Vuex)
 
@@ -94,7 +95,8 @@ const getStore = ({ user = null } = {}) => new Vuex.Store({
   modules: {
     nonLinear,
     viewerStore,
-    undoStore
+    undoStore,
+    landmarksStore
   },
   state: {
     allowUpload: process.env.NODE_ENV !== 'production' || ALLOW_UPLOAD,
@@ -105,6 +107,8 @@ const getStore = ({ user = null } = {}) => new Vuex.Store({
     user,
     pairLandmarkStartDragging: false,
     agreedToCookie: localStorage.getItem(AGREE_COOKIE_KEY),
+
+    landmarkControlVisible: false,
 
     flippedState: [1, 1, 1],
 
@@ -171,11 +175,6 @@ const getStore = ({ user = null } = {}) => new Vuex.Store({
 
     mouseoverUserlayer: null,
 
-    addLandmarkMode: false,
-    landmarkControlVisible: false,
-    referenceLandmarks: [],
-    incomingLandmarks: [],
-    landmarkPairs: [],
 
     corticalAlignmentVisible: false,
 
@@ -192,6 +191,9 @@ const getStore = ({ user = null } = {}) => new Vuex.Store({
     landmarkRMSE: null
   },
   mutations: {
+    setLandmarkControlVisibility (state, { visible }) {
+      state.landmarkControlVisible = visible
+    },
     setProduction (state, { production }){
       state.production = production
     },
@@ -229,16 +231,6 @@ const getStore = ({ user = null } = {}) => new Vuex.Store({
     setBackendQueryError (state, { error }) {
       state.backendQueryError = error
 
-    },
-    /**
-     * TODO
-     * fix inconsistency
-     */
-    setLandmarkMode (state, { mode }) {
-      state.addLandmarkMode = mode
-    },
-    setLandmarkControlVisibility (state, { visible }) {
-      state.landmarkControlVisible = visible
     },
     setCorticalAlignmentVisibility (state, { visible }) {
       state.corticalAlignmentVisible = visible
@@ -312,28 +304,6 @@ const getStore = ({ user = null } = {}) => new Vuex.Store({
       state.landmarkRMSE = newRMSE
     },
 
-    /**
-     * Landmarks mutation
-     */
-
-    setReferenceLandmarks (state, { referenceLandmarks }) {
-      state.referenceLandmarks = referenceLandmarks
-    },
-    setIncomingLandmarks (state, { incomingLandmarks }) {
-      state.incomingLandmarks = incomingLandmarks
-    },
-    setLandmarkPairs (state, { landmarkPairs }) {
-      state.landmarkPairs = landmarkPairs
-    },
-
-    resetReferenceLandmark (state, { id }) {
-      const lm = state.referenceLandmarks.find(lm => lm.id === id)
-      lm.coord = state.primaryNehubaNavigationPosition.map(v => v / 1e6)
-    },
-    resetIncomingLandmark (state, { id }) {
-      const lm = state.incomingLandmarks.find(lm => lm.id === id)
-      lm.coord = state.secondaryNehubaNavigationPosition.map(v => v / 1e6)
-    },
 
     setIncTransformMatrix (state, { matrix}) {
       state.incTransformMatrix = matrix
@@ -350,12 +320,6 @@ const getStore = ({ user = null } = {}) => new Vuex.Store({
 
       state.incTransformMatrix = Array.from(incM)
     },
-    setRefLandmark (state, { id, lm: newLm }) {
-      state.referenceLandmarks = state.referenceLandmarks.map(lm => lm.id === id ? newLm : lm)
-    },
-    setIncLandmark (state, {id, lm: newLm}) {
-      state.incomingLandmarks = state.incomingLandmarks.map(lm => lm.id === id ? newLm : lm)
-    }
   },
   actions: {
     log: function ({state}, payload) {
@@ -426,209 +390,12 @@ const getStore = ({ user = null } = {}) => new Vuex.Store({
           dispatch('modalMessage', { title: 'Incompatible browser', body: incompatibleBrowserText, variant: 'danger' })
         })
     },
-    changeLandmarkMode: function ({ state, commit, dispatch }, { mode }) {
-      if (!mode) {
-        const pairedRefLmId = new Set(state.landmarkPairs.map(lm => lm.refId))
-        const pairedIncLmId = new Set(state.landmarkPairs.map(lm => lm.incId))
-        const refLmTobePruned = state.referenceLandmarks.filter(lm => !pairedRefLmId.has(lm.id))
-        const incLmTobePruned = state.incomingLandmarks.filter(lm => !pairedIncLmId.has(lm.id))
-        if(refLmTobePruned.length > 0 || incLmTobePruned.length > 0) {
-          dispatch('pushUndo', {
-            name: 'pruning unpaired landmarks'
-          })
-          if (incLmTobePruned.length > 0) {
-            const incLmSet = new Set(incLmTobePruned.map(lm => lm.id))
-            commit('setIncomingLandmarks', {
-              incomingLandmarks: state.incomingLandmarks.filter(lm => !incLmSet.has(lm.id))
-            })
-          }
-          if (refLmTobePruned.length > 0) {
-            const refLmSet = new Set(refLmTobePruned.map(lm => lm.id))
-            commit('setReferenceLandmarks', {
-              referenceLandmarks: state.referenceLandmarks.filter(lm => !refLmSet.has(lm.id))
-            })
-          }
-        }
-      }
-      commit('setLandmarkMode', { mode })
-    },
     lockIncVol: function ({ commit, state }, { incVolTranslationLock = null, incVolRotationLock = null, incVolScaleLock = null }) {
       commit('setIncVolLoc', {
         incVolTranslationLock : incVolTranslationLock !== null ? incVolTranslationLock : state.incVolTranslationLock,
         incVolRotationLock: incVolRotationLock !== null ? incVolRotationLock : state.incVolRotationLock,
         incVolScaleLock: incVolScaleLock !== null ? incVolScaleLock : state.incVolScaleLock
       })
-    },
-    addLmp: function ({commit, dispatch, state}, { refId, incId }) {
-      const id = generateId(state.landmarkPairs)
-      dispatch('pushUndo', {
-        name: 'link landmark pair'
-      })
-      commit('setLandmarkPairs', {
-        landmarkPairs: state.landmarkPairs.concat({
-          refId,
-          incId,
-          id,
-          name: id,
-          color: randomColor()
-        })
-      })
-    },
-    gotoLm: function ({dispatch, state}, {volume, id}) {
-      const payload = {}
-      if (volume === 'reference') {
-        const refLm = state.referenceLandmarks.find(lm => lm.id === id)
-        if (!refLm)
-          return
-        payload.coord = refLm.coord
-      }
-      if (volume === 'incoming') {
-        const {vec3, mat4} = window.export_nehuba
-        const incLm = state.incomingLandmarks.find(lm => lm.id === id)
-        if (!incLm)
-          return
-        const incXform = mat4.fromValues(...state.incTransformMatrix)
-        const coord = vec3.fromValues(...incLm.coord.map(v => v * 1e6))
-        vec3.transformMat4(coord, coord, incXform)
-        payload.coord = Array.from(coord).map(v => v / 1e6)
-      }
-
-      if (payload.coord) {
-        if (state._step2Mode === 'overlay' || volume === 'reference') {
-          dispatch('setPrimaryNehubaNavigation', payload)
-        } 
-        if (state._step2Mode === 'classic' && volume === 'incoming') {
-          dispatch('setSecondaryNehubaNavigation', payload)
-        }
-      }
-        
-    },
-    removeLmp: function ({commit, dispatch, state}, { id, incId, refId }) {
-      dispatch('pushUndo', {
-        name: `unlink landmark pair`
-      })
-      const landmarkPairs = state.landmarkPairs.filter(lmp => !(
-        id && lmp.id === id ||
-        incId && lmp.incId === incId ||
-        refId && lmp.refId === refId
-      ))
-
-      commit('setLandmarkPairs', { landmarkPairs })
-
-      /**
-       * also prune the ref/inc lmp
-       */
-      const pairedRefLmId = new Set(state.landmarkPairs.map(lm => lm.refId))
-      const pairedIncLmId = new Set(state.landmarkPairs.map(lm => lm.incId))
-      const refLmTobePruned = state.referenceLandmarks.filter(lm => !pairedRefLmId.has(lm.id))
-      const incLmTobePruned = state.incomingLandmarks.filter(lm => !pairedIncLmId.has(lm.id))
-
-      if (incLmTobePruned.length > 0) {
-        const incLmSet = new Set(incLmTobePruned.map(lm => lm.id))
-        commit('setIncomingLandmarks', {
-          incomingLandmarks: state.incomingLandmarks.filter(lm => !incLmSet.has(lm.id))
-        })
-      }
-      if (refLmTobePruned.length > 0) {
-        const refLmSet = new Set(refLmTobePruned.map(lm => lm.id))
-        commit('setReferenceLandmarks', {
-          referenceLandmarks: state.referenceLandmarks.filter(lm => !refLmSet.has(lm.id))
-        })
-      }
-    },
-    removeAllLm: function ({ commit, dispatch }, { volume }) {
-      dispatch('pushUndo', {
-        name: `remove all ${volume} landmark`
-      })
-      if (volume === 'reference') {
-        commit('setReferenceLandmarks', { referenceLandmarks: [] })
-      }
-      if (volume === 'incoming') {
-        commit('setIncomingLandmarks', { incomingLandmarks: [] })
-      }
-      commit('setLandmarkPairs', { landmarkPairs: [] })
-    },
-    removeAllLmp: function ({ dispatch, commit }) {
-      dispatch('pushUndo', {
-        name: 'remove all landmark pairs'
-      })
-      commit('setLandmarkPairs', { landmarkPairs: [] })
-      /**
-       * removing all lmp also removes all ref and inc lms
-       * 
-       */
-      commit('setReferenceLandmarks', {
-        referenceLandmarks: []
-      })
-      commit('setIncomingLandmarks', {
-        incomingLandmarks: []
-      })
-    },
-    removeLm: function ({commit, dispatch, state}, {volume, id}) {
-      let lmPair = {}
-      dispatch('pushUndo', {
-        name: `remove ${volume} landmark`
-      })
-      if (volume === 'reference') {
-        const referenceLandmarks = state.referenceLandmarks.filter(lm => lm.id !== id)
-        commit('setReferenceLandmarks', { referenceLandmarks })
-        lmPair.refId = id
-      }
-      if (volume === 'incoming') {
-        const incomingLandmarks = state.incomingLandmarks.filter(lm => lm.id !== id)
-        commit('setIncomingLandmarks', { incomingLandmarks })
-        lmPair.incId = id
-      }
-
-      const landmarkPairs = state.landmarkPairs.filter(lm => 
-        !(
-          (lmPair.refId && lm.refId === lmPair.refId) || 
-          (lmPair.incId && lm.incId === lmPair.incId)
-        ))
-      commit('setLandmarkPairs', { landmarkPairs })
-    },
-    setLmsActive: function ({ commit, state }, { volume, active }) {
-      if (volume === 'reference') {
-        commit('setReferenceLandmarks', 
-          { referenceLandmarks : state.referenceLandmarks.map(lm => {
-            return {
-              ...lm,
-              active
-            }
-          }) 
-        })
-      }
-      if (volume === 'incoming') {
-        commit('setIncomingLandmarks', 
-          { incomingLandmarks : state.incomingLandmarks.map(lm => {
-            return {
-              ...lm,
-              active
-            }
-          }) 
-        })
-
-      }
-    },
-    toggleLmActive: function ({commit, state}, { volume, id }) {
-      if (volume === 'reference') {
-        const referenceLandmarks = state.referenceLandmarks.map(lm => {
-          return {
-            ...lm,
-            active: lm.id === id ? !lm.active : lm.active
-          }
-        })
-        commit('setReferenceLandmarks', { referenceLandmarks })
-      }
-      if (volume === 'incoming') {
-        const incomingLandmarks = state.incomingLandmarks.map(lm => {
-          return {
-            ...lm,
-            active: lm.id === id ? !lm.active : lm.active
-          }
-        })
-        commit('setIncomingLandmarks', { incomingLandmarks })
-      }
     },
     applyCalculatedTransform ({ commit, state }) {
 
@@ -642,7 +409,9 @@ const getStore = ({ user = null } = {}) => new Vuex.Store({
       commit('setIncTransformMatrix', { matrix })
     },
     computeXform ({ commit, state, dispatch }) {
-      if (state.landmarkPairs.length < 3) {
+      const { landmarksStore } = state
+      const { landmarkPairs } = landmarksStore
+      if (landmarkPairs.length < 3) {
         return
       }
       
@@ -650,7 +419,7 @@ const getStore = ({ user = null } = {}) => new Vuex.Store({
         return
       }
 
-      const lmPairs = getBackendLandmarkPairs(state)
+      const lmPairs = getBackendLandmarkPairs(landmarksStore)
       
       const data = {
         'source_image': state.selectReference, // TODO update
@@ -691,32 +460,6 @@ const getStore = ({ user = null } = {}) => new Vuex.Store({
     },
     corticalAlignmentVisibilityChanged ({ commit }, { visible }) {
       commit('setCorticalAlignmentVisibility', { visible })
-    },
-    translateLandmarkPosBy ({commit, dispatch, state}, { volume, id, value}) {
-
-      const lm = volume === 'reference'
-        ? state.referenceLandmarks.find(lm => lm.id === id)
-        : volume === 'incoming'
-          ? state.incomingLandmarks.find(lm => lm.id === id)
-          : null
-      if (!lm)
-        return
-
-      dispatch('pushUndo', {
-        name: `translating ${lm.name} in ${volume}`,
-        collapse: `translating ${lm.name} in ${volume}`
-      })
-
-      const commitSignature = volume === 'reference'
-        ? 'setRefLandmark'
-        : 'setIncLandmark'
-      commit(commitSignature, {
-        id: id,
-        lm: {
-          ...lm,
-          coord: lm.coord.map((v, idx) => v + value[idx])
-        }
-      })
     },
     deleteIncomingVolume ({ state, dispatch, getters, commit }, { id, incomingVolume}) {
       /**
@@ -931,333 +674,7 @@ const getStore = ({ user = null } = {}) => new Vuex.Store({
       commit('changeLandmarkDeterminant', determinant)
       commit('changeLandmarkRMSE', RMSE)
     },
-    addLandmark ({commit, dispatch, state}, {landmark = {}}) {
-      dispatch('pushUndo', {
-        name: `add ${state.addLandmarkMode} landmark`,
-        /**
-         * otherwise, when user undo the adding of reference lm,
-         * addlandmarkmode will continue to be 'reference'
-         */
-        overwrite: state.addLandmarkMode === 'reference'
-          ? { addLandmarkMode: false }
-          : state.addLandmarkMode === 'incoming'
-            ? { addLandmarkMode: 'incoming' }
-            : {}
-      })
-      if (state.addLandmarkMode === 'reference') {
-        const refId = generateId(state.referenceLandmarks).toString()
-        const newReferenceLandmark = {
-          id: refId,
-          name: refId,
-          /**
-           * position in nm
-           */
-          coord: state.primaryNehubaNavigationPosition.map(v => v / 1e6),
-          active: true,
-          ...landmark
-        }
-        commit('setLandmarkMode', {
-          mode: 'incoming'
-        })
-        commit('setReferenceLandmarks', {
-          referenceLandmarks: state.referenceLandmarks.concat(newReferenceLandmark)
-        })
-      } else if (state.addLandmarkMode === 'incoming') {
-        /**
-         * currently, only way addLandmark action is triggered is in overlay mode
-         * as a result, we need to calculate the actual coord, from primary nehuba navigation to inc vol space
-         */
-        const {mat4, vec3 } = window.export_nehuba
 
-        const coord = (landmark.coord && landmark.coord.map(v => v * 1e6)) || state.primaryNehubaNavigationPosition
-        const xform = mat4.fromValues(...state.incTransformMatrix)
-        mat4.invert(xform, xform)
-        const pos = vec3.fromValues(...coord)
-        vec3.transformMat4(pos, pos, xform)
-
-        const incId = generateId(state.incomingLandmarks).toString()
-        const newIncomingLandmark = {
-          id: incId,
-          name: incId,
-          active: true,
-          coord: Array.from(pos).map(v => v / 1e6)
-        }
-        const refLm = state.referenceLandmarks.find(lm => state.landmarkPairs.findIndex(lmp => lmp.refId === lm.id) < 0)
-        if (refLm) {
-          const id = generateId(state.landmarkPairs)
-          const newLmp = {
-            id,
-            refId: refLm.id,
-            incId,
-            name: id,
-            active: true,
-            color: randomColor()
-          }
-          commit('setLandmarkPairs', {
-            landmarkPairs: state.landmarkPairs.concat(newLmp)
-          })
-        }
-        commit('setLandmarkMode', {
-          mode: false
-        })
-        commit('setIncomingLandmarks', {
-          incomingLandmarks: state.incomingLandmarks.concat(newIncomingLandmark)
-        })
-      }
-    },
-    hoverLandmarkPair ({ commit, state }, { id, refId, incId, hover}){
-      const lmp = state.landmarkPairs.find(lmp => lmp.id === id || lmp.refId === refId || lmp.incId === incId)
-      if (lmp)
-        commit('setLandmarkPairs', {
-          landmarkPairs: state.landmarkPairs.map(pair => pair.id === lmp.id
-            ? {
-              ...pair,
-              hover
-            }
-            : pair)
-        })
-    },
-    addLandmarkPair ({ commit, dispatch, state }) {
-      dispatch('pushUndo', {
-        name: `add ref inc landmark pair`
-      })
-      /**
-       * TODO deprecated. old 2 way split method
-       */
-      const refId = generateId(state.referenceLandmarks).toString()
-      const newReferenceLandmark = {
-        id: refId,
-        name: refId,
-        active: true,
-        /**
-         * position in nm
-         */
-        coord: state.primaryNehubaNavigationPosition.map(v => v / 1e6)
-      }
-      const incId = generateId(state.incomingLandmarks).toString()
-
-      const { mat4, vec3 } = window.export_nehuba
-      const xform = mat4.fromValues(...state.incTransformMatrix)
-      mat4.invert(xform, xform)
-      const newv = vec3.transformMat4(vec3.create(), vec3.fromValues(...state.secondaryNehubaNavigationPosition), xform)
-      vec3.scale(newv, newv, 1e-6)
-      const newCoord = Array.from(newv)
-      
-      const newIncomingLandmark = {
-        id: incId,
-        name: incId,
-        active: true,
-        coord: newCoord
-      }
-      const lpId = generateId(state.landmarkPairs).toString()
-      const newLandmarkPair = {
-        id: lpId,
-        refId: refId,
-        incId: incId,
-        color: randomColor(),
-        name: lpId,
-        active: true
-      }
-
-      commit('setReferenceLandmarks', {
-        referenceLandmarks: state.referenceLandmarks.concat(newReferenceLandmark)
-      })
-      commit('setIncomingLandmarks', {
-        incomingLandmarks: state.incomingLandmarks.concat(newIncomingLandmark)
-      })
-      commit('setLandmarkPairs', {
-        landmarkPairs: state.landmarkPairs.concat(newLandmarkPair)
-      })
-    },
-    removeLmsLmp ({commit, dispatch, state}, { id }) {
-
-      const lmp = state.landmarkPairs.find(lm => lm.id === id)
-
-      if (!lmp)
-        return
-      
-      dispatch('pushUndo', {
-        name: `remove landmark pairs ${lmp.name}`
-      })
-      
-      const landmarkPairs = state.landmarkPairs.filter(lmp => lmp.id !== id)
-      const referenceLandmarks = state.referenceLandmarks.filter(lm => lm.id !== lmp.refId)
-      const incomingLandmarks = state.incomingLandmarks.filter(lm => lm.id !== lmp.incId)
-
-      commit('setLandmarkPairs', { landmarkPairs })
-      commit('setReferenceLandmarks', { referenceLandmarks })
-      commit('setIncomingLandmarks', { incomingLandmarks })
-    },
-    removeAllLmsLmps ({ commit, dispatch }) {
-      dispatch('pushUndo', {
-        name: 'remove all landmarks and landmark pairs'
-      })
-      commit('setReferenceLandmarks', {
-        referenceLandmarks: []
-      })
-      commit('setIncomingLandmarks', {
-        incomingLandmarks: []
-      })
-      commit('setLandmarkPairs', {
-        landmarkPairs: []
-      })
-    },
-    removeReferenceLandmark ({commit, state}, {id}) {
-      commit('setReferenceLandmarks', {
-        referenceLandmarks: state.referenceLandmarks.filter(lm => lm.id !== id)
-      })
-    },
-    removeIncomingLandmark ({commit, state}, {id}) {
-      commit('setIncomingLandmarks', {
-        incomingLandmarks: state.incomingLandmarks.filter(lm => lm.id !== id)
-      })
-    },
-    removeLandmarkPair ({commit, state}, { id }) {
-      commit('setLandmarkPairs', {
-        landmarkPairs: state.landmarkPairs.filter(lm => lm.id !== id)
-      })
-    },
-    enableLandmarkPairs ({commit, state}, {enable}) {
-      commit('setLandmarkPairs', {
-        landmarkPairs: state.landmarkPairs.map(lmp => {
-          return {
-            ...lmp,
-            active: enable
-          }
-        })
-      })
-    },
-
-    toggleLandmarkPairActive ({ commit, state }, { id }) {
-      commit('setLandmarkPairs', {
-        landmarkPairs: state.landmarkPairs.map(lmp => {
-          return {
-            ...lmp,
-            active: lmp.id === id ? !lmp.active : lmp.active
-          }
-        })
-      })
-    },
-    changeLandmarkName ({commit, dispatch, state}, {id, name, volume}) {
-      dispatch('pushUndo', {
-        name: `change ${volume} landmark name`,
-        collapse: `change ${volume} landmark name ${id}`
-      })
-      if (volume === 'reference') {
-        commit('setReferenceLandmarks', {
-          referenceLandmarks: state.referenceLandmarks.map(lm => lm.id === id 
-            ? {
-              ...lm,
-              name
-            }
-            : lm)
-        })
-      }
-      if (volume === 'incoming') {
-        commit('setIncomingLandmarks', {
-          incomingLandmarks: state.incomingLandmarks.map(lm => lm.id === id
-            ? {
-              ...lm,
-              name
-            }
-            : lm)
-        })
-      }
-    },
-    changeLandmarkPairName ({commit, state, dispatch}, { id, refId, incId, name }) {
-      dispatch('pushUndo', {
-        name: `change landmark pair name`,
-        collapse: `change landmark pair name ${id} ${refId} ${incId}`
-      })
-      commit('setLandmarkPairs', {
-        landmarkPairs: state.landmarkPairs.map(lmp => {
-          return {
-            ...lmp,
-            name: lmp.id === id
-              || refId === lmp.refId
-              || incId === lmp.incId
-                ? name
-                : lmp.name
-          }
-        })
-      })
-    },
-
-    /**
-     * TODO perhaps temporary solution
-     * temporary 
-     */
-    
-     loadOldJson ({ commit, dispatch, state }, { json, config }) {
-      const { fixCenterTranslation } = config
-      const { vec3, mat4 } = window.export_nehuba
-      const arrayMat4 = state.referenceTemplateTransform
-        ? state.referenceTemplateTransform.flatMap((arr, i) => arr.map((v, idx) => (i === 3 || idx !== 3) ? v : v / 1e6))
-        : null
-      const transformRef = (coord) => {
-        if (fixCenterTranslation && arrayMat4) {
-          const oldCoord = vec3.fromValues(...coord)
-          const transformMat4 = mat4.fromValues(...arrayMat4)
-          mat4.transpose(transformMat4, transformMat4)
-          vec3.transformMat4(oldCoord, oldCoord, transformMat4)
-          return Array.from(oldCoord)
-        } else {
-          return coord
-        }
-      }
-
-      dispatch('pushUndo', {
-        name: 'loaded old landmark json'
-      })
-      
-      const referenceLandmarks = json.map(pair => {
-        return {
-          id: `${pair.name}_ref`,
-          name: `${pair.name}_ref`,
-          active: true,
-          coord: transformRef(pair.target_point)
-        }
-      })
-      const incomingLandmarks = json.map(pair => {
-        return {
-          id: `${pair.name}_inc`,
-          name: `${pair.name}_inc`,
-          active: true,
-          coord: pair.source_point
-        }
-      })
-      const landmarkPairs = json.map(pair => {
-        return {
-          id: `${pair.name}_pair`,
-          refId: `${pair.name}_ref`,
-          incId: `${pair.name}_inc`,
-          color: pair.colour,
-          name: `${pair.name}_pair`,
-          active: true
-        }
-      })
-
-      commit('setReferenceLandmarks', { referenceLandmarks })
-      commit('setIncomingLandmarks', { incomingLandmarks })
-      commit('setLandmarkPairs', { landmarkPairs })
-    },
-    resetLandmark ({ commit, state }, { id }) {
-      const pair = state.landmarkPairs.find(pair => pair.id === id)
-      if (pair) {
-        commit('resetReferenceLandmark', { id: pair.refId })
-        commit('resetIncomingLandmark', { id: pair.incId })
-      }
-    },
-    gotoLandmark ({ dispatch, state }, { pairId }) {
-      const pair = state.landmarkPairs.find(pair => pair.id === pairId)
-      if (pair) {
-        const inc = state.incomingLandmarks.find(incLm => incLm.id === pair.incId)
-        const ref = state.referenceLandmarks.find(refLm => refLm.id === pair.refId)
-        dispatch('log', ['store#actions#gotoLandmark', { ref, inc }])
-        dispatch('setPrimaryNehubaNavigation', ref)
-        dispatch('setSecondaryNehubaNavigation', inc)
-      }
-    },
     setPrimaryNehubaNavigation () {
       /**
        * required for subscribe action
@@ -1454,17 +871,17 @@ const getStore = ({ user = null } = {}) => new Vuex.Store({
       commit('multiplyIncTransmMatrix', Array.from(xformMat))
     },
     startFromScratch ({dispatch, state, commit}) {
-      commit('setReferenceLandmarks', { referenceLandmarks: [] })
-      commit('setIncomingLandmarks', { incomingLandmarks: [] })
-      commit('setLandmarkPairs', { landmarkPairs: [] })
+      commit('landmarksStore/setReferenceLandmarks', { referenceLandmarks: [] })
+      commit('landmarksStore/setIncomingLandmarks', { incomingLandmarks: [] })
+      commit('landmarksStore/setLandmarkPairs', { landmarkPairs: [] })
       dispatch('selectIncomingVolumeWithId', null)
 
       /**
-       * maybe move to undoStore? subscribe to root actions?
+       * TODO maybe move to undoStore? subscribe to root actions?
        */
       commit('undoStore/setUndoStack', { undoStack: [] })
       commit('undoStore/setRedoStack', { redoStack: [] })
-      commit('setLandmarkMode', { mode: false })
+      commit('landmarksStore/setLandmarkMode', { mode: false })
       commit('_setStep2Mode', { mode: 'overlay' })
 
       if (!state.appendNehubaFlag)

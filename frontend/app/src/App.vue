@@ -166,12 +166,14 @@ export default {
     ...mapState({
       production: 'production',
       appendNehubaFlag: 'appendNehubaFlag',
-      incTransformMatrix: 'incTransformMatrix',
-      addLandmarkMode: 'addLandmarkMode'
+      incTransformMatrix: 'incTransformMatrix'
     }),
     ...mapState('undoStore', [
       'undoStack',
       'redoStack'
+    ]),
+    ...mapState('landmarksStore', [
+      'addLandmarkMode'
     ]),
     startFromScratchTitle: function() {
       return START_FROM_SCRATCH_MODAL_TITLE;
@@ -203,8 +205,10 @@ export default {
     }),
     ...mapActions([
       'startFromScratch',
-      'changeLandmarkMode',
       'log'
+    ]),
+    ...mapActions('landmarksStore', [
+      'changeLandmarkMode',
     ]),
     ...mapActions('undoStore', [
       'undo',

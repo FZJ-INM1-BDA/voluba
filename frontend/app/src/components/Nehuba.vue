@@ -343,10 +343,13 @@ export default {
   },
   methods: {
     ...mapActions({
-      hoverLandmarkPair: 'hoverLandmarkPair',
-      gotoLm: 'gotoLm',
       log: 'log'
     }),
+    ...mapActions('landmarksStore', [
+      'addLandmark',
+      'hoverLandmarkPair',
+      'gotoLm'
+    ]),
     handleMouseenterOnIcon: function ({ refId, incId, hover }) {
       this.hoverLandmarkPair({ refId, incId, hover })
     },
@@ -359,7 +362,7 @@ export default {
          * as this landmark object will directly overwrite the added landmark
          * use mm instead
          */
-        this.$store.dispatch('addLandmark', {
+        this.addLandmark({
           landmark: {
             coord: this.viewerMousePosition.map(v => v / 1e6)
           }
@@ -699,7 +702,6 @@ export default {
       appendNehubaFlag: 'appendNehubaFlag',
       translationByDragEnabled: state => !state.incVolTranslationLock,
       rotationByDragEnabled: state => !state.incVolRotationLock,
-      addLandmarkMode: 'addLandmarkMode',
       landmarkControlVisible: 'landmarkControlVisible',
       _step2Mode: '_step2Mode',
       _step2OverlayFocus: '_step2OverlayFocus',
@@ -710,12 +712,20 @@ export default {
       incVolRotationLock: 'incVolRotationLock',
       flippedState: 'flippedState',
       overlayColorHex: state => state.overlayColor.hex || INCOMING_COLOR,
-      showOverScreen: state => state.addLandmarkMode && state.addLandmarkMode === 'incoming' && state._step2Mode === 'classic',
     }),
     ...mapState('viewerStore', [
       'showOriginal',
       'previewImage'
     ]),
+    ...mapState('landmarksStore', {
+      _storeReferenceLandmarks: 'referenceLandmarks',
+      _storeLandmarkPairs: 'landmarkPairs',
+      _storeIncomingLandmarks: 'incomingLandmarks',
+      addLandmarkMode: 'addLandmarkMode'
+    }),
+    showOverScreen: function () {
+      return this.addLandmarkMode && this.addLandmarkMode === 'incoming' && this._step2Mode === 'classic'
+    },
     showRotationWidget: function () {
       return this.appendNehubaFlag && this._step2Mode === 'overlay'
     },
@@ -766,10 +776,10 @@ export default {
         /**
          * return all incoming landmarks
          */
-        ? this.$store.state.incomingLandmarks.map(lm => {
+        ? this._storeIncomingLandmarks.map(lm => {
             const coord = vec3.fromValues(...lm.coord.map(v => v * 1e6))
             vec3.transformMat4(coord, coord, incVM)
-            const lmp = this.$store.state.landmarkPairs.find(lmp => lmp.incId === lm.id)
+            const lmp = this._storeLandmarkPairs.find(lmp => lmp.incId === lm.id)
             return {
               ...lmp,
               ...lm,
@@ -798,8 +808,8 @@ export default {
         : this.storedIncomingLandmarks
     },
     storedReferenceLandmarks: function () {
-      return this.$store.state.referenceLandmarks.map(lm => {
-        const lmp = this.$store.state.landmarkPairs.find(lmp => lmp.refId === lm.id)
+      return this._storeReferenceLandmarks.map(lm => {
+        const lmp = this._storeLandmarkPairs.find(lmp => lmp.refId === lm.id)
         return lmp
           ? {
             ...lmp,

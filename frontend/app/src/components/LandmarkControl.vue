@@ -119,9 +119,10 @@ export default {
     ...mapState({
       backendQueryInProgress: 'backendQueryInProgress',
       backendQueryError: 'backendQueryError',
-      addLandmarkMode: 'addLandmarkMode',
-      addLandmarkMode: 'addLandmarkMode'
     }),
+    ...mapState('landmarksStore', [
+      'addLandmarkMode'
+    ]),
     showSuccessMessage: function () {
       return this.computeXformResultAvailable && this.mode === 'classic'
     },
@@ -135,10 +136,12 @@ export default {
   methods: {
     ...mapActions({
       loadLandmarks: 'loadLandmarks',
-      addLandmarkPair: 'addLandmarkPair',
-      saveLandmarks: 'saveLandmarks',
-      changeLandmarkMode: 'changeLandmarkMode'
+      saveLandmarks: 'saveLandmarks'
     }),
+    ...mapActions('landmarksStore', [
+      'changeLandmarkMode',
+      'addLandmarkPair'
+    ]),
     close: function () {
       const nib = this.$refs.nib
       if (nib) {

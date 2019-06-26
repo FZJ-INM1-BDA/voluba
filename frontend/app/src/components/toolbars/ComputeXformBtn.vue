@@ -16,7 +16,9 @@ export default {
   computed: {
     ...mapState({
       backendQueryInProgress: 'backendQueryInProgress',
-      backendQueryError: 'backendQueryError',
+      backendQueryError: 'backendQueryError'
+    }),
+    ...mapState('landmarksStore', {
       ableToComputeTransformationMatrix: state => state.landmarkPairs.length >= 3
     }),
     computeXformBtnClass: function () {

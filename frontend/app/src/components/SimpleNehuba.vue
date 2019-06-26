@@ -171,23 +171,14 @@ export default {
       appendNehubaFlag: 'appendNehubaFlag',
       incTransformMatrix: 'incTransformMatrix',
       viewerNavigationStateString: 'viewerNavigationStateString',
-      landmarkPairs: 'landmarkPairs',
-      addLandmarkMode: 'addLandmarkMode',
-      showOverScreen: state => state.addLandmarkMode && state.addLandmarkMode === 'reference' && state._step2Mode === 'classic',
-      xformedIncLm: function (state) {
-        return state.incomingLandmarks.map(lm => {
-          let coord = lm.coord
-          if (state.appendNehubaFlag) {
-            const { vec3, mat4 } = window.export_nehuba
-            const tmpcoord = vec3.fromValues(...lm.coord)
-            coord = Array.from(vec3.transformMat4(vec3.create(), tmpcoord, this.incTransformMatrixReal))
-          } 
-          return {
-            ...lm,
-            coord
-          }
-        })
-      },
+      _step2Mode: '_step2Mode',
+      ...mapState('landmarksStore', [
+        'addLandmarkMode',
+        'landmarkPairs'
+      ]),
+      ...mapState('landmarksStore', {
+        _storedIncomingLandmarks: 'incomingLandmarks'
+      }),
       normalizedRotQuat: state => {
         if (!state.appendNehubaFlag)
           return [0, 0, 0, 1]
@@ -204,6 +195,25 @@ export default {
         return Array.from(mat4.getRotation(quat.create(), incXM))
       }
     }),
+    showOverScreen: function () {
+      return this.addLandmarkMode
+        && this.addLandmarkMode === 'reference'
+        && this._step2Mode === 'classic'
+    },
+    xformedIncLm: function () {
+      return this._storedIncomingLandmarks.map(lm => {
+        let coord = lm.coord
+        if (this.appendNehubaFlag) {
+          const { vec3, mat4 } = window.export_nehuba
+          const tmpcoord = vec3.fromValues(...lm.coord)
+          coord = Array.from(vec3.transformMat4(vec3.create(), tmpcoord, this.incTransformMatrixReal))
+        }
+        return {
+          ...lm,
+          coord
+        }
+      })
+    },
     rotQ1: function () {
       if (!this.appendNehubaFlag)
         return [0, 0, 0, 1]
@@ -291,12 +301,14 @@ export default {
   },
   methods: {
     ...mapActions({
-      gotoLm: 'gotoLm',
-      addLandmark: 'addLandmark',
-      hoverLandmarkPair: 'hoverLandmarkPair',
       flipAxis: 'flipAxis',
       log: 'log'
     }),
+    ...mapActions('landmarksStore', [
+      'addLandmark',
+      'hoverLandmarkPair',
+      'gotoLm'
+    ]),
     rotateCircle: function (idx, {rot}) {
       if (!this.appendNehubaFlag)
         return

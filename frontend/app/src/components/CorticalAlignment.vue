@@ -261,13 +261,9 @@ export default {
     ...mapState([
       'uploadUrl',
       'incomingVolumes',
-      'landmarkPairs',
 
       'incTransformMatrix',
 
-      'landmarkPairs',
-      'referenceLandmarks',
-      'incomingLandmarks'
     ]),
     ...mapState('nonLinear', [
       'nonLinearBackendUrl',
@@ -275,6 +271,12 @@ export default {
     ...mapState('viewerStore', [
       'showOriginal',
       'previewImage'
+    ]),
+    ...mapState('landmarksStore', [
+
+      'landmarkPairs',
+      'referenceLandmarks',
+      'incomingLandmarks'
     ]),
     ...mapGetters('nonLinear', [
       'selectedDepthMap'

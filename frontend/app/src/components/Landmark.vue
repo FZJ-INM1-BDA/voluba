@@ -71,28 +71,32 @@ export default {
   watch: {
   },
   methods: {
-    ...mapActions({
-      removeLmsLmp: 'removeLmsLmp'
-    }),
+    ...mapActions('landmarksStore', [
+      'removeLmsLmp',
+      'toggleLandmarkPairActive',
+      'changeLandmarkPairName',
+      'gotoLandmark',
+      'resetLandmark'
+    ]),
     changeName: function (ev) {
       const element = ev.srcElement || ev.originalTarget
-      this.$store.dispatch('changeLandmarkPairName', {
+      this.changeLandmarkPairName({
         id: this.id,
         name: element.value
       })
     },
     toggleActive: function () {
-      this.$store.dispatch('toggleLandmarkPairActive', {
+      this.toggleLandmarkPairActive({
         id: this.id
       })
     },
     gotoLandmark: function () {
-      this.$store.dispatch('gotoLandmark', {
+      this.gotoLandmark({
         pairId: this.id
       })
     },
     resetLandmark: function () {
-      this.$store.dispatch('resetLandmark', {
+      this.resetLandmark({
         id: this.id
       })
     },

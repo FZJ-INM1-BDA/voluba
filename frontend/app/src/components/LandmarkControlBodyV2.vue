@@ -326,20 +326,22 @@ export default {
   },
   methods: {
     ...mapActions({
-      toggleLmActive: 'toggleLmActive',
-      removeLm: 'removeLm',
-      gotoLm: 'gotoLm',
-      changeLandmarkName: 'changeLandmarkName',
-      removeAllLmp: 'removeAllLmp',
-      removeAllLm: 'removeAllLm',
-      setLmsActive: 'setLmsActive',
-      changeLandmarkMode: 'changeLandmarkMode',
-      changeLandmarkPairName: 'changeLandmarkPairName',
-      hoverLandmarkPair: 'hoverLandmarkPair',
-      removeAllLmsLmps: 'removeAllLmsLmps',
-      removeLmp: 'removeLmp',
       selectMethodIndex: 'selectMethodIndex'
     }),
+    ...mapActions('landmarksStore', [
+      'changeLandmarkMode',
+      'hoverLandmarkPair',
+      'removeAllLmsLmps',
+      'changeLandmarkName',
+      'toggleLmActive',
+      'removeLm',
+      'gotoLm',
+      'removeAllLmp',
+      'removeAllLm',
+      'setLmsActive',
+      'changeLandmarkPairName',
+      'removeLmp'
+    ]),
     toggleLmIcons: function (id) {
       const foundId = this.lmIconOpenSet.find(i => i === id)
       if (foundId) {
@@ -366,32 +368,41 @@ export default {
   },
   computed: {
     ...mapState({
-      addLandmarkMode: 'addLandmarkMode',
       transformationTypes: 'transformationTypes',
       selectedTransformationIndex: 'selectedTransformationIndex',
-      referenceLandmarks: state => {
-        return state._step2Mode === 'classic' 
-          ? state.referenceLandmarks.map(lm => {
-            const lmp = state.landmarkPairs.find(lmp => lmp.refId === lm.id)
-            return {
-              ...lm,
-              color: lmp ? lmp.color : UNPAIRED_COLOR
-            }
-          })
-          : state.referenceLandmarks.map(lm => {
-            return {
-              ...lm,
-              color: REFERENCE_COLOR
-            }
-          })
-      },
-      incomingLandmarks: 'incomingLandmarks',
-      landmarkPairs: 'landmarkPairs',
-      allRefLmChecked: state => state.referenceLandmarks.every(lm => lm.active),
-      allIncLmChecked: state => state.incomingLandmarks.every(lm => lm.active),
       _step2Mode: '_step2Mode',
       incomingColor: state => (state.overlayColor && state.overlayColor.hex) || INCOMING_COLOR
     }),
+    ...mapState('landmarksStore', [
+      'landmarkPairs',
+      'incomingLandmarks',
+      'addLandmarkMode'
+    ]),
+    ...mapState('landmarksStore', {
+      _referenceLandmarks: 'referenceLandmarks'
+    }),
+    referenceLandmarks: function () {
+      return this._step2Mode === 'classic' 
+        ? this._referenceLandmarks.map(lm => {
+          const lmp = this.landmarkPairs.find(lmp => lmp.refId === lm.id)
+          return {
+            ...lm,
+            color: lmp ? lmp.color : UNPAIRED_COLOR
+          }
+        })
+        : this._referenceLandmarks.map(lm => {
+          return {
+            ...lm,
+            color: REFERENCE_COLOR
+          }
+        })
+    },
+    allRefLmChecked: function () {
+      return this.referenceLandmarks.every(lm => lm.active)
+    },
+    allIncLmChecked: function () {
+      return this.incomingLandmarks.every(lm => lm.active)
+    },
     selectedXform: {
       get: function () {
         const o = this.transformationTypes[this.selectedTransformationIndex]

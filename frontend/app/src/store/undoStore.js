@@ -1,6 +1,7 @@
 
 
-const getStateSnapshot = ({ addLandmarkMode, incTransformMatrix, referenceLandmarks, incomingLandmarks, landmarkPairs }) => {
+const getStateSnapshot = ({ landmarksStore,  incTransformMatrix }) => {
+  const { addLandmarkMode,referenceLandmarks, incomingLandmarks, landmarkPairs } = landmarksStore
   return {
     incTransformMatrix: Array.from(incTransformMatrix),
     referenceLandmarks,
@@ -19,27 +20,27 @@ const restoreState = ({commit}, {addLandmarkMode = false, incTransformMatrix, re
     })
   }
   if ( referenceLandmarks ) {
-    commit('setReferenceLandmarks', {
+    commit('landmarksStore/setReferenceLandmarks', {
       referenceLandmarks
     }, {
       root: true
     })
   }
   if ( incomingLandmarks ) {
-    commit('setIncomingLandmarks', {
+    commit('landmarksStore/setIncomingLandmarks', {
       incomingLandmarks
     }, {
       root: true
     })
   }
   if ( landmarkPairs ) {
-    commit('setLandmarkPairs', {
+    commit('landmarksStore/setLandmarkPairs', {
       landmarkPairs
     }, {
       root: true
     })
   }
-  commit('setLandmarkMode', {
+  commit('landmarksStore/setLandmarkMode', {
     mode: addLandmarkMode
   }, {
     root: true

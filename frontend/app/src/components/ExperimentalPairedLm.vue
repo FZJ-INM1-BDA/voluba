@@ -105,15 +105,16 @@ export default {
     EditLandmarkComponent
   },
   methods: {
-    ...mapActions({
-      toggleLmActive: 'toggleLmActive',
-      removeLm: 'removeLm',
-      addLmp: 'addLmp',
-      gotoLm: 'gotoLm',
-      changeLandmarkName: 'changeLandmarkName'
-    }),
+    ...mapActions('landmarksStore', [
+      'changeLandmarkName',
+      'addLmp',
+      'gotoLm',
+      'removeLm',
+      'toggleLmActive',
+      'removeLmp'
+    ]),
     unlink: function () {
-      this.$store.dispatch('removeLmp', {
+      this.removeLmp({
         incId: this.landmark.id
       })
     },
