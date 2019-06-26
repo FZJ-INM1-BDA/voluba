@@ -92,7 +92,7 @@
 
 <script>
 import { mapState, mapGetters, mapActions } from 'vuex'
-import { REFERENCE_COLOR, UNPAIRED_COLOR, INCOMING_COLOR, annotationColorBlur, annotationColorFocus, getShader, testBigbrain, determineElement, getRotationVec3, incomingTemplateActiveOpacity } from '@//constants'
+import { REFERENCE_COLOR, UNPAIRED_COLOR, INCOMING_COLOR, annotationColorBlur, annotationColorFocus, getShader, testBigbrain, determineElement, getRotationVec3, incomingTemplateActiveOpacity, identityMat } from '@//constants'
 import { incompatibleBrowserText } from '@/text'
 
 import NehubaBaseMixin from '@/mixins/NehubaBase'
@@ -209,20 +209,29 @@ export default {
          * remove preview layer
          */
         this.clearUserLayers(this.previewLayerNames)
+        this.previewLayerNames = []
       } else {
         /**
          * add preview layer
+         */
+        /**
+         * in case previewImage does not have a name property
          */
          const layerObj = {
            name: Date.now().toString(),
            ...dateObj
          }
-         const { name, imageSource: uri  } = layerObj
+
+         /**
+          * identity mat should already be in nm
+          */
+         const { name, imageSource: uri, transform = identityMat } = layerObj
          this.addUserLayer({
            uri,
            shader: getShader(this.incomingColor),
            opacity: this.incomingColor[3],
-           name
+           name,
+           transform
          })
          this.previewLayerNames.push(name)
       }
@@ -664,7 +673,7 @@ export default {
           .filter(({ name }) => arrOfNames.indexOf(name) < 0)
       }
     },
-    addUserLayer: function ({ uri, name = `userlayer-0`, opacity = 1.0, shader = DEFAULT_SHADER }) {
+    addUserLayer: function ({ uri, name = `userlayer-0`, opacity = 1.0, shader = DEFAULT_SHADER, transform = identityMat }) {
       if (!this.$options.nehubaBase ||  !this.$options.nehubaBase.nehubaBase__nehubaViewer) {
         throw new Error('nehuba not yet initialized')
       }
@@ -676,7 +685,8 @@ export default {
         annotationColor: annotationColorFocus,
         source: uri,
         opacity,
-        shader
+        shader,
+        transform
       }
       const newNgLayer = viewer.layerSpecification.getLayer(name, newLayer)
       const ngUserLayer = viewer.layerManager.addManagedLayer(newNgLayer)

@@ -873,3 +873,10 @@ export const groupByVisibility = (volumes) => {
       return returnArr
     }, [])
 }
+
+export const identityMat = [
+  [1.0,  0,    0,    0],
+  [0,    1.0,  0,    0],
+  [0,    0,    1.0,  0],
+  [0,    0,    0,    1.0]
+]

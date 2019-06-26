@@ -357,16 +357,19 @@ export default {
         return `Alignment error:` + (this.pollingMixin__pollingMesssage || ``)
       return `Unknown Status`
     },
-    pollingResults: function () {
-      return this.pollingMixin__results
-    },
     computedNonLinearAlignedImage: function () {
       return this.pollingMixin__results && {
         name: this.pollingMixin__results.transformed_image_name,
         visibility: 'private',
         id: `private/${this.pollingMixin__results.transformed_image_name}`,
         imageSource: this.pollingMixin__results.transformed_image_neuroglancer_url,
+        /**
+         * transform to nm
+         */
         transform: this.pollingMixin__results.transformation_matrix
+          .map((row, rIdx) => row.map((v, cIdx) => cIdx === 3 && rIdx < 3
+            ? v * 1e6
+            : v ))
       }
     },
     visualiseLinearBtnClass: function () {
