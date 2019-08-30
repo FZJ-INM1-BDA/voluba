@@ -1,7 +1,8 @@
 
 
-const getStateSnapshot = ({ landmarksStore,  incTransformMatrix }) => {
+const getStateSnapshot = ({ landmarksStore, nehubaStore, ...rest }) => {
   const { addLandmarkMode,referenceLandmarks, incomingLandmarks, landmarkPairs } = landmarksStore
+  const { incTransformMatrix } = nehubaStore
   return {
     incTransformMatrix: Array.from(incTransformMatrix),
     referenceLandmarks,
@@ -13,7 +14,7 @@ const getStateSnapshot = ({ landmarksStore,  incTransformMatrix }) => {
 
 const restoreState = ({commit}, {addLandmarkMode = false, incTransformMatrix, referenceLandmarks, incomingLandmarks, landmarkPairs}) => {
   if ( incTransformMatrix ) {
-    commit('setIncTransformMatrix', { 
+    commit('nehubaStore/setIncTransformMatrix', { 
       matrix: incTransformMatrix 
     }, {
       root: true

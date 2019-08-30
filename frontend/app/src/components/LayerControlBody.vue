@@ -23,7 +23,7 @@
     </div>
     
     <div
-      v-if="incomingVolumeSelected"
+      v-if="selectedIncomingVolume"
       class="card card-body bg-light">
 
       <!-- flip axis -->
@@ -31,7 +31,7 @@
 
         <!-- flip x -->
         <div
-          @click.stop.prevent="flipAxis(0)"
+          @click.stop.prevent="handleFlipAxis(0)"
           :class="flippedState[0] < 0 ? 'btn-secondary' : 'btn-outline-secondary'"
           class="flip-btn btn btn-sm">
           <span>
@@ -41,7 +41,7 @@
 
         <!-- flip y -->
         <div
-          @click.stop.prevent="flipAxis(1)"
+          @click.stop.prevent="handleFlipAxis(1)"
           :class="flippedState[1] < 0 ? 'btn-secondary' : 'btn-outline-secondary'"
           class="flip-btn btn btn-sm">
           <span>
@@ -51,7 +51,7 @@
 
         <!-- flip z -->
         <div
-          @click.stop.prevent="flipAxis(2)"
+          @click.stop.prevent="handleFlipAxis(2)"
           :class="flippedState[2] < 0 ? 'btn-secondary' : 'btn-outline-secondary'"
           class="flip-btn btn btn-sm">
           <span>
@@ -268,7 +268,7 @@
 <script>
 import SectionComponent from '@/components/layout/Section'
 import SliderComponent from '@/components/layout/Slider'
-import { mapState, mapActions } from 'vuex'
+import { mapState, mapActions, mapGetters } from 'vuex'
 
 import { INC_VOL_XFORM_TITLE } from '@/text'
 
@@ -300,12 +300,22 @@ export default {
     }
   },
   computed: {
-    ...mapState({
-      appendNehubaFlag: 'appendNehubaFlag',
-      flippedState: 'flippedState',
-      incVolTranslationLock: 'incVolTranslationLock',
-      incVolRotationLock: 'incVolRotationLock',
-      incVolScaleLock: 'incVolScaleLock',
+    ...mapState('nehubaStore', [
+      'appendNehubaFlag',
+      'flippedState',
+      'incTransformMatrix',
+
+      'incVolTranslationLock',
+      'incVolRotationLock',
+      'incVolScaleLock',
+    ]),
+    ...mapGetters('dataSelectionStore', [
+      'selectedIncomingVolume',
+    ]),
+    ...mapState('dataSelectionStore', [
+      'incomingVolumes'
+    ]),
+    ...mapState('nehubaStore', {
       lockIconTranslation: state => state.incVolTranslationLock ? 'lock' : 'lock-open',
       lockIconRotation: state => state.incVolRotationLock ? 'lock' : 'lock-open',
       lockIconScale: state => state.incVolScaleLock ? 'lock' : 'lock-open'
@@ -444,22 +454,12 @@ export default {
         return Array.from(translVec)
       }
     },
-    incTransformMatrix: function () {
-      return this.$store.state.incTransformMatrix
-    },
     dummyIncomingTemplate: function () {
       return {
         id: 'placeholder',
         text: '-- Please select a dataset --',
         value: -1
       }
-    },
-    incomingVolumeSelected: function () {
-      return true || this.$store.state.incomingVolumeSelected
-    },
-    selectedIncomingVolume: function () {
-      const id = this.$store.state.selectedIncomingVolumeId
-      return id && this.$store.state.incomingVolumes.find(v => v.id === id)
     },
     selectedIncomingVolumeName: function () {
       return this.selectedIncomingVolume
@@ -474,21 +474,6 @@ export default {
     }
   },
   watch: {
-    scale: function () {
-      this.scaleChanged()
-    },
-    scaleX: function () {
-      this.scaleChanged()
-    },
-    scaleY: function () {
-      this.scaleChanged()
-    },
-    scaleZ: function () {
-      this.scaleChanged()
-    },
-    isotropic: function () {
-      this.scaleChanged()
-    },
     isotropic: function (flag) {
       if (flag) {
         this.isotropicScaleEvent({ value: this.testScaleX })
@@ -496,11 +481,17 @@ export default {
     }
   },
   methods: {
-    ...mapActions({
-      lockIncVol: 'lockIncVol',
-      rotIncBy: 'rotIncBy',
-      pushUndo: 'pushUndo'
-    }),
+    ...mapActions('nehubaStore', [
+      'translIncBy',
+      'setTranslInc',
+      'lockIncVol',
+      'rotIncBy',
+      'setScaleInc',
+      'flipAxis'
+    ]),
+    ...mapActions([
+      'pushUndo'
+    ]),
     rot(axis){
       if (!this.appendNehubaFlag)
         return
@@ -520,15 +511,15 @@ export default {
         collapse: `scaleBySliderIsotropic`
       })
 
-      this.$store.dispatch('setScaleInc', {
+      this.setScaleInc({
         axis: 'x',
         value
       })
-      this.$store.dispatch('setScaleInc', {
+      this.setScaleInc({
         axis: 'y',
         value
       })
-      this.$store.dispatch('setScaleInc', {
+      this.setScaleInc({
         axis: 'z',
         value
       })
@@ -567,7 +558,7 @@ export default {
           collapse: 'translateBySliderDelta'
         })
 
-        this.$store.dispatch('translIncBy', {
+        this.translIncBy({
           axis: 'xyz',
           value: Array.from(pos)
         })
@@ -578,7 +569,7 @@ export default {
           collapse: 'translateBySliderValue'
         })
 
-        this.$store.dispatch('setTranslInc', {
+        this.setTranslInc({
           axis,
           value
         })
@@ -599,7 +590,7 @@ export default {
         axis === 'z' ? delta : 0
       )
 
-      this.$store.dispatch('rotIncBy', {
+      this.rotIncBy({
         quaternion: Array.from(q)
       })
     },
@@ -609,31 +600,16 @@ export default {
         collapse: `scaleBySlider${axis}`
       })
 
-      this.$store.dispatch('setScaleInc', {
+      this.setScaleInc({
         axis,
         value
       })
     },
-    flipAxis: function (axis) {
+    handleFlipAxis: function (axis) {
       this.pushUndo({
         name: `flip on axis ${axis}`
       })
-      this.$store.dispatch('flipAxis', { axis })
-    },
-    scaleChanged: function () {
-      this.$store.dispatch('changeScale', this.isotropic
-        ? [this.scale, this.scale, this.scale]
-        : [this.scaleX, this.scaleY, this.scaleZ]
-      )
-    },
-    flipLeftRight: function () {
-      this.$store.dispatch('flipLeftRight')
-    },
-    flipInferiorSuperior: function () {
-      this.$store.dispatch('flipInferiorSuperior')
-    },
-    flipAnteriorPosterior: function () {
-      this.$store.dispatch('flipAnteriorPosterior')
+      this.flipAxis({ axis })
     }
   }
 }

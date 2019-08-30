@@ -46,9 +46,9 @@ export default {
     }
   },
   methods: {
-    ...mapActions({
-      computeXform: 'computeXform',
-    })
+    ...mapActions('linearStore', [
+      'computeXform'
+    ])
   },
 }
 </script>

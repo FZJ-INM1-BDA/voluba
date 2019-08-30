@@ -254,31 +254,33 @@ export default {
     }
   },
   computed: {
-    ...mapGetters([
+    ...mapState('dataSelectionStore', [
+      'incomingVolumes',
+    ]),
+    ...mapGetters('dataSelectionStore', [
+      'selectedIncomingVolume',
+    ]),
+    ...mapGetters('authStore', [
       'authHeader',
-      'selectedIncomingVolume'
     ]),
     ...mapState([
       'uploadUrl',
-      'incomingVolumes',
-
       'incTransformMatrix',
 
     ]),
-    ...mapState('nonLinear', [
+    ...mapState('nonLinearStore', [
       'nonLinearBackendUrl',
     ]),
-    ...mapState('viewerStore', [
+    ...mapState('viewerPreferenceStore', [
       'showOriginal',
       'previewImage'
     ]),
     ...mapState('landmarksStore', [
-
       'landmarkPairs',
       'referenceLandmarks',
       'incomingLandmarks'
     ]),
-    ...mapGetters('nonLinear', [
+    ...mapGetters('nonLinearStore', [
       'selectedDepthMap'
     ]),
     processedVolumes: function () {
@@ -386,7 +388,7 @@ export default {
     ...mapActions([
       'openModal'
     ]),
-    ...mapActions('viewerStore', [
+    ...mapActions('viewerPreferenceStore', [
       'toggleShowOriginal',
       'showPreviewImage'
     ]),

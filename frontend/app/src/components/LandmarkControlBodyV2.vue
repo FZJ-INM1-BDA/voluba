@@ -303,7 +303,7 @@
   </div>
 </template>
 <script>
-import { mapActions, mapState } from 'vuex'
+import { mapActions, mapState, mapMutations } from 'vuex'
 
 import LandmarkRowV2 from '@/components/LandmarkRowV2'
 import ExperimentalPairedLm from '@/components/ExperimentalPairedLm'
@@ -325,9 +325,9 @@ export default {
     }
   },
   methods: {
-    ...mapActions({
-      selectMethodIndex: 'selectMethodIndex'
-    }),
+    ...mapMutations('linearStore', [
+      'setMethodIndex'
+    ]),
     ...mapActions('landmarksStore', [
       'changeLandmarkMode',
       'hoverLandmarkPair',
@@ -367,11 +367,15 @@ export default {
     }
   },
   computed: {
-    ...mapState({
-      transformationTypes: 'transformationTypes',
-      selectedTransformationIndex: 'selectedTransformationIndex',
-      _step2Mode: '_step2Mode',
+    ...mapState('viewerPreferenceStore', {
       incomingColor: state => (state.overlayColor && state.overlayColor.hex) || INCOMING_COLOR
+    }),
+    ...mapState('linearStore', [
+      'transformationTypes',
+      'selectedTransformationIndex'
+    ]),
+    ...mapState({
+      _step2Mode: '_step2Mode',
     }),
     ...mapState('landmarksStore', [
       'landmarkPairs',
@@ -410,7 +414,7 @@ export default {
       },
       set: function (value) {
         const idx = this.transformationTypes.findIndex(({ value: v }) => v === value)
-        this.selectMethodIndex(idx >= 0 ? idx : 0)
+        this.setMethodIndex(idx >= 0 ? idx : 0)
       }
     },
     editLandmarksTitle: function () {

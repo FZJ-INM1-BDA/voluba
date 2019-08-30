@@ -40,11 +40,11 @@ export default {
     };
   },
   computed: {
-    ...mapState({
-      nehubaAppended: 'appendNehubaFlag'
-    }),
+    ...mapState('nehubaStore', [
+      'appendNehubaFlag'
+    ]),
     computedShowLayerControl: function() {
-      return this.nehubaAppended && this.showLayerControl
+      return this.appendNehubaFlag && this.showLayerControl
     }
   },
   methods: {

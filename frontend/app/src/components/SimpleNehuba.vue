@@ -83,7 +83,7 @@ import NehubaBaseMixin from '@/mixins/NehubaBase'
 import DragLandmarkMixin from '@/mixins/DragLandmarkMixin'
 import NehubaStatusCard from '@/components/NehubaStatusCard'
 import { UNPAIRED_COLOR, INCOMING_COLOR } from '@/constants'
-import { mapState, mapGetters, mapActions } from 'vuex'
+import { mapState, mapGetters, mapActions, mapMutations } from 'vuex'
 import TwoDRotationWidget from '@/components/RotationWidget/TwoDRotationWidget'
 
 export default {
@@ -163,22 +163,16 @@ export default {
     }
   },
   computed: {
-    ...mapGetters({
-      incTransformMatrixReal: 'incTransformMatrixReal',
-      incRotQuat: 'incRotQuat'
-    }),
-    ...mapState({
-      appendNehubaFlag: 'appendNehubaFlag',
-      incTransformMatrix: 'incTransformMatrix',
-      viewerNavigationStateString: 'viewerNavigationStateString',
-      _step2Mode: '_step2Mode',
-      ...mapState('landmarksStore', [
-        'addLandmarkMode',
-        'landmarkPairs'
-      ]),
-      ...mapState('landmarksStore', {
-        _storedIncomingLandmarks: 'incomingLandmarks'
-      }),
+    ...mapGetters('nehubaStore', [
+      'incTransformMatrixReal',
+      'incRotQuat'
+    ]),
+    ...mapState('nehubaStore', [
+      'appendNehubaFlag',
+      'incTransformMatrix'
+    ]),
+    ...mapState('nehubaStore', {
+
       normalizedRotQuat: state => {
         if (!state.appendNehubaFlag)
           return [0, 0, 0, 1]
@@ -194,6 +188,17 @@ export default {
         }
         return Array.from(mat4.getRotation(quat.create(), incXM))
       }
+    }),
+    ...mapState('landmarksStore', [
+      'addLandmarkMode',
+      'landmarkPairs'
+    ]),
+    ...mapState('landmarksStore', {
+      _storedIncomingLandmarks: 'incomingLandmarks'
+    }),
+    ...mapState({
+      viewerNavigationStateString: 'viewerNavigationStateString',
+      _step2Mode: '_step2Mode',
     }),
     showOverScreen: function () {
       return this.addLandmarkMode
@@ -300,10 +305,17 @@ export default {
     }
   },
   methods: {
-    ...mapActions({
-      flipAxis: 'flipAxis',
-      log: 'log'
-    }),
+    ...mapActions([
+      'log',
+      'pushUndo'
+    ]),
+    ...mapActions('nehubaStore', [
+      'flipAxis',
+      'rotIncBy'
+    ]),
+    ...mapMutations('nehubaStore', [
+      'setSecondaryNehubaNavigationPosition'
+    ]),
     ...mapActions('landmarksStore', [
       'addLandmark',
       'hoverLandmarkPair',
@@ -329,11 +341,11 @@ export default {
       vec3.transformQuat(rotVec, rotVec, currQ)
       quat.setAxisAngle(rotQuat, rotVec, rot / 180 * Math.PI)
 
-      this.$store.dispatch('pushUndo', {
+      this.pushUndo({
         name: `rotate by 2D widget ${idx}`,
         collapse: `rotate by rgb widget ${idx}`
       })
-      this.$store.dispatch('rotIncBy', {
+      this.rotIncBy({
         quaternion: Array.from(rotQuat)
       })
     },
@@ -404,7 +416,7 @@ export default {
     },
     nehubaBase__navigationPosition: function (array) {
       this.viewerNavigationPosition = array
-      this.$store.dispatch('secondaryNehubaNavigationPositionChanged', array)
+      this.setSecondaryNehubaNavigationPosition(array)
     },
     config: function (val) {
       this.nehubaBase__destroyNehuba()

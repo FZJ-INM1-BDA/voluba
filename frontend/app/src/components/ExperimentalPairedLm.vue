@@ -95,7 +95,7 @@
   </div>
 </template>
 <script>
-import { mapActions, mapState } from 'vuex'
+import { mapActions, mapState, mapMutations } from 'vuex'
 import { INACTIVE_ROW_OPACITY, INCOMING_COLOR, UNPAIRED_COLOR } from '@/constants'
 import LandmarkRowV2 from '@/components/LandmarkRowV2'
 import EditLandmarkComponent from '@/components/EditLandmark'
@@ -113,15 +113,17 @@ export default {
       'toggleLmActive',
       'removeLmp'
     ]),
+    ...mapMutations('landmarkStore', [
+      'setPairLandmarkStartDragging'
+    ]),
     unlink: function () {
       this.removeLmp({
         incId: this.landmark.id
       })
     },
     dragStart: function (ev) {
-      if (!this.dragFlag)
-        ev.preventDefault()
-      this.$store.commit('setPairLandmarkStartDragging', {
+      if (!this.dragFlag) ev.preventDefault()
+      this.setPairLandmarkStartDragging({
         pairLandmarkStartDragging: true
       })
       this.dragFlag = false
@@ -130,7 +132,7 @@ export default {
     },
     dragEnd: function (ev) {
       this.dragInProgress = false
-      this.$store.commit('setPairLandmarkStartDragging', {
+      this.setPairLandmarkStartDragging({
         pairLandmarkStartDragging: false
       })
     },

@@ -165,16 +165,22 @@ export default {
     }
   },
   computed: {
-    ...mapGetters({
-      selectedIncomingVolumeType: 'selectedIncomingVolumeType'
+    ...mapGetters('dataSelectionStore', [
+      'selectedIncomingVolumeType'
+    ]),
+    ...mapState('viewerPreferenceStore', {
+      stateIncomingColor: state => state.incomingColor,
+      stateOverlayColor: state => state.overlayColor
+    }),
+    ...mapState('nehubaStore', {
+      globalIncLock: state => state.incVolRotationLock && state.incVolTranslationLock && state.incVolScaleLock
     }),
     ...mapState({
       user: 'user',
       _step2Mode: '_step2Mode',
       allowUpload: 'allowUpload',
       modeBtnVariant: state => state._step2Mode === 'overlay' ? 'outline-secondary' : 'info',
-      agreedToCookie: 'agreedToCookie',
-      globalIncLock: state => state.incVolRotationLock && state.incVolTranslationLock && state.incVolScaleLock
+      agreedToCookie: 'agreedToCookie'
     }),
     globalLockIcon: function () {
       return this.globalIncLock ?  'lock' : 'lock-open'
@@ -189,10 +195,10 @@ export default {
     },
     overlayColor: {
       get: function () {
-        return this.$store.state.overlayColor
+        return this.stateOverlayColor
       },
       set: function (newColor) {
-        this.$store.dispatch('changeOverlayColor', newColor)
+        this.changeOverlayColor(newColor)
       }
     },
     showProgressTracker: function () {
@@ -209,21 +215,26 @@ export default {
     },
     opacity: {
       get: function () {
-        const color = this.$store.state.incomingColor
-        return color[3]
+        return this.stateIncomingColor[3]
       },
       set: function (opacityVal) {
-        this.$store.dispatch('changeOpacity', Number(opacityVal))
+        this.changeOpacity(Number(opacityVal))
       }
     }
   },
   methods: {
+    ...mapActions('viewerPreferenceStore', [
+      'changeOpacity',
+      'changeOverlayColor'
+    ]),
+    ...mapActions('nehubaStore', [
+      'lockIncVol'
+    ]),
     ...mapActions({
       modalMessage: 'modalMessage',
       openModal: 'openModal',
       setLocalStorage: 'setLocalStorage',
       log: 'log',
-      lockIncVol: 'lockIncVol'
     }),
     toggleGlobalLock: function () {
       if (this.globalIncLock) {

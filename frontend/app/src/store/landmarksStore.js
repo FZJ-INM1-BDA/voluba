@@ -1,4 +1,5 @@
 import { generateId, randomColor } from '@/constants'
+import { saveToFile } from '@/constants'
 
 const landmarksStore = {
   namespaced: true,
@@ -7,8 +8,13 @@ const landmarksStore = {
     referenceLandmarks: [],
     incomingLandmarks: [],
     landmarkPairs: [],
+
+    pairLandmarkStartDragging: false,
   },
   mutations: {
+    setPairLandmarkStartDragging (state, { pairLandmarkStartDragging }){
+      state.pairLandmarkStartDragging = pairLandmarkStartDragging
+    },
     /**
      * TODO
      * fix inconsistency
@@ -32,8 +38,12 @@ const landmarksStore = {
     },
 
     resetReferenceLandmark (state, { id }) {
-      const lm = state.referenceLandmarks.find(lm => lm.id === id)
-      lm.coord = state.primaryNehubaNavigationPosition.map(v => v / 1e6)
+
+      const { nehubaStore, referenceLandmarks } = state
+      const { primaryNehubaNavigationPosition } = nehubaStore
+
+      const lm = referenceLandmarks.find(lm => lm.id === id)
+      lm.coord = primaryNehubaNavigationPosition.map(v => v / 1e6)
     },
     resetIncomingLandmark (state, { id }) {
       const lm = state.incomingLandmarks.find(lm => lm.id === id)
@@ -47,6 +57,30 @@ const landmarksStore = {
     }
   },
   actions: {
+    loadLandmarks ({ dispatch }) {
+      dispatch('openModal', {modalId: 'loadLandmarkPairsModal'}, {root: true})
+    },
+    saveLandmarks ({ state, dispatch, rootGetters }) {
+
+      const refVol = rootGetters['dataSelectionStore/selectedReferenceVolume']
+      const incVol = rootGetters['dataSelectionStore/selectedIncomingVolume']
+
+      const {
+        referenceLandmarks,
+        incomingLandmarks,
+        landmarkPairs
+      } = state
+      const data = {
+        reference_volume: (refVol && refVol.name) || 'Untitled Reference Volume',
+        incoming_volume: (incVol && incVol.name) || 'Untitled Incoming Volume',
+        reference_landmarks: referenceLandmarks,
+        incoming_landmarks: incomingLandmarks,
+        landmark_pairs: landmarkPairs
+      }
+      dispatch('log', ['store#actions#saveLandMarks', { data }], { root: true })
+      const jsonData = JSON.stringify(data, null, 2)
+      saveToFile(jsonData, 'application/json', 'landmark-pairs.json')
+    },
     changeLandmarkMode: function ({ state, commit, dispatch, rootState }, { mode }) {
       if (!mode) {
         const {
@@ -88,10 +122,11 @@ const landmarksStore = {
         incomingLandmarks
       } = state
 
+      const { nehubaStore } = rootState
       const {
         primaryNehubaNavigationPosition,
         incTransformMatrix
-      } = rootState
+      } = nehubaStore
 
       dispatch('pushUndo', {
         name: `add ${addLandmarkMode} landmark`,
@@ -197,11 +232,12 @@ const landmarksStore = {
         incomingLandmarks,
         landmarkPairs
       } = state
+      const { nehubaStore } = rootState
       const { 
         primaryNehubaNavigationPosition,
         secondaryNehubaNavigationPosition,
-        incTransformMatrix
-      } = rootState
+        incTransformMatrix 
+      } = nehubaStore
       /**
        * TODO deprecated. old 2 way split method
        */
@@ -390,9 +426,11 @@ const landmarksStore = {
       } = state
 
       const {
-        incTransformMatrix,
+        nehubaStore,
         _step2Mode
       } = rootState
+
+      const { incTransformMatrix } = nehubaStore
 
       const payload = {}
       if (volume === 'reference') {
@@ -568,14 +606,13 @@ const landmarksStore = {
       }
     },
     translateLandmarkPosBy ({commit, dispatch, state}, { volume, id, value}) {
-
       const lm = volume === 'reference'
         ? state.referenceLandmarks.find(lm => lm.id === id)
         : volume === 'incoming'
           ? state.incomingLandmarks.find(lm => lm.id === id)
           : null
-      if (!lm)
-        return
+
+      if (!lm) return
 
       dispatch('pushUndo', {
         name: `translating ${lm.name} in ${volume}`,
@@ -603,8 +640,11 @@ const landmarksStore = {
     loadOldJson ({ commit, dispatch, state, rootState }, { json, config }) {
       const { fixCenterTranslation } = config
       const { vec3, mat4 } = window.export_nehuba
-      const arrayMat4 = rootState.referenceTemplateTransform
-        ? rootState.referenceTemplateTransform.flatMap((arr, i) => arr.map((v, idx) => (i === 3 || idx !== 3) ? v : v / 1e6))
+
+      const { nehubaStore } = rootState
+      const { referenceTemplateTransform } = nehubaStore
+      const arrayMat4 = referenceTemplateTransform
+        ? referenceTemplateTransform.flatMap((arr, i) => arr.map((v, idx) => (i === 3 || idx !== 3) ? v : v / 1e6))
         : null
       const transformRef = (coord) => {
         if (fixCenterTranslation && arrayMat4) {
@@ -667,7 +707,7 @@ const landmarksStore = {
       if (pair) {
         const inc = state.incomingLandmarks.find(incLm => incLm.id === pair.incId)
         const ref = state.referenceLandmarks.find(refLm => refLm.id === pair.refId)
-        dispatch('log', ['store#actions#gotoLandmark', { ref, inc }])
+        dispatch('log', ['store#actions#gotoLandmark', { ref, inc }], { root: true})
         dispatch('setPrimaryNehubaNavigation', ref, {root: true})
         dispatch('setSecondaryNehubaNavigation', inc, {root: true})
       }

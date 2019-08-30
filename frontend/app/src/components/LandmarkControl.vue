@@ -27,7 +27,7 @@
 
         <!-- add lm -->
 
-        <div class="d-flex">
+        <div class="d-flex align-items-center">
 
           <div
             :class="addLandmarkMode ? 'btn-success' : 'btn-outline-secondary'"
@@ -61,7 +61,9 @@
               style="display:inline-block"
               v-if="showSuccessMessage"
               class="footer-icon pt-1 pb-1 alert alert-success">
-              Success! <a @click="$store.commit('_setStep2Mode', { mode: 'overlay' })" href="#" class="alert-link">check result</a>
+              <span>
+                Success
+              </span>
             </small>
           </transition>
         </div>
@@ -116,15 +118,15 @@ export default {
     }
   },
   computed: {
-    ...mapState({
-      backendQueryInProgress: 'backendQueryInProgress',
-      backendQueryError: 'backendQueryError',
-    }),
+    ...mapState('linearStore', [
+      'backendQueryInProgress',
+      'backendQueryError'
+    ]),
     ...mapState('landmarksStore', [
       'addLandmarkMode'
     ]),
     showSuccessMessage: function () {
-      return this.computeXformResultAvailable && this.mode === 'classic'
+      return this.computeXformResultAvailable && this.mode === 'overlay'
     },
     showV2: function () {
       return this.mode === 'overlay'
@@ -134,10 +136,10 @@ export default {
     },
   },
   methods: {
-    ...mapActions({
-      loadLandmarks: 'loadLandmarks',
-      saveLandmarks: 'saveLandmarks'
-    }),
+    ...mapActions('landmarksStore', [
+      'saveLandmarks',
+      'loadLandmarks'
+    ]),
     ...mapActions('landmarksStore', [
       'changeLandmarkMode',
       'addLandmarkPair'

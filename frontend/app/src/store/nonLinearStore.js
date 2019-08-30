@@ -1,6 +1,6 @@
 import { NONLINEAR_BACKEND, volumeIsDepthMap } from '@/constants'
 
-const nonLinear = {
+const nonLinearStore = {
   namespaced: true,
   state: {
     nonLinearBackendUrl: NONLINEAR_BACKEND,
@@ -20,7 +20,8 @@ const nonLinear = {
   },
   getters: {
     filteredForDepthMaps: function (_state, _getters, rootState) {
-      const { incomingVolumes } = rootState
+      const { dataSelectionStore } = rootState
+      const { incomingVolumes } = dataSelectionStore
       return incomingVolumes.map(v => {
         return {
           ...v,
@@ -36,4 +37,4 @@ const nonLinear = {
   }
 }
 
-export default nonLinear
+export default nonLinearStore

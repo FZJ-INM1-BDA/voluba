@@ -189,11 +189,15 @@ export default {
     InfoPopover
   },
   computed: {
-    ...mapState({
-      production: 'production',
-      user: 'user',
-      url: state => state.uploadUrl
+    ...mapState('authStore', [
+      'user'
+    ]),
+    ...mapState('dataSelectionStore', {
+      url: ({ uploadUrl }) => uploadUrl
     }),
+    ...mapState([
+      'production'
+    ]),
     uploadUrl: function () {
       return `${this.url}/upload`
     },
@@ -226,9 +230,9 @@ export default {
       modalMessage: 'modalMessage',
       log: 'log'
     }),
-    ...mapMutations({
-      setUploadUrl: 'setUploadUrl'
-    }),
+    ...mapMutations('dataSelectionStore', [
+      'setUploadUrl'
+    ]),
     showNiftiInfo: function (info) {
       this.modalMessage({
         variant: 'info',
@@ -264,8 +268,7 @@ export default {
 
       this.selectedFile = file
 
-      if (!file)
-        return
+      if (!file) return
 
       const blob = file.slice(0, 2048)
       const fileReader = new FileReader()
@@ -312,7 +315,6 @@ export default {
               this.preflightInProgress = false
               this.log(['Prefligght error', { error }])
               const errorMessage = (error && error.response && error.response.data) || 'An unknown preflight error errored'
-              // debugger
               this.preflightError = errorMessage
 
               this.$emit('preflight', {error: errorMessage})

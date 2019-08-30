@@ -1,101 +1,44 @@
 <template>
-  <div class = "container">
+  <div class="container">
 
     <!-- select reference volumes -->
-    <div v-if="false" id="referenceDataset" class="mb-5">
-      <div class="title">
-        <strong>
-          Reference Volume:
-        </strong>
-      </div>
-      <div class="mb-1 input-group">
-
-        <select
-          class = "form-control"
-          v-model = "selectedReferenceVolumeId">
-          <option
-            v-for="referenceVolume in referenceVolumes"
-            :key="referenceVolume.id"
-            :value="referenceVolume.id">
-            {{ referenceVolume.name }}
-          </option>
-        </select>
-      </div>
-    </div>
+    
 
     <!-- incoming voluems -->
     <div>
-      <div class = "title">
+      <div class="title">
         <strong>
           Incoming Volume 
         </strong>
       </div>
-      <div class="input-group">
-        <select
-          class = "form-control form-control-sm"
-          v-model = "selectedIncomingVolumeId">
-          <option
-            :disabled="true"
-            :value="dummyIncomingVolume.id">
-            {{ dummyIncomingVolume.name }}
-          </option>
-          <optgroup
-            v-for="groupV in groupedVolumes"
-            :key="groupV[0]"
-            :label="groupV[0]">
-            <option
-              v-for="volume in groupV[1]"
-              :disabled="volume.disabled"
-              :key="volume.id"
-              :value="volume.id">
-              {{ volume.name }}  
-            </option>
-          </optgroup>
-        </select>
 
-        <!-- incoming volume control -->
-        <!-- currently only supports delete -->
-        <div v-if="selectedIncomingVolume" class="input-group-append btn-group">
-
-          <div
-            @click="removeSelectedIncVolume"
-            :class="deleteBtnClass"
-            v-if="incomingVolumeCanBeDeleted"
-            class="btn btn-sm"
-            :title="deleteBtnTooltipText"
-            v-b-tooltip.hover.right>
-            <font-awesome-icon icon="trash-alt" />
-          </div>
-
-          <div
-            v-if="selectedIncomingVolume && selectedIncomingVolume.extra"
-            @click="showNiftiInfo(selectedIncomingVolume.extra)"
-            class="d-inline-block btn-sm">
-            <font-awesome-icon icon="info-circle"></font-awesome-icon>
-          </div>
-          
-        </div>
-      </div>
+      <IncomingVolumeSelection
+        @error="handleMessageFromIncVol('error', $event)"
+        @message="handleMessageFromIncVol('message', $event)"
+        />
 
       <!-- deletion feedback -->
       <div
         v-if="showAlert"
         :class="alertClass"
         class="alert">
-        {{ deletionError }}
-        {{ deletionMessage }}
+        {{ incVolSelError }}
+        {{ incVolSelMessage }}
       </div>
 
     </div>
 
     <hr>
 
+    <!-- upload volume -->
     <upload-volume-component
       v-if="allowUpload"
       @upload="handleUploadEvent" />
-    <hr />
-    <div class="d-flex flex-row justify-content-end align-items-center">
+    
+    <hr>
 
+    <!-- footer -->
+    <div class="d-flex flex-row justify-content-end align-items-center">
       <span
         @click="openModal({ modalId: 'aboutus' })"
         class="align-middle mr-2">
@@ -113,83 +56,42 @@
 </template>
 
 <script>
-import { makeHtmlFragmentForNifti, groupByVisibility } from '@/constants'
+import { makeHtmlFragmentForNifti } from '@/constants'
 import UploadVolumeComponent from '@/components/UploadVolume'
 import { mapActions, mapGetters, mapState } from 'vuex';
 import InfoPopover from '@/components/InfoPopover'
+import IncomingVolumeSelection from '@/components/IncomingVolumeSelection'
 
 export default {
   components: {
     UploadVolumeComponent,
-    InfoPopover
+    InfoPopover,
+    IncomingVolumeSelection
   },
   data: function () {
     return {
-      dummyIncomingVolume: {
-        id: null,
-        name: '-- Please select an incoming volume --',
-        disabled: true
-      },
-      deletionInProgress: false,
-      deletionError: null,
-      deletionMessage: null,
-      timeoutId:null
+      timeoutId:null,
+      incVolSelMessage: null,
+      incVolSelError: null,
     }
   },
   computed: {
-    ...mapGetters({
-      selectedIncomingVolume: 'selectedIncomingVolume'
-    }),
+    ...mapGetters('dataSelectionStore', [
+      'selectedReferenceVolume', 
+      'selectedIncomingVolume'
+    ]),
     ...mapState({
       allowUpload: 'allowUpload',
-      incomingVolumes: 'incomingVolumes',
-      defaultIncomingVolumes: state => state.incomingVolumes.filter(v => !v.visibility),
-      publicIncomingVolumes: state => state.incomingVolumes.filter(v => v.visibility === 'public'),
-      privateIncomingVolumes: state => state.incomingVolumes.filter(v => v.visibility === 'private')
     }),
-    groupedVolumes: function () {
-      return groupByVisibility(this.incomingVolumes)
-    },
     showAlert: function () {
-      return this.deletionError || this.deletionMessage
+      return this.incVolSelError || this.incVolSelMessage
     },
     alertClass: function () {
-      return this.deletionError
+      return this.incVolSelError
         ? 'alert-danger'
-        : this.deletionMessage
+        : this.incVolSelMessage
           ? 'alert-success'
-            : 'alert-info'
-    },
-    deleteBtnClass: function () {
-      return this.incomingVolumeCanBeDeleted
-        ? `btn-danger`
-        : 'btn-secondary disabled'
-    },
-    deleteBtnTooltipText: function() {
-      return this.incomingVolumeCanBeDeleted
-        ? 'Delete this incoming volume.'
-        : 'This volume cannot be deleted.'
-    },
-    incomingVolumeCanBeDeleted: function () {
-      return this.selectedIncomingVolume && this.selectedIncomingVolume.visibility === 'private'
-    },
-    selectedReferenceVolumeId: {
-      get: function () {
-        return this.$store.state.selectedReferenceVolumeId
-      },
-      set: function (id) {
-        this.$store.dispatch('selectReferenceVolumeWithId', id)
-      }
-    },
-    selectedIncomingVolumeId: {
-      get: function () {
-        const id = this.$store.state.selectedIncomingVolumeId
-        const selIncVol = this.$store.state.incomingVolumes.find(v => v.id === id)
-        return (selIncVol && selIncVol.id) || null
-      },
-      set: function (id) {
-        this.selectIncomingVolumeWithId(id)
-      }
+          : 'alert-info'
     },
     nextStepClass: function () {
       return this.bothSelected
@@ -197,11 +99,8 @@ export default {
         : 'btn-secondary disabled'
     },
     bothSelected: function () {
-      return this.selectedReferenceVolumeId && this.selectedIncomingVolumeId
+      return this.selectedReferenceVolume && this.selectedIncomingVolume
     },
-    referenceVolumes: function () {
-      return this.$store.state.referenceVolumes
-    }
   },
   beforeRouteLeave: function (to, from, next) {
     if (!this.bothSelected) {
@@ -210,44 +109,28 @@ export default {
       next()
     }
   },
-  mounted() {
-    this.updateIncVolumes()
-
-    this.$store.subscribeAction(({type, payload}) => {
-      if (type === 'updateIncVolumesResult') {
-        const {message, error} = payload
-
-        if (!message || !/^Delete/.test(message)) {
-          return
-        }
-
-        if (this.timeoutId) {
-          clearTimeout(this.timeoutId)
-        }
-
-        if (error) {
-          this.deletionError = message
-        } else {
-          this.deletionMessage = message
-        }
-        
-        this.deletionInProgress = false
-
-        this.timeoutId = setTimeout(() => {
-          this.deletionError = null
-          this.deletionMessage = null
-        }, 5000)
-      }
-    })
-  },
   methods: {
     ...mapActions({
-      deleteIncomingVolume: 'deleteIncomingVolume',
       openModal:'openModal',
       modalMessage: 'modalMessage',
-      updateIncVolumes: 'updateIncVolumes',
-      selectIncomingVolumeWithId: 'selectIncomingVolumeWithId',
     }),
+    ...mapActions('dataSelectionStore', [
+      'updateIncVolumes'
+    ]),
+    handleMessageFromIncVol: function (type, { message }){
+      if (this.timeoutId) clearTimeout(this.timeoutId)
+      if (type === 'error') {
+        this.incVolSelError = message
+      } else {
+        this.incVolSelMessage = message
+      }
+
+      this.timeoutId = setTimeout(() => {
+        this.incVolSelError = null
+        this.incVolSelMessage = null
+        this.timeoutId = null
+      }, 5000)
+    },
     handleUploadEvent: function ({ complete, data } = {}) {
       if (complete) {
 
@@ -272,19 +155,6 @@ export default {
         variant: 'success',
         title: 'Upload Successful',
         htmlBody: makeHtmlFragmentForNifti(extra)
-      })
-    },
-    removeSelectedIncVolume: function () {
-      const confirm = window.confirm(`Are you sure you would like to delete the incoming volume: ${this.selectedIncomingVolumeId}?
-      
-      Please note, this action is non-reversible`)
-      if (!confirm) {
-        return
-      }
-      this.deletionInProgress = true
-      this.deleteIncomingVolume({
-        id: this.selectedIncomingVolumeId,
-        incomingVolume: this.selectedIncomingVolume
       })
     },
     nextStep: function () {

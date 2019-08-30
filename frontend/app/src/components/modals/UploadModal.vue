@@ -111,7 +111,7 @@ export default {
     }
   },
   methods: {
-    ...mapActions('nonLinear', [
+    ...mapActions('nonLinearStore', [
       'selectDepthMap'
     ]),
     showModal: function () {
@@ -172,13 +172,13 @@ export default {
     }
   },
   computed: {
-    ...mapGetters([
+    ...mapGetters('authStore', [
       'authHeader'
     ]),
     ...mapState([
       'uploadUrl',
     ]),
-    ...mapState('nonLinear',[
+    ...mapState('nonLinearStore',[
       'nonLinearBackendUrl'
     ]),
     computedDepthMap: function () {

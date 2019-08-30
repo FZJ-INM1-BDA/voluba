@@ -91,7 +91,7 @@
 </template>
 
 <script>
-import { mapState, mapGetters, mapActions } from 'vuex'
+import { mapState, mapGetters, mapActions, mapMutations } from 'vuex'
 import { REFERENCE_COLOR, UNPAIRED_COLOR, INCOMING_COLOR, annotationColorBlur, annotationColorFocus, getShader, testBigbrain, determineElement, getRotationVec3, incomingTemplateActiveOpacity } from '@//constants'
 import { incompatibleBrowserText } from '@/text'
 
@@ -128,7 +128,6 @@ export default {
       subscriptions: [],
       viewportToDatas: [],
       incomingVolumeSelected: false,
-      selectedIncomingVolume: null,
 
       /**
        * all managed layers
@@ -259,7 +258,7 @@ export default {
       const layer = this.$options.nehubaBase.nehubaBase__nehubaViewer.ngviewer.layerManager.getLayerByName('userlayer-0')
       if (layer) {
         layer.setVisible(bool)
-        this.$store.dispatch('changeOpacity', 1.0)
+        this.changeOpacity(1.0)
       }
     },
     nehubaBase__mousePosition: function (array) {
@@ -267,7 +266,7 @@ export default {
     },
     nehubaBase__navigationPosition: function (array) {
       this.viewerNavigationPosition = array
-      this.$store.dispatch('primaryNehubaNavigationPositionChanged', array)
+      this.setPrimaryNehubaNavigationPosition( array )
     },
     incTransformMatrix: function (array) {
       const { mat4, vec3 } = window.export_nehuba
@@ -283,7 +282,7 @@ export default {
      * may becoming obsolete
      */
     incomingVolumeSelected: function (bool) {
-      this.$store.dispatch('highlightIncomingVolume', bool)
+      this.setIncomingVolumeHighlighted(bool)
     },
     incomingColor: function (rgba) {
       if (this.$options.nonReactiveData.ngUserLayer) {
@@ -349,6 +348,18 @@ export default {
       'addLandmark',
       'hoverLandmarkPair',
       'gotoLm'
+    ]),
+    ...mapActions('viewerPreferenceStore', [
+      'changeOpacity'
+    ]),
+    ...mapActions('nehubaStore', [
+      'setTranslInc',
+      'rotIncBy'
+    ]),
+    ...mapMutations('nehubaStore', [
+      'setReferenceTemplateTransform',
+      'setIncomingVolumeHighlighted',
+      'setPrimaryNehubaNavigationPosition'
     ]),
     handleMouseenterOnIcon: function ({ refId, incId, hover }) {
       this.hoverLandmarkPair({ refId, incId, hover })
@@ -479,7 +490,7 @@ export default {
            */
           vec3.add(pos, pos, prevTranslVec)
           
-          this.$store.dispatch('setTranslInc', {
+          this.setTranslInc({
             axis: 'xyz',
             value: Array.from(pos).map(v => v / 1e6)
           })
@@ -509,14 +520,13 @@ export default {
               deltaY * Math.PI / 180
             )
           )
-          this.$store.dispatch('rotIncBy', {quaternion: Array.from(finalRotation)})
+          this.rotIncBy({quaternion: Array.from(finalRotation)})
         }
       }
     },
     updateMouseOverIncVolState: function ({mouseOverUserlayer}) {
 
-      if (this._showIncVolOverlay && !this._showRefVol)
-        return
+      if (this._showIncVolOverlay && !this._showRefVol) return
 
       this.mouseOverIncoming = mouseOverUserlayer
       this.$store.dispatch(this.mouseOverIncoming
@@ -542,7 +552,7 @@ export default {
        * set reference volume transform matrix
        */
       const transform = this.$options.nehubaBase.nehubaBase__nehubaViewer.ngviewer.layerManager.managedLayers[0].layer.transform.toJSON()
-      this.$store.commit('setReferenceTemplateTransform', {transform})
+      this.setReferenceTemplateTransform({ transform })
 
       /**
        * load meshes 
@@ -694,26 +704,32 @@ export default {
     }
   },
   computed: {
-    ...mapGetters({
-      incRotQuat: 'incRotQuat'
+    ...mapGetters('nehubaStore', [
+      'incRotQuat'
+    ]),
+    ...mapState('nehubaStore', [
+      'appendNehubaFlag',
+      'incTransformMatrix'
+    ]),
+    ...mapState('viewerPreferenceStore', {
+      stateIncomingColor: state => state.incomingColor
+    }),
+    ...mapState('viewerPreferenceStore', {
+      overlayColorHex: state => state.overlayColor.hex || INCOMING_COLOR,
     }),
     ...mapState({
       uploadUrl: 'uploadUrl',
-      appendNehubaFlag: 'appendNehubaFlag',
       translationByDragEnabled: state => !state.incVolTranslationLock,
       rotationByDragEnabled: state => !state.incVolRotationLock,
       landmarkControlVisible: 'landmarkControlVisible',
       _step2Mode: '_step2Mode',
       _step2OverlayFocus: '_step2OverlayFocus',
-      incTransformMatrix: 'incTransformMatrix',
       incomingVolumes: 'incomingVolumes',
       selectedIncomingVolumeId: 'selectedIncomingVolumeId',
       incVolTranslationLock: 'incVolTranslationLock',
-      incVolRotationLock: 'incVolRotationLock',
-      flippedState: 'flippedState',
-      overlayColorHex: state => state.overlayColor.hex || INCOMING_COLOR,
+      incVolRotationLock: 'incVolRotationLock'
     }),
-    ...mapState('viewerStore', [
+    ...mapState('viewerPreferenceStore', [
       'showOriginal',
       'previewImage'
     ]),
@@ -723,6 +739,9 @@ export default {
       _storeIncomingLandmarks: 'incomingLandmarks',
       addLandmarkMode: 'addLandmarkMode'
     }),
+    ...mapGetters('dataSelectionStore', [
+      'selectedIncomingVolume'
+    ]),
     showOverScreen: function () {
       return this.addLandmarkMode && this.addLandmarkMode === 'incoming' && this._step2Mode === 'classic'
     },
@@ -763,11 +782,8 @@ export default {
     dataToViewport: function () {
       return this.nehubaBase__dataToViewport
     },
-    calculatedTransformMatrix: function () {
-      return this.$store.state.landmarkInverseMatrix.map((arr, i) => arr.map((v, idx) => i !== 3 && idx === 3 ? v * 1e6 : v))
-    },
     incomingColor: function () {
-      return this.$store.state.incomingColor.map((v, idx) => idx === 3 ? v : v / 255)
+      return this.stateIncomingColor.map((v, idx) => idx === 3 ? v : v / 255)
     },
     storedIncomingLandmarks: function () {
       const {vec3,  mat4} = window.export_nehuba
