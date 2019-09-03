@@ -3,7 +3,7 @@ import { saveToFile } from '@//constants'
 import Vuex from 'vuex'
 import Vue from 'vue'
 import axios from 'axios'
-import { AGREE_COOKIE_KEY, openInNewWindow, getShader, getTransformMatrixInNm } from '@/constants';
+import { AGREE_COOKIE_KEY, openInNewWindow, getTransformMatrixInNm } from '@/constants';
 
 
 import nonLinearStore from './nonLinearStore'
@@ -109,8 +109,9 @@ const getStore = ({ user = null } = {}) => new Vuex.Store({
       const selectedIncomingVolume = getters['dataSelectionStore/selectedIncomingVolume']
       const incRotQuat = getters['nehubaStore/incRotQuat']
       const dim = getters['nehubaStore/dim']
+      const fragmentShader = getters['viewerPreferenceStore/fragmentShader']
 
-      const shader = getShader(incomingColor.map(v => v / 255))
+      const shader = fragmentShader
       const opacity = incomingColor[3]
 
       const { vec3, quat } = export_nehuba
