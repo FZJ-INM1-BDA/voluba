@@ -228,8 +228,10 @@ export default {
     ...mapState('nehubaStore', {
       globalIncLock: state => state.incVolRotationLock && state.incVolTranslationLock && state.incVolScaleLock
     }),
+    ...mapState('authStore', [
+      'user'
+    ]),
     ...mapState({
-      user: 'user',
       _step2Mode: '_step2Mode',
       allowUpload: 'allowUpload',
       modeBtnVariant: state => state._step2Mode === 'overlay' ? 'outline-secondary' : 'info',
