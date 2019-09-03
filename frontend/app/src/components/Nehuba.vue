@@ -92,7 +92,8 @@
 
 <script>
 import { mapState, mapGetters, mapActions, mapMutations } from 'vuex'
-import { REFERENCE_COLOR, UNPAIRED_COLOR, INCOMING_COLOR, annotationColorBlur, annotationColorFocus, getShader, testBigbrain, determineElement, getRotationVec3, incomingTemplateActiveOpacity, identityMat } from '@//constants'
+
+import { REFERENCE_COLOR, UNPAIRED_COLOR, INCOMING_COLOR, annotationColorBlur, annotationColorFocus, testBigbrain, determineElement, getRotationVec3, incomingTemplateActiveOpacity, identityMat } from '@//constants'
 
 import { incompatibleBrowserText } from '@/text'
 
@@ -102,7 +103,10 @@ import NehubaLandmarksOverlay from '@/components/NehubaLandmarksOverlay'
 import NehubaStatusCard from '@/components/NehubaStatusCard'
 import RotationWidgetComponent from '@/components/RotationWidget/RotationWidgetComponent'
 
-const DEFAULT_SHADER = getShader()
+const DEFAULT_SHADER = `void main() {
+  float x = toNormalized(getDataValue());
+  emitRGB(vec3(x * 1, x * 1, x * 1 ));
+}`
 
 export default {
   mixins: [
@@ -203,6 +207,9 @@ export default {
     showOriginal: function (flag) {
       if (this.$options.nonReactiveData.ngUserLayer) this.$options.nonReactiveData.ngUserLayer.setVisible(flag)
     },
+    fragmentShader: function () {
+      this.rerenderColormap()
+    },
     previewImage: function (dateObj) {
       if (!dateObj) {
         /**
@@ -228,8 +235,8 @@ export default {
          const { name, imageSource: uri, transform = identityMat } = layerObj
          this.addUserLayer({
            uri,
-           shader: getShader(this.incomingColor),
-           opacity: this.incomingColor[3],
+           shader: this.fragmentShader,
+           opacity: this.opacity,
            name,
            transform
          })
@@ -294,16 +301,8 @@ export default {
     incomingVolumeSelected: function (bool) {
       this.setIncomingVolumeHighlighted(bool)
     },
-    incomingColor: function (rgba) {
-      if (this.$options.nonReactiveData.ngUserLayer) {
-        const layer = this.$options.nonReactiveData.ngUserLayer
-        if (layer.layer) {
-          if (layer.layer.fragmentMain)
-            layer.layer.fragmentMain.restoreState(getShader(rgba))
-          if (layer.layer.opacity)
-            layer.layer.opacity.restoreState(rgba[3])
-        }
-      }
+    opacity: function () {
+      this.rerenderOpacity()
     },
     selectedIncomingVolume: function (vol) {
       this.clearUserLayers()
@@ -312,8 +311,8 @@ export default {
         const uri = vol.imageSource
         const ngUserLayer = this.addUserLayer({
           uri,
-          shader: getShader(this.incomingColor),
-          opacity: this.incomingColor[3]
+          shader: this.fragmentShader,
+          opacity: this.opacity
         })
         this.$options.nonReactiveData.ngUserLayer = ngUserLayer
       }
@@ -321,9 +320,9 @@ export default {
     mouseOverIncoming: function (val) {
       if (this.$options.nonReactiveData.ngUserLayer.layer.opacity) {
         if (val) {
-          this.$options.nonReactiveData.ngUserLayer.layer.opacity.restoreState(this.incomingColor[3] * 0.8)
+          this.$options.nonReactiveData.ngUserLayer.layer.opacity.restoreState(this.opacity * 0.8)
         } else {
-          this.$options.nonReactiveData.ngUserLayer.layer.opacity.restoreState(this.incomingColor[3])
+          this.$options.nonReactiveData.ngUserLayer.layer.opacity.restoreState(this.opacity)
         }
       }
 
@@ -371,6 +370,22 @@ export default {
       'setIncomingVolumeHighlighted',
       'setPrimaryNehubaNavigationPosition'
     ]),
+    rerenderOpacity: function () {
+      if (this.$options.nonReactiveData.ngUserLayer) {
+        const layer = this.$options.nonReactiveData.ngUserLayer
+        if (layer.layer) {
+          if (layer.layer.opacity) layer.layer.opacity.restoreState(this.opacity)
+        }
+      }
+    },
+    rerenderColormap: function () {
+      if (this.$options.nonReactiveData.ngUserLayer) {
+        const layer = this.$options.nonReactiveData.ngUserLayer
+        if (layer.layer) {
+          if (layer.layer.fragmentMain) layer.layer.fragmentMain.restoreState(this.fragmentShader)
+        }
+      }
+    },
     handleMouseenterOnIcon: function ({ refId, incId, hover }) {
       this.hoverLandmarkPair({ refId, incId, hover })
     },
@@ -468,13 +483,13 @@ export default {
       if (this.$options.nonReactiveData.timeoutId) {
         clearTimeout(this.$options.nonReactiveData.timeoutId)
       }
-      if ((this.translationByDragEnabled && this.movingIncoming) || (this.rotationByDragEnabled && this.rotatingIncoming)) {
+      if ((!this.incVolTranslationLock && this.movingIncoming) || (!this.incVolRotationLock && this.rotatingIncoming)) {
         const {vec3, mat4, quat} = window.export_nehuba
 
         const deltaX = event.movementX
         const deltaY = event.movementY
 
-        if (this.translationByDragEnabled && this.movingIncoming) {
+        if (!this.incVolTranslationLock && this.movingIncoming) {
           this.pushUndo({ name: 'translating incoming volume' })
           /**
            * first, translation mouse delta into 3d delta
@@ -506,7 +521,7 @@ export default {
           })
         }
 
-        if (this.rotationByDragEnabled && this.rotatingIncoming) {
+        if (!this.incVolRotationLock && this.rotatingIncoming) {
           this.pushUndo({ name : 'rotating incoming volume' })
           let { vec31, vec32 } = getRotationVec3(this.movingIncomingIndex)
           if (vec31 === null || vec32 === null) {
@@ -552,8 +567,8 @@ export default {
         const uri = this.selectedIncomingVolume.imageSource
         const ngUserLayer = this.addUserLayer({
           uri,
-          shader: getShader(this.incomingColor),
-          opacity: this.incomingColor[3]
+          shader: this.fragmentShader,
+          opacity: this.opacity
         })
         this.$options.nonReactiveData.ngUserLayer = ngUserLayer
       }
@@ -720,25 +735,20 @@ export default {
     ]),
     ...mapState('nehubaStore', [
       'appendNehubaFlag',
-      'incTransformMatrix'
+      'incTransformMatrix',
+      'incVolRotationLock',
+      'incVolTranslationLock'
     ]),
     ...mapState('viewerPreferenceStore', {
-      stateIncomingColor: state => state.incomingColor
-    }),
-    ...mapState('viewerPreferenceStore', {
+      opacity: state => state.incomingColor[3] || 0.0,
       overlayColorHex: state => state.overlayColor.hex || INCOMING_COLOR,
     }),
     ...mapState({
-      uploadUrl: 'uploadUrl',
-      translationByDragEnabled: state => !state.incVolTranslationLock,
-      rotationByDragEnabled: state => !state.incVolRotationLock,
       landmarkControlVisible: 'landmarkControlVisible',
       _step2Mode: '_step2Mode',
       _step2OverlayFocus: '_step2OverlayFocus',
       incomingVolumes: 'incomingVolumes',
       selectedIncomingVolumeId: 'selectedIncomingVolumeId',
-      incVolTranslationLock: 'incVolTranslationLock',
-      incVolRotationLock: 'incVolRotationLock'
     }),
     ...mapState('viewerPreferenceStore', [
       'showOriginal',
@@ -753,6 +763,9 @@ export default {
     ...mapGetters('dataSelectionStore', [
       'selectedIncomingVolume'
     ]),
+    ...mapGetters('viewerPreferenceStore', [
+      'fragmentShader'
+    ]),
     showOverScreen: function () {
       return this.addLandmarkMode && this.addLandmarkMode === 'incoming' && this._step2Mode === 'classic'
     },
@@ -760,8 +773,7 @@ export default {
       return this.appendNehubaFlag && this._step2Mode === 'overlay'
     },
     compoundPerspectiveOrientation: function () {
-      if (!this.viewerPerspectiveOrientation || !this.nehubaLoaded)
-        return null
+      if (!this.viewerPerspectiveOrientation || !this.nehubaLoaded) return null
       const { quat } = window.export_nehuba
       const q = quat.fromValues(...this.incRotQuat)
       quat.mul(q, q, this.viewerPerspectiveOrientation)
@@ -792,9 +804,6 @@ export default {
     },
     dataToViewport: function () {
       return this.nehubaBase__dataToViewport
-    },
-    incomingColor: function () {
-      return this.stateIncomingColor.map((v, idx) => idx === 3 ? v : v / 255)
     },
     storedIncomingLandmarks: function () {
       const {vec3,  mat4} = window.export_nehuba

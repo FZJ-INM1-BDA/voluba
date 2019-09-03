@@ -52,7 +52,7 @@
             <b-nav-item-dropdown
               :no-caret="true"
               right
-              v-if="_step2Mode === 'overlay' && selectedIncomingVolumeType === 'image'">
+              v-if="showColorPicker">
               <template slot="button-content">
                 <div
                   :style="{color: overlayColor.hex}"
@@ -69,6 +69,53 @@
               </b-dropdown-item>
             </b-nav-item-dropdown>
 
+          </transition>
+
+          <!-- threshold -->
+          <transition name="fade">
+            <b-nav-item-dropdown
+              text="Threshold"
+              right>
+                <SliderComponent
+                  name="Lower Threshold"
+                  :min="0"
+                  :max="1"
+                  :step="0.01"
+                  @sliderInput="lowerThreshold = $event"
+                  @minus="lowerThreshold -= 0.01"
+                  @plus="lowerThreshold += 0.01"
+                  :value="lowerThreshold"
+                  unit="" />
+                <SliderComponent
+                  name="Upper Threshold"
+                  :min="0"
+                  :max="1"
+                  :step="0.01"
+                  @sliderInput="upperThreshold = $event"
+                  @minus="upperThreshold -= 0.01"
+                  @plus="upperThreshold += 0.01"
+                  :value="upperThreshold"
+                  unit="" />
+            </b-nav-item-dropdown>
+          </transition>
+
+
+          <!-- colormap selection -->
+          <transition name="fade">
+            <b-nav-item-dropdown
+              :text="colorMapSelectionText"
+              right>
+              <b-dropdown-item
+                @click="selectColorMapByName({ name: null })">
+                Mono
+              </b-dropdown-item>
+              <b-dropdown-item
+                :key="colorMap.name"
+                @click="selectColorMapByName({ name: colorMap.name })"
+                v-for="colorMap in availableColorMaps">
+                {{ colorMap.name }}
+              </b-dropdown-item>
+            </b-nav-item-dropdown>
           </transition>
 
           <!-- split view toggle -->
@@ -118,7 +165,7 @@
 import ProgressTracker from '@/components/layout/ProgressTracker'
 import SigningComponent from '@/components/SigninComponent'
 import SliderComponent from '@/components/layout/Slider'
-import { mapState, mapActions, mapGetters } from 'vuex'
+import { mapState, mapActions, mapGetters, mapMutations } from 'vuex'
 import { Compact } from 'vue-color'
 import { AGREE_COOKIE_KEY } from '@/constants'
 
@@ -170,8 +217,14 @@ export default {
     ]),
     ...mapState('viewerPreferenceStore', {
       stateIncomingColor: state => state.incomingColor,
-      stateOverlayColor: state => state.overlayColor
+      stateOverlayColor: state => state.overlayColor,
+      availableColorMaps: state => state.availableColorMaps,
+      stateLowerThreshold: state => state.lowerThreshold,
+      stateUpperThreshold: state => state.upperThreshold
     }),
+    ...mapGetters('viewerPreferenceStore', [
+      'selectedColorMap'
+    ]),
     ...mapState('nehubaStore', {
       globalIncLock: state => state.incVolRotationLock && state.incVolTranslationLock && state.incVolScaleLock
     }),
@@ -182,13 +235,40 @@ export default {
       modeBtnVariant: state => state._step2Mode === 'overlay' ? 'outline-secondary' : 'info',
       agreedToCookie: 'agreedToCookie'
     }),
+    lowerThreshold: {
+      get: function () {
+        return this.stateLowerThreshold
+      },
+      set: function (lowerThreshold) {
+        this.setLowerThreshold({ lowerThreshold })
+      }
+    },
+    upperThreshold: {
+      get: function () {
+        return this.stateUpperThreshold
+      },
+      set: function (upperThreshold) {
+        this.setUpperThreshold({ upperThreshold })
+      }
+    },
     globalLockIcon: function () {
       return this.globalIncLock ?  'lock' : 'lock-open'
     },
     loginText: function () {
       return this.user
-        ? `Hi ${(this.user && this.user.name) || 'Loris Ipsum'}`
+        ? `Hi ${(this.user && this.user.name) || 'Unnamed User'}`
         : `Login`
+    },
+    showColorPicker: function () {
+      return this._step2Mode === 'overlay' && this.selectedIncomingVolumeType === 'image' && !this.selectedColorMap
+    },
+    showColorMapSelection: function () {
+      return this._step2Mode === 'overlay' && this.selectedIncomingVolumeType === 'image'
+    },
+    colorMapSelectionText: function () {
+      return this.selectedColorMap
+        ? this.selectedColorMap.name
+        : 'Mono'
     },
     modeBtnTooltipText: function () {
       return `${this.mode === 'classic' ? 'Disable' : 'Enable'} two pane mode`
@@ -225,7 +305,8 @@ export default {
   methods: {
     ...mapActions('viewerPreferenceStore', [
       'changeOpacity',
-      'changeOverlayColor'
+      'changeOverlayColor',
+      'selectColorMapByName'
     ]),
     ...mapActions('nehubaStore', [
       'lockIncVol'
@@ -236,6 +317,10 @@ export default {
       setLocalStorage: 'setLocalStorage',
       log: 'log',
     }),
+    ...mapMutations('viewerPreferenceStore', [
+      'setLowerThreshold',
+      'setUpperThreshold'
+    ]),
     toggleGlobalLock: function () {
       if (this.globalIncLock) {
         this.lockIncVol({

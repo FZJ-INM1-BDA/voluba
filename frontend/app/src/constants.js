@@ -26,11 +26,6 @@ export const arrayBufferToBase64String = (arraybuffer) => {
 export const IMAGE_SERVICE_NAME = `CHUNMA`
 export const SEGMENTATION_EXPLANATION = `A segmentation nii file can be ingested differently to an image nii file`
 
-export const getShader = (rgb = [1.0, 1.0, 1.0]) => `void main() {
-  float x = toNormalized(getDataValue());
-  emitRGB(vec3(x * ${rgb[0].toFixed(1)}, x * ${rgb[1].toFixed(1)}, x * ${rgb[2].toFixed(1)} ));
-}`
-
 export const LANDMARK_ICON_THRESHOLD = 10
 
 export const REFERENCE_COLOR = `white`
@@ -874,6 +869,7 @@ export const groupByVisibility = (volumes) => {
     }, [])
 }
 
+export const CM_MATLAB_JET = `float r;if( x < 0.7 ){r = 4.0 * x - 1.5;} else {r = -4.0 * x + 4.5;}float g;if (x < 0.5) {g = 4.0 * x - 0.5;} else {g = -4.0 * x + 3.5;}float b;if (x < 0.3) {b = 4.0 * x + 0.5;} else {b = -4.0 * x + 2.5;}float a = 1.0;`
 export const identityMat = [
   [1.0,  0,    0,    0],
   [0,    1.0,  0,    0],
