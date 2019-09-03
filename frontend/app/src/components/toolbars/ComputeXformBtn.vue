@@ -16,7 +16,9 @@ export default {
   computed: {
     ...mapState({
       backendQueryInProgress: 'backendQueryInProgress',
-      backendQueryError: 'backendQueryError',
+      backendQueryError: 'backendQueryError'
+    }),
+    ...mapState('landmarksStore', {
       ableToComputeTransformationMatrix: state => state.landmarkPairs.length >= 3
     }),
     computeXformBtnClass: function () {
@@ -44,9 +46,9 @@ export default {
     }
   },
   methods: {
-    ...mapActions({
-      computeXform: 'computeXform',
-    })
+    ...mapActions('linearStore', [
+      'computeXform'
+    ])
   },
 }
 </script>

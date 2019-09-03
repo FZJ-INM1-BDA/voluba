@@ -96,11 +96,13 @@ import { HISTORY_BROWSER_TITLE } from '@/text'
 export default {
   methods: {
     ...mapActions({
-      undo: 'undo',
-      redo: 'redo',
       openModal: 'openModal',
       log: 'log'
     }),
+    ...mapActions('undoStore', [
+      'undo',
+      'redo'
+    ]),
     clickUndo: function (undo) {
       this.log(undo)
     },
@@ -109,12 +111,22 @@ export default {
     }
   },
   computed: {
-    ...mapState({
-      undoStack: state => state.undoStack.slice(-5),
-      redoStack: state => state.redoStack.slice(-5),
-      moreUndo: state => state.undoStack.length > 5 ? `${state.undoStack.length - 5} more undo item${state.undoStack.length - 5 > 1 ? 's' : ''}` : null,
-      moreRedo: state => state.redoStack.length > 5 ? `${state.redoStack.length - 5} more redo item${state.redoStack.length - 5 > 1 ? 's' : ''}` : null
+    ...mapState('undoStore', {
+      storeUndoStack: state => state.undoStack,
+      storeRedoStack: state => state.redoStack
     }),
+    undoStack: function () {
+      return this.storeUndoStack.slice(-5)
+    },
+    redoStack: function () {
+      return this.storeRedoStack.slice(-5)
+    },
+    moreUndo: function () {
+      return this.storeUndoStack.length > 5 ? `${this.storeUndoStack.length - 5} more undo item${this.storeUndoStack.length - 5 > 1 ? 's' : ''}` : null
+    },
+    moreRedo: function () {
+      return this.storeRedoStack.length > 5 ? `${this.storeRedoStack.length - 5} more undo item${this.storeRedoStack.length - 5 > 1 ? 's' : ''}` : null
+    },
     historyBrowserTitle: function () {
       return HISTORY_BROWSER_TITLE
     },

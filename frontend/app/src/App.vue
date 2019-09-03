@@ -137,7 +137,7 @@ export default {
     if (!this.production) {
       window.setProduction = (arg) => this.setProduction(arg)
     }
-    this.$store.dispatch("appendNehuba");
+    this.initAppendNehuba();
     this.$store.subscribeAction(({ type = '', payload = {} } = {}) => {
       switch (type) {
         case "openModal": {
@@ -163,14 +163,24 @@ export default {
     });
   },
   computed: {
+    ...mapState('nehubaStore', [
+      'appendNehubaFlag'
+    ]),
     ...mapState({
       production: 'production',
-      appendNehubaFlag: 'appendNehubaFlag',
-      undoStack: 'undoStack',
-      redoStack: 'redoStack',
-      incTransformMatrix: 'incTransformMatrix',
-      addLandmarkMode: 'addLandmarkMode'
+      incTransformMatrix: 'incTransformMatrix'
     }),
+    ...mapState('undoStore', [
+      'undoStack',
+      'redoStack'
+    ]),
+    ...mapState('dataSelectionStore',[
+      'selectedIncomingVolumeId',
+      'incomingVolumes'
+    ]),
+    ...mapState('landmarksStore', [
+      'addLandmarkMode'
+    ]),
     startFromScratchTitle: function() {
       return START_FROM_SCRATCH_MODAL_TITLE;
     },
@@ -178,9 +188,8 @@ export default {
       return this.$store.state.sidebarWidth;
     },
     simpleNehubaConfig: function() {
-      const id = this.$store.state.selectedIncomingVolumeId;
-      const incVol =
-        id && this.$store.state.incomingVolumes.find(v => v.id === id);
+      const incVol = this.selectedIncomingVolumeId
+        && this.incomingVolumes.find(v => v.id === this.selectedIncomingVolumeId);
       return (
         incVol &&
         incVol.imageSource &&
@@ -196,14 +205,26 @@ export default {
     }
   },
   methods: {
+    ...mapActions('nehubaStore', [
+      'initAppendNehuba'
+    ]),
     ...mapMutations({
       setProduction: 'setProduction'
     }),
-    ...mapActions({
-      startFromScratch: 'startFromScratch',
-      changeLandmarkMode: 'changeLandmarkMode',
-      log: 'log'
-    }),
+    ...mapActions([
+      'startFromScratch',
+      'log'
+    ]),
+    ...mapActions('landmarksStore', [
+      'changeLandmarkMode',
+    ]),
+    ...mapActions('undoStore', [
+      'undo',
+      'redo'
+    ]),
+    ...mapActions('nehubaStore', [
+      'redrawNehuba'
+    ]),
     startRegistration: function () {
       this.showSelectVolumesModal = false
     },
@@ -215,12 +236,12 @@ export default {
       const { key, ctrlKey } = event;
       if (ctrlKey) {
         if (key === "z") {
-          this.$store.dispatch("undo");
+          this.undo()
           event.stopPropagation();
           event.preventDefault();
         }
         if (key === "y") {
-          this.$store.dispatch("redo");
+          this.redo()
           event.stopPropagation();
           event.preventDefault();
         }
@@ -240,7 +261,7 @@ export default {
       this.showSelectVolumesModal = flag;
     },
     showSimpleNehuba: function() {
-      this.$store.dispatch("redrawNehuba");
+      this.redrawNehuba()
     }
   }
 };

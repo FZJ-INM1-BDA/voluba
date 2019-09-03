@@ -123,10 +123,12 @@ export default {
   },
   computed: {
     ...mapState({
-      addLandmarkMode: 'addLandmarkMode',
       landmarkControlVisible: 'landmarkControlVisible',
       corticalAlignmentVisible: 'corticalAlignmentVisible'
     }),
+    ...mapState('landmarksStore', [
+      'addLandmarkMode'
+    ]),
     historyBrowserTitle: function () {
       return HISTORY_BROWSER_TITLE
     },
@@ -164,9 +166,12 @@ export default {
   methods: {
     ...mapActions({
       landmarkControlVisibilityChanged: 'landmarkControlVisibilityChanged',
-      changeLandmarkMode: 'changeLandmarkMode',
       corticalAlignmentVisibilityChanged: 'corticalAlignmentVisibilityChanged'
     }),
+    ...mapActions('landmarksStore', [
+      'changeLandmarkMode',
+      'addLandmarkPair'
+    ]),
     toggleAddLmMode: function () {
       this.addLmMode = this.addLmMode === 'reference'
         ? 'incoming'
@@ -180,7 +185,7 @@ export default {
         /**
          * classic mode
          */
-        this.$store.dispatch('addLandmarkPair')
+        this.addLandmarkPair()
       }
     },
     toggleMode: function () {

@@ -26,8 +26,8 @@ export default {
     }
   },
   mounted() {
-    this.$store.subscribeAction(({type}) => {
-      if (type === 'redrawNehuba') {
+    this.$store.subscribeAction(({ type }) => {
+      if (type === 'nehubaStore/redrawNehuba') {
         if ( this.$options && this.$options.nehubaBase && this.$options.nehubaBase.nehubaBase__nehubaViewer ) {
           this.$options.nehubaBase.nehubaBase__nehubaViewer.redraw()
         }

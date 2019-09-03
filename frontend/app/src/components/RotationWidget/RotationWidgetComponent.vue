@@ -88,7 +88,7 @@
 <script>
 
 import LinearGradientSvgFrag from './LinearGradientSvgFrag'
-import { mapState } from 'vuex'
+import { mapState, mapActions } from 'vuex'
 
 export default {
   components: {
@@ -115,9 +115,9 @@ export default {
     }
   },
   computed: {
-    ...mapState({
-      appendNehubaFlag: 'appendNehubaFlag'
-    }),
+    ...mapState('nehubaStore', [
+      'appendNehubaFlag'
+    ]),
     gradientRed: function () {
       const arr = this.circleRed.path
         .map(p => p.coords)
@@ -192,6 +192,9 @@ export default {
     },
   },
   methods: {
+    ...mapActions('nehubaStore', [
+      'rotIncBy'
+    ]),
     getCircle: function (idx) {
 
       const topRow = this.center[1] - this.radius
@@ -329,7 +332,8 @@ export default {
         name: `rotate by RGB widget ${this.focusIdx}`,
         collapse: `rotate by rgb widget ${this.focusIdx}`
       })
-      this.$store.dispatch('rotIncBy', {
+
+      this.rotIncBy({
         quaternion: Array.from(q)
       })
     },

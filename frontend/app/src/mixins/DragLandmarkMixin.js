@@ -1,3 +1,5 @@
+import { mapActions } from "vuex";
+
 const DragLandmarkMixin = {
   data: function () {
     return {
@@ -8,6 +10,9 @@ const DragLandmarkMixin = {
     }
   },
   methods: {
+    ...mapActions('landmarksStore',[
+      'translateLandmarkPosBy'
+    ]),
     dragLandmark__handleMousedownOnIcon: function ({lmId, panelIdx, volume, transform, ...rest}) {
 
       const { mat4, quat } = window.export_nehuba
@@ -54,7 +59,7 @@ const DragLandmarkMixin = {
         vec3.transformQuat(pos, pos, quat.fromValues(...this.dragLandmark__quat))
       }
       
-      this.$store.dispatch('translateLandmarkPosBy', {
+      this.translateLandmarkPosBy({
         volume: this.dragLandmark__volume,
         id: this.dragLandmark__draggedLmId,
         value: Array.from(pos).map(v => v / 1e6) // in mm

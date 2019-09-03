@@ -38,7 +38,7 @@
 <script>
 import { oldJson, openFileDialog } from '@//constants'
 import { LOAD_LM_WARNING } from '@/text'
-import { mapActions, mapState } from 'vuex'
+import { mapActions, mapState, mapMutations } from 'vuex'
 
 export default {
   name: 'UploadModal',
@@ -55,6 +55,14 @@ export default {
     ...mapActions({
       log: 'log'
     }),
+    ...mapMutations('landmarksStore', [
+      'setReferenceLandmarks',
+      'setIncomingLandmarks',
+      'setLandmarkPairs'
+    ]),
+    ...mapActions('landmarksStore', [
+      'loadOldJson'
+    ]),
     hideModal: function () {
       this.$refs.modal.hide()
     },
@@ -65,8 +73,7 @@ export default {
       this.errorMessage = ''
       this.showAlert = false
       this.hideModal()
-
-      this.$store.dispatch('loadOldJson', {
+      this.loadOldJson({
         json: oldJson,
         config: {
           fixCenterTranslation: true
@@ -86,9 +93,15 @@ export default {
           return
         }
 
-        this.$store.state.referenceLandmarks = jsonData.reference_landmarks
-        this.$store.state.incomingLandmarks = jsonData.incoming_landmarks
-        this.$store.state.landmarkPairs = jsonData.landmark_pairs
+        this.setReferenceLandmarks({
+          referenceLandmarks: jsonData.reference_landmarks
+        })
+        this.setIncomingLandmarks({
+          incomingLandmarks: jsonData.incoming_landmarks
+        })
+        this.setLandmarkPairs({
+          landmarkPairs: jsonData.landmark_pairs
+        })
 
         this.errorMessage = ''
         this.hideModal()
