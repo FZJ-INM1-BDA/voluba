@@ -1,7 +1,6 @@
 const express = require('express')
 const session = require('express-session')
 const path = require('path')
-const dotenv = require('dotenv')
 const MemoryStore = require('memorystore')(session)
 const { compressionMiddleware } = require('nomiseco')
 
@@ -9,7 +8,7 @@ const SESSIONSECRET = process.env.SESSIONSECRET || `i will never love carrots`
 
 const app = express()
 if (process.env !== 'production'){
-  dotenv.config()
+  require('dotenv').config()
 }
 
 const store = new MemoryStore({
