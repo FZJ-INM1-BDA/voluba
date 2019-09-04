@@ -7,7 +7,7 @@ const { compressionMiddleware } = require('nomiseco')
 const SESSIONSECRET = process.env.SESSIONSECRET || `i will never love carrots`
 
 const app = express()
-if (process.env !== 'production'){
+if (process.env.NODE_ENV !== 'production'){
   require('dotenv').config()
 }
 
