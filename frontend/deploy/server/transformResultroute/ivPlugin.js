@@ -40,7 +40,10 @@ const getScript = ({ name, incVolName, imageSource, shader, opacity, ngMatrix })
   }, 500)
 })()
 `
-
+/**
+ * TODO, trasnform scriptURL and retire inline script
+ * violates CSP
+ */
 router.get('/:resultId', (req, res) => {
   const { resultMap: map } = req
   const { resultId } = req.params

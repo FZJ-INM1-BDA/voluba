@@ -3,12 +3,14 @@ const session = require('express-session')
 const path = require('path')
 const dotenv = require('dotenv')
 const MemoryStore = require('memorystore')(session)
+const { compressionMiddleware } = require('nomiseco')
 
-const PORT = process.env.PORT || 3000
 const SESSIONSECRET = process.env.SESSIONSECRET || `i will never love carrots`
 
 const app = express()
-dotenv.config()
+if (process.env !== 'production'){
+  dotenv.config()
+}
 
 const store = new MemoryStore({
   checkPeriod: 86400000
@@ -29,7 +31,7 @@ app.use(session({
 
 const authStrategies = require('./strategies')
 
-const startServer = async (app) => {
+const initServer = async () => {
   try{
     await authStrategies(app)
   } catch (e) {
@@ -40,8 +42,13 @@ const startServer = async (app) => {
   app.use('/transformResult', require('./transformResultroute'))
   
   const publicPath = path.join(__dirname, '..',  'public')
+
+  if (process.env.NODE_ENV === 'production') {
+    app.use(compressionMiddleware)
+  }
+
   app.use(express.static(publicPath))
-  app.listen(PORT, () => console.log(`server listening on port ${PORT}`))
+  return app
 }
 
-startServer(app)
+module.exports = initServer

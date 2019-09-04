@@ -1,5 +1,10 @@
 const { Issuer, Strategy } = require('openid-client')
 
+Issuer.defaultHttpOptions = {
+  timeout: 30000,
+  retries: 10
+}
+
 const defaultCb = (tokenset, {id, ...rest}, done) => {
   return done(null, {
     id: id || Date.now(),
