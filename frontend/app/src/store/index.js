@@ -113,7 +113,7 @@ const getStore = ({ user = null } = {}) => new Vuex.Store({
           name: 'load transform json file'
         })
         
-        commit('setIncTransformMatrix', {
+        commit('nehubaStore/setIncTransformMatrix', {
           matrix
         })
       }catch(e) {
