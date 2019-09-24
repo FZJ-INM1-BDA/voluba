@@ -778,6 +778,7 @@ export const processImageMetaData = ({id:defaultId, visibility = 'public', name 
 }
 
 export const transposeMat4 = (incM) => [0, 1, 2, 3].map(r => [0, 1, 2, 3].map(c => incM[ c * 4 + r ]))
+export const reverseTransposeMat4 = (jsonMatrix) => [0, 1, 2, 3].map(r => [0, 1, 2, 3].map(c => jsonMatrix[c][r])).reduce((acc, curr) => acc.concat(curr), [])
 
 /**
  * TODO sanitize inputs to avoid XSS
