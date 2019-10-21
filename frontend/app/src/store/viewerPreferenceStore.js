@@ -96,22 +96,24 @@ const viewerPreferenceStore = {
       switch (selectedColorMap && selectedColorMap.name) {
         case 'JET':
           return `void main(){
-            float x = toNormalized(getDataValue());
+            float raw_x = toNormalized(getDataValue());
+            float x = (raw_x - ${lowerThreshold.toFixed(1)}) / (${(upperThreshold - lowerThreshold).toFixed(1)});
             ${CM_MATLAB_JET}
-            if(x>${upperThreshold.toFixed(1)}){
+            if(x>1.0){
               emitTransparent();
-            }else if (x<${lowerThreshold.toFixed(1)}){
+            }else if (x<0.0){
               emitTransparent();
             }else{
               emitRGB(vec3(r,g,b));
             }
           }`
         default: return `void main() {
-          float x = toNormalized(getDataValue());
+          float raw_x = toNormalized(getDataValue());
+          float x = (raw_x - ${lowerThreshold.toFixed(1)}) / (${(upperThreshold - lowerThreshold).toFixed(1)});
 
-          if(x>${upperThreshold.toFixed(1)}){
+          if(x>1.0){
             emitTransparent();
-          }else if (x<${lowerThreshold.toFixed(1)}){
+          }else if (x<0.0){
             emitTransparent();
           }else{
             emitRGB(vec3(x * ${normalizedIncomingColor[0].toFixed(1)}, x * ${normalizedIncomingColor[1].toFixed(1)}, x * ${normalizedIncomingColor[2].toFixed(1)} ));
