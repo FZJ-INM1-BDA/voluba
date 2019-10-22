@@ -91,13 +91,13 @@ const dataSelectionStore = {
            */
         })
     },
-    deleteIncomingVolume ({ state, dispatch, getters, commit }, { id, incomingVolume}) {
+    deleteIncomingVolume ({ state, dispatch, getters, commit, rootGetters }, { id, incomingVolume}) {
       /**
        * TODO
        * check endpoint still valid
        */
-      const { authStore } = getters
-      const { authHeader } = authStore
+      
+      const authHeader= rootGetters['authStore/authHeader']
       const config = {
           method: 'DELETE',
           headers: {
