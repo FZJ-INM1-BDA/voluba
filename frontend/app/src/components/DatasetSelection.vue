@@ -150,13 +150,6 @@ export default {
         this.updateIncVolumes()
       }
     },
-    showNiftiInfo: function (extra) {
-      this.modalMessage({
-        variant: 'success',
-        title: 'Upload Successful',
-        htmlBody: makeHtmlFragmentForNifti(extra)
-      })
-    },
     nextStep: function () {
       this.$store.dispatch('nextStep')
     }

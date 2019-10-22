@@ -117,6 +117,16 @@ export default {
       'updateIncVolumes',
       'deleteIncomingVolume'
     ]),
+    ...mapActions([
+      'modalMessage'
+    ]),
+    showNiftiInfo: function (extra) {
+      this.modalMessage({
+        variant: 'success',
+        title: 'Upload Successful',
+        htmlBody: makeHtmlFragmentForNifti(extra)
+      })
+    },
     removeSelectedIncVolume: function () {
       const confirm = window.confirm(`Are you sure you would like to delete the incoming volume: ${this.selectedIncomingVolumeId}?
       
