@@ -1,4 +1,4 @@
-# Voluba
+# Voluba User Documentation
 
 volumetric brain anchoring
 
@@ -16,7 +16,7 @@ You will need an [ORCID](https://orcid.org/) or [HBP OIDC](https://wiki.humanbra
 
 - navigate to <https://voluba.apps.hbp.eu> or <https://voluba-next.apps-dev.hbp.eu>
 
-  ![](images/home.png w=100%x)
+  ![](images/home.png)
 
 - Either:
   - Selected a public volume
