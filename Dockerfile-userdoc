@@ -6,7 +6,8 @@ WORKDIR /voluba
 RUN pip install mkdocs mkdocs-material
 RUN mkdocs build
 
-FROM httpd:2-alpine
-COPY --from=builder /voluba/site/ /usr/local/apache2/htdocs/
+FROM nginx:alpine
+COPY --from=builder /voluba/site /usr/share/nginx/html
+COPY --from=builder /voluba/user_docs/nginx_conf/nginx.conf /etc/nginx/nginx.conf
 
-ENTRYPOINT ["httpd-foreground"]
+ENTRYPOINT ["nginx", "-g", "daemon off;"]
