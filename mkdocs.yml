@@ -1,0 +1,12 @@
+site_name: Voluba User Documentation
+
+theme:
+  name: 'material'
+
+extra_css:
+  - extra.css
+
+markdown_extensions:
+  - admonition
+  - codehilite
+  - mkautodoc

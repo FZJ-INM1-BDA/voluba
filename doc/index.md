@@ -1,8 +1,3 @@
----
-layout: layouts/default.mustache
-title: Voluba User Doc
----
-
 # Voluba
 
 volumetric brain anchoring
