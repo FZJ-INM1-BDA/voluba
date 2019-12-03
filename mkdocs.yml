@@ -6,6 +6,8 @@ theme:
 extra_css:
   - extra.css
 
+docs_dir: user_docs
+
 markdown_extensions:
   - admonition
   - codehilite

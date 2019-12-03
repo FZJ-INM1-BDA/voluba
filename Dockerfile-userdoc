@@ -1,0 +1,12 @@
+FROM python:3.7 as builder
+
+COPY . /voluba
+WORKDIR /voluba
+
+RUN pip install mkdocs mkdocs-material
+RUN mkdocs build
+
+FROM nginx:alpine
+COPY --from=builder /voluba/site /usr/share/nginx/html
+
+ENTRYPOINT [ "nginx", "-g", "daemon off;" ]
