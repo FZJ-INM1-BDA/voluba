@@ -40,10 +40,12 @@ const initServer = async () => {
 
   app.use('/transformResult', require('./transformResultroute'))
   
-  const publicPath = path.join(__dirname, '..',  'public')
-
+  let publicPath
   if (process.env.NODE_ENV === 'production') {
+    publicPath = path.join(__dirname, '..',  'public')
     app.use(compressionMiddleware)
+  }else{
+    publicPath = path.join(__dirname, '../../app/dist')
   }
 
   app.use(express.static(publicPath))

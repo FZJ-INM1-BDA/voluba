@@ -17,7 +17,7 @@
     "dotenv": "^6.2.0"
   },
   "scripts": {
-    "start": "node server/index.js"
+    "start": "node server/server.js"
   },
   "keywords": [],
   "author": "",
