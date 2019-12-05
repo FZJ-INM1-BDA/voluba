@@ -108,6 +108,8 @@ import DataSelection from '@/components/DatasetSelection'
 import AboutUs from '@/components/AboutUs'
 import Cookie from '@/components/Cookie'
 
+const DEBUG = !!process.env.VUE_APP_DEBUG
+
 export default {
   name: "App",
   components: {
@@ -134,7 +136,7 @@ export default {
     };
   },
   mounted: function() {
-    if (!this.production) {
+    if (DEBUG) {
       window.setProduction = (arg) => this.setProduction(arg)
     }
     this.initAppendNehuba();
