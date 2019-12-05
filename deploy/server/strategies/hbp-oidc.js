@@ -8,6 +8,9 @@ const clientSecret = process.env.HBP_V2_CLIENTSECRET || 'no hbp client secret'
 const discoveryUrl = 'https://iam.humanbrainproject.eu/auth/realms/hbp'
 const redirectUri = `${HOSTNAME}/hbp-oidc-v2/cb`
 const cb = (tokenset, {sub, given_name, family_name, ...rest}, done) => {
+  console.log({
+    tokenset
+  })
   return done(null, {
     id: `hbp-oidc-v2:${sub}`,
     name: `${given_name} ${family_name}`,
@@ -23,7 +26,7 @@ module.exports = async (app) => {
     discoveryUrl,
     redirectUri,
     cb,
-    scope: 'openid profile',
+    scope: 'openid profile collab.drive',
     clientConfig: {
       redirect_uris: [ redirectUri ],
       response_types: [ 'code' ]
