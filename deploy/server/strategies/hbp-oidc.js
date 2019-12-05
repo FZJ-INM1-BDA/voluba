@@ -26,7 +26,7 @@ module.exports = async (app) => {
     discoveryUrl,
     redirectUri,
     cb,
-    scope: 'openid profile collab.drive',
+    scope: 'openid offline_access email profile collab.drive',
     clientConfig: {
       redirect_uris: [ redirectUri ],
       response_types: [ 'code' ]
