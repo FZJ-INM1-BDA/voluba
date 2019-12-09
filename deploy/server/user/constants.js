@@ -1,0 +1,7 @@
+const USER_DIR_VOLUBA_CONFIG_FILENAME = '.voluba.config.json'
+const USER_DIR_VOLUBA_DIR_NAME = `voluba`
+
+module.exports = {
+  USER_DIR_VOLUBA_CONFIG_FILENAME,
+  USER_DIR_VOLUBA_DIR_NAME
+}
