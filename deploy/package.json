@@ -12,15 +12,15 @@
     "memorystore": "1.6.0",
     "nomiseco": "0.0.1",
     "openid-client": "^2.4.5",
-    "passport": "^0.4.0"
+    "passport": "^0.4.0",
+    "uuid": "^3.3.3"
   },
   "devDependencies": {
     "chai": "^4.2.0",
     "dotenv": "^6.2.0",
     "mocha": "^6.2.2",
     "request": "^2.88.0",
-    "sinon": "^7.5.0",
-    "uuid": "^3.3.3"
+    "sinon": "^7.5.0"
   },
   "scripts": {
     "start": "node server/server.js",
