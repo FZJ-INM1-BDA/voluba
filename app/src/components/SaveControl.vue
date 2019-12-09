@@ -57,6 +57,15 @@
             class="btn btn-sm btn-outline-secondary">
             <font-awesome-icon icon="brain"></font-awesome-icon>
           </div>
+
+          <div
+            @click="handleSaveInCollab"
+            ref="saveInCollab"
+            :class="'btn btn-outline-secondary btn-sm' + (isHbpOidcV2 ? '' : ' disabled')"
+            @mouseenter="showSaveOnCollab = true"
+            @mouseleave="showSaveOnCollab = false">
+            <font-awesome-icon icon="hdd" />
+          </div>
           
           <div
             @click="exportToHBP"
@@ -70,6 +79,13 @@
       </div>
     </div>
 
+    <b-tooltip
+      tabindex="-1"
+      placement="bottom"
+      :target="() => $refs['saveInCollab']"
+      :show="showSaveOnCollab">
+      {{ exportToCollabTooltipText }}
+    </b-tooltip>
 
     <b-tooltip
       tabindex="-1"
@@ -81,13 +97,27 @@
   </div>  
 </template>
 <script>
-import { mapActions } from 'vuex'
+import { mapActions, mapState, mapGetters } from 'vuex'
 import { openFileDialog } from '@//constants'
 
 export default {
   data: function () {
     return {
-      showExportToHBPTooltip: false
+      showExportToHBPTooltip: false,
+      showSaveOnCollab: false
+    }
+  },
+  computed: {
+    ...mapState('authStore', [
+      'user'
+    ]),
+    ...mapGetters('authStore', [
+      'isHbpOidcV2'
+    ]),
+    exportToCollabTooltipText: function () {
+      return this.isHbpOidcV2
+        ? `Save state to Collab.drive`
+        : `You must be logged in with HBP KeyCloak to save to Collab.drive`
     }
   },
   methods: {
@@ -102,6 +132,31 @@ export default {
        * TODO
        * enable export data to HBP curation pipeline
        */
+    },
+    handleSaveInCollab: function () {
+      const state = this.$store.state
+      const { authStore, ...rest } = state
+      fetch(`user/workflow/`, {
+        method: 'POST',
+        headers: {
+          'Content-type': 'application/json'
+        },
+        body: JSON.stringify(rest)
+      })
+        .then(id => {
+          this.modalMessage({
+            title: `Saving to Collab.drive successful!`,
+            variant: 'success',
+            body: `Saved as ${id}`
+          })
+        })
+        .catch(e => {
+          this.modalMessage({
+            title: `Error`,
+            variant: `danger`,
+            body: e
+          })
+        })
     },
     loadXformJson: function () {
       openFileDialog('file', 'application/json', null, (content) => {

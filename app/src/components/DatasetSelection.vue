@@ -1,40 +1,61 @@
 <template>
   <div class="container">
 
-    <!-- select reference volumes -->
+    <div class="container d-flex flex-row vertical-separator-container">
+
+      <!-- new workflow -->
+      <div class = "flex-grow-1 flex-shrink-1">
+
+        <h4>
+          New workflow
+        </h4>
+        <!-- select reference volumes -->
+        
+
+        <!-- incoming voluems -->
+        <div>
+          <div class="title">
+            <strong>
+              Incoming Volume 
+            </strong>
+          </div>
+
+          <IncomingVolumeSelection
+            @error="handleMessageFromIncVol('error', $event)"
+            @message="handleMessageFromIncVol('message', $event)"
+            />
+
+          <!-- deletion feedback -->
+          <div
+            v-if="showAlert"
+            :class="alertClass"
+            class="alert">
+            {{ incVolSelError }}
+            {{ incVolSelMessage }}
+          </div>
+
+        </div>
+
+        <hr>
+
+        <div class="d-flex flex-row">
+
+
+          <!-- upload volume -->
+          <upload-volume-component
+            class="flex-grow-1 flex-shrink-1"
+            v-if="allowUpload"
+            @upload="handleUploadEvent" />
+        </div>
     
-
-    <!-- incoming voluems -->
-    <div>
-      <div class="title">
-        <strong>
-          Incoming Volume 
-        </strong>
       </div>
 
-      <IncomingVolumeSelection
-        @error="handleMessageFromIncVol('error', $event)"
-        @message="handleMessageFromIncVol('message', $event)"
-        />
-
-      <!-- deletion feedback -->
-      <div
-        v-if="showAlert"
-        :class="alertClass"
-        class="alert">
-        {{ incVolSelError }}
-        {{ incVolSelMessage }}
-      </div>
-
+      <!-- saved workflows -->
+      <ResumeWorkflowComponent
+        @destroyMe="$emit('destroyMe')"
+        class="flex-grow-1 flex-shrink-1" />
     </div>
 
-    <hr>
-
-    <!-- upload volume -->
-    <upload-volume-component
-      v-if="allowUpload"
-      @upload="handleUploadEvent" />
-    
     <hr>
 
     <!-- footer -->
@@ -58,6 +79,7 @@
 <script>
 import { makeHtmlFragmentForNifti } from '@/constants'
 import UploadVolumeComponent from '@/components/UploadVolume'
+import ResumeWorkflowComponent from '@/components/ResumeWorkflow'
 import { mapActions, mapGetters, mapState } from 'vuex';
 import InfoPopover from '@/components/InfoPopover'
 import IncomingVolumeSelection from '@/components/IncomingVolumeSelection'
@@ -66,7 +88,8 @@ export default {
   components: {
     UploadVolumeComponent,
     InfoPopover,
-    IncomingVolumeSelection
+    IncomingVolumeSelection,
+    ResumeWorkflowComponent
   },
   data: function () {
     return {
@@ -169,5 +192,17 @@ export default {
 .title
 {
   margin-bottom: 1em;
+}
+
+.vertical-separator-container > *
+{
+  flex-basis: 0;
+}
+
+.vertical-separator-container > *:not(:last-child)
+{
+  padding-right:1rem;
+  margin-right:1rem;
+  border-right: 1px rgba(128, 128, 128, 0.5) solid;
 }
 </style>

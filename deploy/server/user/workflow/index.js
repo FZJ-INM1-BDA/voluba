@@ -1,5 +1,5 @@
 // n.b. default import is required for sinon stubs to work properly
-const masterStore = require('../store')
+const storeUtil = require('../util')
 const { USER_DIR_VOLUBA_DIR_NAME } = require('../constants')
 const { WORKFLOW_VOLUBA_DIR_NAME, AUTOSAVE_FILENAME } = require('./constants')
 const router = require('express').Router()
@@ -12,7 +12,7 @@ const { Readable } = require('stream')
  */
 router.get('/', async (req, res) => {
   const { user } = req
-  const handle = await masterStore.getSeafileHandle({ user })
+  const handle = await storeUtil.getSeafileHandle({ user })
   const ls = await handle.ls({ dir: `/${USER_DIR_VOLUBA_DIR_NAME}/${WORKFLOW_VOLUBA_DIR_NAME}` })
   res.status(200).json(ls)
 })
@@ -23,11 +23,11 @@ router.get('/', async (req, res) => {
 router.post('/autosave', bodyParser.json(), async (req, res) => {
   const { user, body } = req
   const readStream = new Readable()
-  readStream.path = 'upload.txt'
+  readStream.path = AUTOSAVE_FILENAME
   readStream.push(JSON.stringify(body, null, 2))
   readStream.push(null)
-  const handle = await masterStore.getSeafileHandle({ user })
-  await handle.uploadFile({ readStream, filename: AUTOSAVE_FILENAME}, { dir: `/${USER_DIR_VOLUBA_DIR_NAME}/${WORKFLOW_VOLUBA_DIR_NAME}/${AUTOSAVE_FILENAME}` })
+  const handle = await storeUtil.getSeafileHandle({ user })
+  await handle.uploadFile({ readStream, filename: AUTOSAVE_FILENAME}, { dir: `/${USER_DIR_VOLUBA_DIR_NAME}/${WORKFLOW_VOLUBA_DIR_NAME}` })
   res.status(200).end()
 })
 
@@ -38,11 +38,11 @@ router.post('/', bodyParser.json(), async (req, res) => {
   const id = uuidv4()
   const { user, body } = req
   const readStream = new Readable()
-  readStream.path = 'upload.txt'
+  readStream.path = `${id}.json`
   readStream.push(JSON.stringify(body, null, 2))
   readStream.push(null)
-  const handle = await masterStore.getSeafileHandle({ user })
-  await handle.uploadFile({ readStream, filename: id}, { dir: `/${USER_DIR_VOLUBA_DIR_NAME}/${WORKFLOW_VOLUBA_DIR_NAME}/${id}` })
+  const handle = await storeUtil.getSeafileHandle({ user })
+  await handle.uploadFile({ readStream, filename: `${id}.json`}, { dir: `/${USER_DIR_VOLUBA_DIR_NAME}/${WORKFLOW_VOLUBA_DIR_NAME}` })
   res.status(200).send(id)
 })
 
@@ -53,9 +53,15 @@ router.get('/:workflowId', async (req, res) => {
 
   const { workflowId } = req.params
   const { user } = req
-  const handle = await masterStore.getSeafileHandle({ user })
-  const file = await handle.readFile({ dir: `/${USER_DIR_VOLUBA_DIR_NAME}/${WORKFLOW_VOLUBA_DIR_NAME}/${workflowId}` })
-  res.status(200).json(file)
+  const handle = await storeUtil.getSeafileHandle({ user })
+  try{
+    const file = await handle.readFile({ dir: `/${USER_DIR_VOLUBA_DIR_NAME}/${WORKFLOW_VOLUBA_DIR_NAME}/${workflowId}.json` })
+    const parsedJson = JSON.parse(file)
+    res.status(200).json(parsedJson)
+  }catch(e){
+    res.status(500).send(e.toString())
+  }
+  
 })
 
 /**

@@ -1,5 +1,3 @@
-const { getSeafileHandle } = require('./store')
-
 const router = require('express').Router()
 
 const authenticated = (req, res, next) => {

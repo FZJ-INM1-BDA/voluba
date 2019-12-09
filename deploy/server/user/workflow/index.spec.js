@@ -5,7 +5,7 @@ const express = require('express')
 const request = require('request')
 const uuidv4 = require('uuid/v4')
 
-const masterStore = require('../store')
+const storeUtil = require('../util')
 const router = require('./index')
 
 const { USER_DIR_VOLUBA_DIR_NAME } = require('../constants')
@@ -46,7 +46,7 @@ const handle = {
   readFile: readFileStub,
   uploadFile: uploadFileStub
 }
-const getSeaFileStub = sinon.stub(masterStore, 'getSeafileHandle').resolves(handle)
+const getSeaFileStub = sinon.stub(storeUtil, 'getSeafileHandle').resolves(handle)
 
 describe('user/workflow/index.js', () => {
 
@@ -89,7 +89,7 @@ describe('user/workflow/index.js', () => {
     }, (err, resp, body) => {
       if (err) return done(err)
       if (resp.statusCode >= 400) return done(resp.statusCode)
-      assert(readFileStub.calledWith({ dir: `/${USER_DIR_VOLUBA_DIR_NAME}/${WORKFLOW_VOLUBA_DIR_NAME}/${id}` }))
+      assert(readFileStub.calledWith({ dir: `/${USER_DIR_VOLUBA_DIR_NAME}/${WORKFLOW_VOLUBA_DIR_NAME}/${id}.json` }))
       expect(JSON.parse(body)).to.be.deep.equal(readFileResult)
       done()
     })

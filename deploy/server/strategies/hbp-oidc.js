@@ -1,6 +1,7 @@
 const passport = require('passport')
 const { configureAuth } = require('./oidc')
 const { Seafile } = require('hbp-seafile')
+const { getConfig } = require('../user/store')
 
 const HOSTNAME = process.env.HOSTNAME || 'http://localhost:3000'
 
@@ -24,10 +25,17 @@ const cb = (tokenset, {sub, given_name, family_name, ...rest}, done) => {
   const seafileHandle = new Seafile({ accessToken })
   seafileHandle.init()
     .then(() => {
-      done(null, {
+      return {
         ...user,
         seafileHandle
-      })
+      }
+    })
+    .then(async user => {
+      await getConfig({ user })
+      return user
+    })
+    .then(user => {
+      done(null, user)
     })
     .catch(e => {
       console.warn(`seafile handle init failed`, e)
