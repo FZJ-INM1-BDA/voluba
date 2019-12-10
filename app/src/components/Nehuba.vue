@@ -286,6 +286,7 @@ export default {
       this.setPrimaryNehubaNavigationPosition( array )
     },
     incTransformMatrix: function (array) {
+      if (!this.$options.nonReactiveData.ngUserLayer) return
       const { mat4, vec3 } = window.export_nehuba
 
       const matrix = mat4.fromValues(...array)
