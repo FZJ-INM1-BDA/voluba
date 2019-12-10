@@ -57,7 +57,6 @@ const getStore = ({ user = null } = {}) => new Vuex.Store({
   },
   mutations: {
     sudoSetState (state, newState) {
-      console.log(`sudo`, newState)
       const keys = Object.keys(newState)
       for (const key of keys) {
         state[key] = newState[key]

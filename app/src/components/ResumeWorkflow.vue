@@ -7,7 +7,7 @@
     <!-- show resume list workflow -->
     <ul class="list-group" v-if="isHbpOidcV2">
       <li
-        :id="'list-item-' + workflow.name "
+        :id="workflow.name | xformNameToId"
         :key="workflow.name"
         @mouseover="workflowDetailOnFocus = workflow.name"
         @mouseleave="workflowDetailOnFocus = null"
@@ -25,7 +25,7 @@
     </div>
 
     <!-- tooltip showing more info -->
-    <b-tooltip placement="bottom"  v-if="workflowDetailOnFocus" :target="() => ('list-item-' + workflowDetailOnFocus)">
+    <b-tooltip placement="bottom"  v-if="workflowDetailOnFocus" :target="workflowDetailOnFocus | xformNameToId">
       <div v-if="fetchingWorkflowDetail">
         Loading ...
       </div>
@@ -151,6 +151,9 @@ export default {
     }
   },
   filters: {
+    xformNameToId: function (name) {
+      return name && `list-item-${name.replace(/\.json$/, '')}` || null
+    },
     showWorkflowDetail: function ({ undoStore, landmarksStore, dataSelectionStore }) {
       const { undoStack, redoStack } = undoStore
       const { landmarkPairs } = landmarksStore
