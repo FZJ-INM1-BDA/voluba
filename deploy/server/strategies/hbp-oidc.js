@@ -1,5 +1,7 @@
 const passport = require('passport')
 const { configureAuth } = require('./oidc')
+const { Seafile } = require('hbp-seafile')
+const { getConfig } = require('../user/store')
 
 const HOSTNAME = process.env.HOSTNAME || 'http://localhost:3000'
 
@@ -8,15 +10,37 @@ const clientSecret = process.env.HBP_V2_CLIENTSECRET || 'no hbp client secret'
 const discoveryUrl = 'https://iam.humanbrainproject.eu/auth/realms/hbp'
 const redirectUri = `${HOSTNAME}/hbp-oidc-v2/cb`
 const cb = (tokenset, {sub, given_name, family_name, ...rest}, done) => {
-  console.log({
-    tokenset
-  })
-  return done(null, {
+  
+  const idToken = (tokenset && tokenset.id_token) || null
+  const accessToken = (tokenset && tokenset.access_token) || null
+
+  const user = {
     id: `hbp-oidc-v2:${sub}`,
     name: `${given_name} ${family_name}`,
     type: `hbp-oidc-v2`,
-    idToken: (tokenset && tokenset.id_token) || null
-  })
+    idToken,
+    accessToken,
+  }
+
+  const seafileHandle = new Seafile({ accessToken })
+  seafileHandle.init()
+    .then(() => {
+      return {
+        ...user,
+        seafileHandle
+      }
+    })
+    .then(async user => {
+      await getConfig({ user })
+      return user
+    })
+    .then(user => {
+      done(null, user)
+    })
+    .catch(e => {
+      console.warn(`seafile handle init failed`, e)
+      done(null, user)
+    })
 }
 
 module.exports = async (app) => {

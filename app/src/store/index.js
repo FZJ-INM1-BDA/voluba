@@ -1,6 +1,5 @@
 
-import { randomColor, generateId, UPLOAD_URL, computeDeterminant, saveToFile, reverseTransposeMat4 } from '@//constants'
-import { incompatibleBrowserText } from '@/text'
+import { saveToFile, reverseTransposeMat4 } from '@//constants'
 import Vuex from 'vuex'
 import Vue from 'vue'
 import axios from 'axios'
@@ -57,6 +56,13 @@ const getStore = ({ user = null } = {}) => new Vuex.Store({
 
   },
   mutations: {
+    sudoSetState (state, newState) {
+      console.log(`sudo`, newState)
+      const keys = Object.keys(newState)
+      for (const key of keys) {
+        state[key] = newState[key]
+      }
+    },
     setLandmarkControlVisibility (state, { visible }) {
       state.landmarkControlVisible = visible
     },

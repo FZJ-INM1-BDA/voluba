@@ -39,6 +39,7 @@ const initServer = async () => {
   }
 
   app.use('/transformResult', require('./transformResultroute'))
+  app.use('/user', require('./user'))
   
   let publicPath
   if (process.env.NODE_ENV === 'production') {

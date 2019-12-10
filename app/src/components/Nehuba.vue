@@ -93,7 +93,7 @@
 <script>
 import { mapState, mapGetters, mapActions, mapMutations } from 'vuex'
 
-import { REFERENCE_COLOR, UNPAIRED_COLOR, INCOMING_COLOR, annotationColorBlur, annotationColorFocus, testBigbrain, determineElement, getRotationVec3, incomingTemplateActiveOpacity, identityMat } from '@//constants'
+import { REFERENCE_COLOR, transposeMat4, UNPAIRED_COLOR, INCOMING_COLOR, annotationColorBlur, annotationColorFocus, testBigbrain, determineElement, getRotationVec3, incomingTemplateActiveOpacity, identityMat, identityMatFlattened } from '@//constants'
 
 import { incompatibleBrowserText } from '@/text'
 
@@ -718,7 +718,7 @@ export default {
         source: uri,
         opacity,
         shader,
-        transform
+        transform: (this.incTransformMatrix && transposeMat4(this.incTransformMatrix)) || transform
       }
       const newNgLayer = viewer.layerSpecification.getLayer(name, newLayer)
       const ngUserLayer = viewer.layerManager.addManagedLayer(newNgLayer)
