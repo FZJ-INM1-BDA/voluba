@@ -38,7 +38,7 @@ const saveBody = {
 
 const sandbox = sinon.createSandbox() 
 const lsStub = sandbox.stub().resolves(lsResult)
-const readFileStub = sandbox.stub().resolves(readFileResult)
+const readFileStub = sandbox.stub().resolves(JSON.stringify(readFileResult))
 const uploadFileStub = sandbox.stub().resolves()
 
 const handle = {

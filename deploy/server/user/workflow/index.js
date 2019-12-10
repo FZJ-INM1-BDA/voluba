@@ -59,6 +59,7 @@ router.get('/:workflowId', async (req, res) => {
     const parsedJson = JSON.parse(file)
     res.status(200).json(parsedJson)
   }catch(e){
+    console.error(e)
     res.status(500).send(e.toString())
   }
   
