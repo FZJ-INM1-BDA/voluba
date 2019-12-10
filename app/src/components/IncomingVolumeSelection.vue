@@ -37,12 +37,19 @@
       </div>
 
       <div
+        v-b-tooltip.hover.right
+        title="Refresh list"
+        @click="updateIncVolumes"
+        class="btn btn-default btn-sm">
+        <font-awesome-icon icon="sync-alt"></font-awesome-icon>
+      </div>
+
+      <div
         v-if="selectedIncomingVolume && selectedIncomingVolume.extra"
         @click="showNiftiInfo(selectedIncomingVolume.extra)"
         class="d-inline-block btn-sm">
         <font-awesome-icon icon="info-circle"></font-awesome-icon>
       </div>
-      
     </div>
   </div>
 </template>
