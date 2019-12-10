@@ -1,5 +1,16 @@
 <template>
   <div class="input-group">
+
+    <div class="input-group-prepend btn-group">
+      <div
+        v-b-tooltip.hover.right
+        title="Refresh list"
+        @click="updateIncVolumes"
+        class="btn btn-default btn-sm">
+        <font-awesome-icon icon="sync-alt"></font-awesome-icon>
+      </div>
+    </div>
+
     <select
       class="form-control form-control-sm"
       v-model="selectedIncomingVolumeId">
@@ -34,14 +45,6 @@
         :title="deleteBtnTooltipText"
         v-b-tooltip.hover.right>
         <font-awesome-icon icon="trash-alt" />
-      </div>
-
-      <div
-        v-b-tooltip.hover.right
-        title="Refresh list"
-        @click="updateIncVolumes"
-        class="btn btn-default btn-sm">
-        <font-awesome-icon icon="sync-alt"></font-awesome-icon>
       </div>
 
       <div
