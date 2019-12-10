@@ -1,3 +1,4 @@
+import { identityMatFlattened } from '../constants'
 
 const browserCompatible = () => 'WebGL2RenderingContext' in window
 
@@ -87,12 +88,7 @@ const nehubaStore = {
     /**
      * in nm
      */
-    incTransformMatrix: [
-      1.0,  0,    0,    0,
-      0,    1.0,  0,    0,
-      0,    0,    1.0,  0,
-      0,    0,    0,    1.0
-    ],
+    incTransformMatrix: [...identityMatFlattened],
 
     incVolTranslationLock: false,
     incVolRotationLock: false,
