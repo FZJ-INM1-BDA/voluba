@@ -7,14 +7,45 @@
     <p>
       Volumetric Brain Anchoring (VoluBA), was formerly known as Landmark-Reg.
     </p>
-    <div>
-      <span
-        @click="openModal({ modalId: 'cookie' })"
-        class="btn btn-outline-info">
-        Cookies disclaimer
-      </span>
+    <div class="row">
+
+      <!-- repo -->
+      <a v-if="false" :href="repoUrl" target="_blank" class="m-2 p-2 col-sm d-flex flex-column align-items-center justify-content-center btn btn-secondary">
+        <font-awesome-icon size="2x" :icon="['fab', 'github']"/>
+        <small>
+          github
+        </small>
+      </a>
+
+      <!-- user doc -->
+      <a :href="docUrl" target="_blank" class="m-2 p-2 col-sm d-flex flex-column align-items-center justify-content-center btn btn-secondary">
+        <font-awesome-icon size="2x" icon="book"/>
+        <small>
+          user documentation
+        </small>
+      </a>
     </div>
-    Did you encounter an issue? Write us: <a href="mailto:inm1-bda@fz-juelich.de?subject=[VoluBA] Queries">inm1-bda@fz-juelich.de</a>
+    <div class="row">
+
+      <!-- cookie -->
+      <div class="m-2 p-2 col-sm d-flex flex-column align-items-center justify-content-center btn btn-secondary"
+        @click="openModal({ modalId: 'cookie' })">
+        <font-awesome-icon size="2x" icon="cookie-bite"/>
+        <small>
+          cookies disclaimer
+        </small>
+      </div>
+
+
+      <!-- email -->
+      <a :href="emailUrl" class="m-2 p-2 col-sm d-flex flex-column align-items-center justify-content-center btn btn-secondary">
+        <font-awesome-icon size="2x" :icon="['far', 'envelope']"/>
+        <small>
+          inm1-bda@fz-juelich.de
+        </small>
+      </a>
+    </div>
+    
   </div>
 </template>
 <script>
@@ -25,6 +56,13 @@ export default {
       openModal:'openModal'
     })
   },
+  data(){
+    return {
+      docUrl: `https://voluba-user-doc.apps-dev.hbp.eu/`,
+      emailUrl: `mailto:inm1-bda@fz-juelich.de?subject=[VoluBA] Queries`,
+      repoUrl: 'https://github.com/fzj-inm1-bda/landmark-reg'
+    }
+  }
 }
 </script>
 <style scoped>

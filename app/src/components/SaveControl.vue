@@ -134,6 +134,7 @@ export default {
        */
     },
     handleSaveInCollab: function () {
+      if (!this.isHbpOidcV2) return
       const state = this.$store.state
       const { authStore, ...rest } = state
       fetch(`user/workflow/`, {

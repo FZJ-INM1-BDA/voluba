@@ -30,7 +30,7 @@
 
     <!-- upload options -->
     <!-- is segment -->
-    <div v-if="showNiftiCheckbox">
+    <div class="d-flex flex-row flex-nowrap align-items-center" v-if="showNiftiCheckbox">
       <input
         v-model="isSegmentation"
         :disabled="!allowNiftiCheckboxToggle"
@@ -38,9 +38,9 @@
         name="segmentationCheckBox"
         type="checkbox">
       <label
-        class="ml-2 mr-2"
+        class="ml-2 mr-2 mb-0 d-inline-block"
         :class="allowNiftiCheckboxToggle ? '' : 'text-muted'"
-        for="segmentationCheckBox">This nifti file denotes segmentations </label>
+        for="segmentationCheckBox">segmentation nifti </label>
       <font-awesome-icon
         :class="allowNiftiCheckboxToggle ? '' : 'text-muted'"
         v-b-tooltip.hover.right="segmentationExplanation"
