@@ -7,6 +7,8 @@ volumetric brain anchoring
 - report a bug: <inm1-bda@fz-juelich.de>
 - production instance: <https://voluba.apps.hbp.eu>
 - develop instance: <https://voluba-next.apps-dev.hbp.eu>
+- user documentation: <https://voluba-user-doc.apps-dev.hbp.eu/>
+<!-- - github repository: <https://github.com/fzj-inm1-bda/landmark-reg> -->
 
 ## Before starting
 
