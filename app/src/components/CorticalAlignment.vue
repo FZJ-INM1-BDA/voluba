@@ -264,8 +264,9 @@ export default {
     ]),
     ...mapState([
       'uploadUrl',
-      'incTransformMatrix',
-
+    ]),
+    ...mapState('nehubaStore', [
+      'incTransformMatrix'
     ]),
     ...mapState('nonLinearStore', [
       'nonLinearBackendUrl',
