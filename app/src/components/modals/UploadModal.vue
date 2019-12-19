@@ -175,7 +175,7 @@ export default {
     ...mapGetters('authStore', [
       'authHeader'
     ]),
-    ...mapState([
+    ...mapState('dataSelectionStore', [
       'uploadUrl',
     ]),
     ...mapState('nonLinearStore',[
