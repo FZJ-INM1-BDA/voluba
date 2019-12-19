@@ -13,7 +13,6 @@ const nonLinearStore = {
   },
   actions: {
     selectDepthMap: function ({ commit, dispatch }, { depthMap }) {
-      dispatch('updateIncVolumes', {}, { root: true })
       const { id } = depthMap
       commit('setSelectedDepthMapId', { id })
     },

@@ -1,7 +1,6 @@
 
 import { saveToFile, reverseTransposeMat4 } from '@//constants'
 import Vuex from 'vuex'
-import Vue from 'vue'
 import axios from 'axios'
 import { AGREE_COOKIE_KEY, openInNewWindow, getTransformMatrixInNm } from '@/constants';
 
@@ -14,8 +13,6 @@ import landmarksStore from './landmarksStore'
 import dataSelectionStore from './dataSelectionStore'
 import nehubaStore from './nehubaStore'
 import getAuthStore from './authStore'
-
-Vue.use(Vuex)
 
 const ALLOW_UPLOAD = process.env.VUE_APP_ALLOW_UPLOAD
 
@@ -34,7 +31,7 @@ const getStore = ({ user = null } = {}) => new Vuex.Store({
     allowUpload: process.env.NODE_ENV !== 'production' || ALLOW_UPLOAD,
     production: process.env.NODE_ENV === 'production',
 
-    agreedToCookie: localStorage.getItem(AGREE_COOKIE_KEY),
+    agreedToCookie: window && window.localStorage && window.localStorage.getItem(AGREE_COOKIE_KEY),
 
     landmarkControlVisible: false,
 
@@ -102,7 +99,7 @@ const getStore = ({ user = null } = {}) => new Vuex.Store({
     },
     setLocalStorage: function (store, payload) {
       for (let key in payload) {
-        localStorage.setItem(key, payload[key])
+        window && window.localStorage && window.localStorage.setItem(key, payload[key])
       }
     },
     loadXformJsonFile: function ({ dispatch, commit }, { json }) {
