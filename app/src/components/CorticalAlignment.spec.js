@@ -140,7 +140,8 @@ describe('CorticalAlignment', () => {
         dataSelectionStore: {
           namespaced: true,
           state: {
-            incomingVolumes
+            incomingVolumes,
+            uploadUrl: 'http://localhost:7999/'
           }
         }
       }
@@ -191,4 +192,7 @@ describe('CorticalAlignment', () => {
     expect(!!wrapper.vm.incTransformMatrix).to.be.true
   })
 
+  it('has uploadUrl defined on mount', () => {
+    expect(!!wrapper.vm.uploadUrl).to.be.true
+  })
 })
