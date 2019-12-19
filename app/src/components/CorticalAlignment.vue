@@ -59,8 +59,7 @@
                 <select
                   id="select-depth-map"
                   name="select-depth-map"
-                  @change="selectDepthMapOnChangeHandler"
-                  :value="selectedDepthMapId"
+                  v-model="selectedDepthMapId"
                   class="custom-select">
                   <option
                     :value="dummyDepthMap.id"
@@ -294,8 +293,14 @@ export default {
         }
       })
     },
-    selectedDepthMapId: function () {
-      return (this.selectedDepthMap && this.selectedDepthMap.id) || 'dummy'
+    selectedDepthMapId: {
+      get: function () {
+        return (this.selectedDepthMap && this.selectedDepthMap.id) || 'dummy'
+      },
+      set: function(selectedId){
+        const depthMap = this.incomingVolumes.find(({ id }) => id === selectedId )
+        this.selectDepthMap({ depthMap })
+      }
     },
     depthMaps: function () {
       /**
@@ -395,14 +400,9 @@ export default {
       'toggleShowOriginal',
       'showPreviewImage'
     ]),
-    ...mapActions('nonLinear', [
+    ...mapActions('nonLinearStore', [
       'selectDepthMap'
     ]),
-    selectDepthMapOnChangeHandler: function (event) {
-      const selectedId = event.target.value
-      const depthMap = this.incomingVolumes.find(({ id }) => id === selectedId )
-      this.selectDepthMap({ depthMap })
-    },
     close: function () {
       this.$emit('close')
     },
