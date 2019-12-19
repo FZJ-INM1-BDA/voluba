@@ -123,6 +123,7 @@ const incomingVolumes = [
 
 import nonLinearStore from '../store/nonLinearStore'
 import landmarksStore from '../store/landmarksStore'
+import nehubaStore from '../store/nehubaStore'
 
 const selectDepthMapSpy = spy(nonLinearStore.actions, 'selectDepthMap')
 
@@ -135,6 +136,7 @@ describe('CorticalAlignment', () => {
       modules: {
         nonLinearStore,
         landmarksStore,
+        nehubaStore,
         dataSelectionStore: {
           namespaced: true,
           state: {
@@ -183,6 +185,10 @@ describe('CorticalAlignment', () => {
     const depthMap = incomingVolumes[0]
     
     expect(wrapper.vm.selectedDepthMapId).to.equal(depthMap.id)
+  })
+
+  it('has incTransformMatrix defined on mount', () => {
+    expect(!!wrapper.vm.incTransformMatrix).to.be.true
   })
 
 })
