@@ -138,7 +138,8 @@ export default {
       modalMessage: 'modalMessage',
     }),
     ...mapActions('dataSelectionStore', [
-      'updateIncVolumes'
+      'updateIncVolumes',
+      'selectIncomingVolumeWithId'
     ]),
     handleMessageFromIncVol: function (type, { message }){
       if (this.timeoutId) clearTimeout(this.timeoutId)
