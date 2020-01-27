@@ -1,5 +1,5 @@
 
-import { saveToFile, reverseTransposeMat4 } from '@//constants'
+import { saveToFile, reverseTransposeMat4, multiplyXforms } from '@//constants'
 import Vuex from 'vuex'
 import axios from 'axios'
 import { AGREE_COOKIE_KEY, openInNewWindow, getTransformMatrixInNm } from '@/constants';
@@ -95,6 +95,7 @@ const getStore = ({ user = null } = {}) => new Vuex.Store({
   },
   actions: {
     log: function ({state}, payload) {
+      console.log('what?')
       if (!state.production) console.log(payload)
     },
     setLocalStorage: function (store, payload) {
@@ -126,6 +127,56 @@ const getStore = ({ user = null } = {}) => new Vuex.Store({
         })
       }
     },
+    viewInInteractiveViewerV2: async function({ state, dispatch, getters }, payload){
+
+      const { nehubaStore, viewerPreferenceStore } = state
+      const { incTransformMatrix } =  nehubaStore
+      const { incomingColor } = viewerPreferenceStore
+
+      const selectedReferenceVolume = getters['dataSelectionStore/selectedReferenceVolume']
+      const incRotQuat = getters['nehubaStore/incRotQuat']
+      const dim = getters['nehubaStore/dim']
+      const fragmentShader = getters['viewerPreferenceStore/fragmentShader']
+
+      const shader = fragmentShader
+      const opacity = incomingColor[3]
+
+      const { vec3, quat } = export_nehuba
+      const translationFromCorner = vec3.fromValues(...dim)
+      vec3.scale(translationFromCorner, translationFromCorner, 0.5)
+      vec3.transformQuat(translationFromCorner, translationFromCorner, quat.invert(quat.create(), quat.fromValues(...incRotQuat)))
+
+      const selectedIncomingVolumes = []
+      for (const incVol of payload) {
+        const { xforms, ...rest } = incVol
+        selectedIncomingVolumes.push({
+          ...rest,
+          xform: await multiplyXforms(xforms)
+        })
+      }
+
+      const json = {
+        selectedReferenceVolume,
+        selectedIncomingVolumes,
+
+        incTransformMatrix,
+        translationFromCorner: Array.from(translationFromCorner),
+      }
+
+      const host = process.env.VUE_APP_OVERWRITE_TRANSFORM_RESULT_HOST || ''
+      axios.post(`${host}transformResult/v2`, json)
+        .then(({ data: redirectUrl }) => {
+          if (redirectUrl) {
+            console.log(redirectUrl)
+            openInNewWindow(redirectUrl)
+          } else {
+            throw new Error('url not defined')
+          }
+        })
+        .catch(e => dispatch('log', ['store#actions#viewInInteractiveViewer', { error: e }]))
+    },
+
+    //TODO deprecate
     viewInInteractiveViewer: function ({ state, dispatch, getters }) {
       const { nehubaStore, viewerPreferenceStore } = state
 

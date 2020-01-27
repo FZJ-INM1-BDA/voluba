@@ -58,7 +58,7 @@
 </template>
 <script>
 import { mapState, mapActions, mapGetters } from 'vuex';
-import { groupByVisibility } from '@/constants'
+import { groupByVisibility, makeHtmlFragmentForNifti } from '@/constants'
 export default {
   mounted: function () {
 

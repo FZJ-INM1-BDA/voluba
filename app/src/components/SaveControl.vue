@@ -52,7 +52,7 @@
           </div>
 
           <div
-            @click="viewInInteractiveViewer"
+            v-b-modal.multiselect-volume
             v-b-tooltip.hover.bottom="'View the anchoring result in the interactive viewer'"
             class="btn btn-sm btn-outline-secondary">
             <font-awesome-icon icon="brain"></font-awesome-icon>
@@ -94,17 +94,43 @@
       :show="showExportToHBPTooltip">
       Publish on HBP platform <small class="font-italic text-muted">coming soon</small>
     </b-tooltip>
+
+    <b-modal id="multiselect-volume"
+      @ok.prevent="showTransformResult"
+      :ok-disabled="showTransformResultInProgress">
+      <template slot="modal-header">
+        Select the volumes you would like to visualise
+      </template>
+
+      <template slot="modal-ok">
+        <div>
+          <span>
+            View Overlay
+          </span>
+          <font-awesome-icon v-if="!showTransformResultInProgress" icon="external-link-alt" />
+          <div v-if="showTransformResultInProgress" class="d-inline-block spinnerAnimationCircle"></div>
+        </div>
+      </template>
+
+      <MultiselectVolume ref="multiSelectVolume" />
+
+    </b-modal>
   </div>  
 </template>
 <script>
 import { mapActions, mapState, mapGetters } from 'vuex'
-import { openFileDialog } from '@//constants'
+import { openFileDialog } from '@/constants'
+import MultiselectVolume from '@/views/MultiselectVolume'
 
 export default {
+  components: {
+    MultiselectVolume
+  },
   data: function () {
     return {
       showExportToHBPTooltip: false,
-      showSaveOnCollab: false
+      showSaveOnCollab: false,
+      showTransformResultInProgress: false
     }
   },
   computed: {
@@ -124,9 +150,22 @@ export default {
     ...mapActions([
       'downloadXformResult',
       'viewInInteractiveViewer',
+      'viewInInteractiveViewerV2',
       'loadXformJsonFile',
       `modalMessage`
       ]),
+    showTransformResult(){
+      const { bundledVolume, xformMap } = this.$refs['multiSelectVolume']
+      const volumesWithXform = bundledVolume
+        .map(({ id, ...rest }) => {
+          return {
+            id,
+            ...rest,
+            xforms: xformMap.get(id) || []
+          }
+        })
+      this.viewInInteractiveViewerV2(volumesWithXform)
+    },
     exportToHBP: function () {
       /**
        * TODO

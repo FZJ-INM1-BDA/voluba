@@ -14,6 +14,8 @@ const viewerPreferenceStore = {
       shader:CM_MATLAB_JET
     }],
 
+    shaderScaleFactor: 1,
+
     incomingColor: [252, 200, 0, 0.5],
     overlayColor: {hex: '#FCDC00', rgba: {r: 252, g: 220, b: 0, a: 1}},
   },
@@ -50,7 +52,9 @@ const viewerPreferenceStore = {
     updateOverlayColor (state, newOverlayColor) {
       state.overlayColor = newOverlayColor
     },
-
+    setShaderScaleFactor(state, factor) {
+      state.shaderScaleFactor = factor
+    }
   },
   actions: {
     selectColorMapByName: function ({ commit, state } , { name }) {
@@ -84,19 +88,22 @@ const viewerPreferenceStore = {
     },
     changeOpacity ({ commit }, opacity) {
       commit('setIncomingTemplateRGBA', { opacity })
-    },
+    }
   },
   getters: {
     selectedColorMap: ({ selectedColorMapIdx, availableColorMaps }) => (selectedColorMapIdx === 0 || !!selectedColorMapIdx)
       ? availableColorMaps[selectedColorMapIdx]
       : null,
-    fragmentShader: ({ lowerThreshold, upperThreshold, incomingColor }, getters) => {
+    fragmentShader: ({ lowerThreshold, upperThreshold, incomingColor, shaderScaleFactor }, getters) => {
       const { selectedColorMap } = getters
       const normalizedIncomingColor = incomingColor.map(v => v/255)
+      const floatShaderScaleFactor = shaderScaleFactor > 1
+        ? shaderScaleFactor.toFixed(1)
+        : shaderScaleFactor.toString()
       switch (selectedColorMap && selectedColorMap.name) {
         case 'JET':
           return `void main(){
-            float raw_x = toNormalized(getDataValue());
+            float raw_x = toNormalized(getDataValue()) * ${floatShaderScaleFactor};
             float x = (raw_x - ${lowerThreshold.toFixed(1)}) / (${(upperThreshold - lowerThreshold).toFixed(1)});
             ${CM_MATLAB_JET}
             if(x>1.0){
@@ -108,7 +115,7 @@ const viewerPreferenceStore = {
             }
           }`
         default: return `void main() {
-          float raw_x = toNormalized(getDataValue());
+          float raw_x = toNormalized(getDataValue()) * ${floatShaderScaleFactor};
           float x = (raw_x - ${lowerThreshold.toFixed(1)}) / (${(upperThreshold - lowerThreshold).toFixed(1)});
 
           if(x>1.0){
