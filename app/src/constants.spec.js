@@ -1,6 +1,6 @@
-require('mocha')
-const { expect } = require("chai")
-const { reverseTransposeMat4, transposeMat4 } = require("./constants")
+import 'mocha'
+import { expect } from 'chai'
+import { reverseTransposeMat4, transposeMat4 } from './constants'
 
 describe('constant.js', () => {
   describe('reverseTransposeMat4', () => {
@@ -19,7 +19,7 @@ describe('constant.js', () => {
       ]
       expect(
         reverseTransposeMat4(input)
-      ).to.equal(expected)
+      ).to.deep.equal(expected)
     })
   })
 })
