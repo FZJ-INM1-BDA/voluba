@@ -169,8 +169,7 @@ export default {
       'appendNehubaFlag'
     ]),
     ...mapState({
-      production: 'production',
-      incTransformMatrix: 'incTransformMatrix'
+      production: 'production'
     }),
     ...mapState('undoStore', [
       'undoStack',

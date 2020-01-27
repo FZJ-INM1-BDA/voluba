@@ -45,7 +45,11 @@ const dataSelectionStore = {
     },
     selectIncomingVolumeWithId ({ commit, state }, id) {
       const vol = state.incomingVolumes.find(({ id: _id }) => _id === id)
-      if (vol) commit('setSelectedIncomingVolumeId', id)
+      if (vol) {
+        commit('setSelectedIncomingVolumeId', id)
+        const { shaderScaleFactor } = vol
+        commit('viewerPreferenceStore/setShaderScaleFactor', shaderScaleFactor || 1, { root: true })
+      } 
     },
     updateIncVolumesResult (store, {error, message}) {
       /**

@@ -884,3 +884,30 @@ export const identityMatFlattened = [
   0,    0,    1.0,  0,
   0,    0,    0,    1.0
 ]
+
+export const waitForExportNehuba = () => new Promise((rs, js) => {
+  if ('export_nehuba' in window) return rs()
+  const waitId = setInterval(() => {
+    if ('export_nehuba' in window) {
+      clearInterval(waitId)
+      rs()
+    }
+  }, 500)
+})
+
+
+// TODO needs tests
+export const multiplyXforms = async xformMs => {
+  await waitForExportNehuba()
+  const { mat4 } = export_nehuba
+  const outMat = mat4.create()
+  for (const xform of xformMs) {
+    // I think it should be right multiply (?)
+    mat4.mul(
+      outMat,
+      outMat,
+      mat4.fromValues(...reverseTransposeMat4(xform)) 
+    )
+  }
+  return transposeMat4(Array.from(outMat))
+}
