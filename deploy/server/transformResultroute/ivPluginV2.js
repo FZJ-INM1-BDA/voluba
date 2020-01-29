@@ -20,13 +20,32 @@ const getTemplate = ({ error }={}) => `
 </div>
 `
 
+const getCombinationBasedOnIdx = idx => [
+  (1.0 - ( idx % 3 === 0 ? 0.0 : 0.1)),
+  (1.0 - ( (idx + 1) % 3 === 0 ? 0.0 : 0.1 )),
+  (1.0 - ( (idx + 2) % 3 === 0 ? 0.0 : 0.1 )),
+]
+
+const getDefaultShader = idx => `
+void main(){\
+  float x = toNormalized(getDataValue());
+  if (x < 0.05) {
+    emitTransparent();
+  } else if (x > 0.95){
+    emitTransparent();
+  } else {
+    emitRGB(vec3(${getCombinationBasedOnIdx(idx)[0].toFixed(1)} * x, ${getCombinationBasedOnIdx(idx)[1].toFixed(1)} * x, ${getCombinationBasedOnIdx(idx)[2].toFixed(1)} * x ));
+  }
+}
+`
+
 const getLayerName = ({ index }) => `VoluBA volume - layer ${index}`
 
 const getLoadLayerScript = ({ opacity, shader, ngMatrix }) => (imageSource, index) => `
 window.interactiveViewer.viewerHandle.loadLayer({
   '${getLayerName({ index, imageSource })}': {
     source: '${imageSource}',
-    shader: \`${shader}\`,
+    shader: \`${shader || getDefaultShader(index)}\`,
     opacity: ${opacity},
     transform: ${JSON.stringify(ngMatrix)}
   }
