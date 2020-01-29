@@ -97,7 +97,7 @@ const viewerPreferenceStore = {
     fragmentShader: ({ lowerThreshold, upperThreshold, incomingColor, shaderScaleFactor }, getters) => {
       const { selectedColorMap } = getters
       const normalizedIncomingColor = incomingColor.map(v => v/255)
-      const floatShaderScaleFactor = shaderScaleFactor > 1
+      const floatShaderScaleFactor = shaderScaleFactor >= 1
         ? shaderScaleFactor.toFixed(1)
         : shaderScaleFactor.toString()
       switch (selectedColorMap && selectedColorMap.name) {
