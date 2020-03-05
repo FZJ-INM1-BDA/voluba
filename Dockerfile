@@ -8,7 +8,11 @@ ARG VUE_APP_NONLINEAR_BACKEND
 ARG VUE_APP_UPLOAD_URL
 ARG PORT
 ARG VUE_APP_DEBUG
+ARG MATOMO_URL
+ARG MATOMO_ID
 
+ENV MATOMO_URL=$MATOMO_URL
+ENV MATOMO_ID=$MATOMO_ID
 ENV HOSTNAME=$HOSTNAME
 ENV VUE_APP_ALLOW_UPLOAD=$VUE_APP_ALLOW_UPLOAD
 ENV IV_HOST=$IV_HOST
@@ -25,7 +29,7 @@ RUN npm i
 RUN npm run build
 
 # gzipping container
-FROM ubuntu:18.10 as compressor
+FROM ubuntu:19.10 as compressor
 RUN apt upgrade -y && apt update && apt install brotli
 
 RUN mkdir -p /frontend/app
