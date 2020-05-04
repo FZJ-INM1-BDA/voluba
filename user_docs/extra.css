@@ -13,3 +13,8 @@ img {
   width: 50%;
   display: block;
 }
+
+table img
+{
+  width: 100%;
+}

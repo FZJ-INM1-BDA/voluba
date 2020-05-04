@@ -11,3 +11,17 @@ docs_dir: user_docs
 markdown_extensions:
   - admonition
   - codehilite
+  - mdx_truly_sane_lists
+
+nav:
+  - Home: 'index.md'
+  - 'req.md'
+  - Alignment workflow:
+    - 'workflow/upload.md'
+    - 'workflow/select.md'
+    - 'workflow/coarse.md'
+    - 'workflow/fine.md'
+    - 'workflow/linear.md'
+  - Config incoming volume:
+    - 'config/parallel.md'
+    - 'config/shader.md'
