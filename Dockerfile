@@ -28,6 +28,15 @@ RUN npm i
 
 RUN npm run build
 
+# build doc
+FROM python:3.7 as doc-builder
+
+COPY . /voluba
+WORKDIR /voluba
+
+RUN pip install mkdocs mkdocs-material mdx_truly_sane_lists
+RUN mkdocs build
+
 # gzipping container
 FROM ubuntu:19.10 as compressor
 RUN apt upgrade -y && apt update && apt install brotli
@@ -43,15 +52,6 @@ COPY --from=doc-builder /voluba/site /frontend/app/dist/doc
 WORKDIR /frontend/app/dist
 
 RUN for f in $(find . -type f); do gzip < $f > $f.gz && brotli < $f > $f.br; done
-
-# build doc
-FROM python:3.7 as doc-builder
-
-COPY . /voluba
-WORKDIR /voluba
-
-RUN pip install mkdocs mkdocs-material mdx_truly_sane_lists
-RUN mkdocs build
 
 # deploy container
 FROM node:12-alpine
