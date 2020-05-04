@@ -1,4 +1,4 @@
-FROM node:8 as builder
+FROM node:12 as builder
 
 ARG HOSTNAME
 ARG VUE_APP_ALLOW_UPLOAD
@@ -38,8 +38,17 @@ WORKDIR /frontend/app/dist
 
 RUN for f in $(find . -type f); do gzip < $f > $f.gz && brotli < $f > $f.br; done
 
+# build doc
+FROM python:3.7 as doc-builder
+
+COPY . /voluba
+WORKDIR /voluba
+
+RUN pip install mkdocs mkdocs-material mdx_truly_sane_lists
+RUN mkdocs build
+
 # deploy container
-FROM node:8-alpine
+FROM node:12-alpine
 
 ENV NODE_ENV=production
 
@@ -52,7 +61,14 @@ RUN mkdir /landmark-reg-app
 WORKDIR /landmark-reg-app
 
 RUN mkdir public
+
+# copy built frontend to container
 COPY --from=compressor /frontend/app/dist ./public
+
+# copy docs to container
+COPY --from=doc-builder /voluba/site ./public/doc
+
+# copy backend 
 COPY --from=builder /frontend/deploy .
 
 RUN npm i
