@@ -140,14 +140,14 @@ export default {
       window.setProduction = (arg) => this.setProduction(arg)
     }
 
-    const { appendToBundledVolumes } = this
+    const { appendToIncomingVolumes } = this
     /**
      * get voluba temp volume
      */
     fetch(`http://ime178.ime.kfa-juelich.de/voluba/voluba.json`)
       .then(res => res.json())
       .then(({ voluba_sources }) => {
-        appendToBundledVolumes({ 
+        appendToIncomingVolumes({ 
           volumes: voluba_sources.map(({ name, url }, idx) => {
             return {
               name,
@@ -250,7 +250,7 @@ export default {
       'redrawNehuba'
     ]),
     ...mapActions('dataSelectionStore', [
-      'appendToBundledVolumes'
+      'appendToIncomingVolumes'
     ]),
     startRegistration: function () {
       this.showSelectVolumesModal = false
