@@ -53,7 +53,7 @@ const dataSelectionStore = {
     }
   },
   actions: {
-    appendToBundledVolumes({ commit, state }, { volumes }){
+    appendToIncomingVolumes({ commit, state }, { volumes }){
       const { incomingVolumes } = state
       commit('setIncomingVolumes', { 
         volumes: [
@@ -101,8 +101,7 @@ const dataSelectionStore = {
           const newVolumes = DEFAULT_BUNDLED_INCOMING_VOLUMES.concat(volumes)
           
           dispatch('log', ['updateIncVolumes#axios#postprocess', newVolumes], {root: true})
-          
-          commit('setIncomingVolumes', {volumes: newVolumes})
+          dispatch('appendToIncomingVolumes', { volumes: newVolumes })
           dispatch('updateIncVolumesResult', {
             error: error ? error : null,
             message: message ? message : 'Incoming volumes updated'
