@@ -50,9 +50,18 @@ const dataSelectionStore = {
     },
     setIncomingVolumes (state, { volumes }) {
       state.incomingVolumes = volumes
-    },
+    }
   },
   actions: {
+    appendToBundledVolumes({ commit, state }, { volumes }){
+      const { incomingVolumes } = state
+      commit('setIncomingVolumes', { 
+        volumes: [
+          ...incomingVolumes,
+          ...volumes
+        ]
+       })
+    },
     selectReferenceVolumeWithId ({ commit, state }, id) {
       const vol = state.referenceVolumes.find(({ id: _id }) => _id === id)
       if (vol) commit('setSelectedReferenceVolumeWithId', id)

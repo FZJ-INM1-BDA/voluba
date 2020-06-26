@@ -788,7 +788,7 @@ export const oldJson = [
 export const annotationColorBlur = `grey`
 export const annotationColorFocus = `yellow`
 
-export const UPLOAD_URL = process.env.VUE_APP_UPLOAD_URL || `http://ime178.ime.kfa-juelich.de:7300`
+export const UPLOAD_URL = process.env.VUE_APP_UPLOAD_URL || `https://zam10143.zam.kfa-juelich.de/chumni`
 export const NONLINEAR_BACKEND = process.env.VUE_APP_NONLINEAR_BACKEND || `http://localhost:5000`
 
 export const processImageMetaData = ({id:defaultId, visibility = 'public', name = 'Untitled', links = {}, extra = {}, uploadUrl } = {}) => {
