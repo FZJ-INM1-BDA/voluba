@@ -139,6 +139,29 @@ export default {
     if (DEBUG) {
       window.setProduction = (arg) => this.setProduction(arg)
     }
+
+    const { appendToBundledVolumes } = this
+    /**
+     * get voluba temp volume
+     */
+    fetch(`http://ime178.ime.kfa-juelich.de/voluba/voluba.json`)
+      .then(res => res.json())
+      .then(({ voluba_sources }) => {
+        appendToBundledVolumes({ 
+          volumes: voluba_sources.map(({ name, url }, idx) => {
+            return {
+              name,
+              imageSource: url,
+              id: `voluba-custom-source-fzj-${name}-idx`
+            }
+          })
+         })
+      })
+      .catch(e => {
+        console.error(`fetching http://ime178.ime.kfa-juelich.de/voluba/voluba.json error`)
+      })
+
+    
     this.initAppendNehuba();
     this.$store.subscribeAction(({ type = '', payload = {} } = {}) => {
       switch (type) {
@@ -225,6 +248,9 @@ export default {
     ]),
     ...mapActions('nehubaStore', [
       'redrawNehuba'
+    ]),
+    ...mapActions('dataSelectionStore', [
+      'appendToBundledVolumes'
     ]),
     startRegistration: function () {
       this.showSelectVolumesModal = false
