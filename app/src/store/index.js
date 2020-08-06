@@ -15,16 +15,8 @@ import nehubaStore from './nehubaStore'
 import getAuthStore from './authStore'
 
 const ALLOW_UPLOAD = process.env.VUE_APP_ALLOW_UPLOAD
-let ENABLE_EXPERIMENTAL_FEATURES = {}
 
-try {
-  ENABLE_EXPERIMENTAL_FEATURES = JSON.parse(process.env.ENABLE_EXPERIMENTAL_FEATURES || '{}')
-} catch (e) {
-  console.error(`process.env.ENABLE_EXPERIMENTAL_FEATURES ${process.env.ENABLE_EXPERIMENTAL_FEATURES} cannot be parsed a JSON dictionary`, e)
-  ENABLE_EXPERIMENTAL_FEATURES = {}
-}
-
-const getStore = ({ user = null } = {}) => new Vuex.Store({
+const getStore = ({ user = null, experimentalFeatures = {} } = {}) => new Vuex.Store({
   modules: {
     nonLinearStore,
     linearStore,
@@ -33,8 +25,7 @@ const getStore = ({ user = null } = {}) => new Vuex.Store({
     landmarksStore,
     dataSelectionStore,
     nehubaStore,
-    authStore: getAuthStore({ user }),
-    experimentalFeatures: ENABLE_EXPERIMENTAL_FEATURES
+    authStore: getAuthStore({ user })
   },
   state: {
     allowUpload: process.env.NODE_ENV !== 'production' || ALLOW_UPLOAD,
@@ -55,7 +46,7 @@ const getStore = ({ user = null } = {}) => new Vuex.Store({
 
     mouseoverUserlayer: null,
 
-
+    experimentalFeatures,
     corticalAlignmentVisible: false,
 
     backendURL: process.env.VUE_APP_BACKEND_URL || 'http://localhost:5000/api',
@@ -104,7 +95,6 @@ const getStore = ({ user = null } = {}) => new Vuex.Store({
   },
   actions: {
     log: function ({state}, payload) {
-      console.log('what?')
       if (!state.production) console.log(payload)
     },
     setLocalStorage: function (store, payload) {
