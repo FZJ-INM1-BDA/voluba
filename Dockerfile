@@ -1,4 +1,4 @@
-FROM node:8 as builder
+FROM node:12 as builder
 
 ARG HOSTNAME
 ARG VUE_APP_ALLOW_UPLOAD
@@ -28,18 +28,33 @@ RUN npm i
 
 RUN npm run build
 
+# build doc
+FROM python:3.7 as doc-builder
+
+COPY . /voluba
+WORKDIR /voluba
+
+RUN pip install mkdocs mkdocs-material mdx_truly_sane_lists
+RUN mkdocs build
+
 # gzipping container
 FROM ubuntu:19.10 as compressor
 RUN apt upgrade -y && apt update && apt install brotli
 
 RUN mkdir -p /frontend/app
+
+# copy frontend
 COPY --from=builder /frontend/app/dist /frontend/app/dist
+
+# copy docs to container
+COPY --from=doc-builder /voluba/site /frontend/app/dist/doc
+
 WORKDIR /frontend/app/dist
 
 RUN for f in $(find . -type f); do gzip < $f > $f.gz && brotli < $f > $f.br; done
 
 # deploy container
-FROM node:8-alpine
+FROM node:12-alpine
 
 ENV NODE_ENV=production
 
@@ -52,6 +67,7 @@ RUN mkdir /landmark-reg-app
 WORKDIR /landmark-reg-app
 
 RUN mkdir public
+
 COPY --from=compressor /frontend/app/dist ./public
 COPY --from=builder /frontend/deploy .
 

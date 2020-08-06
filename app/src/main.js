@@ -13,6 +13,9 @@ import axios from 'axios'
 
 import './dep'
 
+import '!!file-loader?context=third_party&name=main.bundle.js!export-nehuba/dist/min/main.bundle.js'
+import '!!file-loader?context=third_party&name=chunk_worker.bundle.js!export-nehuba/dist/min/chunk_worker.bundle.js'
+
 Vue.config.productionTip = false
 
 const initVue = ({user} = {}) => {

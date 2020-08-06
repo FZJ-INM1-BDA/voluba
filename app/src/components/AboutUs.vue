@@ -58,7 +58,7 @@ export default {
   },
   data(){
     return {
-      docUrl: `https://voluba-user-doc.apps-dev.hbp.eu/`,
+      docUrl: `doc/`,
       emailUrl: `mailto:inm1-bda@fz-juelich.de?subject=[VoluBA] Queries`,
       repoUrl: 'https://github.com/fzj-inm1-bda/landmark-reg'
     }
