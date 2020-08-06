@@ -15,6 +15,14 @@ import nehubaStore from './nehubaStore'
 import getAuthStore from './authStore'
 
 const ALLOW_UPLOAD = process.env.VUE_APP_ALLOW_UPLOAD
+let ENABLE_EXPERIMENTAL_FEATURES = {}
+
+try {
+  ENABLE_EXPERIMENTAL_FEATURES = JSON.parse(process.env.ENABLE_EXPERIMENTAL_FEATURES || '{}')
+} catch (e) {
+  console.error(`process.env.ENABLE_EXPERIMENTAL_FEATURES ${process.env.ENABLE_EXPERIMENTAL_FEATURES} cannot be parsed a JSON dictionary`, e)
+  ENABLE_EXPERIMENTAL_FEATURES = {}
+}
 
 const getStore = ({ user = null } = {}) => new Vuex.Store({
   modules: {
@@ -25,7 +33,8 @@ const getStore = ({ user = null } = {}) => new Vuex.Store({
     landmarksStore,
     dataSelectionStore,
     nehubaStore,
-    authStore: getAuthStore({ user })
+    authStore: getAuthStore({ user }),
+    experimentalFeatures: ENABLE_EXPERIMENTAL_FEATURES
   },
   state: {
     allowUpload: process.env.NODE_ENV !== 'production' || ALLOW_UPLOAD,
