@@ -1,0 +1,63 @@
+{
+  "name": "voluba",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "serve": "vue-cli-service serve",
+    "build": "vue-cli-service build && node processMatomo.js",
+    "lint": "vue-cli-service lint",
+    "test": "vue-cli-service test:unit \"./src/**/*.spec.js\""
+  },
+  "dependencies": {
+    "export-nehuba": "0.0.2"
+  },
+  "devDependencies": {
+    "@fortawesome/fontawesome-svg-core": "^1.2.12",
+    "@fortawesome/free-brands-svg-icons": "^5.12.0",
+    "@fortawesome/free-regular-svg-icons": "^5.9.0",
+    "@fortawesome/free-solid-svg-icons": "^5.6.3",
+    "@fortawesome/vue-fontawesome": "^0.1.5",
+    "@vue/cli-plugin-babel": "^3.0.5",
+    "@vue/cli-plugin-eslint": "^3.0.5",
+    "@vue/cli-plugin-unit-mocha": "^4.1.1",
+    "@vue/cli-service": "^3.0.5",
+    "@vue/test-utils": "^1.0.0-beta.30",
+    "axios": "^0.18.1",
+    "babel-eslint": "^10.0.1",
+    "bootstrap": "^4.4.1",
+    "bootstrap-vue": "^2.1.0",
+    "chai": "^4.2.0",
+    "dotenv": "^6.2.0",
+    "eslint": "^5.8.0",
+    "eslint-plugin-vue": "^5.0.0",
+    "file-loader": "^3.0.1",
+    "mocha": "^6.2.2",
+    "sinon": "^7.5.0",
+    "vue": "^2.5.21",
+    "vue-color": "^2.7.0",
+    "vue-components": "git+https://github.com/xgui3783/vue-components.git",
+    "vue-router": "^3.0.2",
+    "vue-template-compiler": "^2.5.21",
+    "vuex": "^3.1.0"
+  },
+  "eslintConfig": {
+    "root": true,
+    "env": {
+      "node": true
+    },
+    "extends": [
+      "plugin:vue/essential",
+      "eslint:recommended"
+    ],
+    "rules": {},
+    "parserOptions": {
+      "parser": "babel-eslint"
+    }
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not ie <= 8"
+  ],
+  "license": "apache-2.0"
+}

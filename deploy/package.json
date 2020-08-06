@@ -1,0 +1,33 @@
+{
+  "name": "deploy",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "dependencies": {
+    "body-parser": "^1.18.3",
+    "cors": "^2.8.5",
+    "express": "^4.16.4",
+    "express-session": "^1.15.6",
+    "hbp-seafile": "0.0.7",
+    "memorystore": "1.6.0",
+    "nomiseco": "0.0.1",
+    "openid-client": "^2.4.5",
+    "passport": "^0.4.0",
+    "uuid": "^3.3.3"
+  },
+  "devDependencies": {
+    "chai": "^4.2.0",
+    "dotenv": "^6.2.0",
+    "mocha": "^6.2.2",
+    "request": "^2.88.0",
+    "sinon": "^7.5.0"
+  },
+  "scripts": {
+    "start": "node server/server.js",
+    "test": "mocha './{,!(node_modules)/**}/*.spec.js' --timeout 60000",
+    "mocha": "mocha"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT"
+}
