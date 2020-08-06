@@ -41,7 +41,7 @@
     </div>
 
     <!-- cortical alignment btn -->
-    <div class="horizontalContainer d-flex flex-items">
+    <div v-if="enableCorticalAlignment" class="horizontalContainer d-flex flex-items">
       <div
         v-b-tooltip.right.hover="corticalPatchAlignmentTitle"
         @click="corticalAlignmentVisibilityChanged({ visible: !corticalAlignmentVisible })"
@@ -124,7 +124,8 @@ export default {
   computed: {
     ...mapState({
       landmarkControlVisible: 'landmarkControlVisible',
-      corticalAlignmentVisible: 'corticalAlignmentVisible'
+      corticalAlignmentVisible: 'corticalAlignmentVisible',
+      enableCorticalAlignment: state => state && state.experimentalFeatures && state.experimentalFeatures.enableCorticalAlignment
     }),
     ...mapState('landmarksStore', [
       'addLandmarkMode'
