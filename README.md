@@ -1,21 +1,19 @@
-# Frontend
+# Voluba
 
-## Quick start
+Volumetric Brain Anchoring
 
-Fire up the development server:
+## Requirements
 
-    cd frontend/app
-    npm install
-    npm run dev  # (or 'yarn start')
-    
-Navigate to:
-http://localhost:8080
+```
+node > 10
+```
 
+## Develop
 
-## Building the frontend
+```bash
+cd app && npm run serve
+```
 
-To create a bundle use the following command:
+## License
 
-    npm run build
-
-It will create a /dist folder on the same level as /app.
+Apache 2.0
