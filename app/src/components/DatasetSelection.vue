@@ -52,7 +52,8 @@
 
       <!-- saved workflows -->
       <ResumeWorkflowComponent
-        @destroyMe="$emit('destroyMe')"
+        v-if="resumeWorkflow"
+        @destroy-me="$emit('destroy-me')"
         class="flex-grow-1 flex-shrink-1" />
     </div>
 
@@ -66,7 +67,7 @@
         <font-awesome-icon icon="question-circle"></font-awesome-icon>
       </span>
       <div
-        @click="$emit('destroyMe')"
+        @click="$emit('destroy-me')"
         :disabled="bothSelected"
         :class="nextStepClass"
         class="btn">
@@ -105,6 +106,7 @@ export default {
     ]),
     ...mapState({
       allowUpload: 'allowUpload',
+      resumeWorkflow: state => state && state.experimentalFeatures && state.experimentalFeatures.resumeWorkflow
     }),
     showAlert: function () {
       return this.incVolSelError || this.incVolSelMessage
@@ -133,10 +135,10 @@ export default {
     }
   },
   methods: {
-    ...mapActions({
-      openModal:'openModal',
-      modalMessage: 'modalMessage',
-    }),
+    ...mapActions([
+      'openModal',
+      'modalMessage',
+    ]),
     ...mapActions('dataSelectionStore', [
       'updateIncVolumes',
       'selectIncomingVolumeWithId'
