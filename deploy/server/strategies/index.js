@@ -1,7 +1,7 @@
 const hbpOidc = require('./hbp-oidc')
 const orcOidc = require('./orcid-oidc')
 const passport = require('passport')
-const objStoreDb = new Map()
+const { store } = require('../store')
 
 module.exports = async (app) => {
 
@@ -9,16 +9,22 @@ module.exports = async (app) => {
   app.use(passport.session())
 
   passport.serializeUser((user, done) => {
-    objStoreDb.set(user.id, user)
-    done(null, user.id)
+    store.set(user.id, JSON.stringify(user))
+      .then(() => {
+        const { id, name, type } = user
+        console.log(`strategies/index.js#serializeUser`, { id, name, type })
+        done(null, user.id)
+      })
+      .catch(done)
   })
 
   passport.deserializeUser((id, done) => {
-    const user = objStoreDb.get(id)
-    if (user) 
-      return done(null, user)
-    else
-      return done(null, false)
+    store.get(id)
+      .then(JSON.parse)
+      .then(user => {
+        done(null, user)
+      })
+      .catch(done)
   })
 
   await hbpOidc(app)
@@ -28,14 +34,15 @@ module.exports = async (app) => {
     if (req.user) {
       return res.status(200).send(JSON.stringify(req.user))
     } else {
-      return res.sendStatus(401)
+      return res.status(401).end()
     }
   })
 
-  app.get('/logout', (req, res) => {
+  app.get('/logout', async (req, res) => {
     const { user } = req
     if (user && user.id) {
-      objStoreDb.delete(user.id)
+      console.log(`strategies/index.js#logout`, { id: user.id })
+      await store.delete(user.id)
     }
     req.logout()
     res.redirect('/')

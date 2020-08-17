@@ -52,6 +52,7 @@ const removeJsonExt = function (value) {
 }
 
 export default {
+  name: 'resume-workflow-component',
   props: {
     inputTitle: {
       type: String,
@@ -89,7 +90,7 @@ export default {
       axios.get(`user/workflow/${removeJsonExt(id)}`)
         .then(({ data }) => {
           this.sudoSetState(data)
-          this.$emit('destroyMe')
+          this.$emit('destroy-me')
         })
         .catch(e => this.modalMessage({
           title: 'Error',
