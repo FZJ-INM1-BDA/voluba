@@ -1,3 +1,5 @@
+const { Seafile } = require('hbp-seafile')
+
 // adhoc getting seafile handle with user access token
 // normally, user.seafileHandle should be populated
 const getSeafileHandle = async ({ user }) => {

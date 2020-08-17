@@ -17,7 +17,7 @@ const cb = (tokenset, {id, family_name = '', given_name = '', ...rest}, done) =>
 }
 
 module.exports = async (app) => {
-  const { oidcStrategy } = await configureAuth({
+  const { oidcStrategy, client } = await configureAuth({
     clientId,
     clientSecret,
     discoveryUrl,
@@ -27,6 +27,11 @@ module.exports = async (app) => {
       redirect_uris: [ redirectUri ]
     }
   })
+
+  /**
+   * allow 5 second clock skew in case of id_token issued in the future error
+   */
+  client.CLOCK_TOLERANCE = 5
   
   passport.use('orcid-oidc', oidcStrategy)
   app.get('/orcid-oidc/auth', passport.authenticate('orcid-oidc'))
