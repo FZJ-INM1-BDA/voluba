@@ -93,6 +93,8 @@ export default {
           return
         }
 
+        this.showAlert = false
+
         this.setReferenceLandmarks({
           referenceLandmarks: jsonData.reference_landmarks
         })

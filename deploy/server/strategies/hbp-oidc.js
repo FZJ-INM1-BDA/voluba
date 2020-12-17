@@ -5,6 +5,7 @@ const { getConfig } = require('../user/store')
 
 const HOSTNAME = process.env.HOSTNAME || 'http://localhost:3000'
 
+const hbpScope = process.env.HBP_V2_SCOPE || 'openid email profile collab.drive'
 const clientId = process.env.HBP_V2_CLIENTID || 'no hbp id'
 const clientSecret = process.env.HBP_V2_CLIENTSECRET || 'no hbp client secret'
 const discoveryUrl = 'https://iam.humanbrainproject.eu/auth/realms/hbp'
@@ -50,7 +51,7 @@ module.exports = async (app) => {
     discoveryUrl,
     redirectUri,
     cb,
-    scope: 'openid offline_access email profile collab.drive',
+    scope: hbpScope,
     clientConfig: {
       redirect_uris: [ redirectUri ],
       response_types: [ 'code' ]
