@@ -40,7 +40,7 @@ RUN pip install mkdocs mkdocs-material mdx_truly_sane_lists
 RUN mkdocs build
 
 # gzipping container
-FROM ubuntu:19.10 as compressor
+FROM ubuntu:20.10 as compressor
 RUN apt upgrade -y && apt update && apt install brotli
 
 RUN mkdir -p /frontend/app
