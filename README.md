@@ -1,4 +1,4 @@
-# Voluba
+# VoluBA - interactive alignment of volumes of interest to high-resolution brain reference models
 
 Authors: X. Gui, Y. Leprince, P. Chervakov, T. Dickscheid; [Big Data Analytics Group](https://www.fz-juelich.de/inm/inm-1/EN/Forschung/Big_Data_Analytics/Big_Data_Analytics_node.html), [Institute of Neuroscience and Medicine (INM-1)](https://www.fz-juelich.de/inm/inm-1/), [Forschungszentrum Jülich](https://www.url.com) 
 
