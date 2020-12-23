@@ -22,7 +22,7 @@ It has been developed in the [Human Brain Project](https://humanbrainproject.eu)
 !!! Info
 	Found a bug? Get in touch with us at <inm1-bda@fz-juelich.de>
 
-[![logo](images/ebrains-logo-dark.svg)](https://ebrains.eu)
+[![logo](user_docs/images/ebrains-logo-dark.svg)](https://ebrains.eu)
 
 <!-- - develop instance: <https://voluba-next.apps-dev.hbp.eu> -->
 <!-- - user documentation: <https://voluba-user-doc.apps-dev.hbp.eu/> -->
