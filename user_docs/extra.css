@@ -9,9 +9,17 @@ div.autodoc-members {
   margin-bottom: 15px;
 }
 
-img[alt="screenshot"] {
-  width: 80%;
+img[alt="snippet"] {
+  width: 50%;
   display: block;
+  margin-left:auto;
+  margin-right:auto;
+}
+
+img[alt="screenshot"] {
+  width: 75%;
+  display: block;
+
 }
 
 table img

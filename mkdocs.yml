@@ -1,4 +1,4 @@
-site_name: Voluba User Documentation
+site_name: VoluBA User Documentation
 
 theme:
   name: 'readthedocs'
@@ -19,3 +19,4 @@ nav:
   - 'requirements.md'
   - 'input.md'
   - 'alignment.md'
+  - 'results.md'
