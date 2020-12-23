@@ -1,7 +1,7 @@
 site_name: Voluba User Documentation
 
 theme:
-  name: 'material'
+  name: 'readthedocs'
 
 extra_css:
   - extra.css
@@ -15,13 +15,7 @@ markdown_extensions:
 
 nav:
   - Home: 'index.md'
-  - 'req.md'
-  - Alignment workflow:
-    - 'workflow/upload.md'
-    - 'workflow/select.md'
-    - 'workflow/coarse.md'
-    - 'workflow/fine.md'
-    - 'workflow/linear.md'
-  - Config incoming volume:
-    - 'config/parallel.md'
-    - 'config/shader.md'
+  - 'acknowledgement.md'
+  - 'requirements.md'
+  - 'input.md'
+  - 'alignment.md'

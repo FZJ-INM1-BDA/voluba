@@ -9,8 +9,8 @@ div.autodoc-members {
   margin-bottom: 15px;
 }
 
-img {
-  width: 50%;
+img[alt="screenshot"] {
+  width: 80%;
   display: block;
 }
 
@@ -18,3 +18,4 @@ table img
 {
   width: 100%;
 }
+
