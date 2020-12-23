@@ -25,9 +25,6 @@ cd app && npm run serve
 Building on the [neuroglancer](https://github.com/google/neuroglancer) technology, it allows to interact with very large image volumes.
 It has been developed in the [Human Brain Project](https://humanbrainproject.eu) as an online service for integration of image data to brain atlases within the [EBRAINS](https://ebrains.eu) infrastructure for brain research.
 
-!!! Info
-	Found a bug? Get in touch with us at <inm1-bda@fz-juelich.de>
-
 [![logo](user_docs/images/ebrains-logo-dark.svg)](https://ebrains.eu)
 
 It has been designed as a service of the [EBRAINS](https://ebrains.eu) infrastructure for brain research and developed in the [Human Brain Project](https://humanbrainproject.eu). 
