@@ -24,7 +24,7 @@ The second is “side-by-side mode”, which shows the two volumes in separate p
 ![screenshot](images/sidebysidemode.png)
 
 !!! Info
-	All actions can be performed in both modes, although for some actions it is advisable to use a specific mode. For example, adding corresponding landmarks is typically more intuitive in the two-pane mode, while interactive shifting of the incoming volume is more easily performed in the overlay mode.
+	All actions can be performed in both modes, although for some actions it is advisable to use a specific mode. For example, adding corresponding landmarks is typically more intuitive in the side-by-side mode, while interactive shifting of the incoming volume is more easily performed in the overlay mode.
 
 
 ## Initial alignment with direct manipulation 
@@ -43,7 +43,7 @@ The dialog is launched using the button with the brain icon on the left of the u
 
 ## Refined alignment with 3D landmarks
 
-Once an acceptable alignment has been achieved based on the rigid transformations described above, you can start entering anatomical landmark pairs in either overlay or two-pane mode to compute an affine refinement of the image transformation.
+Once an acceptable alignment has been achieved based on the rigid transformations described above, you can start entering anatomical landmark pairs in either overlay or side-by-side mode to compute an affine refinement of the image transformation.
 
 !!! hint
     Entering landmarks is usually more intuitive to perfom in side-by-side mode.

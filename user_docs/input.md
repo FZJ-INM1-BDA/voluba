@@ -10,7 +10,7 @@ This image service provides a selection of example datasets and allows you to up
 ![snippet](images/upload.png)
 
 !!! info
-    You will need to signin with your ORCID or EBRAINS credentials before you can upload image volumes.
+    You will need to sign in with your ORCID or EBRAINS credentials before you can upload image volumes. Being signed in using an EBRAINS account will furthermore allow VoluBA to remember your work in progress between sessions.
 
 Your data will be stored in a protected, private space. 
 It will not be accessible to other users, and can be permanently deleted after the alignment is done.
