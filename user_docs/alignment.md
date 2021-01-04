@@ -38,7 +38,7 @@ By pressing shift while clicking & dragging, a rotation is applied.
 The orientation and scaling of the coordinate axes of the input data can be changed modified using the “Transform” dialog box,
 which also allows precise adjustment of position and orientation. 
 The dialog is launched using the button with the brain icon on the left of the user interface:
-![screenshot](images/fixscale.png)
+![snippet](images/fixscale.png)
 
 
 ## Refined alignment with 3D landmarks
