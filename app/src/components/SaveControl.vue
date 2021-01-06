@@ -61,7 +61,7 @@
           <div
             @click="handleSaveInCollab"
             ref="saveInCollab"
-            :class="'btn btn-outline-secondary btn-sm' + (isHbpOidcV2 ? '' : ' disabled')"
+            :class="'btn btn-outline-secondary btn-sm' + ((isHbpOidcV2 && resumeWorkflow) ? '' : ' disabled')"
             @mouseenter="showSaveOnCollab = true"
             @mouseleave="showSaveOnCollab = false">
             <font-awesome-icon icon="hdd" />
@@ -84,7 +84,10 @@
       placement="bottom"
       :target="() => $refs['saveInCollab']"
       :show="showSaveOnCollab">
-      {{ exportToCollabTooltipText }}
+      <span class="d-block">
+        {{ exportToCollabTooltipText }}
+      </span>
+      <small v-if="!resumeWorkflow" class="font-italic text-muted">coming soon</small>
     </b-tooltip>
 
     <b-tooltip
@@ -92,7 +95,10 @@
       placement="bottom"
       :target="() => $refs['exportToHBP']"
       :show="showExportToHBPTooltip">
-      Publish on HBP platform <small class="font-italic text-muted">coming soon</small>
+      <span class="d-block">
+        Publish on HBP platform
+      </span>
+      <small class="font-italic text-muted">coming soon</small>
     </b-tooltip>
 
     <b-modal id="multiselect-volume"
@@ -135,16 +141,19 @@ export default {
   },
   computed: {
     ...mapState('authStore', [
-      'user'
+      'user',
     ]),
+    ...mapState({
+      resumeWorkflow: state => state && state.experimentalFeatures && state.experimentalFeatures.resumeWorkflow,
+    }),
     ...mapGetters('authStore', [
       'isHbpOidcV2'
     ]),
     exportToCollabTooltipText: function () {
       return this.isHbpOidcV2
-        ? `Save state to Collab.drive`
-        : `You must be logged in with HBP KeyCloak to save to Collab.drive`
-    }
+        ? `Save progress to drive.ebrains.eu`  
+        : `You must be logged in with iam.ebrains.eu to save to drive.ebrains.eu`
+    },
   },
   methods: {
     ...mapActions([
@@ -173,7 +182,7 @@ export default {
        */
     },
     handleSaveInCollab: function () {
-      if (!this.isHbpOidcV2) return
+      if (!this.isHbpOidcV2 || !this.resumeWorkflow) return
       const state = this.$store.state
       const { authStore, ...rest } = state
       fetch(`user/workflow/`, {

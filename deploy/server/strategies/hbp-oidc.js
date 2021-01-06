@@ -8,7 +8,7 @@ const HOSTNAME = process.env.HOSTNAME || 'http://localhost:3000'
 const hbpScope = process.env.HBP_V2_SCOPE || 'openid email profile collab.drive'
 const clientId = process.env.HBP_V2_CLIENTID || 'no hbp id'
 const clientSecret = process.env.HBP_V2_CLIENTSECRET || 'no hbp client secret'
-const discoveryUrl = 'https://iam.humanbrainproject.eu/auth/realms/hbp'
+const discoveryUrl = 'https://iam.ebrains.eu/auth/realms/hbp'
 const redirectUri = `${HOSTNAME}/hbp-oidc-v2/cb`
 const cb = (tokenset, {sub, given_name, family_name, ...rest}, done) => {
   
@@ -28,7 +28,9 @@ const cb = (tokenset, {sub, given_name, family_name, ...rest}, done) => {
     .then(() => {
       return {
         ...user,
-        seafileHandle
+        seafile: {
+          handle: seafileHandle
+        }
       }
     })
     .then(async user => {

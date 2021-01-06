@@ -9,7 +9,7 @@
     "express": "^4.16.4",
     "express-session": "^1.15.6",
     "hbp-fluentd-logger": "^1.0.2",
-    "hbp-seafile": "0.0.7",
+    "hbp-seafile": "^0.1.0",
     "lru-cache": "^6.0.0",
     "memorystore": "1.6.0",
     "nomiseco": "0.0.1",
