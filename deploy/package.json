@@ -15,6 +15,7 @@
     "nomiseco": "0.0.1",
     "openid-client": "^2.4.5",
     "passport": "^0.4.0",
+    "redis": "^3.0.2",
     "uuid": "^3.3.3"
   },
   "devDependencies": {

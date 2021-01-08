@@ -1,9 +1,23 @@
 import { UPLOAD_URL, DEFAULT_BUNDLED_INCOMING_VOLUMES_0, DEFAULT_BUNDLED_INCOMING_VOLUMES_1, processImageMetaData } from "@/constants";
 import axios from 'axios'
 
-const DEFAULT_BUNDLED_INCOMING_VOLUMES = process.env.NODE_ENV === 'production'
-? DEFAULT_BUNDLED_INCOMING_VOLUMES_0
-: DEFAULT_BUNDLED_INCOMING_VOLUMES_0.concat(DEFAULT_BUNDLED_INCOMING_VOLUMES_1)
+const defaultVIds = [`colin-1`]
+let DEFAULT_BUNDLED_INCOMING_VOLUMES = []
+
+try {
+  const vIds = JSON.parse(process.env.VUE_APP_INC_VOL_IDS || `[]`)
+  if (!Array.isArray(vIds)) throw new Error(`INC_VOL_IDS does not evaluate to array: ${INC_VOL_IDS}`)
+  for (const vId of vIds) {
+    if (!defaultVIds.includes(vId)) {
+      defaultVIds.push(vId)
+    }
+  }
+
+  const vols = [...DEFAULT_BUNDLED_INCOMING_VOLUMES_0, ...DEFAULT_BUNDLED_INCOMING_VOLUMES_1]
+  DEFAULT_BUNDLED_INCOMING_VOLUMES = vols.filter(v => defaultVIds.includes(v.id))
+} catch (e) {
+  console.error(`parsing inc_vol_ids error`)
+}
 
 const dataSelectionStore = {
   namespaced: true,

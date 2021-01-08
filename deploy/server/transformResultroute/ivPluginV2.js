@@ -110,11 +110,11 @@ router.get('/template/:templateId', (req, res) => {
   }
 })
 
-router.get('/:resultId', (req, res) => {
+router.get('/:resultId', async (req, res) => {
 
   const { resultMap: map } = req
   const { resultId } = req.params
-  const obj = map.get(resultId)
+  const obj = await map.get(resultId)
 
   /**
    * single use tokenid
