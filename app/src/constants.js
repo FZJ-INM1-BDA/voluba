@@ -32,6 +32,7 @@ export const REFERENCE_COLOR = `white`
 export const UNPAIRED_COLOR = `#CCCCCC`
 export const INCOMING_COLOR = `#FCDC00`
 export const INACTIVE_ROW_OPACITY = 0.2
+export const EMAIL_CONTACT = `support@ebrains.eu`
 
 export const DEFAULT_BUNDLED_INCOMING_VOLUMES_0 = [
   {

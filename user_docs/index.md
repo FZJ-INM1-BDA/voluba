@@ -19,7 +19,7 @@ VoluBA has been developed in the [Human Brain Project](https://humanbrainproject
 Building on the [neuroglancer](https://github.com/google/neuroglancer) technology, it allows to interact with very large image volumes.
 
 !!! Info
-	Found a bug? Get in touch with us at <inm1-bda@fz-juelich.de>
+	Found a bug? Get in touch with us at <support@ebrains.eu>
 
 <!-- [![logo](images/HBP_sm.jpg)](https://humanbrainproject.eu) -->
 [![logo](images/ebrains-logo-dark.svg)](https://ebrains.eu)
