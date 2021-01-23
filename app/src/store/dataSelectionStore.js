@@ -1,4 +1,4 @@
-import { UPLOAD_URL, DEFAULT_BUNDLED_INCOMING_VOLUMES_0, DEFAULT_BUNDLED_INCOMING_VOLUMES_1, processImageMetaData } from "@/constants";
+import { UPLOAD_URL, DEFAULT_BUNDLED_INCOMING_VOLUMES_0, DEFAULT_BUNDLED_INCOMING_VOLUMES_1, processImageMetaData, identityMat } from "@/constants";
 import axios from 'axios'
 
 const defaultVIds = [`colin-1`]
@@ -160,13 +160,18 @@ const dataSelectionStore = {
   getters: {
     selectedReferenceVolume: state => state.referenceVolumes.find(v => v.id === state.selectedReferenceVolumeId),
     selectedIncomingVolume: state => state.incomingVolumes.find(v => v.id === state.selectedIncomingVolumeId),
-
+    selectedIncomingVolumeNgAffine: (state, getters) => {
+      const volume = getters.selectedIncomingVolume || {}
+      const { extra } = volume || {}
+      const { neuroglancer } = extra || {}
+      const { transform } = neuroglancer
+      return transform || identityMat
+    },
     selectedIncomingVolumeType: (state, getters) => {
       const volume = getters.selectedIncomingVolume || {}
-      const { payload = {} } = volume
-      const { extra = {} } = payload
-      const { neuroglancer = {} } = extra
-      const { type = 'image' } = neuroglancer
+      const { extra } = volume || {}
+      const { neuroglancer } = extra || {}
+      const { type = 'image' } = neuroglancer || {}
       return type
     }
   }
