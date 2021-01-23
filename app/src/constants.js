@@ -39,7 +39,17 @@ export const DEFAULT_BUNDLED_INCOMING_VOLUMES_0 = [
     id: 'colin-1',
     name: 'Colin 27',
     imageSource: 'precomputed://https://neuroglancer.humanbrainproject.org/precomputed/JuBrain/v2.2c/colin27_seg',
-    dim: [76, 94, 77].map(v => v * 2e6)
+    dim: [76, 94, 77].map(v => v * 2e6),
+    extra: {
+      neuroglancer: {
+        transform: [
+          [ 1, 0, 0, -75500000 ],
+          [ 0, 1, 0, -111500000 ],
+          [ 0, 0, 1, -67500000 ],
+          [ 0, 0, 0, 1 ]
+        ]
+      }
+    }
   }
 ]
 
@@ -777,6 +787,14 @@ export const processImageMetaData = ({id:defaultId, visibility = 'public', name 
     dim
   }
 }
+
+export const flattenMat = arr => arr.reduce((acc, curr) => acc.concat(curr), [])
+export const packMat4 = arr => [
+  arr.slice(0,4),
+  arr.slice(4,8),
+  arr.slice(8,12),
+  arr.slice(12,16)
+]
 
 export const transposeMat4 = (incM) => [0, 1, 2, 3].map(r => [0, 1, 2, 3].map(c => incM[ c * 4 + r ]))
 export const reverseTransposeMat4 = (jsonMatrix) => [0, 1, 2, 3].map(r => [0, 1, 2, 3].map(c => jsonMatrix[c][r])).reduce((acc, curr) => acc.concat(curr), [])
