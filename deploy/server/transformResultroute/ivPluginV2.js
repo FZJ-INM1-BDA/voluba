@@ -192,8 +192,18 @@ async function getVolumeXform(imageSource, index ) {
 }
 
 const getScript = ({ name, /*imageSource*/imageSources, shader, opacity, ngMatrix }) => `
-(() => {
-  console.log('calling companion application')
+(async () => {
+  
+  // wait for the viewer to be loaded
+  await new Promise((rs, rj) => {
+    const intervalId = setInterval(() => {
+      if (!!window.viewer) {
+        rs()
+        clearInterval(intervalId)
+      }
+    }, 1000)
+  })
+
   const onDestroyCb = []
   const imageSources = ${JSON.stringify(imageSources)}
   const getLayerNameS = ${getLayerNameS.toString()}
@@ -205,13 +215,7 @@ const getScript = ({ name, /*imageSource*/imageSources, shader, opacity, ngMatri
     'minds/core/referencespace/v1.0.0/a1655b99-82f1-420f-a3c2-fe80fd4c8588' // big brain
   ])
 
-  let loadLayerTimer = setInterval(() => {
-    if (window.viewer) {
-
-      clearInterval(loadLayerTimer)
-      ${imageSources.map(getLoadLayerScript({ opacity, shader, ngMatrix }))}
-    }
-  }, 1000)
+  ${imageSources.map(getLoadLayerScript({ opacity, shader, ngMatrix }))}
 
   let cleanUpTimer = setInterval(() => {
     if (window.interactiveViewer.pluginControl['${name}']) {

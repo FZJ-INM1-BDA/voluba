@@ -55,6 +55,22 @@ export const DEFAULT_BUNDLED_INCOMING_VOLUMES_0 = [
 
 export const DEFAULT_BUNDLED_INCOMING_VOLUMES_1 = [
   {
+    id: 'whole-brain-dataset',
+    name: 'whole_brain_dataset',
+    imageSource: 'precomputed://https://neuroglancer.humanbrainproject.org/precomputed/JuBrain/v2.2c/colin27_seg',
+    dim: [76, 94, 77].map(v => v * 2e6),
+    extra: {
+      neuroglancer: {
+        transform: [
+          [ 1, 0, 0, -75500000 ],
+          [ 0, 1, 0, -111500000 ],
+          [ 0, 0, 1, -67500000 ],
+          [ 0, 0, 0, 1 ]
+        ]
+      }
+    }
+  },
+  {
     id: 'inc-1',
     name: 'Nucleus subthalamicus (B20)',
     imageSource: 'precomputed://https://neuroglancer-dev.humanbrainproject.org/precomputed/landmark-reg/B20_stn_l/v10',
