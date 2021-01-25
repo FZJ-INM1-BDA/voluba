@@ -81,6 +81,16 @@ export const DEFAULT_BUNDLED_INCOMING_VOLUMES_1 = [
     ]
   },
   {
+    id: 'nucleus-subthalamicus',
+    name: 'Nucleus subthalamicus',
+    imageSource: 'precomputed://https://neuroglancer-dev.humanbrainproject.org/precomputed/landmark-reg/B20_stn_l/v10',
+    dim: [
+      16208000,
+      13056000,
+      9800000
+    ]
+  },
+  {
     id: 'inc-2',
     name: 'Hippocampus unmasked',
     imageSource: 'precomputed://https://neuroglancer-dev.humanbrainproject.org/precomputed/landmark-reg/hippocampus-unmasked',
