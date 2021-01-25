@@ -1,5 +1,5 @@
 
-import { saveToFile, reverseTransposeMat4, multiplyXforms } from '@//constants'
+import { saveToFile, reverseTransposeMat4, multiplyXforms, flattenMat, packMat4 } from '@//constants'
 import Vuex from 'vuex'
 import axios from 'axios'
 import { AGREE_COOKIE_KEY, openInNewWindow, getTransformMatrixInNm } from '@/constants';
@@ -102,14 +102,25 @@ const getStore = ({ user = null, experimentalFeatures = {} } = {}) => new Vuex.S
         window && window.localStorage && window.localStorage.setItem(key, payload[key])
       }
     },
-    loadXformJsonFile: function ({ dispatch, commit }, { json }) {
+    loadXformJsonFile: function ({ dispatch, commit, getters }, { json }) {
       /**
        * TODO check incoming/ref volume
        * TODO sanitize transformMatrixInNm. string? NaN?
        */
       try {
-        const { transformMatrixInNm } = json
-        const matrix = reverseTransposeMat4(transformMatrixInNm)
+        const { transformMatrixInNm, version } = json
+        let matrix
+        if (version >= 1) {
+          const { mat4 } = window.export_nehuba
+          const ngAffine = getters['dataSelectionStore/selectedIncomingVolumeNgAffine']
+          const ngAffineMat = mat4.fromValues(...flattenMat(ngAffine))
+          const xformMat = mat4.fromValues(...flattenMat(transformMatrixInNm))
+          const out = mat4.mul(mat4.create(), ngAffineMat, xformMat)
+          mat4.transpose(out, out)
+          matrix = Array.from(out)
+        } else {
+          matrix = reverseTransposeMat4(transformMatrixInNm)
+        }
 
         dispatch('pushUndo', {
           name: 'load transform json file'
@@ -224,15 +235,30 @@ const getStore = ({ user = null, experimentalFeatures = {} } = {}) => new Vuex.S
 
       const selectedIncomingVolume = getters['dataSelectionStore/selectedIncomingVolume']
       const selectedReferenceVolume = getters['dataSelectionStore/selectedReferenceVolume']
-      
+
       const incomingVolume = (selectedIncomingVolume && selectedIncomingVolume.name) || 'Unknown incoming volume'
       const referenceVolume = (selectedReferenceVolume && selectedReferenceVolume.name) || 'Unknown reference volume'
       
-      const transformMatrixInNm = getTransformMatrixInNm(incTransformMatrix)
-      
+      const ngAffine = getters['dataSelectionStore/selectedIncomingVolumeNgAffine']
+      const { mat4 } = window.export_nehuba
+      const ngAffineMat4 = mat4.fromValues(
+        ...ngAffine.reduce((acc, curr) => acc.concat(curr), [])
+      )
+
+      mat4.invert(ngAffineMat4, ngAffineMat4)
+      const incXformMat4 = mat4.fromValues(...incTransformMatrix)
+      mat4.transpose(incXformMat4, incXformMat4)
+      const out = mat4.mul(
+        mat4.create(),
+        ngAffineMat4,
+        incXformMat4
+      )
+      const transformMatrixInNm = packMat4(Array.from(out))
+
       const json = {
         incomingVolume,
         referenceVolume,
+        version: 1,
         transformMatrixInNm
       }
       saveToFile(JSON.stringify(json, null, 2), 'application/json', 'transformMatrix.json')

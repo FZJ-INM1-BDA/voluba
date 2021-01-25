@@ -40,6 +40,9 @@ void main(){\
 `
 
 const getLayerName = ({ index }) => `VoluBA volume - layer ${index}`
+function getLayerNameS() {
+  return `VoluBA volume - layer ${this.index || 'unknown idx'}`
+}
 
 const getLoadLayerScript = ({ opacity, shader, ngMatrix }) => (imageSource, index) => `
 window.interactiveViewer.viewerHandle.loadLayer({
@@ -52,22 +55,167 @@ window.interactiveViewer.viewerHandle.loadLayer({
 })
 `
 
+function loadLayer(imageSource, index) {
+  window.interactiveViewer.viewerHandle.loadLayer({
+    [getLayerNameS.call({ index })]: {
+      source: imageSource,
+      shader: this.shader || defaultShader,
+      opacity: this.opacity || 0.5,
+      transform: this.ngMatrix
+    }
+  })
+}
+
+function removelayer(imageSource, index) {
+  window.interactiveViewer.viewerHandle.removeLayer({
+    name: getLayerNameS.call({ index })
+  })
+}
+
 const getRemoveLayer = () => (imageSource, index) => `
 window.interactiveViewer.viewerHandle.removeLayer({
   name: '${getLayerName({ index, imageSource })}'
 })
 `
 
+// to be toString()'ed
+async function getVolumeXform(imageSource, index ) {
+
+  const { id: fId, ['@id']: fAId, name: fName } = from
+  const { id: tId, ['@id']: tAId, name: tName } = to
+
+  const { vec3, mat4 } = window.export_nehuba
+  const xformMatrix = mat4.fromValues(
+    ...this.ngMatrix.reduce((acc, curr) => acc.concat(curr), [])
+  )
+
+  mat4.transpose(xformMatrix, xformMatrix)
+
+  const url = imageSource.replace(/^precomputed:\/\//, '') + '/info'
+  const { scales } = await fetch(url).then(res => res.json())
+  const { size, resolution } = scales[0]
+  const f = size.map((s, i) => s * resolution[i])
+  
+  const srcPts = [
+    [0,    0,    0],
+    [0,    f[1], 0],
+    [0,    0,    f[2]],
+    // [0,    f[1], f[2]],
+    // [f[0], 0,    0],
+    [f[0], f[1], 0],
+    [f[0], 0,    f[2]],
+    [f[0], f[1], f[2]],
+  ]
+  console.log(srcPts)
+
+  const fromCoords = srcPts.map(xyz => 
+    vec3.transformMat4(vec3.create(), xyz, xformMatrix)
+  ).map(v => Array.from(v).map(x => x / 1e6))
+
+  let toCoords
+  try {
+
+    toCoords = await fetch('https://hbp-spatial-backend.apps.hbp.eu/v1/transform-points', {
+      method: 'POST',
+      headers: {
+        'Content-type': 'application/json'
+      },
+      body: JSON.stringify({
+        source_space: 'Big Brain (Histology)',
+        target_space: tName,
+        source_points: fromCoords
+      })
+    })
+      .then(res => res.text())
+      .then(text => JSON.parse(
+        text.replace(/NaN/g, 'null')
+      )) // non linear transformation end point sometiemes return NaN, which is not JSON compliant
+      .then(({ target_points }) => target_points)
+  } catch (e) {
+    console.error(e)
+    return
+  }
+
+  console.log({
+    fromCoords,
+    toCoords
+  })
+
+  const {
+    transformation_matrix,
+    inverse_matrix
+  } = await fetch(`https://voluba-linear-backend.apps.hbp.eu/api/least-squares`, {
+    method: 'POST',
+    headers: {
+      'Content-type': 'application/json'
+    },
+    body: JSON.stringify({
+      source_image: fName,
+      target_image: tName,
+      landmark_pairs: toCoords
+        .filter(toCoord => toCoord.every(v => !!v))
+        .map((toCoord, idx) => ({
+          active: true,
+          colour: true,
+          name: idx.toString(),
+          source_point: fromCoords[idx],
+          target_point: toCoord,
+        })
+      ),
+      transformation_type: 'affine' // rigid | rigid+reflection | similarity | similarity+reflection | affine
+    })
+  }).then(res => res.json())
+
+  console.log({
+    transformation_matrix, inverse_matrix
+  })
+  const newXform = mat4.fromValues(
+    ...inverse_matrix.reduce((acc, curr, rowIdx) => acc.concat(
+      curr.map((v, colIdx) => rowIdx < 3 && colIdx === 3 ? v * 1e6 : v )
+    ), [])
+  )
+  mat4.transpose(xformMatrix, xformMatrix)
+
+  console.log({
+    xformMatrix,
+    newXform
+  })
+  // mat4.transpose(newXform, newXform)
+  const result = mat4.mul(mat4.create(), xformMatrix, newXform)
+
+  return [
+    Array.from(result.slice(0, 4)),
+    Array.from(result.slice(4, 8)),
+    Array.from(result.slice(8, 12)),
+    Array.from(result.slice(12, 16))
+  ]
+}
+
 const getScript = ({ name, /*imageSource*/imageSources, shader, opacity, ngMatrix }) => `
-(() => {
+(async () => {
+  
+  // wait for the viewer to be loaded
+  await new Promise((rs, rj) => {
+    const intervalId = setInterval(() => {
+      if (!!window.viewer) {
+        rs()
+        clearInterval(intervalId)
+      }
+    }, 1000)
+  })
 
-  let loadLayerTimer = setInterval(() => {
-    if (window.viewer) {
+  const onDestroyCb = []
+  const imageSources = ${JSON.stringify(imageSources)}
+  const getLayerNameS = ${getLayerNameS.toString()}
+  const defaultShader = 'void main(){ float x = toNormalized(getDataValue()); if (x < 0.1) { emitTransparent(); } else { emitRGB(vec3(1.0 * x, x * 0., 0. * x )); } }'
 
-      clearInterval(loadLayerTimer)
-      ${imageSources.map(getLoadLayerScript({ opacity, shader, ngMatrix }))}
-    }
-  }, 1000)
+  const validTmplIdSet = new Set([
+    'minds/core/referencespace/v1.0.0/7f39f7be-445b-47c0-9791-e971c0b6d992', // colin 27
+    'minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2', // mni152 2009c
+    'minds/core/referencespace/v1.0.0/a1655b99-82f1-420f-a3c2-fe80fd4c8588' // big brain
+  ])
+
+  ${imageSources.map(getLoadLayerScript({ opacity, shader, ngMatrix }))}
 
   let cleanUpTimer = setInterval(() => {
     if (window.interactiveViewer.pluginControl['${name}']) {
@@ -75,10 +223,60 @@ const getScript = ({ name, /*imageSource*/imageSources, shader, opacity, ngMatri
 
       window.interactiveViewer.pluginControl['${name}'].onShutdown(() => {
         console.log('cleaning up')
+        while (onDestroyCb.length) onDestroyCb.pop()()
         ${imageSources.map(getRemoveLayer())}
       })
     }
   }, 500)
+
+  // such a mess
+  onDestroyCb.push(() => {
+    imageSources.forEach(
+      ${removelayer.toString()}
+    )
+  })
+
+  // subscribe to template change
+  let currTmplName, currTmplId
+  const s = interactiveViewer.metadata.selectedTemplateBSubject.subscribe(({ ['@id']:id, name }) => {
+    if (id === currTmplId) return
+    
+    // if current id is defined, do clean up, calculate transform, etc
+    if (!!currTmplId) {
+      ${imageSources.map(getRemoveLayer())}
+
+      // if new layer is not a valid layer, do not proceed
+      if (!validTmplIdSet.has(id)) return
+
+      const from = {
+        name: currTmplName,
+        id: currTmplId,
+        ['@id']: currTmplId
+      }
+
+      const to = {
+        name,
+        id,
+        ['@id']: id
+      }
+
+      Promise.all(
+        imageSources.map(
+          (${getVolumeXform.toString()}).bind({ ngMatrix: ${JSON.stringify(ngMatrix)} })
+        )
+      ).then(xforms => {
+        imageSources.forEach((imageSource, idx ) => {
+          (${loadLayer.toString()}).call({ ngMatrix: xforms[idx] }, imageSource, idx)
+
+        })
+      })
+    }
+
+    // lastly set current tmpl name and id to new tmpl name and id
+    currTmplName = name
+    currTmplId = id
+  })
+  onDestroyCb.push(() => s.unsubscribe())
 })()
 `
 
@@ -150,7 +348,8 @@ router.get('/:resultId', async (req, res) => {
       name,
       displayName,
       templateURL: `${rootPath}template/${templateId}`,
-      scriptURL: `${rootPath}script/${scriptId}`
+      scriptURL: `${rootPath}script/${scriptId}`,
+      persistency: true
     })
   } else {
     const name = `fzj.xg.landmark-reg-not-found`
