@@ -956,3 +956,6 @@ export const multiplyXforms = async xformMs => {
   }
   return transposeMat4(Array.from(outMat))
 }
+
+export const EXPORT_TRANSFORM_TYPE = 'https://voluba.apps.hbp.eu/@types/tranform'
+export const EXPORT_LANDMARKS_TYPE = 'https://voluba.apps.hbp.eu/@types/landmarks'

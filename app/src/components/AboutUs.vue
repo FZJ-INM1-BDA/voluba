@@ -59,16 +59,12 @@ export default {
   },
   data(){
     return {
-      docUrl: `doc/`,
-      emailUrl: `mailto:${this.email}?subject=[VoluBA] Queries`,
-      repoUrl: 'https://github.com/fzj-inm1-bda/landmark-reg'
+      docUrl: `https://voluba.readthedocs.io/en/latest/`,
+      EMAIL_CONTACT: EMAIL_CONTACT,
+      emailUrl: `mailto:${EMAIL_CONTACT}?subject=[VoluBA] Queries`,
+      repoUrl: 'https://github.com/fzj-inm1-bda/voluba'
     }
   },
-  computed: {
-    email: function () {
-      return EMAIL_CONTACT
-    }
-  }
 }
 </script>
 <style scoped>
