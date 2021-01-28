@@ -2,7 +2,7 @@
 import { saveToFile, reverseTransposeMat4, multiplyXforms, flattenMat, packMat4 } from '@//constants'
 import Vuex from 'vuex'
 import axios from 'axios'
-import { AGREE_COOKIE_KEY, openInNewWindow, getTransformMatrixInNm } from '@/constants';
+import { AGREE_COOKIE_KEY, openInNewWindow, EXPORT_TRANSFORM_TYPE } from '@/constants';
 
 
 import nonLinearStore from './nonLinearStore'
@@ -108,8 +108,12 @@ const getStore = ({ user = null, experimentalFeatures = {} } = {}) => new Vuex.S
        * TODO sanitize transformMatrixInNm. string? NaN?
        */
       try {
-        const { transformMatrixInNm, version } = json
+        const { transformMatrixInNm, version, ['@type']: type } = json
         let matrix
+        
+        if (type && type !== EXPORT_TRANSFORM_TYPE) {
+          throw new Error(`JSON is not a transform json file!`)
+        }
         if (version >= 1) {
           const { mat4 } = window.export_nehuba
           const ngAffine = getters['dataSelectionStore/selectedIncomingVolumeNgAffine']
@@ -259,6 +263,7 @@ const getStore = ({ user = null, experimentalFeatures = {} } = {}) => new Vuex.S
         incomingVolume,
         referenceVolume,
         version: 1,
+        ['@type']: EXPORT_TRANSFORM_TYPE,
         transformMatrixInNm
       }
       saveToFile(JSON.stringify(json, null, 2), 'application/json', 'transformMatrix.json')
