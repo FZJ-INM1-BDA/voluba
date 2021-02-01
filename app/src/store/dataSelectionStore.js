@@ -164,7 +164,7 @@ const dataSelectionStore = {
       const volume = getters.selectedIncomingVolume || {}
       const { extra } = volume || {}
       const { neuroglancer } = extra || {}
-      const { transform } = neuroglancer
+      const { transform } = neuroglancer || {}
       return transform || identityMat
     },
     selectedIncomingVolumeType: (state, getters) => {
