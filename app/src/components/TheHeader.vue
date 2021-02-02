@@ -20,6 +20,7 @@
 
           <!-- global lock -->
           <div
+            v-if="showGlobalLock"
             v-b-tooltip.hover.bottom="'Lock Incoming Volume'"
             @click="toggleGlobalLock"
             class="mr-2 w-1em">
@@ -61,12 +62,33 @@
                   <font-awesome-icon class="icon" icon="palette"></font-awesome-icon>
                 </div>
               </template>
-              <b-dropdown-item
-                class="nopadding">
+              <b-dropdown-text>
+
+                <h5>
+                  Colormaps
+                </h5>
+
+                <b-button :variant="colorMapSelectionText === colorMap.name ? 'primary' : 'outline-primary'"
+                  @click="selectColorMapByName({ name: colorMap.name })"
+                  v-for="colorMap in availableColorMaps"
+                  :key="colorMap.name">
+                  {{ colorMap.name }}
+                </b-button>
+              </b-dropdown-text>
+
+              <b-dropdown-divider />
+
+              <b-dropdown-text>
+                <h5>
+                  Mono
+                </h5>
+              </b-dropdown-text>
+
+              <b-dropdown-text class="nopadding">
                 <compact-picker
                   class="compact-picker"
                   v-model="overlayColor" />
-              </b-dropdown-item>
+              </b-dropdown-text>
             </b-nav-item-dropdown>
 
           </transition>
@@ -74,9 +96,13 @@
           <!-- threshold -->
           <transition name="fade">
             <b-nav-item-dropdown
+              v-if="showThreshold"
               text="Threshold"
               right>
+              <b-dropdown-text>
+
                 <SliderComponent
+                  class="w-10em"
                   name="Lower Threshold"
                   :min="0"
                   :max="1"
@@ -87,6 +113,7 @@
                   :value="lowerThreshold"
                   unit="" />
                 <SliderComponent
+                  class="w-10em"
                   name="Upper Threshold"
                   :min="0"
                   :max="1"
@@ -96,25 +123,7 @@
                   @plus="upperThreshold += 0.01"
                   :value="upperThreshold"
                   unit="" />
-            </b-nav-item-dropdown>
-          </transition>
-
-
-          <!-- colormap selection -->
-          <transition name="fade">
-            <b-nav-item-dropdown
-              :text="colorMapSelectionText"
-              right>
-              <b-dropdown-item
-                @click="selectColorMapByName({ name: null })">
-                Mono
-              </b-dropdown-item>
-              <b-dropdown-item
-                :key="colorMap.name"
-                @click="selectColorMapByName({ name: colorMap.name })"
-                v-for="colorMap in availableColorMaps">
-                {{ colorMap.name }}
-              </b-dropdown-item>
+              </b-dropdown-text>
             </b-nav-item-dropdown>
           </transition>
 
@@ -261,10 +270,13 @@ export default {
         ? `Hi ${(this.user && this.user.name) || 'Unnamed User'}`
         : `Login`
     },
-    showColorPicker: function () {
-      return this._step2Mode === 'overlay' && this.selectedIncomingVolumeType === 'image' && !this.selectedColorMap
+    showGlobalLock: function () {
+      return this._step2Mode === 'overlay'
     },
-    showColorMapSelection: function () {
+    showThreshold: function () {
+      return this._step2Mode === 'overlay'
+    },
+    showColorPicker: function () {
       return this._step2Mode === 'overlay' && this.selectedIncomingVolumeType === 'image'
     },
     colorMapSelectionText: function () {
@@ -280,6 +292,7 @@ export default {
         return this.stateOverlayColor
       },
       set: function (newColor) {
+        this.selectColorMapByName({ name: null })
         this.changeOverlayColor(newColor)
       }
     },
@@ -398,5 +411,10 @@ export default {
 .w-1em
 {
   width:1em!important;
+}
+
+.w-10em
+{
+  width: 10em;
 }
 </style>
