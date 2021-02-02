@@ -134,7 +134,7 @@
 </template>
 <script>
 import axios from 'axios'
-import { mapState, mapActions, mapMutations } from 'vuex'
+import { mapState, mapActions, mapMutations, mapGetters } from 'vuex'
 import { arrayBufferToBase64String, IMAGE_SERVICE_NAME, SEGMENTATION_EXPLANATION, makeHtmlFragmentForNifti } from '@/constants'
 import SigningComponent from '@/components/SigninComponent'
 import InfoPopover from '@/components/InfoPopover'
@@ -190,7 +190,10 @@ export default {
   },
   computed: {
     ...mapState('authStore', [
-      'user'
+      'user',
+    ]),
+    ...mapGetters('authStore', [
+      'authHeader'
     ]),
     ...mapState('dataSelectionStore', {
       url: ({ uploadUrl }) => uploadUrl
@@ -205,10 +208,10 @@ export default {
       return `${this.url}/preflight`
     },
     uploadHeader: function () {
-      const idToken = this.user && this.user.idToken || process.env.VUE_APP_ID_TOKEN
-      return idToken
-        ? { 'Content-Type': 'multipart/form-data', 'Authorization': 'Bearer ' + idToken }
-        : { 'Content-Type': 'multipart/form-data' }
+      return {
+        'Content-Type': 'multipart/form-data',
+        ...this.authHeader
+      }
     },
     uploadProgressPercentage: function () {
       return (this.uploadProgress * 100).toFixed(2) + '%'

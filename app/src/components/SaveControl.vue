@@ -44,6 +44,16 @@
           </span>
         </div>
         <div class="input-group-append">
+          <form :action="downloadNiftiWithXformUrl" method="POST" enctype="multipart/form-data" target="_blank">
+            <input type="hidden" name="json" :value="stringifiedTransformMatrixInNm">
+            <input type="hidden" name="auth" :value="authHeader['Authorization']">
+            <button type="submit"
+              v-b-tooltip.hover.button="'Download nifti with updated affine'"
+              class="btn btn-outline-secondary btn-sm">
+              <font-awesome-icon icon="file-archive" />
+            </button>
+          </form>
+          
           <div
             v-b-tooltip.hover.bottom="'Save transform as JSON'"
             @click="downloadXformResult"
@@ -119,7 +129,7 @@
 </template>
 <script>
 import { mapActions, mapState, mapGetters } from 'vuex'
-import { openFileDialog } from '@/constants'
+import { openFileDialog, getTransformMatrixInNm } from '@/constants'
 import MultiselectVolume from '@/views/MultiselectVolume'
 
 export default {
@@ -138,12 +148,30 @@ export default {
       'user'
     ]),
     ...mapGetters('authStore', [
-      'isHbpOidcV2'
+      'isHbpOidcV2',
+      'authHeader'
+    ]),
+    ...mapState('nehubaStore', {
+      stringifiedTransformMatrixInNm: state => {
+        return JSON.stringify({
+          transformMatrixInNm: getTransformMatrixInNm(state.incTransformMatrix) || {}
+        })
+      }
+    }),
+    ...mapGetters('dataSelectionStore', [
+      'selectedIncomingVolume'
+    ]),
+    ...mapState('dataSelectionStore', [
+      'uploadUrl'
     ]),
     exportToCollabTooltipText: function () {
       return this.isHbpOidcV2
         ? `Save state to Collab.drive`
         : `You must be logged in with HBP KeyCloak to save to Collab.drive`
+    },
+    downloadNiftiWithXformUrl: function () {
+      const incomingVolName = this.selectedIncomingVolume && this.selectedIncomingVolume.name
+      return incomingVolName && `${this.uploadUrl}/export/${incomingVolName}.nii.gz`
     }
   },
   methods: {
