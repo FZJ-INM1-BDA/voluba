@@ -208,7 +208,6 @@ export default {
       return `${this.url}/preflight`
     },
     uploadHeader: function () {
-      console.log(this.authHeader)
       return {
         'Content-Type': 'multipart/form-data',
         ...this.authHeader
