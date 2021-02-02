@@ -79,7 +79,11 @@ const landmarksStore = {
       }
       dispatch('log', ['store#actions#saveLandMarks', { data }], { root: true })
       const jsonData = JSON.stringify(data, null, 2)
-      saveToFile(jsonData, 'application/json', 'landmark-pairs.json')
+      saveToFile({
+        data: jsonData,
+        mimeType: 'application/json',
+        filename: 'landmark-pairs.json'
+      })
     },
     changeLandmarkMode: function ({ state, commit, dispatch, rootState }, { mode }) {
       if (!mode) {
