@@ -44,11 +44,16 @@
           </span>
         </div>
         <div class="input-group-append">
-          <form :action="downloadNiftiWithXformUrl" method="POST" enctype="multipart/form-data" target="_blank">
+          <form
+            v-b-tooltip.hover.bottom="downloadNiftiTooltipText"
+            :action="downloadNiftiWithXformUrl"
+            method="POST"
+            enctype="multipart/form-data"
+            target="_blank">
             <input type="hidden" name="json" :value="stringifiedTransformMatrixInNm">
             <input type="hidden" name="auth" :value="authHeader['Authorization']">
             <button type="submit"
-              v-b-tooltip.hover.button="'Download nifti with updated affine'"
+              :disabled="!niftiCanBeDownloaded"
               class="btn btn-outline-secondary btn-sm">
               <font-awesome-icon icon="file-archive" />
             </button>
@@ -168,6 +173,12 @@ export default {
       return this.isHbpOidcV2
         ? `Save state to Collab.drive`
         : `You must be logged in with HBP KeyCloak to save to Collab.drive`
+    },
+    downloadNiftiTooltipText: function () {
+      return this.niftiCanBeDownloaded ? 'download volumes with updated transform' : 'only private volumes can be downloaded'
+    },
+    niftiCanBeDownloaded: function () {
+      return this.selectedIncomingVolume && this.selectedIncomingVolume.visibility === 'private'
     },
     downloadNiftiWithXformUrl: function () {
       const incomingVolName = this.selectedIncomingVolume && this.selectedIncomingVolume.name
