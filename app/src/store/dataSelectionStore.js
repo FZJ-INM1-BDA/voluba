@@ -48,9 +48,12 @@ const dataSelectionStore = {
       if (vol) {
         if (vol.extra && vol.extra.neuroglancer && vol.extra.neuroglancer.transform) {
           const cleansedTransform = JSON.parse(JSON.stringify(vol.extra.neuroglancer.transform))
+          const { mat4 } = export_nehuba
+          const matrix = mat4.fromValues( ...cleansedTransform[0], ...cleansedTransform[1], ...cleansedTransform[2], ...cleansedTransform[3])
+          mat4.transpose(matrix, matrix)
           commit(
             'nehubaStore/setIncTransformMatrix',
-            { matrix: [ ...cleansedTransform[0], ...cleansedTransform[1], ...cleansedTransform[2], ...cleansedTransform[3]] },
+            { matrix },
             { root: true })
         }
         commit('setSelectedIncomingVolumeId', id)
