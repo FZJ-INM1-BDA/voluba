@@ -46,6 +46,13 @@ const dataSelectionStore = {
     selectIncomingVolumeWithId ({ commit, state }, id) {
       const vol = state.incomingVolumes.find(({ id: _id }) => _id === id)
       if (vol) {
+        if (vol.extra && vol.extra.neuroglancer && vol.extra.neuroglancer.transform) {
+          const cleansedTransform = JSON.parse(JSON.stringify(vol.extra.neuroglancer.transform))
+          commit(
+            'nehubaStore/setIncTransformMatrix',
+            { matrix: [ ...cleansedTransform[0], ...cleansedTransform[1], ...cleansedTransform[2], ...cleansedTransform[3]] },
+            { root: true })
+        }
         commit('setSelectedIncomingVolumeId', id)
         const { shaderScaleFactor } = vol
         commit('viewerPreferenceStore/setShaderScaleFactor', shaderScaleFactor || 1, { root: true })
