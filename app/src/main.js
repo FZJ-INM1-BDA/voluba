@@ -26,12 +26,18 @@ try {
   console.error(`process.env.VUE_APP_ENABLE_EXPERIMENTAL_FEATURES ${process.env.VUE_APP_ENABLE_EXPERIMENTAL_FEATURES} cannot be parsed a JSON dictionary`, e)
 }
 
+
 const initVue = ({user} = {}) => {
-  new Vue({
+  const store = getStore({ user, experimentalFeatures })
+  
+  const vueApp = new Vue({
     router,
-    store: getStore({ user, experimentalFeatures }),
+    store,
     render: h => h(App),
   }).$mount('#app')
+
+  window.voluba = vueApp
+  window.store = store
 }
 
 axios.get('user')
