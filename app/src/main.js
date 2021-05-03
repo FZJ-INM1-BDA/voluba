@@ -13,12 +13,23 @@ import axios from 'axios'
 
 import './dep'
 
+import '!!file-loader?context=third_party&name=main.bundle.js!export-nehuba/dist/min/main.bundle.js'
+import '!!file-loader?context=third_party&name=chunk_worker.bundle.js!export-nehuba/dist/min/chunk_worker.bundle.js'
+
 Vue.config.productionTip = false
+
+let experimentalFeatures = {}
+
+try {
+  experimentalFeatures = JSON.parse(process.env.VUE_APP_ENABLE_EXPERIMENTAL_FEATURES || '{}')
+} catch (e) {
+  console.error(`process.env.VUE_APP_ENABLE_EXPERIMENTAL_FEATURES ${process.env.VUE_APP_ENABLE_EXPERIMENTAL_FEATURES} cannot be parsed a JSON dictionary`, e)
+}
 
 const initVue = ({user} = {}) => {
   new Vue({
     router,
-    store: getStore({ user }),
+    store: getStore({ user, experimentalFeatures }),
     render: h => h(App),
   }).$mount('#app')
 }

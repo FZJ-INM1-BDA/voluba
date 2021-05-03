@@ -5,7 +5,7 @@ const URL = require('url').URL
 const cors = require('cors')
 
 const allowCors = (process.env.ALLOW_CORS && !!JSON.parse(process.env.ALLOW_CORS)) || false
-const IV_HOST = process.env.IV_HOST || 'https://dev-next-interactive-viewer.apps-dev.hbp.eu'
+const IV_HOST = process.env.IV_HOST || 'https://atlases.ebrains.eu/viewer'
 const HOSTNAME = process.env.HOSTNAME || 'http://localhost:3000'
 
 const map = new Map()
@@ -52,10 +52,11 @@ const setMap = ({ body, pluginStatesParam, map: setMapFnMap }) => new Promise((r
     if (err) return rj(err.toString())
     const id = buf.toString('hex')
 
-    // TODO implement timing out to avoid mem leak
     setMapFnMap.set(id, {
       date: Date.now(),
       data: body
+    }, {
+      maxAge: 1000 * 60
     })
     const url = new URL(IV_HOST)
     url.searchParams.set('templateSelected', 'Big Brain (Histology)')

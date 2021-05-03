@@ -37,7 +37,7 @@
       </div>
       <div class="showmore-item">
         <strong>List of partners responsible</strong>:
-        FZJ-INM1 <a href="mailto:inm1-bda@fz-juelich.de">inm1-bda@fz-juelich.de</a>
+        FZJ-INM1 <a :href="'mailto:' + email ">{{ email }} </a>
       </div>
       <div class="showmore-item">
         <strong>HBP Data Protection Officer (HBP DPO)</strong>: You can find out about HBP Data Protection policies here:
@@ -81,6 +81,7 @@
   </div>
 </template>
 <script>
+import { EMAIL_CONTACT } from '@/constants'
 export default {
   data: function () {
     return {
@@ -90,6 +91,9 @@ export default {
   computed: {
     showMoreText: function () {
       return this.showMore ? 'show less' : 'show more'
+    },
+    email: function () {
+      return EMAIL_CONTACT
     }
   }
 }

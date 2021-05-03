@@ -1,5 +1,5 @@
 import { generateId, randomColor } from '@/constants'
-import { saveToFile } from '@/constants'
+import { saveToFile, EXPORT_LANDMARKS_TYPE } from '@/constants'
 
 const landmarksStore = {
   namespaced: true,
@@ -75,7 +75,8 @@ const landmarksStore = {
         incoming_volume: (incVol && incVol.name) || 'Untitled Incoming Volume',
         reference_landmarks: referenceLandmarks,
         incoming_landmarks: incomingLandmarks,
-        landmark_pairs: landmarkPairs
+        landmark_pairs: landmarkPairs,
+        ['@type']: EXPORT_LANDMARKS_TYPE
       }
       dispatch('log', ['store#actions#saveLandMarks', { data }], { root: true })
       const jsonData = JSON.stringify(data, null, 2)

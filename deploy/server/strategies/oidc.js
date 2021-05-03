@@ -42,6 +42,7 @@ exports.configureAuth = async ({ discoveryUrl, clientId, clientSecret, redirectU
   }, cb)
 
   return {
+    client,
     oidcStrategy
   }
 }

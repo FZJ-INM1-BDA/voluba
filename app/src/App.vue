@@ -27,7 +27,7 @@
       v-if="showSelectVolumesModal"
       class="overlay-screen">
       <DataSelection
-        @destroyMe="startRegistration"
+        @destroy-me="startRegistration"
         class="p-5 bg-light data-selection" />
     </div>
 

@@ -36,7 +36,7 @@
 </template>
 
 <script>
-import { oldJson, openFileDialog } from '@//constants'
+import { oldJson, openFileDialog, EXPORT_LANDMARKS_TYPE } from '@//constants'
 import { LOAD_LM_WARNING } from '@/text'
 import { mapActions, mapState, mapMutations } from 'vuex'
 
@@ -87,11 +87,17 @@ export default {
       try {
         var jsonData = JSON.parse(fileContent)
 
+        if (jsonData['@type'] && jsonData['@type'] !== EXPORT_LANDMARKS_TYPE) {
+          throw new Error(`JSON is not a landmarks json file!`)
+        }
+
         if (!('reference_landmarks' in jsonData) || !('incoming_landmarks' in jsonData) || !('landmark_pairs' in jsonData)) {
           this.errorMessage = 'Can not load Landmark-Pairs! Please check if the following keys exists: "reference_landmarks", "incoming_landmarks", "landmark_pairs".'
           this.showAlert = true
           return
         }
+
+        this.showAlert = false
 
         this.setReferenceLandmarks({
           referenceLandmarks: jsonData.reference_landmarks
@@ -108,7 +114,7 @@ export default {
 
       } catch(e) {
         this.log(e)
-        this.errorMessage = 'Can not load Landmark-Pairs! Error: "Invalid JSON".'
+        this.errorMessage = e.toString()
         this.showAlert = true
       }
     }

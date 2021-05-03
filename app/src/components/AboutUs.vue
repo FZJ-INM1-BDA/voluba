@@ -41,7 +41,7 @@
       <a :href="emailUrl" class="m-2 p-2 col-sm d-flex flex-column align-items-center justify-content-center btn btn-secondary">
         <font-awesome-icon size="2x" :icon="['far', 'envelope']"/>
         <small>
-          inm1-bda@fz-juelich.de
+          {{ EMAIL_CONTACT }}
         </small>
       </a>
     </div>
@@ -50,6 +50,7 @@
 </template>
 <script>
 import { mapActions } from 'vuex'
+import { EMAIL_CONTACT } from '@/constants'
 export default {
   methods: {
     ...mapActions({
@@ -58,11 +59,12 @@ export default {
   },
   data(){
     return {
-      docUrl: `doc/`,
-      emailUrl: `mailto:inm1-bda@fz-juelich.de?subject=[VoluBA] Queries`,
-      repoUrl: 'https://github.com/fzj-inm1-bda/landmark-reg'
+      docUrl: `https://voluba.readthedocs.io/en/latest/`,
+      EMAIL_CONTACT: EMAIL_CONTACT,
+      emailUrl: `mailto:${EMAIL_CONTACT}?subject=[VoluBA] Queries`,
+      repoUrl: 'https://github.com/fzj-inm1-bda/voluba'
     }
-  }
+  },
 }
 </script>
 <style scoped>
