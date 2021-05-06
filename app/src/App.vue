@@ -147,12 +147,31 @@ export default {
     fetch(`http://ime178.ime.kfa-juelich.de/voluba/voluba.json`)
       .then(res => res.json())
       .then(({ voluba_sources }) => {
+        return Promise.all(
+          voluba_sources.map(({ name, url }) => {
+            const pingUrl = url.replace(/^precomputed:\/\//, '') + '/info'
+            return fetch(pingUrl)
+              .then(res => res.json())
+              .then(info => {
+                const { size, resolution } = info.scales[0]
+                const dim = [0, 1, 2].map(idx => size[idx] * resolution[idx]) // dimension in nm
+                return {
+                  name,
+                  url,
+                  dim
+                }
+              })
+          })
+        )
+      })
+      .then(voluba_sources => {
         appendToIncomingVolumes({ 
-          volumes: voluba_sources.map(({ name, url }, idx) => {
+          volumes: voluba_sources.map(({ name, url, dim }, idx) => {
             return {
               name,
               imageSource: url,
-              id: `voluba-custom-source-fzj-${name}-idx`
+              dim,
+              id: `voluba-custom-source-fzj-${name}-${idx}`
             }
           })
          })
