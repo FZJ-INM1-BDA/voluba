@@ -1,53 +1,76 @@
 <template>
-  <svg
-    ref="svg"
-    class="pe-none svg-container">
-    
-    <clipPath id="clipPathId">
+  <div>
+    <svg
+      viewBox="0 0 40 40"
+      ref="svg"
+      class="pe-none svg-container">
+      
+      <clipPath id="clipPathId">
+        <path
+          fill="none"
+          :d="pathD">
+        </path>
+      </clipPath>
+
+      <CircleFragment
+        ref="circleFragment"
+        @mouseenterPath="mouseenterPath"
+        @mouseleavePath="mouseleavePath"
+        @mousedownPath="mousedownPath"
+        :pathStyle="cricleStyle"
+        :center="center"
+        :width="width" />
+
       <path
-        fill="none"
-        :d="pathD">
+        v-if="mousedown"
+        clip-path="url(#clipPathId)"
+        stroke-width="2"
+        stroke="white"
+        :d="guidingLineD">
       </path>
-    </clipPath>
 
-    <CircleFragment
-      ref="circleFragment"
-      @mouseenterPath="mouseenterPath"
-      @mouseleavePath="mouseleavePath"
-      @mousedownPath="mousedownPath"
-      :pathStyle="cricleStyle"
-      :center="center"
-      :width="width" />
+      <!-- twoarrwo fragment is not very stable at the moment -->
+      <!-- responsive direction is a bit bugged -->
+      <!-- reenable once fixed -->
 
-    <path
-      v-if="mousedown"
-      clip-path="url(#clipPathId)"
-      stroke-width="2"
-      stroke="white"
-      :d="guidingLineD">
-    </path>
-    <g class="flip1">
-      <TwoArrowFragment
-        @click.native="$emit('clickTwoArrow', { idx: 1 })"
-        :xformCoord="xform1"
-        :center="[0, 0]"
-        :width="width"/>
-    </g>
-    <g class="flip2">
-      <TwoArrowFragment
-        @click.native="$emit('clickTwoArrow', { idx: 0 })"
-        :xformCoord="xform2"
-        :center="[0, 0]"
-        :width="width"/>
-    </g>
-    <g class="flip3">
-      <TwoArrowFragment
-        @click.native="$emit('clickTwoArrow', { idx: 2 })"
-        :xformCoord="xform3"
-        :center="[0, 0]"
-        :width="width"/>
-    </g>
-  </svg>  
+      <!-- <g class="flip1">
+        <TwoArrowFragment
+          @click.native="$emit('clickTwoArrow', { idx: 1 })"
+          :xformCoord="xform1"
+          :center="[0, 0]"
+          :fillColor="[0, 200, 0]"
+          :width="width"/>
+      </g>
+      <g class="flip2">
+        <TwoArrowFragment
+          @click.native="$emit('clickTwoArrow', { idx: 0 })"
+          :xformCoord="xform2"
+          :center="[0, 0]"
+          :fillColor="[200, 0, 0]"
+          :width="width"/>
+      </g>
+      <g class="flip3">
+        <TwoArrowFragment
+          @click.native="$emit('clickTwoArrow', { idx: 2 })"
+          :xformCoord="xform3"
+          :center="[0, 0]"
+          :fillColor="[0, 0, 200]"
+          :width="width"/>
+      </g> -->
+    </svg>
+    <b-button class="pe-all" pill size="sm" variant="success"
+      @click="$emit('clickTwoArrow', { idx: 1 })">
+      <font-awesome-icon icon="arrows-alt-h" />
+    </b-button>
+    <b-button class="pe-all" pill size="sm" variant="danger"
+      @click="$emit('clickTwoArrow', { idx: 0 })">
+      <font-awesome-icon icon="arrows-alt-h" />
+    </b-button>
+    <b-button class="pe-all" pill size="sm" variant="primary"
+      @click="$emit('clickTwoArrow', { idx: 2 })">
+      <font-awesome-icon icon="arrows-alt-h" />
+    </b-button>
+  </div>
 </template>
 <script>
 import CircleFragment from '@/components/RotationWidget/CircleFragment'
@@ -122,8 +145,8 @@ export default {
     return {
       onHover: false,
       mousedown: false,
-      center: [40,40],
-      width: 40,
+      center: [20,20],
+      width: 18,
       mousePos: null,
       pathD: null
     }
@@ -233,19 +256,19 @@ export default {
 <style scoped>
 .svg-container
 {
-  width: 100%;
-  height: 100%;
+  width: 5em;
+  height: auto;
 }
 .flip1
 {
-  transform: translate(100px, 40px)
+  transform: translate(30%, 20px)
 }
 .flip2
 {
-  transform: translate(150px, 40px)
+  transform: translate(50%, 20px)
 }
 .flip3
 {
-  transform: translate(200px, 40px)
+  transform: translate(70%, 20px)
 }
 </style>
