@@ -628,6 +628,10 @@ export const openFileDialog = (type, acceptedMimeType, fileHandler = null, conte
   file_selector.click()
 }
 
+export function invertQuat(q){
+  const { quat } = window.export_nehuba
+  return quat.invert(q, q)
+}
 
 export const testLandmarks = {
   referenceLandmarks: [{
