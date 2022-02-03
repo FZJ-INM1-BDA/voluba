@@ -32,26 +32,14 @@ RUN npm i
 
 RUN npm run build
 
-# build doc
-FROM python:3.7 as doc-builder
-
-COPY . /voluba
-WORKDIR /voluba
-
-RUN pip install mkdocs mkdocs-material mdx_truly_sane_lists
-RUN mkdocs build
-
 # gzipping container
-FROM ubuntu:20.10 as compressor
+FROM ubuntu:21.10 as compressor
 RUN apt upgrade -y && apt update && apt install brotli
 
 RUN mkdir -p /frontend/app
 
 # copy frontend
 COPY --from=builder /frontend/app/dist /frontend/app/dist
-
-# copy docs to container
-COPY --from=doc-builder /voluba/site /frontend/app/dist/doc
 
 WORKDIR /frontend/app/dist
 
