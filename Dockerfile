@@ -33,7 +33,7 @@ RUN npm i
 RUN npm run build
 
 # gzipping container
-FROM ubuntu:21.10 as compressor
+FROM ubuntu:22.04 as compressor
 RUN apt upgrade -y && apt update && apt install brotli
 
 RUN mkdir -p /frontend/app
