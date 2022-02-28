@@ -1,7 +1,13 @@
 import { UPLOAD_URL, DEFAULT_BUNDLED_INCOMING_VOLUMES_0, DEFAULT_BUNDLED_INCOMING_VOLUMES_1, processImageMetaData, identityMat } from "@/constants";
 import axios from 'axios'
 
-const defaultVIds = [`colin-1`]
+const defaultVIds = ['colin-1',
+  'fzj/tmp/volume_type/v0.0.1/pli-hippocampus-labels',
+  'hsv-fom',
+  't2w-mri',
+  'blockface-image',
+  'pli-transmittance',
+]
 let DEFAULT_BUNDLED_INCOMING_VOLUMES = []
 
 try {
@@ -31,7 +37,19 @@ const dataSelectionStore = {
         id: 'ref-1',
         name: 'BigBrain (2015)',
         imageSource: 'precomputed://https://www.jubrain.fz-juelich.de/apps/neuroglancer/BigBrainRelease.2015/image'
-      }
+      }, {
+        id: 'hsv-fom',
+        name: 'HSV-FOM (2022)',
+      }, {
+        id: 't2w-mri',
+        name: 'T2w MRI',
+      }, {
+        id: 'blockface-image',
+        name: 'Blockface Image',
+      }, {
+        id: 'pli-transmittance',
+        name: 'PLI Transmittance',
+      },
     ],
 
     selectedIncomingVolumeId: null,
@@ -63,7 +81,7 @@ const dataSelectionStore = {
         commit('setSelectedIncomingVolumeId', id)
         const { shaderScaleFactor } = vol
         commit('viewerPreferenceStore/setShaderScaleFactor', shaderScaleFactor || 1, { root: true })
-      } 
+      }
     },
     updateIncVolumesResult (store, {error, message}) {
       /**
@@ -160,6 +178,8 @@ const dataSelectionStore = {
   getters: {
     selectedReferenceVolume: state => state.referenceVolumes.find(v => v.id === state.selectedReferenceVolumeId),
     selectedIncomingVolume: state => state.incomingVolumes.find(v => v.id === state.selectedIncomingVolumeId),
+    selectedReferenceVolumeId: state => state.selectedReferenceVolumeId,
+    referenceVolumes: state => state.referenceVolumes,
     selectedIncomingVolumeNgAffine: (state, getters) => {
       const volume = getters.selectedIncomingVolume || {}
       const { extra } = volume || {}

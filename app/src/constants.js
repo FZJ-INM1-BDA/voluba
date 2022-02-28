@@ -50,7 +50,37 @@ export const DEFAULT_BUNDLED_INCOMING_VOLUMES_0 = [
         ]
       }
     }
+  }, {
+    "id": "hsv-fom",
+    "volume_type": "neuroglancer/precomputed",
+    "name": "HSV-FOM (2022)",
+    "imageSource": "precomputed://https://neuroglancer.humanbrainproject.eu/precomputed/data-repo/HSV-FOM",
+    "shader": "void main() { emitRGB(vec3(toNormalized(getDataValue(0)), toNormalized(getDataValue(1)), toNormalized(getDataValue(2)))); }",
+    "opacity": 1
+  }, {
+    "id": "t2w-mri",
+    "volume_type": "neuroglancer/precomputed",
+    "name": "T2w MRI",
+    "imageSource": "precomputed://https://neuroglancer.humanbrainproject.eu/precomputed/PLI_FOM/BI-MRI",
+    "shader": "void main(){ float x = toNormalized(getDataValue()); if (x < 0.1) { emitTransparent(); } else { emitRGB(vec3(0.8 * x, 0.8 * x, x * 1. )); } }",
+    "opacity": 1
+  }, {
+    "id": "blockface-image",
+    "volume_type": "neuroglancer/precomputed",
+    "name": "Blockface Image",
+    "imageSource": "precomputed://https://neuroglancer.humanbrainproject.eu/precomputed/PLI_FOM/BI",
+    "shader": "void main(){ float x = toNormalized(getDataValue()); if (x < 0.1) { emitTransparent(); } else { emitRGB(vec3(0.8 * x, x * 1., 0.8 * x )); } }",
+    "opacity": 1
+  },{
+    "id": "pli-transmittance",
+    "volume_type": "neuroglancer/precomputed",
+    "name": "PLI Transmittance",
+    "imageSource": "precomputed://https://neuroglancer.humanbrainproject.eu/precomputed/PLI_FOM/BI-TIM",
+    "shader": "void main(){ float x = toNormalized(getDataValue()); if (x > 0.9) { emitTransparent(); } else { emitRGB(vec3(x * 1., x * 0.8, x * 0.8 )); } }",
+    "opacity": 1
   }
+
+
 ]
 
 export const DEFAULT_BUNDLED_INCOMING_VOLUMES_1 = [
@@ -194,7 +224,7 @@ export const getDefaultNehubaConfigLight = (sourceUrl) => {
       ],
       "initialNgState": {
         "showDefaultAnnotations": true,
-        "layers": {        
+        "layers": {
           " grey value: ": {
             "annotationColor": "#cccccc",
             "visible":false,
@@ -309,16 +339,17 @@ export const getDefaultNehubaConfigLight = (sourceUrl) => {
         },
         "hideImages": false,
         "waitForMesh": false,
-        // "restrictZoomLevel": {
-        //   "minZoom": 1200000,
-        //   "maxZoom": 3500000
-        // }
+        "restrictZoomLevel": {
+          "minZoom": 1200000,
+          "maxZoom": 3500000
+        }
       }
     }
   }
 }
 
-export const testBigbrain = {
+export const volumeConfig = {
+  "id": "ref-1",
   "configName": "BigBrain",
   "globals": {
     "hideNullImageValues": true,
@@ -350,6 +381,7 @@ export const testBigbrain = {
       "defaultAnnotationColor": "#cccccc",
       "layers": {
         " grey value: ": {
+          "visible": true,
           "annotationColor": "#cccccc",
           "type": "image",
           // "source": "precomputed://http://imedv02.ime.kfa-juelich.de:8287/precomputed/BigBrainRelease.2015/8bit",
@@ -382,6 +414,7 @@ export const testBigbrain = {
           ]
         },
         " tissue type: ": {
+          "visible": true,
           "annotationColor": "#cccccc",
           "type": "segmentation",
           // "source": "precomputed://http://imedv02.ime.kfa-juelich.de:8287/precomputed/BigBrainRelease.2015/classif",
@@ -417,7 +450,43 @@ export const testBigbrain = {
               1
             ]
           ]
-        }
+        },
+        "hsv-fom": {
+          "visible": false,
+          "shader": "void main() { emitRGB(vec3(toNormalized(getDataValue(0)), toNormalized(getDataValue(1)), toNormalized(getDataValue(2)))); }",
+          "annotationColor": "#cccccc",
+          "source": "precomputed://https://neuroglancer.humanbrainproject.eu/precomputed/data-repo/HSV-FOM",
+          "selectedAlpha": 0,
+          "notSelectedAlpha": 0,
+          "transform": [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]
+        },
+        "t2w-mri": {
+          "visible": false,
+          "shader": "void main(){ float x = toNormalized(getDataValue()); if (x < 0.1) { emitTransparent(); } else { emitRGB(vec3(0.8 * x, 0.8 * x, x * 1. )); } }",
+          "annotationColor": "#cccccc",
+          "source": "precomputed://https://neuroglancer.humanbrainproject.eu/precomputed/PLI_FOM/BI-MRI",
+          "selectedAlpha": 0,
+          "notSelectedAlpha": 0,
+          "transform": [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]
+        },
+        "blockface-image": {
+          "visible": false,
+          "shader": "void main(){ float x = toNormalized(getDataValue()); if (x < 0.1) { emitTransparent(); } else { emitRGB(vec3(0.8 * x, x * 1., 0.8 * x )); } }",
+          "annotationColor": "#cccccc",
+          "source": "precomputed://https://neuroglancer.humanbrainproject.eu/precomputed/PLI_FOM/BI",
+          "selectedAlpha": 0,
+          "notSelectedAlpha": 0,
+          "transform": [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]
+        },
+        "pli-transmittance": {
+          "visible": false,
+          "shader": "void main(){ float x = toNormalized(getDataValue()); if (x > 0.9) { emitTransparent(); } else { emitRGB(vec3(x * 1., x * 0.8, x * 0.8 )); } }",
+          "annotationColor": "#cccccc",
+          "source": "precomputed://https://neuroglancer.humanbrainproject.eu/precomputed/PLI_FOM/BI-TIM",
+          "selectedAlpha": 0,
+          "notSelectedAlpha": 0,
+          "transform": [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]
+        },
       },
       "navigation": {
         "pose": {
@@ -542,7 +611,7 @@ export const getRotationVec3 = (index) => {
             vec31: null,
             vec32: null
           })
-    
+
   } else {
     console.warn('export_nehuba is not present in window, has it not been exported?')
     return {

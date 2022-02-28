@@ -106,7 +106,7 @@
 <script>
 import { mapState, mapGetters, mapActions, mapMutations } from 'vuex'
 
-import { REFERENCE_COLOR, transposeMat4, UNPAIRED_COLOR, INCOMING_COLOR, annotationColorFocus, testBigbrain, determineElement, getRotationVec3, identityMat, invertQuat } from '@//constants'
+import { REFERENCE_COLOR, transposeMat4, UNPAIRED_COLOR, INCOMING_COLOR, annotationColorFocus, volumeConfig, determineElement, getRotationVec3, identityMat, invertQuat } from '@//constants'
 
 import { incompatibleBrowserText } from '@/text'
 
@@ -164,7 +164,7 @@ export default {
       /**
        * temporary. need to retrieve config separately
        */
-      config: testBigbrain
+      config: volumeConfig,
     }
   },
   mounted: function () {
@@ -222,6 +222,25 @@ export default {
     },
     fragmentShader: function () {
       this.rerenderColormap()
+    },
+    selectedReferenceVolumeId: function (val) {
+      const layers = this.$options.nehubaBase.nehubaBase__nehubaViewer.ngviewer.layerManager.managedLayers
+
+      for (let i = 0; i < layers.length; i++) {
+        layers[i].visible = false
+      }
+
+      if (val === 'ref-1') {
+        this.$options.nehubaBase.nehubaBase__nehubaViewer.ngviewer.layerManager.managedLayers
+            .find(l => l.name === ' grey value: ').visible = true
+        this.$options.nehubaBase.nehubaBase__nehubaViewer.ngviewer.layerManager.managedLayers
+            .find(l => l.name === ' tissue type: ').visible = true
+        this.selectIncomingVolumeWithId('colin-1')
+      } else {
+        this.$options.nehubaBase.nehubaBase__nehubaViewer.ngviewer.layerManager.managedLayers
+            .find(l => l.name === val).visible = true
+        this.selectIncomingVolumeWithId(val)
+      }
     },
     previewImage: function (dateObj) {
       if (!dateObj) {
@@ -378,6 +397,9 @@ export default {
     ...mapActions('nehubaStore', [
       'setTranslInc',
       'rotIncBy',
+    ]),
+    ...mapActions('dataSelectionStore', [
+      'selectIncomingVolumeWithId'
     ]),
     ...mapMutations('nehubaStore', [
       'setReferenceTemplateTransform',
@@ -782,7 +804,8 @@ export default {
       addLandmarkMode: 'addLandmarkMode'
     }),
     ...mapGetters('dataSelectionStore', [
-      'selectedIncomingVolume'
+      'selectedIncomingVolume',
+      'selectedReferenceVolumeId'
     ]),
     ...mapGetters('viewerPreferenceStore', [
       'fragmentShader'

@@ -10,7 +10,20 @@
           New workflow
         </h4>
         <!-- select reference volumes -->
-        
+
+        <div>
+          <div class="title">
+            <strong>
+              Reference Volume
+            </strong>
+          </div>
+
+          <ReferenveVolumeSelection
+              @error="handleMessageFromIncVol('error', $event)"
+              @message="handleMessageFromIncVol('message', $event)"
+          />
+
+        </div>
 
         <!-- incoming voluems -->
         <div>
@@ -84,12 +97,14 @@ import ResumeWorkflowComponent from '@/components/ResumeWorkflow'
 import { mapActions, mapGetters, mapState } from 'vuex';
 import InfoPopover from '@/components/InfoPopover'
 import IncomingVolumeSelection from '@/components/IncomingVolumeSelection'
+import ReferenveVolumeSelection from '@/components/ReferenveVolumeSelection'
 
 export default {
   components: {
     UploadVolumeComponent,
     InfoPopover,
     IncomingVolumeSelection,
+    ReferenveVolumeSelection,
     ResumeWorkflowComponent
   },
   data: function () {
@@ -191,6 +206,8 @@ export default {
 .container
 {
   pointer-events: all;
+  max-height: 90vh;
+  overflow: auto;
 }
 .title
 {
