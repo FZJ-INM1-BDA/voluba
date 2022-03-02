@@ -1,4 +1,4 @@
-import { CM_MATLAB_JET } from "@/constants";
+import { CM_MATLAB_JET, CM_MATLAB_RGB } from "@/constants";
 
 const viewerPreferenceStore = {
   namespaced: true,
@@ -12,6 +12,9 @@ const viewerPreferenceStore = {
     availableColorMaps: [{
       name: 'JET',
       shader:CM_MATLAB_JET
+    }, {
+      name: 'RGB',
+      shader:CM_MATLAB_RGB
     }],
 
     shaderScaleFactor: 1,
@@ -113,6 +116,10 @@ const viewerPreferenceStore = {
             }else{
               emitRGB(vec3(r,g,b));
             }
+          }`
+        case 'RGB':
+          return `void main() {
+            emitRGB(vec3(toNormalized(getDataValue(0)), toNormalized(getDataValue(1)), toNormalized(getDataValue(2)))); 
           }`
         default: return `void main() {
           float raw_x = toNormalized(getDataValue()) * ${floatShaderScaleFactor};

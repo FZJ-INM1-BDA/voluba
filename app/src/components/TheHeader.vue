@@ -68,9 +68,12 @@
                   Colormaps
                 </h5>
 
+                <!-- ToDo: smarter approach for disabling color maps-->
                 <b-button :variant="colorMapSelectionText === colorMap.name ? 'primary' : 'outline-primary'"
+                          class="mr-2 color-map-button"
                   @click="selectColorMapByName({ name: colorMap.name })"
                   v-for="colorMap in availableColorMaps"
+                  :disabled="selectedIncomingVolume.id !== 'hsv-fom' && colorMap.name === 'RGB'"
                   :key="colorMap.name">
                   {{ colorMap.name }}
                 </b-button>
@@ -222,7 +225,8 @@ export default {
   },
   computed: {
     ...mapGetters('dataSelectionStore', [
-      'selectedIncomingVolumeType'
+      'selectedIncomingVolumeType',
+      'selectedIncomingVolume'
     ]),
     ...mapState('viewerPreferenceStore', {
       stateIncomingColor: state => state.incomingColor,
@@ -366,6 +370,10 @@ export default {
 }
 #logo {
   margin-right: 5px;
+}
+.color-map-button:disabled {
+  color: #ccc;
+  border-color: #ccc;
 }
 .description {
   font-size: 12px;

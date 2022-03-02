@@ -989,6 +989,7 @@ export const groupByVisibility = (volumes) => {
 }
 
 export const CM_MATLAB_JET = `float r;if( x < 0.7 ){r = 4.0 * x - 1.5;} else {r = -4.0 * x + 4.5;}float g;if (x < 0.5) {g = 4.0 * x - 0.5;} else {g = -4.0 * x + 3.5;}float b;if (x < 0.3) {b = 4.0 * x + 0.5;} else {b = -4.0 * x + 2.5;}float a = 1.0;`
+export const CM_MATLAB_RGB = `float r = toNormalized(getDataValue(0));float g = toNormalized(getDataValue(1));float b = toNormalized(getDataValue(2));float a = 1.0;`
 export const identityMat = [
   [1.0,  0,    0,    0],
   [0,    1.0,  0,    0],
