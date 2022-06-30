@@ -39,9 +39,9 @@ jobs:
         echo "Setting GIT_HASH: $GIT_HASH"
         echo "GIT_HASH=$GIT_HASH" >> $GITHUB_ENV
 
-        VERSION=$(jq -r '.version' package.json)
-        echo "Setting VERSION: $VERSION"
-        echo "VERSION=$VERSION" >> $GITHUB_ENV
+        # VERSION=$(jq -r '.version' package.json)
+        # echo "Setting VERSION: $VERSION"
+        # echo "VERSION=$VERSION" >> $GITHUB_ENV
 
         # VUE_APP_ENABLE_EXPERIMENTAL_FEATURES="{}"
 
