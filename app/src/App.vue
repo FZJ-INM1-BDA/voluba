@@ -140,46 +140,50 @@ export default {
       window.setProduction = (arg) => this.setProduction(arg)
     }
 
-    const { appendToIncomingVolumes } = this
     /**
-     * get voluba temp volume
+     * get voluba temp volume, if running on http
      */
-    fetch(`http://ime178.ime.kfa-juelich.de/voluba/voluba.json`)
-      .then(res => res.json())
-      .then(({ voluba_sources }) => {
-        return Promise.all(
-          voluba_sources.map(({ name, url }) => {
-            const pingUrl = url.replace(/^precomputed:\/\//, '') + '/info'
-            return fetch(pingUrl)
-              .then(res => res.json())
-              .then(info => {
-                const { size, resolution } = info.scales[0]
-                const dim = [0, 1, 2].map(idx => size[idx] * resolution[idx]) // dimension in nm
-                return {
-                  name,
-                  url,
-                  dim
-                }
-              })
-          })
-        )
-      })
-      .then(voluba_sources => {
-        appendToIncomingVolumes({ 
-          volumes: voluba_sources.map(({ name, url, dim }, idx) => {
-            return {
-              name,
-              imageSource: url,
-              dim,
-              id: `voluba-custom-source-fzj-${name}-${idx}`
-            }
-          })
-         })
-      })
-      .catch(e => {
-        console.error(`fetching http://ime178.ime.kfa-juelich.de/voluba/voluba.json error`)
-      })
+    if (window.location.protocol === "http") {
 
+      const { appendToIncomingVolumes } = this
+
+      fetch(`http://ime178.ime.kfa-juelich.de/voluba/voluba.json`)
+        .then(res => res.json())
+        .then(({ voluba_sources }) => {
+          return Promise.all(
+            voluba_sources.map(({ name, url }) => {
+              const pingUrl = url.replace(/^precomputed:\/\//, '') + '/info'
+              return fetch(pingUrl)
+                .then(res => res.json())
+                .then(info => {
+                  const { size, resolution } = info.scales[0]
+                  const dim = [0, 1, 2].map(idx => size[idx] * resolution[idx]) // dimension in nm
+                  return {
+                    name,
+                    url,
+                    dim
+                  }
+                })
+            })
+          )
+        })
+        .then(voluba_sources => {
+          appendToIncomingVolumes({ 
+            volumes: voluba_sources.map(({ name, url, dim }, idx) => {
+              return {
+                name,
+                imageSource: url,
+                dim,
+                id: `voluba-custom-source-fzj-${name}-${idx}`
+              }
+            })
+          })
+        })
+        .catch(e => {
+          console.error(`fetching http://ime178.ime.kfa-juelich.de/voluba/voluba.json error`)
+        })
+
+    }
     
     this.initAppendNehuba();
     this.$store.subscribeAction(({ type = '', payload = {} } = {}) => {
