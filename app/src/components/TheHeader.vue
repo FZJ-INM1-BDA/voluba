@@ -29,8 +29,8 @@
             </font-awesome-icon>
           </div>
 
-          <!-- Image Volume filter -->
-          <transition name="fade">
+          <!-- Incoming Volume filter -->
+          <transition name="fade" v-if="selectedIncomingVolume">
             <b-nav-item-dropdown
                 text="Volume filter"
                 right>
