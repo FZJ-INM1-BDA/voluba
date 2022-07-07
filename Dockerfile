@@ -1,30 +1,23 @@
 FROM node:12 as builder
 
-ARG HOSTNAME
-ARG VUE_APP_ALLOW_UPLOAD
-ARG IV_HOST
+ARG VUE_APP_ALLOW_UPLOAD=true
 ARG VUE_APP_BACKEND_URL
 ARG VUE_APP_NONLINEAR_BACKEND
 ARG VUE_APP_UPLOAD_URL
-ARG PORT
-ARG VUE_APP_DEBUG
+ARG VUE_APP_DEBUG=false
 ARG MATOMO_URL
 ARG MATOMO_ID
 ARG VUE_APP_ENABLE_EXPERIMENTAL_FEATURES
-ARG VUE_APP_INC_VOL_IDS
 
 ENV MATOMO_URL=$MATOMO_URL
 ENV MATOMO_ID=$MATOMO_ID
-ENV HOSTNAME=$HOSTNAME
 ENV VUE_APP_ALLOW_UPLOAD=$VUE_APP_ALLOW_UPLOAD
-ENV IV_HOST=$IV_HOST
+
 ENV VUE_APP_BACKEND_URL=$VUE_APP_BACKEND_URL
 ENV VUE_APP_NONLINEAR_BACKEND=$VUE_APP_NONLINEAR_BACKEND
 ENV VUE_APP_ENABLE_EXPERIMENTAL_FEATURES=$VUE_APP_ENABLE_EXPERIMENTAL_FEATURES
 ENV VUE_APP_UPLOAD_URL=$VUE_APP_UPLOAD_URL
-ENV PORT=$PORT
 ENV VUE_APP_DEBUG=$VUE_APP_DEBUG
-ENV VUE_APP_INC_VOL_IDS=$VUE_APP_INC_VOL_IDS
 
 COPY . /frontend
 WORKDIR /frontend/app
@@ -32,26 +25,14 @@ RUN npm i
 
 RUN npm run build
 
-# build doc
-FROM python:3.7 as doc-builder
-
-COPY . /voluba
-WORKDIR /voluba
-
-RUN pip install mkdocs mkdocs-material mdx_truly_sane_lists
-RUN mkdocs build
-
 # gzipping container
-FROM ubuntu:20.10 as compressor
+FROM ubuntu:22.04 as compressor
 RUN apt upgrade -y && apt update && apt install brotli
 
 RUN mkdir -p /frontend/app
 
 # copy frontend
 COPY --from=builder /frontend/app/dist /frontend/app/dist
-
-# copy docs to container
-COPY --from=doc-builder /voluba/site /frontend/app/dist/doc
 
 WORKDIR /frontend/app/dist
 
@@ -76,5 +57,8 @@ COPY --from=compressor /frontend/app/dist ./public
 COPY --from=builder /frontend/deploy .
 
 RUN npm i
+
+# DEPLOY ENV
+# IV_HOST, HOSTNAME
 
 ENTRYPOINT ["node", "server/server.js"]

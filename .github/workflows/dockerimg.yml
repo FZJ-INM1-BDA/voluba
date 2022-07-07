@@ -1,0 +1,69 @@
+name: '[docker image]'
+
+on:
+  push:
+    branches:
+      - master
+
+    # do not rebuild if...
+    paths-ignore:
+      # use_docs (use_docs are built on readthedocs any way)
+      - 'use_docs/*'
+
+jobs:
+  build-docker-img:
+    runs-on: ubuntu-latest
+    env:
+      DOCKERIMG: voluba:latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: 'Setup tags'
+      run: |
+
+        DOCKER_IMGSTREAM=${{ secrets.EBRAINS_DOCKER_REG_VOLUBA_NSP }}/${{ env.DOCKERIMG }}
+        echo "Setting docker image stream to $DOCKER_IMGSTREAM"
+        echo "DOCKER_IMGSTREAM=$DOCKER_IMGSTREAM" >> $GITHUB_ENV
+    - name: 'Set matomo env var'
+      run: |
+        echo "Using github.ref: $GITHUB_REF"
+
+        echo "BRANCH_NAME=${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
+        
+        echo "MATOMO_URL=${{ secrets.MATOMO_URL_PROD }}" >> $GITHUB_ENV
+        echo "MATOMO_ID=${{ secrets.MATOMO_ID_PROD }}" >> $GITHUB_ENV
+
+    - name: 'Set version variable & expmt feature flag'
+      run: |
+        GIT_HASH=$(git rev-parse --short HEAD)
+        echo "Setting GIT_HASH: $GIT_HASH"
+        echo "GIT_HASH=$GIT_HASH" >> $GITHUB_ENV
+
+        # VERSION=$(jq -r '.version' package.json)
+        # echo "Setting VERSION: $VERSION"
+        # echo "VERSION=$VERSION" >> $GITHUB_ENV
+
+        # VUE_APP_ENABLE_EXPERIMENTAL_FEATURES="{}"
+
+    - name: 'Build docker image'
+      run: |
+        
+        echo "Building $DOCKER_IMGSTREAM"
+        docker build \
+          --build-arg MATOMO_URL=$MATOMO_URL \
+          --build-arg MATOMO_ID=$MATOMO_ID \
+          --build-arg VUE_APP_BACKEND_URL=${{ secrets.VUE_APP_BACKEND_URL }} \
+          --build-arg VUE_APP_UPLOAD_URL=${{ secrets.VUE_APP_UPLOAD_URL }} \
+          -t $DOCKER_IMGSTREAM \
+          .
+        echo "Successfully built $DOCKER_IMGSTREAM"
+
+    - name: 'Push to docker registry'
+      run: |
+        echo "Login to docker registry"
+        docker login \
+          -u '${{ secrets.EBRAINS_DOCKER_REG_USER }}' \
+          -p '${{ secrets.EBRAINS_DOCKER_REG_TOKEN }}' \
+          docker-registry.ebrains.eu
+        echo "Pushing $DOCKER_IMGSTREAM"
+        docker push $DOCKER_IMGSTREAM

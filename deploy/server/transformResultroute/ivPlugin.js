@@ -64,7 +64,8 @@ router.get('/:resultId', async (req, res) => {
       name,
       displayName,
       template: getTemplate(),
-      script: getScript({ name, incVolName, imageSource, ngMatrix, opacity, shader })
+      script: getScript({ name, incVolName, imageSource, ngMatrix, opacity, shader }),
+      persistency: true
     })
   } else {
     const name = `fzj.xg.landmark-reg-not-found`
@@ -72,7 +73,8 @@ router.get('/:resultId', async (req, res) => {
       name,
       displayName,
       template: getTemplate({ error: 'One time use token expired.' }),
-      script: ''
+      script: '',
+      persistency: true
     })
   }
 })
