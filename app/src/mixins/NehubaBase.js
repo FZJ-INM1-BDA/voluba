@@ -200,9 +200,6 @@ export default {
       ) {
         this.nehubaBase__navigationChanged()
       }
-    },
-    nehubaBase__setOrientation: function(orientation){    
-      this.$options.nehubaBase.nehubaBase__nehubaViewer.ngviewer.navigationState.pose.orientation.restoreState( orientation )
     }
   }
 }
