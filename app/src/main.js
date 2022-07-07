@@ -15,6 +15,7 @@ import './dep'
 
 import '!!file-loader?context=third_party&name=main.bundle.js!export-nehuba/dist/min/main.bundle.js'
 import '!!file-loader?context=third_party&name=chunk_worker.bundle.js!export-nehuba/dist/min/chunk_worker.bundle.js'
+import './assets/main.css'
 
 Vue.config.productionTip = false
 
