@@ -62,6 +62,19 @@
       <NehubaStatusCard>
         <template>
           <div>
+            <span>rotation:</span>
+            <b-button-group>
+              <b-button size="sm"
+                @click="resetViewerOrientation()">
+                reset
+              </b-button>
+              <b-button size="sm"
+                @click="resetViewerOrientation('incomingVolume')">
+                set to inc
+              </b-button>
+            </b-button-group>
+          </div>
+          <div>
             {{ navStatusText }}
           </div>
           <div>
@@ -93,7 +106,7 @@
 <script>
 import { mapState, mapGetters, mapActions, mapMutations } from 'vuex'
 
-import { REFERENCE_COLOR, transposeMat4, UNPAIRED_COLOR, INCOMING_COLOR, annotationColorBlur, annotationColorFocus, testBigbrain, determineElement, getRotationVec3, incomingTemplateActiveOpacity, identityMat, identityMatFlattened } from '@//constants'
+import { REFERENCE_COLOR, transposeMat4, UNPAIRED_COLOR, INCOMING_COLOR, annotationColorFocus, testBigbrain, determineElement, getRotationVec3, identityMat, invertQuat } from '@//constants'
 
 import { incompatibleBrowserText } from '@/text'
 
@@ -364,13 +377,20 @@ export default {
     ]),
     ...mapActions('nehubaStore', [
       'setTranslInc',
-      'rotIncBy'
+      'rotIncBy',
     ]),
     ...mapMutations('nehubaStore', [
       'setReferenceTemplateTransform',
       'setIncomingVolumeHighlighted',
       'setPrimaryNehubaNavigationPosition'
     ]),
+    resetViewerOrientation: function(target){
+      const orientation =  target === 'incomingVolume'
+        ? invertQuat(Array.from(this.incRotQuat))
+        : [0, 0, 0, 1]
+      
+      this.nehubaBase__setOrientation(orientation)
+    },
     rerenderOpacity: function () {
       if (this.$options.nonReactiveData.ngUserLayer) {
         const layer = this.$options.nonReactiveData.ngUserLayer

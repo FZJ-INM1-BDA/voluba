@@ -4,20 +4,8 @@ import axios from 'axios'
 const defaultVIds = [`colin-1`]
 let DEFAULT_BUNDLED_INCOMING_VOLUMES = []
 
-try {
-  const vIds = JSON.parse(process.env.VUE_APP_INC_VOL_IDS || `[]`)
-  if (!Array.isArray(vIds)) throw new Error(`INC_VOL_IDS does not evaluate to array: ${INC_VOL_IDS}`)
-  for (const vId of vIds) {
-    if (!defaultVIds.includes(vId)) {
-      defaultVIds.push(vId)
-    }
-  }
-
-  const vols = [...DEFAULT_BUNDLED_INCOMING_VOLUMES_0, ...DEFAULT_BUNDLED_INCOMING_VOLUMES_1]
-  DEFAULT_BUNDLED_INCOMING_VOLUMES = vols.filter(v => defaultVIds.includes(v.id))
-} catch (e) {
-  console.error(`parsing inc_vol_ids error`)
-}
+const vols = [...DEFAULT_BUNDLED_INCOMING_VOLUMES_0, ...DEFAULT_BUNDLED_INCOMING_VOLUMES_1]
+DEFAULT_BUNDLED_INCOMING_VOLUMES = vols.filter(v => defaultVIds.includes(v.id))
 
 const dataSelectionStore = {
   namespaced: true,
@@ -50,9 +38,18 @@ const dataSelectionStore = {
     },
     setIncomingVolumes (state, { volumes }) {
       state.incomingVolumes = volumes
-    },
+    }
   },
   actions: {
+    appendToIncomingVolumes({ commit, state }, { volumes }){
+      const { incomingVolumes } = state
+      commit('setIncomingVolumes', { 
+        volumes: [
+          ...incomingVolumes,
+          ...volumes
+        ]
+       })
+    },
     selectReferenceVolumeWithId ({ commit, state }, id) {
       const vol = state.referenceVolumes.find(({ id: _id }) => _id === id)
       if (vol) commit('setSelectedReferenceVolumeWithId', id)
@@ -92,8 +89,7 @@ const dataSelectionStore = {
           const newVolumes = DEFAULT_BUNDLED_INCOMING_VOLUMES.concat(volumes)
           
           dispatch('log', ['updateIncVolumes#axios#postprocess', newVolumes], {root: true})
-          
-          commit('setIncomingVolumes', {volumes: newVolumes})
+          dispatch('appendToIncomingVolumes', { volumes: newVolumes })
           dispatch('updateIncVolumesResult', {
             error: error ? error : null,
             message: message ? message : 'Incoming volumes updated'
