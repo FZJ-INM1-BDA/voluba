@@ -357,8 +357,7 @@ router.get('/:resultId', async (req, res) => {
       name,
       displayName,
       template: getTemplate({ error: 'One time use token expired.' }),
-      scriptURL: `${rootPath}script/0`,
-      persistency: true
+      scriptURL: `${rootPath}script/0`
     })
   }
 })
