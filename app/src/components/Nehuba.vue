@@ -332,14 +332,6 @@ export default {
       }
     },
     mouseOverIncoming: function (val) {
-      if (this.$options.nonReactiveData.ngUserLayer.layer.opacity) {
-        if (val) {
-          this.$options.nonReactiveData.ngUserLayer.layer.opacity.restoreState(this.opacity * 0.8)
-        } else {
-          this.$options.nonReactiveData.ngUserLayer.layer.opacity.restoreState(this.opacity)
-        }
-      }
-
       this.nehubaInputBinding({
         overrideRotation: val && !this.incVolRotationLock,
         overrideTranslation: val && !this.incVolTranslationLock
