@@ -143,7 +143,7 @@ export default {
     /**
      * get voluba temp volume, if running on http
      */
-    if (window.location.protocol === "http") {
+    if (window.location.protocol === "http:") {
 
       const { appendToIncomingVolumes } = this
 
