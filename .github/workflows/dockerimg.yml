@@ -80,6 +80,7 @@ jobs:
         docker push $DOCKER_IMGSTREAM
 
   deploy-on-okd:
+    if: success()
     runs-on: ubuntu-latest
     steps:
     - name: "Configure image stream"
