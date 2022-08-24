@@ -62,12 +62,12 @@ const dataSelectionStore = {
         commit('viewerPreferenceStore/setShaderScaleFactor', shaderScaleFactor || 1, { root: true })
       } 
     },
-    updateIncVolumesResult (store, {error, message}) {
+    updateIncVolumesResult () {
       /**
        * required for subscribe action
        */
     },
-    updateIncVolumes ({ commit, state, dispatch, getters, rootGetters }, {error, message} = {error:null, message: null}) {
+    updateIncVolumes ({ state, dispatch, rootGetters }, {error, message} = {error:null, message: null}) {
       
       const authHeader= rootGetters['authStore/authHeader']
       
@@ -105,7 +105,7 @@ const dataSelectionStore = {
            */
         })
     },
-    deleteIncomingVolume ({ state, dispatch, getters, commit, rootGetters }, { id, incomingVolume}) {
+    deleteIncomingVolume ({ state, dispatch, commit, rootGetters }, { id, incomingVolume}) {
       /**
        * TODO
        * check endpoint still valid
@@ -129,7 +129,7 @@ const dataSelectionStore = {
         return
       }
       axios(`${state.uploadUrl}${link}`, config)
-        .then(res => {
+        .then(() => {
           /**
            * successful delete
            */

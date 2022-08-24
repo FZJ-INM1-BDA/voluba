@@ -89,7 +89,6 @@
 <script>
 import ProgressTracker from '@/components/layout/ProgressTracker'
 import SigningComponent from '@/components/SigninComponent'
-import SliderComponent from '@/components/layout/Slider'
 import { mapState, mapActions, mapGetters, mapMutations } from 'vuex'
 import { AGREE_COOKIE_KEY } from '@/constants'
 
@@ -98,7 +97,6 @@ export default {
   components: {
     ProgressTracker,
     SigningComponent,
-    SliderComponent
   },
   mounted() {
     const showCookie = (cb = () => {}) => {
@@ -107,11 +105,14 @@ export default {
 
     const showServerWarning = () => {
       if (this.serverWarnings && this.serverWarnings.length > 0) {
-        this.modalMessage({
-          variant: 'warning',
-          title: 'Image Server Warning',
-          htmlBody: makeHtmlFragmentForWarning({ serverWarnings: this.serverWarnings})
-        })
+        /**
+         * TODO reimplement server warning
+         */
+        // this.modalMessage({
+        //   variant: 'warning',
+        //   title: 'Image Server Warning',
+        //   htmlBody: makeHtmlFragmentForWarning({ serverWarnings: this.serverWarnings})
+        // })
       }
     }
 
