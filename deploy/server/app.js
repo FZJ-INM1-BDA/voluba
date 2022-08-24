@@ -38,7 +38,6 @@ const initServer = async () => {
     throw e
   }
 
-  app.use('/transformResult', require('./transformResultroute'))
   app.use('/user', require('./user'))
   app.use('/viewerPlugin', require("./siibraExplorerOverlay"))
   

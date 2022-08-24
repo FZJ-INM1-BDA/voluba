@@ -96,7 +96,7 @@ const viewerPreferenceStore = {
       : null,
     fragmentShader: ({ lowerThreshold, upperThreshold, incomingColor, shaderScaleFactor }, getters, _, rootGetters) => {
       const vol = rootGetters['dataSelectionStore/selectedIncomingVolume']
-      if (vol?.extra?.nifti?.dataType === "RGB") {
+      if (vol && vol.extra && vol.extra.nifti && vol.extra.nifti.dataType === "RGB") {
         return `
 void main() {
   float r = ( toNormalized(getDataValue( 0 )) - 0.0000000001 ) / ( 0.9999999999 ) - 0.0000000000;
