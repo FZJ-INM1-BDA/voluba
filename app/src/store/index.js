@@ -141,20 +141,14 @@ const getStore = ({ user = null, experimentalFeatures = {} } = {}) => new Vuex.S
         })
       }
     },
-    viewInInteractiveViewerV2: async function({ state, dispatch, getters }, payload){
+    viewInSiibraExplorer: async function({ state, dispatch, getters }, payload){
 
       const { nehubaStore, viewerPreferenceStore } = state
       const { incTransformMatrix } =  nehubaStore
-      const { incomingColor } = viewerPreferenceStore
 
       const selectedReferenceVolume = getters['dataSelectionStore/selectedReferenceVolume']
       const incRotQuat = getters['nehubaStore/incRotQuat']
       const dim = getters['nehubaStore/dim']
-      const fragmentShader = getters['viewerPreferenceStore/fragmentShader']
-
-      const shader = fragmentShader
-      const opacity = incomingColor[3]
-
       const { vec3, quat } = export_nehuba
       const translationFromCorner = vec3.fromValues(...dim)
       vec3.scale(translationFromCorner, translationFromCorner, 0.5)
@@ -177,60 +171,39 @@ const getStore = ({ user = null, experimentalFeatures = {} } = {}) => new Vuex.S
         translationFromCorner: Array.from(translationFromCorner),
       }
 
-      const host = process.env.VUE_APP_OVERWRITE_TRANSFORM_RESULT_HOST || ''
-      axios.post(`${host}transformResult/v2`, json)
-        .then(({ data: redirectUrl }) => {
-          if (redirectUrl) {
-            console.log(redirectUrl)
-            openInNewWindow(redirectUrl)
-          } else {
-            throw new Error('url not defined')
-          }
-        })
-        .catch(e => dispatch('log', ['store#actions#viewInInteractiveViewer', { error: e }]))
-    },
+      const ivHost = process.env.IV_HOST || 'https://atlases.ebrains.eu/viewer/'
+      const url = new URL(ivHost)
+      url.searchParams.set('templateSelected', 'Big Brain (Histology)')
+      url.searchParams.set('parcellationSelected', 'Grey/White matter')
+      if (incTransformMatrix.slice) {
 
-    //TODO deprecate
-    viewInInteractiveViewer: function ({ state, dispatch, getters }) {
-      const { nehubaStore, viewerPreferenceStore } = state
-
-      const { incTransformMatrix } =  nehubaStore
-      const { incomingColor } = viewerPreferenceStore
-
-      const selectedReferenceVolume = getters['dataSelectionStore/selectedReferenceVolume']
-      const selectedIncomingVolume = getters['dataSelectionStore/selectedIncomingVolume']
-      const incRotQuat = getters['nehubaStore/incRotQuat']
-      const dim = getters['nehubaStore/dim']
-      const fragmentShader = getters['viewerPreferenceStore/fragmentShader']
-
-      const shader = fragmentShader
-      const opacity = incomingColor[3]
-
-      const { vec3, quat } = export_nehuba
-      const translationFromCorner = vec3.fromValues(...dim)
-      vec3.scale(translationFromCorner, translationFromCorner, 0.5)
-      vec3.transformQuat(translationFromCorner, translationFromCorner, quat.invert(quat.create(), quat.fromValues(...incRotQuat)))
-
-      const json = {
-        selectedIncomingVolume,
-        selectedReferenceVolume,
-        incTransformMatrix,
-        opacity,
-        translationFromCorner: Array.from(translationFromCorner),
-        shader
+        incTransformMatrix.slice(12, 15)
+        const o = [0, 0, 0, 1]
+        const po = [0.3140767216682434, -0.7418519854545593, 0.4988985061645508, -0.3195493221282959]
+        const pz = 1922235.5293810747
+        const p = incTransformMatrix.slice(12, 15).map((v, idx) => translationFromCorner && translationFromCorner[idx]
+          ? v + translationFromCorner[idx]
+          : v)
+        const z = 271017.69911504426
+        url.searchParams.set('navigation', [o.join('_'), po.join('_'), pz, p.join('_'), z].join('__'))
       }
 
-      const host = process.env.VUE_APP_OVERWRITE_TRANSFORM_RESULT_HOST || ''
-      axios.post(`${host}transformResult`, json)
-        .then(({ data }) => {
-          const { id, url } = data
-          if (url) {
-            openInNewWindow(url)
-          } else {
-            throw new Error('url not defined')
-          }
-        })
-        .catch(e => dispatch('log', ['store#actions#viewInInteractiveViewer', { error: e }]))
+      const { origin, pathname } = window.location
+      const pluginUrl = new URL(`${origin}${pathname.replace(/\/$/, '')}/viewerPlugin/template.html`)
+      if (selectedIncomingVolumes.length !== 1) {
+        throw new Error(`selectedIncomingVolumes needs to be exactly 1, but the supplid is ${selectedIncomingVolumes.length}`)
+      }
+      pluginUrl.searchParams.set("precomputed", selectedIncomingVolumes[0].imageSource)
+      pluginUrl.searchParams.set(
+        "transform", 
+        [0,1,2].map(r => [0,1,2,3].map(c => incTransformMatrix[ c * 4 + r ])).reduce((acc, curr) => [...acc, ...curr], []).join(",")
+      )
+      url.searchParams.set('pluginStates', pluginUrl.toString())
+
+      const toUrl = url.toString()
+      console.log(`Navigating to: ${toUrl}`)
+
+      openInNewWindow(toUrl)
     },
     downloadXformResult: function ({ state, getters }) {
       
@@ -279,10 +252,10 @@ const getStore = ({ user = null, experimentalFeatures = {} } = {}) => new Vuex.S
     corticalAlignmentVisibilityChanged ({ commit }, { visible }) {
       commit('setCorticalAlignmentVisibility', { visible })
     },
-    uploadVolume ({ dispatch }) {
+    uploadVolume () {
       // dispatch('openModal', {modalId: 'uploadModal'})
     },
-    openModal (store, { modalId }) {
+    openModal () {
       /**
        * required for subscribe action
        */

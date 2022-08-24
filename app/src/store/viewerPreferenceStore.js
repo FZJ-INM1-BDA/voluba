@@ -94,7 +94,17 @@ const viewerPreferenceStore = {
     selectedColorMap: ({ selectedColorMapIdx, availableColorMaps }) => (selectedColorMapIdx === 0 || !!selectedColorMapIdx)
       ? availableColorMaps[selectedColorMapIdx]
       : null,
-    fragmentShader: ({ lowerThreshold, upperThreshold, incomingColor, shaderScaleFactor }, getters) => {
+    fragmentShader: ({ lowerThreshold, upperThreshold, incomingColor, shaderScaleFactor }, getters, _, rootGetters) => {
+      const vol = rootGetters['dataSelectionStore/selectedIncomingVolume']
+      if (vol?.extra?.nifti?.dataType === "RGB") {
+        return `
+void main() {
+  float r = ( toNormalized(getDataValue( 0 )) - 0.0000000001 ) / ( 0.9999999999 ) - 0.0000000000;
+  float g = ( toNormalized(getDataValue( 1 )) - 0.0000000001 ) / ( 0.9999999999 ) - 0.0000000000;
+  float b = ( toNormalized(getDataValue( 2 )) - 0.0000000001 ) / ( 0.9999999999 ) - 0.0000000000;
+  emitRGB(vec3(r, g, b) * exp(0.0000000000));
+}`
+      }
       const { selectedColorMap } = getters
       const normalizedIncomingColor = incomingColor.map(v => v/255)
       const floatShaderScaleFactor = shaderScaleFactor >= 1

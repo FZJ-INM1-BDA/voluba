@@ -24,6 +24,7 @@ let experimentalFeatures = {}
 try {
   experimentalFeatures = JSON.parse(process.env.VUE_APP_ENABLE_EXPERIMENTAL_FEATURES || '{}')
 } catch (e) {
+  // eslint-disable-next-line
   console.error(`process.env.VUE_APP_ENABLE_EXPERIMENTAL_FEATURES ${process.env.VUE_APP_ENABLE_EXPERIMENTAL_FEATURES} cannot be parsed a JSON dictionary`, e)
 }
 
@@ -39,6 +40,6 @@ axios.get('user')
   .then(({data: user}) => {
     initVue({ user })
   })
-  .catch(e => {
+  .catch(() => {
     initVue()
   })

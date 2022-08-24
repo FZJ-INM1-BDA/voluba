@@ -192,26 +192,30 @@ export default {
       if (!('export_nehuba' in window)) return
       const { quat, mat4 } = window.export_nehuba
       switch (type) {
-        case 'setPrimaryNehubaNavigation':
+        case 'setPrimaryNehubaNavigation': {
           const vec3 = window.export_nehuba.vec3
           this.$options.nehubaBase.nehubaBase__nehubaViewer.setPosition(vec3.fromValues(...payload.coord.map(v => v * 1e6)), true)
           break
+        }
         case 'alignReference':
           this.$options.nehubaBase.nehubaBase__nehubaViewer.ngviewer.navigationState.pose.orientation.restoreState([0, 0, 0, 1])
           break
-        case 'alignIncoming':
+        case 'alignIncoming': {
           if (!this.committedTransform) return
           const newQuat = mat4.getRotation(quat.create(), mat4.fromValues(...this.committedTransform))
           this.$options.nehubaBase.nehubaBase__nehubaViewer.ngviewer.navigationState.pose.orientation.restoreState(Array.from(newQuat))
           break
-        case 'deleteIncomingVolume':
+        }
+        case 'deleteIncomingVolume': {
           const { incomingVolume = {} } = payload
           const { imageSource } = incomingVolume
-          if (!imageSource)
+          if (!imageSource) {
             return
+          }
           const key = `{"baseUrls":["${imageSource.replace('precomputed://', '')}"],"path":"","type":"precomputed:MultiscaleVolumeChunkSource"}`
           this.$options.nehubaBase.nehubaBase__nehubaViewer.ngviewer.chunkManager.memoize.map.delete(key)
           break
+        }
         default:
       }
     })
@@ -300,7 +304,7 @@ export default {
     },
     incTransformMatrix: function (array) {
       if (!this.$options.nonReactiveData.ngUserLayer) return
-      const { mat4, vec3 } = window.export_nehuba
+      const { mat4 } = window.export_nehuba
 
       const matrix = mat4.fromValues(...array)
       /**
@@ -454,7 +458,7 @@ export default {
 
       document.addEventListener('mousemove', this.mousemove, true)
 
-      document.addEventListener('mouseup', ev => {
+      document.addEventListener('mouseup', () => {
 
         /**
          * on mosue up, remove event listener
@@ -648,7 +652,7 @@ export default {
        * remove guiding grey boxes
        * 
        */
-      const hideGuidingGreyLine = ({handlers , layer}) => {
+      const hideGuidingGreyLine = ({layer}) => {
         let flag = false
         return () => {
           if (flag) return
