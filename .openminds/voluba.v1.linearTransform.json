@@ -1,0 +1,30 @@
+{
+    "$schema": "http://json-schema.org/schema",
+    "properties": {
+        "incomingVolume": {
+            "type": "string"
+        },
+        "referenceVolume": {
+            "type": "string"
+        },
+        "version": {
+            "const": 1
+        },
+        "@type": {
+            "const": "https://voluba.apps.hbp.eu/@types/tranform"
+        },
+        "transformMatrixInNm": {
+            "type": "array",
+            "items": {
+                "type": "array",
+                "items": {
+                    "type": "number"
+                },
+                "minItems": 4,
+                "maxItems": 4
+            },
+            "minItems": 4,
+            "maxItems": 4
+        }
+    }
+}
