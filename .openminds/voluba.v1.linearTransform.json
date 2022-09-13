@@ -26,5 +26,12 @@
             "minItems": 4,
             "maxItems": 4
         }
-    }
+    },
+    "required": [
+        "incomingVolume",
+        "referenceVolume",
+        "version",
+        "@type",
+        "transformMatrixInNm"
+    ]
 }
