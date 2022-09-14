@@ -134,6 +134,7 @@ export default {
     };
   },
   mounted: function() {
+    const { appendToIncomingVolumes } = this
     if (DEBUG) {
       window.setProduction = (arg) => this.setProduction(arg)
       window.appendToIncomingVolumes = url => appendToIncomingVolumes({
@@ -150,8 +151,6 @@ export default {
      * get voluba temp volume, if running on http
      */
     if (window.location.protocol === "http:") {
-
-      const { appendToIncomingVolumes } = this
 
       const internalVolubaVolumeUrl = `https://1um.brainatlas.eu:7008/voluba/voluba.json`
       fetch(internalVolubaVolumeUrl)
