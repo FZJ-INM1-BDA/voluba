@@ -136,6 +136,14 @@ export default {
   mounted: function() {
     if (DEBUG) {
       window.setProduction = (arg) => this.setProduction(arg)
+      window.appendToIncomingVolumes = url => appendToIncomingVolumes({
+        volumes: [{
+          name: 'debug-volume',
+          imageSource: url,
+          dim: [2, 2, 2],
+          id: 'debug-volume'
+        }]
+      })
     }
 
     /**
