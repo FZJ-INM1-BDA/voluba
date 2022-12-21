@@ -5,7 +5,7 @@ const defaultVIds = [`colin-1`]
 let DEFAULT_BUNDLED_INCOMING_VOLUMES = []
 
 const vols = [...DEFAULT_BUNDLED_INCOMING_VOLUMES_0, ...DEFAULT_BUNDLED_INCOMING_VOLUMES_1]
-DEFAULT_BUNDLED_INCOMING_VOLUMES = vols.filter(v => defaultVIds.includes(v.id))
+DEFAULT_BUNDLED_INCOMING_VOLUMES = vols.filter(v => !defaultVIds.includes(v.id))
 
 const dataSelectionStore = {
   namespaced: true,

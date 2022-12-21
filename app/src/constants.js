@@ -99,6 +99,11 @@ export const DEFAULT_BUNDLED_INCOMING_VOLUMES_1 = [
       57600000,
       52800000
     ]
+  },
+  {
+    id: 'test-gds',
+    name: 'test g dataset',
+    imageSource: 'precomputed://https://1um.brainatlas.eu:7012/h01-release/data/20210601/4nm_raw'
   }
 ]
 

@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - master
+      - mvp_nehubaUpdated
 
     # do not rebuild if...
     paths-ignore:
@@ -13,15 +14,20 @@ on:
 jobs:
   build-docker-img:
     runs-on: ubuntu-latest
-    env:
-      DOCKERIMG: voluba:latest
 
     steps:
     - uses: actions/checkout@v2
+    - name: 'Setup envvar':
+      run: |
+        if [[ $GITHUB_REF == 'refs/heads/master' ]]; then
+            echo "DOCKERIMG=voluba:latest" >> "$GITHUB_ENV"
+        else
+            echo "DOCKERIMG=voluba:mvp_nehubaUpdated" >> "$GITHUB_ENV"
+        fi
     - name: 'Setup tags'
       run: |
 
-        DOCKER_IMGSTREAM=${{ secrets.EBRAINS_DOCKER_REG_VOLUBA_NSP }}/${{ env.DOCKERIMG }}
+        DOCKER_IMGSTREAM=${{ secrets.EBRAINS_DOCKER_REG_VOLUBA_NSP }}/${DOCKERIMG}
         echo "Setting docker image stream to $DOCKER_IMGSTREAM"
         echo "DOCKER_IMGSTREAM=$DOCKER_IMGSTREAM" >> $GITHUB_ENV
     - name: 'Set matomo env var'
