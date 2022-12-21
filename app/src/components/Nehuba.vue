@@ -106,7 +106,7 @@
 <script>
 import { mapState, mapGetters, mapActions, mapMutations } from 'vuex'
 
-import { REFERENCE_COLOR, transposeMat4, UNPAIRED_COLOR, INCOMING_COLOR, annotationColorFocus, testBigbrain, determineElement, getRotationVec3, identityMat, invertQuat } from '@//constants'
+import { REFERENCE_COLOR, transposeMat4, UNPAIRED_COLOR, INCOMING_COLOR, annotationColorFocus, testBigbrain, determineElement, getRotationVec3, identityMat, invertQuat, _getLayerTransform, convertNmToVoxel, slightlyAjar } from '@//constants'
 
 import { incompatibleBrowserText } from '@/text'
 
@@ -136,7 +136,7 @@ export default {
       /**
        * managed layer state
        */
-      mouseOverIncoming: false,
+      mouseOverIncoming: true,
       movingIncoming: false,
       movingIncomingIndex: null,
       rotatingIncoming: false,
@@ -300,14 +300,13 @@ export default {
     },
     incTransformMatrix: function (array) {
       if (!this.$options.nonReactiveData.ngUserLayer) return
-      const { mat4, vec3 } = window.export_nehuba
-
-      const matrix = mat4.fromValues(...array)
-      /**
-       * xform matrix sometimes a bit wonky
-       */
-      this.$options.nonReactiveData.ngUserLayer.layer.transform.transform = matrix
-      this.$options.nonReactiveData.ngUserLayer.layer.transform.changed.dispatch()
+      
+      const { transformHandle } = _getLayerTransform(this.$options.nonReactiveData.ngUserLayer)
+      if (!transformHandle) return
+      transformHandle.value = {
+        ...transformHandle.value,
+        transform: new Float64Array(array)
+      }
     },
     /**
      * may becoming obsolete
@@ -360,8 +359,8 @@ export default {
     subscriptions: [],
     ngUserLayer: null,
     managedLayers: [],
-    mousedownMatrix: null,
-    timeoutId: null
+    timeoutId: null,
+    sliceViewOnMouseDownElement: null
   },
   methods: {
     ...mapActions({
@@ -436,6 +435,10 @@ export default {
         }, 300)
         return
       }
+      
+      const _element = event.srcElement || event.target
+      this.$options.nonReactiveData.sliceViewOnMouseDownElement = _element
+
       if (this.incVolTranslationLock && this.incVolRotationLock) 
         return
       if (this.incVolTranslationLock || this.incVolRotationLock) {
@@ -446,7 +449,6 @@ export default {
       }
 
       this.incomingVolumeSelected = true
-      this.$options.nonReactiveData.mousedownMatrix = Array.from(this.incTransformMatrix)
 
       this.mousemoveStart = [event.screenX, event.screenY]
 
@@ -479,7 +481,7 @@ export default {
         this.movingIncomingIndex = null
         this.rotateAbsoluteStart = null
 
-        this.$options.nonReactiveData.mousedownMatrix = null
+        this.$options.nonReactiveData.sliceViewOnMouseDownElement = null
 
         this.pushUndoFlag = true
       }, {
@@ -498,6 +500,7 @@ export default {
       this.pushUndoFlag = false
     },
     mousemove: function (event) {
+      if (!this.$options.nonReactiveData.sliceViewOnMouseDownElement) return
       /**
        * allows for user drag whole volume, without deselecting incoming volume
        */
@@ -516,21 +519,26 @@ export default {
            * first, translation mouse delta into 3d delta
            */
           let pos = vec3.fromValues(deltaX, deltaY, 0)
-          if (!this.nehubaBase__viewportToDatas[this.movingIncomingIndex])
-            return
-          vec3.transformMat4(pos, pos, this.nehubaBase__viewportToDatas[this.movingIncomingIndex])
+          
+          const sliceView = this.nehubaBase__elementToSliceViewWeakMap.get(this.$options.nonReactiveData.sliceViewOnMouseDownElement)
+          if (!sliceView) return
           
           /**
            * get previous translate
            */
           const xformMat = mat4.fromValues(...this.incTransformMatrix)
+          vec3.scale(pos, pos, 1)
+          vec3.transformMat4(pos, pos, sliceView.invViewMatrix)
+          vec3.sub(pos, pos, sliceView.centerDataPosition)
+
           const prevTranslVec = mat4.getTranslation(vec3.create(), xformMat)
           
           /**
            * account for navigation movement
            */
-          vec3.subtract(pos, pos, vec3.fromValues(...this.viewerNavigationPosition))
-
+          const currNavVoxel = convertNmToVoxel(this.nehubabase__coordinateSpace, this.viewerNavigationPosition, "vec3")
+          // vec3.subtract(pos, pos, vec3.fromValues(...currNavVoxel))
+          // console.log(this.viewerNavigationPosition)
           /**
            * add delta & set xformMat
            */
@@ -538,7 +546,8 @@ export default {
           
           this.setTranslInc({
             axis: 'xyz',
-            value: Array.from(pos).map(v => v / 1e6)
+            value: Array.from(pos),
+            ngCoordinateSpace: this.nehubabase__coordinateSpace
           })
         }
 
@@ -572,6 +581,9 @@ export default {
     },
     updateMouseOverIncVolState: function ({mouseOverUserlayer}) {
 
+      
+      // BUG: nehuba getValueAt does not respect updated transform
+      return
       if (this._showIncVolOverlay && !this._showRefVol) return
 
       this.mouseOverIncoming = mouseOverUserlayer
@@ -597,7 +609,7 @@ export default {
       /**
        * set reference volume transform matrix
        */
-      const transform = this.$options.nehubaBase.nehubaBase__nehubaViewer.ngviewer.layerManager.managedLayers[0].layer.transform.toJSON()
+      const { transformArray: transform } = _getLayerTransform(this.$options.nehubaBase.nehubaBase__nehubaViewer.ngviewer.layerManager.managedLayers[0])
       this.setReferenceTemplateTransform({ transform })
 
       /**
@@ -607,13 +619,25 @@ export default {
       this.$options.nehubaBase.nehubaBase__nehubaViewer.setMeshesToLoad([100, 200])
 
       /**
+       * TODO buggy for the new version of nehuba, so only allow rotation and translation via lock
+       */
+      this.$options.nehubaBase.nehubaBase__nehubaViewer.ngviewer.inputEventBindings.sliceView.bindings.set('at:mousedown0', {stopPropagation: true})
+      this.$options.nehubaBase.nehubaBase__nehubaViewer.ngviewer.inputEventBindings.sliceView.bindings.set('at:shift+mousedown0', {stopPropagation: true})
+
+      /**
        * user mouseover inc vol state
        */
       this.$options.nonReactiveData.subscriptions.push(
         this.$options.nehubaBase.nehubaBase__nehubaViewer.mouseOver.layer
-          .filter(v => v.layer.name === 'userlayer-0')
+          .filter(v => {
+            // console.log('tapping',  v)
+            return v.layer.name === 'userlayer-0'
+          })
           .filter(v => typeof v !== 'undefined')
-          .map(ev => ev.value !== null)
+          .map(ev => {
+            // console.log('mapping', ev.value, ev.layer.name)
+            return ev.value !== null
+          })
           .distinctUntilChanged()
           .map(bool => ({mouseOverUserlayer: bool}))
           .subscribe(this.updateMouseOverIncVolState)
@@ -656,23 +680,25 @@ export default {
        * remove guiding grey boxes
        * 
        */
-      const hideGuidingGreyLine = ({handlers , layer}) => {
-        let flag = false
-        return () => {
-          if (flag) return
-          flag = true
+      // const hideGuidingGreyLine = ({handlers , layer}) => {
+      //   let flag = false
+      //   return () => {
+      //     if (flag) return
+      //     flag = true
 
-          const source = layer.annotationLayerState.value.source
-          source.annotationMap.clear()
-          source.changed.dispatch()
-        }
-      }
+      //     const source = layer.annotationLayerState.value.source
+      //     source.annotationMap.clear()
+      //     debugger
+      //     source.changed.dispatch()
+      //   }
+      // }
       
-      mgdLayers.forEach(l => {
-        const layer = l.layer
-        const handlers = l.layer.annotationLayerState.changed.handlers
-        handlers.add(hideGuidingGreyLine({handlers, layer}))
-      })
+      // mgdLayers.forEach(l => {
+      //   const layer = l.layer
+      //   debugger
+      //   const handlers = l.layer.annotationLayerState.changed.handlers
+      //   handlers.add(hideGuidingGreyLine({handlers, layer}))
+      // })
       
       /**
        * emit ready so that second nehuba can be shown if necessary
@@ -739,7 +765,7 @@ export default {
         source: uri,
         opacity,
         shader,
-        transform: (this.incTransformMatrix && transposeMat4(this.incTransformMatrix)) || transform
+        transform: slightlyAjar || (this.incTransformMatrix && transposeMat4(this.incTransformMatrix)) || transform
       }
       const newNgLayer = viewer.layerSpecification.getLayer(name, newLayer)
       const ngUserLayer = viewer.layerManager.addManagedLayer(newNgLayer)
@@ -897,9 +923,11 @@ export default {
         : this.storedReferenceLandmarks
     },
     navStatusText: function () {
+      if (!this.viewerNavigationPosition) return `navigation (mm) initialising`
       return `navigation (mm): ${this.viewerNavigationPosition.map(v => (v / 1e6).toFixed(3)).join(', ')}`
     },
     mousePosStatusText: function () {
+      if (!this.viewerMousePosition) return `mouse (mm) initialising`
       return `mouse (mm): ${this.viewerMousePosition.map(v => (v / 1e6).toFixed(3)).join(', ')}`
     }
   },

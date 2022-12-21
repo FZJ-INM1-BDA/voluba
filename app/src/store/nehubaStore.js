@@ -179,7 +179,7 @@ const nehubaStore = {
         })
     },
     rotIncBy ({ state, getters, dispatch }, { quaternion }) {
-      
+
       const { flippedState, incTransformMatrix } = state
       if (!quaternion) {
         return
@@ -204,13 +204,13 @@ const nehubaStore = {
       /**
        * translation mat for operations at the center of the volume
        */
-      const { dim: _dim } = getters
-      const dim = [..._dim]
+      const { size: _size } = getters
+      const size = [..._size]
 
       /**
        * get mirror mats
        */
-      const mirror = getMirrorMat(flippedState, dim)
+      const mirror = getMirrorMat(flippedState, size)
 
       if (!mirror) return
 
@@ -229,7 +229,7 @@ const nehubaStore = {
        * apply translation correction
        */
 
-      const incTransl = vec3.mul(dim, dim, cScaling)
+      const incTransl = vec3.mul(size, size, cScaling)
       vec3.scale(incTransl, incTransl, 0.5)
       const incTranslMat = mat4.fromTranslation(mat4.create(), incTransl)
       mat4.mul(xformMat, xformMat, incTranslMat)
@@ -269,8 +269,8 @@ const nehubaStore = {
           ? 1
           : 2
 
-      const { dim } = getters
-      const dimVec = vec3.fromValues(...dim)
+      const { size } = getters
+      const dimVec = vec3.fromValues(...size)
 
       const cXform = mat4.fromValues(...incTransformMatrix)
 
@@ -303,15 +303,13 @@ const nehubaStore = {
 
       commit("setIncTransformMatrix", { matrix: Array.from(xformMat) })
     },
-    setTranslInc ({commit, state}, {axis, value : uncorrectedValue}) {
+    setTranslInc ({commit, state}, {axis, value, ngCoordinateSpace}) {
       const { incTransformMatrix, flippedState } = state
       if (axis !== 'x' && axis !== 'y' && axis !== 'z' && axis !== 'xyz') {
         return
       }
 
-      const value = axis === 'xyz'
-        ? uncorrectedValue.map(v => v * 1e6)
-        : uncorrectedValue * 1e6
+      // const value = convertVoxelToNm(ngCoordinateSpace, uncorrectedValue, axis === 'xyz' ? "vec3" : axis)
 
       const mIdx = axis === 'x'
         ? 12
@@ -392,6 +390,14 @@ const nehubaStore = {
     dim: (state, getters, rootState, rootGetters) => {
       const vol = rootGetters['dataSelectionStore/selectedIncomingVolume']
       return (vol && vol.dim) || [0, 0, 0]
+    },
+    size: (state, getters, rootState, rootGetters) => {
+      // template specific
+      return [
+        6572,
+        7404,
+        5711
+      ]
     },
     incRotQuat: state => {
       if (!state.appendNehubaFlag) return [0, 0, 0, 1]

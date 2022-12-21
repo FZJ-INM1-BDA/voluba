@@ -1,4 +1,4 @@
-import { defaultXform, determineElement, patchSliceViewPanel } from '@//constants'
+import { defaultXform, determineElement, patchSliceViewPanel, convertVoxelToNm } from '@//constants'
 import Vue from 'vue'
 
 export default {
@@ -9,6 +9,7 @@ export default {
   // nehubaBase: {},
   data: function () {
     return {
+      nehubabase__coordinateSpace: {},
       nehubaBase__nehubaInitStatus: false,
       nehubaBase__cid: null,
       nehubaBase__subscriptions: [], 
@@ -20,7 +21,8 @@ export default {
         defaultXform,
         defaultXform
       ],
-      nehubaBase__viewportToDatas: [],
+      nehubaBase__dataToViewportWeakMap: new WeakMap(),
+      nehubaBase__elementToSliceViewWeakMap: new WeakMap(),
       nehubaBase__mousePosition: null,
       nehubaBase__additionalConfig: null
     }
@@ -37,12 +39,11 @@ export default {
   },
   methods: {
     nehubaBase__viewportToData: function (event) {
-
-      if (this.nehubaBase__viewportToDatas[0] && this.nehubaBase__viewportToDatas[1] && this.nehubaBase__viewportToDatas[2]) {
-        return
-      }
+      const { sliceView } = event.detail || {}
       const element = event.srcElement || event.originalTarget
-      this.nehubaBase__viewportToDatas[determineElement(element)] = event.detail.viewportToData
+      if (!element || !sliceView) return
+
+      this.nehubaBase__elementToSliceViewWeakMap.set(element, sliceView)
     },
     nehubaBase__initNehuba: function (additionalConfig) {
       if (additionalConfig)
@@ -63,7 +64,10 @@ export default {
             }
             resolve()
           })
-          .catch(reject)
+          .catch(e => {
+            console.warn('nehubaBase__initNehuba error:', e)
+            reject(e)
+          })
       })
     },
     nehubaBase__preInit: function () {
@@ -115,27 +119,43 @@ export default {
           if (this.log && this.log instanceof Function)
             this.log(['nehubaBase__init#createNehubaViewer#Callback', {error: err}])
         })
+
+        nehubaViewer.ngviewer.coordinateSpace.changed.add(() => {
+          this.nehubabase__coordinateSpace = nehubaViewer.ngviewer.coordinateSpace.toJSON()
+        })
         
         this.nehubaBase__subscriptions.push(
           nehubaViewer.navigationState.full.subscribe(this.nehubaBase__navigationChanged)
         )
         this.nehubaBase__subscriptions.push(
-          nehubaViewer.navigationState.position.inRealSpace
-            .subscribe(fa => {
-              this.nehubaBase__navigationPosition = Array.from(fa)
+          nehubaViewer.navigationState.position.inVoxels
+            .subscribe(posVoxel => {
+              try {
+                this.nehubaBase__navigationPosition = convertVoxelToNm(this.nehubabase__coordinateSpace, posVoxel, "vec3")
+              } catch (e) {
+
+              }
             })
         )
         this.nehubaBase__subscriptions.push(
           nehubaViewer.navigationState.orientation
             .subscribe(fa => {
-              this.nehubaBase__navigationOrientation = Array.from(fa)
+              try {
+                this.nehubaBase__navigationOrientation = Array.from(fa)
+              } catch (e) {
+
+              }
             })
         )
 
         this.nehubaBase__subscriptions.push(
-          nehubaViewer.mousePosition.inRealSpace.subscribe(fa => {
-            if (fa)
-              this.nehubaBase__mousePosition = Array.from(fa)
+          nehubaViewer.mousePosition.inVoxels.subscribe(mouseVoxels => {
+            if (!mouseVoxels) {
+              this.nehubaBase__mousePosition = null
+              return
+            }
+            
+            this.nehubaBase__mousePosition = convertVoxelToNm(this.nehubabase__coordinateSpace, mouseVoxels, "vec3")
           })
         )
 
@@ -182,24 +202,12 @@ export default {
        */
     },
     nehubaBase__sliceRenderEvent: function (event) {
-      if (
-        this.nehubaBase__dataToViewport[0] !== defaultXform &&
-        this.nehubaBase__dataToViewport[1] !== defaultXform &&
-        this.nehubaBase__dataToViewport[2] !== defaultXform
-      ) {
+      const element = event.srcElement || event.originalTarget
+      if (!element || !event.detail.nanometersToOffsetPixels) {
         return
       }
-
-      const element = event.srcElement || event.originalTarget
-      this.nehubaBase__dataToViewport[determineElement(element)] = event.detail.nanometersToOffsetPixels
-
-      if (
-        this.nehubaBase__dataToViewport[0] !== defaultXform &&
-        this.nehubaBase__dataToViewport[1] !== defaultXform &&
-        this.nehubaBase__dataToViewport[2] !== defaultXform
-      ) {
-        this.nehubaBase__navigationChanged()
-      }
+      this.nehubaBase__dataToViewportWeakMap.set(element, event.detail.nanometersToOffsetPixels)
+      this.nehubaBase__navigationChanged()
     },
     nehubaBase__setOrientation: function(orientation){    
       this.$options.nehubaBase.nehubaBase__nehubaViewer.ngviewer.navigationState.pose.orientation.restoreState( orientation )

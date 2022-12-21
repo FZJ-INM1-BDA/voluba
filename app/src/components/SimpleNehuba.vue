@@ -292,15 +292,20 @@ export default {
     dataToViewport: function () {
       return this.nehubaBase__dataToViewport
     },
+    dataToViewportWeakMap: function () {
+      return this.nehubaBase__dataToViewportWeakMap
+    },
     placeholderText: function () {
       return this.errorMessage
         ? this.errorMessage
         : this.loadingText
     },
     navStatusText: function () {
+      if (!this.viewerNavigationPosition) return `navigation (mm) initialising`
       return `navigation (mm): ${this.viewerNavigationPosition.map(v => (v / 1e6).toFixed(3)).join(', ')}`
     },
     mousePosStatusText: function () {
+      if (!this.viewerMousePosition) return `mouse (mm) initialising`
       return `mouse (mm): ${this.viewerMousePosition.map(v => (v / 1e6).toFixed(3)).join(', ')}`
     }
   },

@@ -262,7 +262,7 @@ const getStore = ({ user = null, experimentalFeatures = {} } = {}) => new Vuex.S
       const json = {
         incomingVolume,
         referenceVolume,
-        version: 1,
+        version: 1.1,
         ['@type']: EXPORT_TRANSFORM_TYPE,
         transformMatrixInNm
       }

@@ -109,7 +109,7 @@ export const patchSliceViewPanel = function (sliceViewPanel) {
       const viewportToDataEv = new CustomEvent('viewportToData', {
         bubbles: true,
         detail: {
-          viewportToData: this.sliceView.viewportToData
+          sliceView: this.sliceView
         }
       })
       this.element.dispatchEvent(viewportToDataEv)
@@ -299,7 +299,7 @@ export const getDefaultNehubaConfigLight = (sourceUrl) => {
         //   ]
         // },
         "drawZoomLevels": {
-          "cutOff": 20000,
+          "cutOff": 20,
           "color": [
             0.5,
             0,
@@ -309,10 +309,10 @@ export const getDefaultNehubaConfigLight = (sourceUrl) => {
         },
         "hideImages": false,
         "waitForMesh": false,
-        // "restrictZoomLevel": {
-        //   "minZoom": 1200000,
-        //   "maxZoom": 3500000
-        // }
+        "restrictZoomLevel": {
+          "minZoom": 1200000 * 0.002,
+          "maxZoom": 3500000* 0.002
+        }
       }
     }
   }
@@ -514,8 +514,8 @@ export const testBigbrain = {
       "hideImages": false,
       "waitForMesh": true,
       "restrictZoomLevel": {
-        "minZoom": 1200000,
-        "maxZoom": 3500000
+        "minZoom": 1200000 * 0.004,
+        "maxZoom": 3500000 * 0.004
       }
     }
   }
@@ -927,6 +927,14 @@ export const identityMat = [
   [0,    0,    0,    1.0]
 ]
 
+export const slightlyAjar = [
+  
+  [1.0,  0,    0,    -1e6],
+  [0,    1.0,  0,    -1e6],
+  [0,    0,    1.0,  -1e6],
+  [0,    0,    0,    1.0]
+]
+
 export const identityMatFlattened = [
   1.0,  0,    0,    0,
   0,    1.0,  0,    0,
@@ -963,3 +971,60 @@ export const multiplyXforms = async xformMs => {
 
 export const EXPORT_TRANSFORM_TYPE = 'https://voluba.apps.hbp.eu/@types/tranform'
 export const EXPORT_LANDMARKS_TYPE = 'https://voluba.apps.hbp.eu/@types/landmarks'
+
+/**
+ * 
+ * @param {NG Layer} layer 
+ * @returns Handle to transform object HANDLES WITH CARE! 
+ * 
+ */
+export function _getLayerTransform(layer) {
+  
+  const dataSources = layer.layer.dataSources
+  if (dataSources.length !== 1) {
+    throw new Error(`managed layer needs to have exactly 1 data source, but has ${dataSources.length} instead`)
+  }
+  if (dataSources[0].loadState) {
+    return {
+      transformArray: dataSources[0].loadState.transform.value.transform,
+      transformHandle: dataSources[0].loadState.transform,
+      dataSources,
+    }
+  }
+  return {
+    transform: dataSources[0].spec.transform.transform
+  }
+}
+
+export function convertVoxelToNm(ngCoordinateSpace, input, type) {
+  
+  const { x, y, z } = ngCoordinateSpace || {}
+  if (!x || !y || !z) {
+    throw new Error(`neuroglancer coordinateSpace not defined!`)
+  }
+  if (type === "vec3") {
+    return [x, y, z].map((scaleTuple, idx) => scaleTuple[0] * input[idx] * 1e9)
+  }
+  if (type === "x") {
+    return x[0] * input * 1e9
+  }
+  if (type === "y") {
+    return y[0] * input * 1e9
+  }
+  if (type === "z") {
+    return z[0] * input * 1e9
+  }
+  throw new Error(`type ${type} not yet implemented`)
+}
+
+export function convertNmToVoxel(ngCoordinateSpace, input, type) {
+  
+  const { x, y, z } = ngCoordinateSpace || {}
+  if (!x || !y || !z) {
+    throw new Error(`neuroglancer coordinateSpace not defined!`)
+  }
+  if (type === "vec3") {
+    return [x, y, z].map((scaleTuple, idx) => input[idx] / 1e9 / scaleTuple[0])
+  }
+  throw new Error(`type ${type} not yet implemented`)
+}
