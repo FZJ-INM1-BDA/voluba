@@ -17,7 +17,7 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - name: 'Setup envvar':
+    - name: 'Setup envvar'
       run: |
         if [[ $GITHUB_REF == 'refs/heads/master' ]]; then
             echo "DOCKERIMG=voluba:latest" >> "$GITHUB_ENV"
