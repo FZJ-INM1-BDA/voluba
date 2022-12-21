@@ -33,7 +33,8 @@
       ref="lmOverlay"
       v-if="appendNehubaFlag && showReferenceLandmarkOverlay"
       :perspectiveOrientation="compoundPerspectiveOrientation"
-      :dataToViewport="dataToViewport"
+      :viewportElements="viewportElements"
+      :dataToViewportWeakMap="dataToViewportWeakMap"
       :landmarks="referenceLandmarks"
       class="landmarks-overlay" />
 
@@ -44,7 +45,8 @@
       @mouseleaveOnIcon="handleMouseleaveOnIcon({ event: $event, incId: $event.lmId, hover: false })"
       ref="lmOverlay1"
       v-if="appendNehubaFlag && showIncomingLandmarkOverlay"
-      :dataToViewport="dataToViewport"
+      :viewportElements="viewportElements"
+      :dataToViewportWeakMap="dataToViewportWeakMap"
       :landmarks="incomingLandmarks"
       class="landmarks-overlay" />
     
@@ -158,6 +160,7 @@ export default {
       committedTransform: null,
       viewerNavigationPosition: [0, 0, 0],
       viewerMousePosition: [0, 0, 0],
+      viewerMousePositionVoxel: [0, 0, 0],
       viewerSliceOrientation: [0, 0, 0, 1],
       viewerPerspectiveOrientation: [0, 0, 0, 1],
 
@@ -194,7 +197,7 @@ export default {
       switch (type) {
         case 'setPrimaryNehubaNavigation':
           const vec3 = window.export_nehuba.vec3
-          this.$options.nehubaBase.nehubaBase__nehubaViewer.setPosition(vec3.fromValues(...payload.coord.map(v => v * 1e6)), true)
+          this.$options.nehubaBase.nehubaBase__nehubaViewer.setPosition(vec3.fromValues(...payload.coord))
           break
         case 'alignReference':
           this.$options.nehubaBase.nehubaBase__nehubaViewer.ngviewer.navigationState.pose.orientation.restoreState([0, 0, 0, 1])
@@ -291,8 +294,11 @@ export default {
         this.changeOpacity(1.0)
       }
     },
+    nehubaBase__mousePositionVoxel: function(array) {
+      this.viewerMousePositionVoxel = array || [0, 0, 0]
+    },
     nehubaBase__mousePosition: function (array) {
-      this.viewerMousePosition = array
+      this.viewerMousePosition = array || [0, 0, 0]
     },
     nehubaBase__navigationPosition: function (array) {
       this.viewerNavigationPosition = array
@@ -420,7 +426,7 @@ export default {
          */
         this.addLandmark({
           landmark: {
-            coord: this.viewerMousePosition.map(v => v / 1e6)
+            coord: this.viewerMousePositionVoxel
           }
         })
         return
@@ -527,7 +533,7 @@ export default {
            * get previous translate
            */
           const xformMat = mat4.fromValues(...this.incTransformMatrix)
-          vec3.scale(pos, pos, 1)
+
           vec3.transformMat4(pos, pos, sliceView.invViewMatrix)
           vec3.sub(pos, pos, sliceView.centerDataPosition)
 
@@ -688,14 +694,12 @@ export default {
 
       //     const source = layer.annotationLayerState.value.source
       //     source.annotationMap.clear()
-      //     debugger
       //     source.changed.dispatch()
       //   }
       // }
       
       // mgdLayers.forEach(l => {
       //   const layer = l.layer
-      //   debugger
       //   const handlers = l.layer.annotationLayerState.changed.handlers
       //   handlers.add(hideGuidingGreyLine({handlers, layer}))
       // })
@@ -838,10 +842,10 @@ export default {
       }
     },
     showReferenceLandmarkOverlay: function () {
-      return this.nehubaLoaded && this.dataToViewport.length > 2 && this._showRefVol
+      return this.nehubaLoaded && this.viewportElements.size > 2 && this._showRefVol
     },
     showIncomingLandmarkOverlay: function () {
-      return this.nehubaLoaded && this.dataToViewport.length > 2 && this._showIncVolOverlay
+      return this.nehubaLoaded && this.viewportElements.size > 2 && this._showIncVolOverlay
     },
     showDoubleOverlay: function () {
       return this.$store.state._step2Mode === 'overlay'
@@ -849,8 +853,11 @@ export default {
     cid: function () {
       return this.nehubaBase__cid
     },
-    dataToViewport: function () {
-      return this.nehubaBase__dataToViewport
+    viewportElements: function () {
+      return this.nehubaBase__viewportElements || new Set()
+    },
+    dataToViewportWeakMap: function () {
+      return this.nehubaBase__dataToViewportWeakMap
     },
     storedIncomingLandmarks: function () {
       const {vec3,  mat4} = window.export_nehuba
@@ -860,7 +867,7 @@ export default {
          * return all incoming landmarks
          */
         ? this._storeIncomingLandmarks.map(lm => {
-            const coord = vec3.fromValues(...lm.coord.map(v => v * 1e6))
+            const coord = vec3.fromValues(...lm.coord)
             vec3.transformMat4(coord, coord, incVM)
             const lmp = this._storeLandmarkPairs.find(lmp => lmp.incId === lm.id)
             return {
@@ -868,7 +875,7 @@ export default {
               ...lm,
               ...(lmp ? { name: lmp.name } : {}),
               color: this.overlayColorHex,
-              coord: Array.from(coord).map(v => v / 1e6)
+              coord: Array.from(coord)
             }
           })
         /**
@@ -883,7 +890,7 @@ export default {
               id: 'tmplm',
               name: 'tmplm',
               color: this.addLandmarkMode === 'incoming' ? INCOMING_COLOR : REFERENCE_COLOR,
-              coord: this.viewerMousePosition.map(v => v / 1e6),
+              coord: this.viewerMousePositionVoxel,
               temporary: true,
               active: true
             }
@@ -915,7 +922,7 @@ export default {
               id: 'tmplm',
               name: 'tmplm',
               color: this.addLandmarkMode === 'incoming' ? INCOMING_COLOR : REFERENCE_COLOR,
-              coord: this.viewerMousePosition.map(v => v / 1e6),
+              coord: this.viewerMousePositionVoxel,
               temporary: true,
               active: true
             }

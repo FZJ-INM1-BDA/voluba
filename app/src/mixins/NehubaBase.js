@@ -16,15 +16,14 @@ export default {
       nehubaBase__appendNehubaFlag: false,
       nehubaBase__navigationPosition: null,
       nehubaBase__navigationOrientation: null,
-      nehubaBase__dataToViewport: [
-        defaultXform,
-        defaultXform,
-        defaultXform
-      ],
+      // need to use a set, because we need to iterate to get the elements
+      // better idea to use the set to capture viewport elements, than to capture sliceviews
+      nehubaBase__viewportElements: new Set(),
       nehubaBase__dataToViewportWeakMap: new WeakMap(),
       nehubaBase__elementToSliceViewWeakMap: new WeakMap(),
       nehubaBase__mousePosition: null,
-      nehubaBase__additionalConfig: null
+      nehubaBase__mousePositionVoxel: null,
+      nehubaBase__additionalConfig: null,
     }
   },
   mounted() {
@@ -48,6 +47,7 @@ export default {
     nehubaBase__initNehuba: function (additionalConfig) {
       if (additionalConfig)
         this.nehubaBase__additionalConfig = additionalConfig
+      const _this = this
       return new Promise((resolve, reject) => {
         if ( !('export_nehuba' in window) ) 
           return reject('export_nehuba is not present in global scope. append nehuba error')
@@ -56,11 +56,11 @@ export default {
           .then(this.nehubaBase__init)
           .then(this.nehubaBase__postInit)
           .then(({ nehubaViewer }) => {
-            if (this.$options) {
-              if (!this.$options.nehubaBase) {
-                this.$options.nehubaBase = {}
+            if (_this.$options) {
+              if (!_this.$options.nehubaBase) {
+                _this.$options.nehubaBase = {}
               }
-              this.$options.nehubaBase.nehubaBase__nehubaViewer = nehubaViewer
+              _this.$options.nehubaBase.nehubaBase__nehubaViewer = nehubaViewer
             }
             resolve()
           })
@@ -152,9 +152,10 @@ export default {
           nehubaViewer.mousePosition.inVoxels.subscribe(mouseVoxels => {
             if (!mouseVoxels) {
               this.nehubaBase__mousePosition = null
+              this.nehubaBase__mousePositionVoxel = null
               return
             }
-            
+            this.nehubaBase__mousePositionVoxel = Array.from(mouseVoxels)
             this.nehubaBase__mousePosition = convertVoxelToNm(this.nehubabase__coordinateSpace, mouseVoxels, "vec3")
           })
         )
@@ -189,11 +190,7 @@ export default {
       })
     },
     nehubaBase__nehubaBaseDestroyHook: function () {
-      this.nehubaBase__dataToViewport = [
-        defaultXform,
-        defaultXform,
-        defaultXform
-      ],
+      this.nehubaBase__viewportElements.clear()
       this.nehubaBase__subscriptions.forEach(s => s.unsubscribe())
     },
     nehubaBase__navigationChanged: function () {
@@ -206,6 +203,11 @@ export default {
       if (!element || !event.detail.nanometersToOffsetPixels) {
         return
       }
+      // N.B. needs reassignment
+      const s = new Set(this.nehubaBase__viewportElements)
+      s.add(element)
+      this.nehubaBase__viewportElements = s
+      
       this.nehubaBase__dataToViewportWeakMap.set(element, event.detail.nanometersToOffsetPixels)
       this.nehubaBase__navigationChanged()
     },

@@ -112,6 +112,7 @@ export default {
 
       viewerNavigationPosition: [0, 0, 0],
       viewerMousePosition: [0, 0, 0],
+      viewerMousePositionVoxel: [0, 0, 0],
 
       subscriptions: [],
       config: this.baseConfig ? JSON.parse(JSON.stringify(this.baseConfig)) : null,
@@ -263,7 +264,7 @@ export default {
             id: 'tmplm',
             name: 'tmplm',
             color: INCOMING_COLOR,
-            coord: this.viewerMousePosition.map(v => v / 1e6),
+            coord: this.viewerMousePositionVoxel,
             temporary: true,
             active: true
           }
@@ -289,11 +290,11 @@ export default {
     cid: function () {
       return this.nehubaBase__cid
     },
-    dataToViewport: function () {
-      return this.nehubaBase__dataToViewport
+    viewportElements: function () {
+      return this.nehubaBase__viewportElements
     },
     dataToViewportWeakMap: function () {
-      return this.nehubaBase__dataToViewportWeakMap
+      return this.nehuxbaBase__dataToViewportWeakMap
     },
     placeholderText: function () {
       return this.errorMessage
@@ -417,7 +418,10 @@ export default {
       layer.layer.transform.changed.dispatch()
     },
     nehubaBase__mousePosition: function (array) {
-      this.viewerMousePosition = array
+      this.viewerMousePosition = array || [0, 0, 0]
+    },
+    nehubaBase__mousePositionVoxel: function(array) {
+      this.viewerMousePositionVoxel = array || [0, 0, 0]
     },
     nehubaBase__navigationPosition: function (array) {
       this.viewerNavigationPosition = array
