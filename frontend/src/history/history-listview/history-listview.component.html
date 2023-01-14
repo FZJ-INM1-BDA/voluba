@@ -1,0 +1,17 @@
+<mat-list role="list">
+    <mat-list-item
+        *ngFor="let element of history"
+        role="list-item"
+        (click)="revert(element)"
+        matRipple>
+
+        <mat-icon
+            matListItemIcon
+            [fontIcon]="activeHistory?.id === element.id ? 'chevron_right' : ''" >
+        </mat-icon>
+        
+        <div matListItemTitle>
+            {{ element.name }}
+        </div>
+    </mat-list-item>
+</mat-list>

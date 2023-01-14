@@ -1,0 +1,34 @@
+<voluba-nehuba-viewer-wrapper
+    volubaMouseInteraction
+    [stopPropagation]="!!(vw.mousedownSliceView | async)"
+    #vw="nehubaViewerWrapper">
+</voluba-nehuba-viewer-wrapper>
+
+<voluba-four-corners>
+    <div topleft>
+        <voluba-control-menu></voluba-control-menu>
+    </div>
+    <div topright>
+        <ng-template  [ngIf]="view$ | async" let-view>
+            
+            <button mat-icon-button (click)="toggleIncLocked()">
+                <mat-icon [fontIcon]="view.incLocked ? 'lock' : 'lock_open'"></mat-icon>
+            </button>
+        </ng-template>
+    </div>
+    <div bottomleft>
+        <!-- <mat-card class="tmp">
+            <mat-card-content>
+            </mat-card-content>
+        </mat-card>
+        <mat-card class="tmp">
+            <mat-card-content>
+                <voluba-history-listview></voluba-history-listview>
+            </mat-card-content>
+        </mat-card> -->
+    </div>
+    <div bottomright>
+        <!-- bottomright -->
+    </div>
+</voluba-four-corners>
+

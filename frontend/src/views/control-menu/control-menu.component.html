@@ -1,0 +1,45 @@
+<button mat-mini-fab color="default"
+    volubaDialog
+    [dialogTarget]="tunelayerTmpl">
+    <mat-icon fontIcon="tune"></mat-icon>
+</button>
+<button mat-mini-fab color="default"
+    volubaDialog
+    [dialogTarget]="landmarkViewTmpl">
+    <mat-icon fontIcon="edit_location"></mat-icon>
+</button>
+<button mat-mini-fab color="default"
+    volubaDialog
+    [dialogTarget]="historyTmpl">
+    <mat-icon fontIcon="history"></mat-icon>
+</button>
+<button mat-mini-fab color="default"
+    volubaDialog
+    [dialogTarget]="shareResultTmpl">
+    <mat-icon fontIcon="share"></mat-icon>
+</button>
+
+<ng-template #tunelayerTmpl>
+    <voluba-movable-portal title="Layer Tuning">
+        <voluba-tune-ui></voluba-tune-ui>
+    </voluba-movable-portal>
+</ng-template>
+
+<ng-template #landmarkViewTmpl>
+    <voluba-movable-portal title="Landmarks">
+        <voluba-landmark-listview></voluba-landmark-listview>
+        <voluba-landmark-toolbar></voluba-landmark-toolbar>
+    </voluba-movable-portal>
+</ng-template>
+
+<ng-template #historyTmpl>
+    <voluba-movable-portal title="History">
+        history stack tmpl
+    </voluba-movable-portal>
+</ng-template>
+
+<ng-template #shareResultTmpl>
+    <voluba-movable-portal title="Share/Export">
+        share result tmpl
+    </voluba-movable-portal>
+</ng-template>

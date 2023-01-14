@@ -1,0 +1,49 @@
+<form [formGroup]="tuneInput">
+    <div class="section">
+        <mat-form-field class="input">
+            <mat-label>
+                Translate X
+            </mat-label>
+            <input formControlName="translateX" type="number" matInput>
+        </mat-form-field>
+        <mat-form-field class="input">
+            <mat-label>
+                Translate Y
+            </mat-label>
+            <input formControlName="translateY" type="number" matInput>
+        </mat-form-field>
+        <mat-form-field class="input">
+            <mat-label>
+                Translate Z
+            </mat-label>
+            <input formControlName="translateZ" type="number" matInput>
+        </mat-form-field>
+    </div>
+
+    <div class="section">
+        <mat-slide-toggle formControlName="isotropic">
+            Isotropic
+        </mat-slide-toggle>
+    </div>
+
+    <div class="section">
+        <mat-form-field class="input">
+            <mat-label>
+                Scale X
+            </mat-label>
+            <input formControlName="scaleX" type="number" matInput>
+        </mat-form-field>
+        <mat-form-field class="input">
+            <mat-label>
+                Scale Y
+            </mat-label>
+            <input formControlName="scaleY" type="number" matInput>
+        </mat-form-field>
+        <mat-form-field class="input">
+            <mat-label>
+                Scale Z
+            </mat-label>
+            <input formControlName="scaleZ" type="number" matInput>
+        </mat-form-field>
+    </div>
+</form>

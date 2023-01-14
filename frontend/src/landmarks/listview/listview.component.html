@@ -1,0 +1,51 @@
+<table mat-table [dataSource]="landmarkPair" [trackBy]="trackBy">
+    
+  <ng-container matColumnDef="color">
+    <th mat-header-cell *matHeaderCellDef> Color </th>
+    <td mat-cell *matCellDef="let element">
+      <input type="color"
+        [value]="element.color"
+        (input)="onUpdateColor(element, $event)"></td>
+  </ng-container>
+  
+  <ng-container matColumnDef="name">
+    <th mat-header-cell *matHeaderCellDef> Name </th>
+    <td mat-cell *matCellDef="let element">
+      <form>
+        
+      <mat-form-field>
+        <mat-label>Landmark pair name</mat-label>
+        <input type="text"
+          matInput
+          placeholder="My landmark pair"
+          [value]="element.name"
+          (input)="onUpdateName(element, $event)">
+      </mat-form-field>
+      </form>
+    </td>
+  </ng-container>
+  
+  <ng-container matColumnDef="toTmpl">
+    <th mat-header-cell *matHeaderCellDef> To Template </th>
+    <td mat-cell *matCellDef="let element">
+      <button mat-icon-button [style.color]="element.color"
+        (click)="onClickLocation(element.tmplLm)">
+        <mat-icon fontIcon="location_on"></mat-icon>
+      </button>
+    </td>
+  </ng-container>
+  
+  <ng-container matColumnDef="toInc">
+    <th mat-header-cell *matHeaderCellDef> To Incoming </th>
+    <td mat-cell *matCellDef="let element">
+      <button mat-icon-button [style.color]="element.color"
+        (click)="onClickLocation(element.incLm)">
+        <mat-icon fontIcon="location_on"></mat-icon>
+      </button>
+    </td>
+  </ng-container>
+  
+  <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+  <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+
+</table>
