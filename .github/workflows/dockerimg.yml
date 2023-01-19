@@ -4,32 +4,43 @@ on:
   push:
     branches:
       - master
+      - staging
 
     # do not rebuild if...
     paths-ignore:
       # use_docs (use_docs are built on readthedocs any way)
       - 'use_docs/*'
 
+env:
+  OKD_URL: https://okd.hbp.eu:443
+
 jobs:
   build-docker-img:
     runs-on: ubuntu-latest
     env:
-      DOCKERIMG: voluba:latest
+      DOCKERIMG: voluba
 
     steps:
     - uses: actions/checkout@v2
     - name: 'Setup tags'
       run: |
-
-        DOCKER_IMGSTREAM=${{ secrets.EBRAINS_DOCKER_REG_VOLUBA_NSP }}/${{ env.DOCKERIMG }}
+        echo "Using github.ref: $GITHUB_REF"
+        DOCKERTAG=unknown
+        if [[ $GITHUB_REF == "refs/heads/master" ]]
+        then
+          echo "using latest tag"
+          DOCKERTAG=latest
+        fi
+        if [[ $GITHUB_REF == "refs/heads/staging" ]]
+        then
+          echo "using latest tag"
+          DOCKERTAG=staging
+        fi
+        DOCKER_IMGSTREAM=${{ secrets.EBRAINS_DOCKER_REG_VOLUBA_NSP }}/${{ env.DOCKERIMG }}:$DOCKERTAG
         echo "Setting docker image stream to $DOCKER_IMGSTREAM"
         echo "DOCKER_IMGSTREAM=$DOCKER_IMGSTREAM" >> $GITHUB_ENV
     - name: 'Set matomo env var'
       run: |
-        echo "Using github.ref: $GITHUB_REF"
-
-        echo "BRANCH_NAME=${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
-        
         echo "MATOMO_URL=${{ secrets.MATOMO_URL_PROD }}" >> $GITHUB_ENV
         echo "MATOMO_ID=${{ secrets.MATOMO_ID_PROD }}" >> $GITHUB_ENV
 
@@ -67,3 +78,29 @@ jobs:
           docker-registry.ebrains.eu
         echo "Pushing $DOCKER_IMGSTREAM"
         docker push $DOCKER_IMGSTREAM
+
+  deploy-on-okd:
+    needs: [ build-docker-img ]
+    if: success()
+    runs-on: ubuntu-latest
+    steps:
+    - name: "Configure image stream"
+      run: |
+        if [[ "$GITHUB_REF" == "refs/heads/master" ]]
+        then
+          echo "IMAGE_STREAM_TAG=docker-registry.default.svc:5000/voluba/voluba-img-deploy:latest" >> $GITHUB_ENV
+        fi
+        if [[ "$GITHUB_REF" == "refs/heads/staging" ]]
+        then
+          echo "IMAGE_STREAM_TAG=docker-registry.default.svc:5000/voluba/voluba-stg-img-deploy:staging" >> $GITHUB_ENV
+        fi
+    - name: "Login via cli"
+      run: |
+        if [[ ! -z "$IMAGE_STREAM_TAG" ]]
+        then
+          oc login ${{ env.OKD_URL }} --token=${{ secrets.OKD_SECRET }}
+          oc project voluba
+          oc import-image $IMAGE_STREAM_TAG
+        else
+          echo "Empty IMAGE_STREAM_TAG, skipping"
+        fi

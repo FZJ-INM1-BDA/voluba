@@ -74,7 +74,6 @@
 </template>
 <script>
 import CircleFragment from '@/components/RotationWidget/CircleFragment'
-import TwoArrowFragment from '@/components/RotationWidget/TwoArrowFragment'
 
 const hoverStyle = {
   fill: 'none',
@@ -115,7 +114,6 @@ const getXformedCoord = ({ shuffle, rot }) => !('export_nehuba' in window)
 export default {
   components: {
     CircleFragment,
-    TwoArrowFragment
   },
   props: {
     restStyle: {
@@ -152,13 +150,13 @@ export default {
     }
   },
   methods: {
-    mouseenterPath: function (event){
+    mouseenterPath: function (){
       this.onHover = true
     },
-    mouseleavePath: function (event){
+    mouseleavePath: function (){
       this.onHover = false
     },
-    mousedownPath: function (event){
+    mousedownPath: function (){
       this.mousedown = true
 
       document.addEventListener('mousemove', this.documentMousemoveListener)
@@ -203,7 +201,7 @@ export default {
         return coord => coord
       }
 
-      const { quat, vec3 } = window.export_nehuba
+      const { quat } = window.export_nehuba
       const rot = quat.fromValues(...this.rotationQuaternion)
 
       return coord => getXformedCoord({ shuffle: shuffle1, rot })(coord)
@@ -212,7 +210,7 @@ export default {
       if (!('export_nehuba' in window)) {
         return coord => coord
       }
-      const { quat, vec3 } = window.export_nehuba
+      const { quat } = window.export_nehuba
       const rot = quat.fromValues(...this.rotationQuaternion)
       return coord => getXformedCoord({ shuffle: shuffle2, rot })(coord)
     },
@@ -221,7 +219,7 @@ export default {
         return coord => coord
       }
 
-      const { quat, vec3 } = window.export_nehuba
+      const { quat } = window.export_nehuba
       const rot = quat.fromValues(...this.rotationQuaternion)
 
       return coord => getXformedCoord({ shuffle: shuffle3, rot })(coord)

@@ -84,7 +84,6 @@
           <li>resets your current progress</li>
         </ul>Would you like to proceed?
       </b-modal>
-      <!-- <SelectVolumesModal v-if="showSelectVolumesModal" @destroyMe="showSelectVolumesModal=false"/> -->
     </div>
     <!--<footer-component/>-->
   </div>
@@ -102,7 +101,6 @@ import { START_FROM_SCRATCH_MODAL_TITLE } from "@/text";
 import LoadLandmarkPairsModal from "@/components/modals/LoadLandmarkPairsModal";
 import TransformationMatrixModal from "@/components/modals/TransformationMatrixModal";
 import UploadModal from "@/components/modals/UploadModal";
-import SelectVolumesModal from "@/components/modals/SelectVolumesModal";
 import MessageModal from "@/components/modals/MessageModal";
 import DataSelection from '@/components/DatasetSelection'
 import AboutUs from '@/components/AboutUs'
@@ -136,18 +134,26 @@ export default {
     };
   },
   mounted: function() {
+    const { appendToIncomingVolumes } = this
     if (DEBUG) {
       window.setProduction = (arg) => this.setProduction(arg)
+      window.appendToIncomingVolumes = url => appendToIncomingVolumes({
+        volumes: [{
+          name: 'debug-volume',
+          imageSource: url,
+          dim: [2, 2, 2],
+          id: 'debug-volume'
+        }]
+      })
     }
 
     /**
      * get voluba temp volume, if running on http
      */
-    if (window.location.protocol === "http") {
+    if (window.location.protocol === "http:") {
 
-      const { appendToIncomingVolumes } = this
-
-      fetch(`http://ime178.ime.kfa-juelich.de/voluba/voluba.json`)
+      const internalVolubaVolumeUrl = `https://1um.brainatlas.eu:7008/voluba/voluba.json`
+      fetch(internalVolubaVolumeUrl)
         .then(res => res.json())
         .then(({ voluba_sources }) => {
           return Promise.all(
@@ -180,7 +186,8 @@ export default {
           })
         })
         .catch(e => {
-          console.error(`fetching http://ime178.ime.kfa-juelich.de/voluba/voluba.json error`)
+          // eslint-disable-next-line
+          console.error(`fetching ${internalVolubaVolumeUrl} error`, e)
         })
 
     }

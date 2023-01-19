@@ -158,8 +158,7 @@ export default {
   methods: {
     ...mapActions([
       'downloadXformResult',
-      'viewInInteractiveViewer',
-      'viewInInteractiveViewerV2',
+      'viewInSiibraExplorer',
       'loadXformJsonFile',
       `modalMessage`
       ]),
@@ -173,7 +172,7 @@ export default {
             xforms: xformMap.get(id) || []
           }
         })
-      this.viewInInteractiveViewerV2(volumesWithXform)
+      this.viewInSiibraExplorer(volumesWithXform)
     },
     exportToHBP: function () {
       /**
@@ -184,6 +183,7 @@ export default {
     handleSaveInCollab: function () {
       if (!this.isHbpOidcV2 || !this.resumeWorkflow) return
       const state = this.$store.state
+      // eslint-disable-next-line
       const { authStore, ...rest } = state
       fetch(`user/workflow/`, {
         method: 'POST',
