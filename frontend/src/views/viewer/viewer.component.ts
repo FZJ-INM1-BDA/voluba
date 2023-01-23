@@ -20,10 +20,12 @@ export class ViewerComponent implements AfterViewInit, OnDestroy {
   @ViewChild(MouseInteractionDirective)
   mouseInteractive: MouseInteractionDirective|undefined
 
+  public incLocked$ = this.store.pipe(
+    select(app.selectors.incLocked)
+  )
+
   view$ = combineLatest([
-    this.store.pipe(
-      select(app.selectors.incLocked)
-    )
+    this.incLocked$
   ]).pipe(
     map(([ incLocked ]) => ({
       incLocked
@@ -46,16 +48,20 @@ export class ViewerComponent implements AfterViewInit, OnDestroy {
     if (!this.mouseInteractive) throw new Error(`Cannot find mouse interactive directive`)
     if (!this.viewerWrapper) throw new Error(`Cannot find viewer wrapper module`)
 
-    const drag$: Observable<{ movementX: number, movementY: number, sliceView: export_nehuba.SliceView, mouseDownEvent: MouseEvent } | null> = this.viewerWrapper.mousedownSliceView.pipe(
+    const dragOnIncVol$: Observable<{ movementX: number, movementY: number, sliceView: export_nehuba.SliceView, mouseDownEvent: MouseEvent } | null> = this.viewerWrapper.mousedownSliceView.pipe(
       switchMap(({ sliceView, event }) => sliceView && this.mouseInteractive
-        ? this.mouseInteractive.volubaDrag.pipe(
-            map(({ movementX, movementY }) => ({ movementX, movementY, sliceView, mouseDownEvent: event }))
-          )
+        ? combineLatest([
+          this.incLocked$,
+          this.mouseInteractive.volubaDrag,
+        ]).pipe(
+          filter(([ incLocked, _ ]) => !incLocked),
+          map(([_, { movementX, movementY }]) => ({ movementX, movementY, sliceView, mouseDownEvent: event })),
+        )
         : of(null)
       )
     )
 
-    const translationSubscription = drag$.pipe(
+    const translationSubscription = dragOnIncVol$.pipe(
       filter(v => !!v && !v.mouseDownEvent.shiftKey),
       withLatestFrom(
         this.store.pipe(
@@ -86,7 +92,7 @@ export class ViewerComponent implements AfterViewInit, OnDestroy {
       )
     })
 
-    const rotationSubscription = drag$.pipe(
+    const rotationSubscription = dragOnIncVol$.pipe(
       filter(v => !!v && v.mouseDownEvent.shiftKey)
     ).subscribe(val => {
       if (!val) return

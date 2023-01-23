@@ -1,7 +1,7 @@
 <voluba-nehuba-viewer-wrapper
     volubaMouseInteraction
-    [stopPropagation]="!!(vw.mousedownSliceView | async)"
-    #vw="nehubaViewerWrapper">
+    [stopPropagation]="!(incLocked$ | async)"
+    >
 </voluba-nehuba-viewer-wrapper>
 
 <voluba-four-corners>
