@@ -106,7 +106,7 @@
 <script>
 import { mapState, mapGetters, mapActions, mapMutations } from 'vuex'
 
-import { REFERENCE_COLOR, transposeMat4, UNPAIRED_COLOR, INCOMING_COLOR, annotationColorFocus, testBigbrain, determineElement, getRotationVec3, identityMat, invertQuat } from '@//constants'
+import { REFERENCE_COLOR, transposeMat4, UNPAIRED_COLOR, INCOMING_COLOR, annotationColorFocus, viewerConfigs, determineElement, getRotationVec3, identityMat, invertQuat } from '@//constants'
 
 import { incompatibleBrowserText } from '@/text'
 
@@ -164,7 +164,7 @@ export default {
       /**
        * temporary. need to retrieve config separately
        */
-      config: testBigbrain
+      config: viewerConfigs[0]
     }
   },
   mounted: function () {
@@ -263,6 +263,14 @@ export default {
     selectedIncomingVolumeId: function (newId, oldId) {
       if (newId === oldId) return
       this.selectedIncomingVolume = this.incomingVolumes.find(v => v.id === newId)
+    },
+    selectedReferenceVolumeId: function(newId, oldId) {
+      if (newId === oldId) return 
+      this.config = viewerConfigs.find(v => v.id === newId)
+      this.nehubaBase__destroyNehuba().then(() => 
+      this.nehubaBase__initNehuba()
+        .then(this.postNehubaInit)
+      )
     },
     appendNehubaFlag: function (flag) {
       if (flag === true) {
@@ -374,6 +382,7 @@ export default {
     ...mapActions('nehubaStore', [
       'setTranslInc',
       'rotIncBy',
+      'redrawNehuba'
     ]),
     ...mapMutations('nehubaStore', [
       'setReferenceTemplateTransform',
@@ -600,7 +609,9 @@ export default {
        * load meshes 
        * TODO for now, it's hard coded, big brain loads mesh 100 and 200
        */
-      this.$options.nehubaBase.nehubaBase__nehubaViewer.setMeshesToLoad([100, 200])
+      
+      const meshToLoad = this.selectedReferenceVolumeId === 'allen'? [997] : this.selectedReferenceVolumeId === 'ref-1'? [100, 200] : []
+      this.$options.nehubaBase.nehubaBase__nehubaViewer.setMeshesToLoad(meshToLoad)
 
       /**
        * user mouseover inc vol state
@@ -778,7 +789,8 @@ export default {
       addLandmarkMode: 'addLandmarkMode'
     }),
     ...mapGetters('dataSelectionStore', [
-      'selectedIncomingVolume'
+      'selectedIncomingVolume',
+      'selectedReferenceVolumeId'
     ]),
     ...mapGetters('viewerPreferenceStore', [
       'fragmentShader'

@@ -19,6 +19,14 @@ const dataSelectionStore = {
         id: 'ref-1',
         name: 'BigBrain (2015)',
         imageSource: 'precomputed://https://www.jubrain.fz-juelich.de/apps/neuroglancer/BigBrainRelease.2015/image'
+      }, {
+        id: 'waxholm',
+        name: 'Waxholm (2021)',
+        theme: 'dark'
+      }, {
+        id: 'allen',
+        name: 'Allen CCFv3',
+        theme: 'dark'
       }
     ],
 
@@ -53,6 +61,7 @@ const dataSelectionStore = {
     selectReferenceVolumeWithId ({ commit, state }, id) {
       const vol = state.referenceVolumes.find(({ id: _id }) => _id === id)
       if (vol) commit('setSelectedReferenceVolumeWithId', id)
+      
     },
     selectIncomingVolumeWithId ({ commit, state }, id) {
       const vol = state.incomingVolumes.find(({ id: _id }) => _id === id)
@@ -156,6 +165,8 @@ const dataSelectionStore = {
   getters: {
     selectedReferenceVolume: state => state.referenceVolumes.find(v => v.id === state.selectedReferenceVolumeId),
     selectedIncomingVolume: state => state.incomingVolumes.find(v => v.id === state.selectedIncomingVolumeId),
+    selectedReferenceVolumeId: state => state.selectedReferenceVolumeId,
+    referenceVolumes: state => state.referenceVolumes,
     selectedIncomingVolumeNgAffine: (state, getters) => {
       const volume = getters.selectedIncomingVolume || {}
       const { extra } = volume || {}
