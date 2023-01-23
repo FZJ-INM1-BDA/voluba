@@ -6,14 +6,10 @@ import { MovablePortalComponent } from './movable-portal/movable-portal.componen
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
-import { DragDropModule } from "@angular/cdk/drag-drop"
-
+import { DragDropModule } from '@angular/cdk/drag-drop';
 
 @NgModule({
-  declarations: [
-    DialogDirective,
-    MovablePortalComponent,
-  ],
+  declarations: [DialogDirective, MovablePortalComponent],
   imports: [
     CommonModule,
     MatDialogModule,
@@ -22,9 +18,6 @@ import { DragDropModule } from "@angular/cdk/drag-drop"
     MatButtonModule,
     DragDropModule,
   ],
-  exports: [
-    DialogDirective,
-    MovablePortalComponent,
-  ]
+  exports: [DialogDirective, MovablePortalComponent],
 })
-export class UtilModule { }
+export class UtilModule {}

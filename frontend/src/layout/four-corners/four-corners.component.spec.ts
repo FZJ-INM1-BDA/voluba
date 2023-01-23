@@ -8,9 +8,8 @@ describe('FourCornersComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ FourCornersComponent ]
-    })
-    .compileComponents();
+      declarations: [FourCornersComponent],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(FourCornersComponent);
     component = fixture.componentInstance;

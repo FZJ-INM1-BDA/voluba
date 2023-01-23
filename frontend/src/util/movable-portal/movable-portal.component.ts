@@ -4,9 +4,9 @@ import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
   selector: 'voluba-movable-portal',
   templateUrl: './movable-portal.component.html',
   styleUrls: ['./movable-portal.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MovablePortalComponent {
   @Input()
-  title: string|null = null
+  title: string | null = null;
 }

@@ -10,20 +10,18 @@ import { reducers, metaReducers, effects } from 'src/state';
 import { EffectsModule } from '@ngrx/effects';
 
 @NgModule({
-  declarations: [
-    AppComponent,
-  ],
+  declarations: [AppComponent],
   imports: [
     BrowserModule,
     LayoutModule,
     BrowserAnimationsModule,
     ViewsModule,
     StoreModule.forRoot(reducers, {
-      metaReducers
+      metaReducers,
     }),
-    EffectsModule.forRoot(effects)
+    EffectsModule.forRoot(effects),
   ],
   providers: [],
-  bootstrap: [AppComponent]
+  bootstrap: [AppComponent],
 })
-export class AppModule { }
+export class AppModule {}

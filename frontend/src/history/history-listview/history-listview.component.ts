@@ -1,38 +1,38 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
-import { HistoryStack } from "../const"
+import { HistoryStack } from '../const';
 
 const _tmpHistory: HistoryStack = {
   id: 'baz',
-  name: "foo-stuff",
+  name: 'foo-stuff',
   state: {
-    "[inputs]": {
+    '[inputs]': {
       incomingVolumes: [],
       selectedIncoming: null,
       selectedTemplate: null,
-      templateVolumes: []
-    }
-  }
-}
+      templateVolumes: [],
+    },
+  },
+};
 const _tmpHistory2: HistoryStack = {
   id: 'foo',
   name: 'foo-stuff-2',
-  state: {}
-}
+  state: {},
+};
 
 @Component({
   selector: 'voluba-history-listview',
   templateUrl: './history-listview.component.html',
   styleUrls: ['./history-listview.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class HistoryListviewComponent {
   @Input()
-  history: HistoryStack[] = [_tmpHistory, _tmpHistory2]
+  history: HistoryStack[] = [_tmpHistory, _tmpHistory2];
 
   @Input()
-  activeHistory: HistoryStack|null = _tmpHistory
+  activeHistory: HistoryStack | null = _tmpHistory;
 
   revert(history: HistoryStack) {
-    console.log("reverting history", history)
+    console.log('reverting history', history);
   }
 }

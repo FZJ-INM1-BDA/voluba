@@ -1,8 +1,8 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { select, Store } from '@ngrx/store';
 import { combineLatest, map } from 'rxjs';
-import * as inputs from "src/state/inputs"
-import * as app from "src/state/app"
+import * as inputs from 'src/state/inputs';
+import * as app from 'src/state/app';
 
 @Component({
   selector: 'voluba-welcome-card',
@@ -10,28 +10,24 @@ import * as app from "src/state/app"
   styleUrls: ['./welcome-card.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class WelcomeCardComponent{
-
+export class WelcomeCardComponent {
   allowStart$ = combineLatest([
-    this.store.pipe(
-      select(inputs.selectors.selectedIncoming)
-    ),
-    this.store.pipe(
-      select(inputs.selectors.selectedTemplate)
-    )
+    this.store.pipe(select(inputs.selectors.selectedIncoming)),
+    this.store.pipe(select(inputs.selectors.selectedTemplate)),
   ]).pipe(
-    map(([ incoming, template ]) => {
-      console.log({ incoming, template })
-      return !!incoming && !!template})
-  )
+    map(([incoming, template]) => {
+      console.log({ incoming, template });
+      return !!incoming && !!template;
+    })
+  );
 
-  start(){
+  start() {
     this.store.dispatch(
       app.actions.goToStage({
-        stage: app.consts.STAGE.ALIGNMENT
+        stage: app.consts.STAGE.ALIGNMENT,
       })
-    )
+    );
   }
 
-  constructor(private store: Store){}
+  constructor(private store: Store) {}
 }

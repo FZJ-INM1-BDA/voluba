@@ -4,22 +4,22 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
   selector: 'voluba-landmark-toolbar',
   templateUrl: './toolbar.component.html',
   styleUrls: ['./toolbar.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ToolbarComponent {
   onAddLandmark() {
-    console.log("onAddLandmark")
+    console.log('onAddLandmark');
   }
 
   onSave() {
-    console.log("onSave")
+    console.log('onSave');
   }
 
   onLoad() {
-    console.log("onLoad")
+    console.log('onLoad');
   }
 
   onCalculate() {
-    console.log("onCalculate")
+    console.log('onCalculate');
   }
 }

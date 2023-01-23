@@ -6,6 +6,4 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
   styleUrls: ['./four-corners.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class FourCornersComponent {
-
-}
+export class FourCornersComponent {}

@@ -8,9 +8,8 @@ describe('TuneUiComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ TuneUiComponent ]
-    })
-    .compileComponents();
+      declarations: [TuneUiComponent],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(TuneUiComponent);
     component = fixture.componentInstance;

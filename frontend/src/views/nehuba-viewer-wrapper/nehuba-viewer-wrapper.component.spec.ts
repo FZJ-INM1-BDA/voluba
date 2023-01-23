@@ -8,9 +8,8 @@ describe('NehubaViewerWrapperComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ NehubaViewerWrapperComponent ]
-    })
-    .compileComponents();
+      declarations: [NehubaViewerWrapperComponent],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(NehubaViewerWrapperComponent);
     component = fixture.componentInstance;

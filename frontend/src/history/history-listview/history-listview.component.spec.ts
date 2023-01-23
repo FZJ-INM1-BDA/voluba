@@ -8,9 +8,8 @@ describe('HistoryListviewComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ HistoryListviewComponent ]
-    })
-    .compileComponents();
+      declarations: [HistoryListviewComponent],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(HistoryListviewComponent);
     component = fixture.componentInstance;

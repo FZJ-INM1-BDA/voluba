@@ -1,14 +1,11 @@
-import { createSelector } from "@ngrx/store"
-import { nameSpace, LocalState } from "./consts"
+import { createSelector } from '@ngrx/store';
+import { nameSpace, LocalState } from './consts';
 
-const featureSelector = (state: any) => state[nameSpace] as LocalState
+const featureSelector = (state: any) => state[nameSpace] as LocalState;
 
-export const stage = createSelector(
-    featureSelector,
-    state => state.stage
-)
+export const stage = createSelector(featureSelector, (state) => state.stage);
 
 export const incLocked = createSelector(
-    featureSelector,
-    state => state.incLocked
-)
+  featureSelector,
+  (state) => state.incLocked
+);

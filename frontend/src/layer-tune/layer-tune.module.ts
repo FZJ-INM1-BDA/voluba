@@ -3,20 +3,16 @@ import { CommonModule } from '@angular/common';
 import { TuneUiComponent } from './tune-ui/tune-ui.component';
 import { ReactiveFormsModule } from '@angular/forms';
 import { MatInputModule } from '@angular/material/input';
-import { MatSlideToggleModule } from "@angular/material/slide-toggle"
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 
 @NgModule({
-  declarations: [
-    TuneUiComponent,
-  ],
+  declarations: [TuneUiComponent],
   imports: [
     CommonModule,
     ReactiveFormsModule,
     MatInputModule,
     MatSlideToggleModule,
   ],
-  exports: [
-    TuneUiComponent,
-  ]
+  exports: [TuneUiComponent],
 })
-export class LayerTuneModule { }
+export class LayerTuneModule {}
