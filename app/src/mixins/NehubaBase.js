@@ -173,7 +173,8 @@ export default {
         defaultXform,
         defaultXform,
         defaultXform
-      ],
+      ]
+      this.nehubaBase__viewportToDatas = []
       this.nehubaBase__subscriptions.forEach(s => s.unsubscribe())
     },
     nehubaBase__navigationChanged: function () {

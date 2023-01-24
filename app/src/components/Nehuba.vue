@@ -8,6 +8,7 @@
     <!-- mousedown needs to be capturing event into nehuba container -->
     <!-- otherwise, mousedown on landmarks will also be captured -->
     <div
+      v-if="showNehuba"
       @mousedown.capture="mousedown"
       @sliceRenderEvent="nehubaBase__sliceRenderEvent"
       @viewportToData="nehubaBase__viewportToData"
@@ -115,6 +116,7 @@ import DragLandmarkMixin from '@/mixins/DragLandmarkMixin'
 import NehubaLandmarksOverlay from '@/components/NehubaLandmarksOverlay'
 import NehubaStatusCard from '@/components/NehubaStatusCard'
 import RotationWidgetComponent from '@/components/RotationWidget/RotationWidgetComponent'
+import Vue from 'vue'
 
 const DEFAULT_SHADER = `void main() {
   float x = toNormalized(getDataValue());
@@ -128,6 +130,8 @@ export default {
   ],
   data: function () {
     return {
+      
+      showNehuba: true,
       placeholderText: 'Loading nehuba ...',
       nehubaLoaded: false,
       pushUndoFlag: true,
@@ -264,13 +268,16 @@ export default {
       if (newId === oldId) return
       this.selectedIncomingVolume = this.incomingVolumes.find(v => v.id === newId)
     },
-    selectedReferenceVolumeId: function(newId, oldId) {
+    selectedReferenceVolumeId: async function(newId, oldId) {
       if (newId === oldId) return 
       this.config = viewerConfigs.find(v => v.id === newId)
-      this.nehubaBase__destroyNehuba().then(() => 
-      this.nehubaBase__initNehuba()
-        .then(this.postNehubaInit)
-      )
+      await this.nehubaBase__destroyNehuba()
+      this.showNehuba = false
+      await Vue.nextTick()
+      this.showNehuba = true
+      await Vue.nextTick()
+      await this.nehubaBase__initNehuba()
+      await this.postNehubaInit()
     },
     appendNehubaFlag: function (flag) {
       if (flag === true) {
