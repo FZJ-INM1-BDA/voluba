@@ -37,7 +37,13 @@ const dataSelectionStore = {
       state.selectedIncomingVolumeId = id
     },
     setIncomingVolumes (state, { volumes }) {
-      state.incomingVolumes = volumes
+      const finalVolumes = []
+      for (const vol of volumes){
+        const ids = new Set(finalVolumes.map(v => v.id))
+        if (ids.has(vol.id)) continue
+        finalVolumes.append(vol)
+      }
+      state.incomingVolumes = finalVolumes
     }
   },
   actions: {

@@ -101,9 +101,14 @@ export const DEFAULT_BUNDLED_INCOMING_VOLUMES_1 = [
     ]
   },
   {
-    id: 'test-gds',
-    name: 'test g dataset',
+    id: 'test-gds-proxy',
+    name: 'test google dataset (proxied) 20210601/4nm_raw',
     imageSource: 'precomputed://https://1um.brainatlas.eu:7012/h01-release/data/20210601/4nm_raw'
+  },
+  {
+    id: 'test-london',
+    name: 'test london dataset (raw) LADAF-2020-31/brain/25.08um_complete-organ',
+    imageSource: 'n5://gs://ucl-hip-ct-35a68e99feaae8932b1d44da0358940b/LADAF-2020-31/brain/25.08um_complete-organ'
   }
 ]
 
