@@ -117,7 +117,9 @@ export default {
   computed: {
     ...mapGetters('dataSelectionStore', [
       'selectedReferenceVolume', 
-      'selectedIncomingVolume'
+      'selectedIncomingVolume',
+      'selectedReferenceVolumeId',
+      'selectedPrivateReferenceVolumeId'
     ]),
     ...mapState({
       allowUpload: 'allowUpload',
@@ -139,7 +141,7 @@ export default {
         : 'btn-secondary disabled'
     },
     bothSelected: function () {
-      return this.selectedReferenceVolume && this.selectedIncomingVolume
+      return (this.selectedReferenceVolumeId || this.selectedPrivateReferenceVolumeId) && this.selectedIncomingVolume
     },
   },
   beforeRouteLeave: function (to, from, next) {

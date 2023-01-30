@@ -107,7 +107,7 @@
 <script>
 import { mapState, mapGetters, mapActions, mapMutations } from 'vuex'
 
-import { REFERENCE_COLOR, transposeMat4, UNPAIRED_COLOR, INCOMING_COLOR, annotationColorFocus, viewerConfigs, determineElement, getRotationVec3, identityMat, invertQuat } from '@//constants'
+import { REFERENCE_COLOR, transposeMat4, UNPAIRED_COLOR, INCOMING_COLOR, annotationColorFocus, viewerConfigs, customConfig, determineElement, getRotationVec3, identityMat, invertQuat } from '@//constants'
 
 import { incompatibleBrowserText } from '@/text'
 
@@ -269,7 +269,7 @@ export default {
       this.selectedIncomingVolume = this.incomingVolumes.find(v => v.id === newId)
     },
     selectedReferenceVolumeId: async function(newId, oldId) {
-      if (newId === oldId) return 
+      if (!newId || newId === oldId) return 
       this.config = viewerConfigs.find(v => v.id === newId)
       await this.nehubaBase__destroyNehuba()
       this.showNehuba = false
@@ -278,6 +278,30 @@ export default {
       await Vue.nextTick()
       await this.nehubaBase__initNehuba()
       await this.postNehubaInit()
+    },
+    selectedPrivateReferenceVolumeId: async function(newId, oldId) {
+      if (!newId || newId === oldId) return 
+      const volume = this.incomingVolumes.find(v => v.id === newId)
+
+      this.config = customConfig({
+        id: volume.id,
+        name: volume.name,
+        background: [0,0,0,1],
+        transform: volume.extra.neuroglancer.transform,
+        imageSource: volume.imageSource,
+        // ToDo Need to recheck
+        // voxelSize: volume.extra.nifti.size
+      })
+
+      await this.nehubaBase__destroyNehuba()
+      this.showNehuba = false
+      await Vue.nextTick()
+      this.showNehuba = true
+      await Vue.nextTick()
+      await this.nehubaBase__initNehuba()
+      await this.postNehubaInit()
+
+
     },
     appendNehubaFlag: function (flag) {
       if (flag === true) {
@@ -796,8 +820,10 @@ export default {
       addLandmarkMode: 'addLandmarkMode'
     }),
     ...mapGetters('dataSelectionStore', [
+      'incomingVolumes',
       'selectedIncomingVolume',
-      'selectedReferenceVolumeId'
+      'selectedReferenceVolumeId',
+      'selectedPrivateReferenceVolumeId'
     ]),
     ...mapGetters('viewerPreferenceStore', [
       'fragmentShader'

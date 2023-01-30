@@ -939,6 +939,160 @@ export const viewerConfigs = [
 
 ]
 
+export const customConfig = (params) => {
+  
+  const {id, name, background, transform, voxelSize, imageSource} = params
+
+  return {
+    "id": id,
+    "configName": "Custom",
+    "globals": {
+      "hideNullImageValues": true,
+      "useNehubaLayout": {
+        "keepDefaultLayouts": false
+      },
+      "useNehubaMeshLayer": true,
+      "rightClickWithCtrlGlobal": false,
+      "zoomWithoutCtrlGlobal": false,
+      "useCustomSegmentColors": true
+    },
+    "zoomWithoutCtrl": true,
+    "hideNeuroglancerUI": true,
+    "rightClickWithCtrl": true,
+    "rotateAtViewCentre": true,
+    "enableMeshLoadingControl": true,
+    "zoomAtViewCentre": true,
+    "restrictUserNavigation": true,
+    "disableSegmentSelection": true,
+    "dataset": {
+      "imageBackground": background || [0,0,0,0],
+      "initialNgState": {
+        "showDefaultAnnotations": true,
+        "defaultAnnotationColor": "#cccccc",
+        "layers": {
+          [name]: {
+            "visible": true,
+            "annotationColor": "#cccccc",
+            "type": "image",
+            "source": imageSource,
+            "transform": transform
+          },
+          [name + "_auxmesh: "]: {
+            "visible": true,
+            "annotationColor": "#cccccc",
+            "type": "segmentation",
+            "source": imageSource,
+            "selectedAlpha": 0,
+            "notSelectedAlpha": 0,
+            "transform": transform
+            // "segments": [
+            //   "0"
+            // ],
+          },
+        },
+
+        
+        "navigation": {
+          "pose": {
+            "position": {
+              "voxelSize": voxelSize || [
+                21166.666015625,
+                20000,
+                21166.666015625
+              ],
+              "voxelCoordinates": [
+                0, //-21.8844051361084,
+                0, //16.288618087768555,
+                0 //28.418994903564453
+              ]
+            }
+          },
+          "zoomFactor": 35000
+        },
+      }
+    },
+    "layout": {
+            "useNehubaPerspective": {
+                "perspectiveSlicesBackground": [
+                    0,
+                    0,
+                    0,
+                    1
+                ],
+                "removePerspectiveSlicesBackground": {
+                    "mode": "<",
+                    "color": [
+                        0.1,
+                        0.1,
+                        0.1,
+                        1
+                    ]
+                },
+                "perspectiveBackground": [
+                    0,
+                    0,
+                    0,
+                    1
+                ],
+                "fixedZoomPerspectiveSlices": {
+                    "sliceViewportWidth": 300,
+                    "sliceViewportHeight": 300,
+                    "sliceZoom": 56381.835624261774,
+                    "sliceViewportSizeMultiplier": 2
+                },
+                "mesh": {
+                    "backFaceColor": [
+                        0,
+                        0,
+                        0,
+                        1
+                    ],
+                    "removeBasedOnNavigation": true,
+                    "flipRemovedOctant": true,
+                    "surfaceParcellation": false
+                },
+                "centerToOrigin": true,
+                "drawSubstrates": {
+                    "color": [
+                        0.5,
+                        0.5,
+                        1,
+                        0.2
+                    ]
+                },
+                "drawZoomLevels": {
+                    "cutOff": 15000
+                },
+                "restrictZoomLevel": {
+                    "minZoom": 120000,
+                    "maxZoom": 350000
+                }
+            },
+            "views": {
+                "slice1": {
+                    "0": -0.7071067690849304,
+                    "1": 0,
+                    "2": 0,
+                    "3": 0.7071067690849304
+                },
+                "slice2": {
+                    "0": -0.5,
+                    "1": -0.5,
+                    "2": 0.5,
+                    "3": 0.5
+                },
+                "slice3": {
+                    "0": 1,
+                    "1": 0,
+                    "2": 0,
+                    "3": 6.123234262925839e-17
+                }
+            }
+    }
+  }
+
+}
+
 export const getRotationVec3 = (index) => {
   if ('export_nehuba' in window) {
     return index === 0
