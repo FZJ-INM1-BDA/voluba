@@ -15,4 +15,3 @@ The options are:
  - Export the transformation parameters in a simple, plaintext *json* file for sharing and reuse
  - Store the transformation parameters in your private storage area of the [EBRAINS collaboratory drive](https://wiki.ebrains.eu/bin/view/Collabs/), from where VoluBA can recover your work automatically when you login again using your EBRAINS account. 
  - Submit your aligned dataset to EBRAINS data curation services for public sharing.
-

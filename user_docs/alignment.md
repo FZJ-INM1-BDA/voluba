@@ -1,4 +1,4 @@
-# Aligning the input dataset to the reference volume 
+# Transforming the input volume 
 
 Anchoring an input image to the reference volume in VoluBA is typically performed in the following order:
 
@@ -8,23 +8,14 @@ Anchoring an input image to the reference volume in VoluBA is typically performe
 
 These steps can be performed and repeated in arbitrary order and are supported through a history browser, which allows to undo actions and roll back to any previous status of alignment. 
 
+VoluBA assumes a resolution of 1 μm for any volume, so you have to scale the volume to its actual resolution. For example,
+if the resolution of the incoming volume is 2 μm, scale it up by 2. You can also adjust the scale for each axis seperately
+by unticking `Isotropic`.
 
-## Understanding the overlay and side-by-side modes
+![screenshot](images/volume_filter.png)
 
-At any time, the visual interface can be used in two different modes, by clicking the “mode” button in the upper right part user interface:
-
-![snippet](images/switchmode.png)
-
-The default mode is “overlay”, which displays the input and reference volumes superimposed, and allows to adjust colormap and transparency of the input dataset. 
-
-![screenshot](images/overlaymode.png)
-
-The second is “side-by-side mode”, which shows the two volumes in separate panels. 
-
-![screenshot](images/sidebysidemode.png)
-
-!!! Info
-	All actions can be performed in both modes, although for some actions it is advisable to use a specific mode. For example, adding corresponding landmarks is typically more intuitive in the side-by-side mode, while interactive shifting of the incoming volume is more easily performed in the overlay mode.
+Adjust the appearance of the volume.
+You can choose between different color maps and also display RGB volumes.
 
 
 ## Initial alignment with direct manipulation 

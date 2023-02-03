@@ -1,4 +1,4 @@
-# VoluBA
+# About VoluBA
 
 "VoluBA" is an acronym for **Volu**metric **B**rain **A**nchoring. 
 It is a browser based tool for interactive alignment of volumes of interest from brain imaging experiments with a high-resolution 3D reference brain model.
@@ -21,9 +21,5 @@ Building on the [neuroglancer](https://github.com/google/neuroglancer) technolog
 !!! Info
 	Found a bug? Get in touch with us at <support@ebrains.eu>
 
-<!-- [![logo](images/HBP_sm.jpg)](https://humanbrainproject.eu) -->
-[![logo](images/ebrains-logo-dark.svg)](https://ebrains.eu)
-
-<!-- - develop instance: <https://voluba-next.apps-dev.hbp.eu> -->
-<!-- - user documentation: <https://voluba-user-doc.apps-dev.hbp.eu/> -->
-<!-- - github repository: <https://github.com/fzj-inm1-bda/landmark-reg> -->
+!!! Info
+	Visit our [developer documentation](https://voluba-user-doc.apps-dev.hbp.eu/) for more detailed information about the technical aspects of VoluBA.

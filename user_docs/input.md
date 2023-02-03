@@ -1,22 +1,42 @@
-# Setting up the input data
+# Loading input data
 
-To support large datasets, VoluBA visualizes images from multi-resolution chunks. 
-This means that it will not interpret your image files right away, but needs to make them accessible over an http interface that support multi-resolution chunks.
+The first step is to select the incoming volume you want to anchor. VoluBA provides a selection of example datasets
+but also allows you to upload your own image data. Select a [public](#public-volumes)
+or [uploaded private input image](#private-volumes) and click `Start` to proceed to the alignment.
 
-The default installation of VoluBA at <https://voluba.apps.hbp.eu> hosts its reference volumes in a specifically converted [precomputed format](https://github.com/google/neuroglancer/tree/master/src/neuroglancer/datasource/precomputed) on a public webserver.
-For the input datasets, it relies on a dedicated *image service* hosted for the [EBRAINS](https://ebrains.eu) infrastructure by [Forschungszentrum Jülich](https://fz-juelich.de).
-This image service provides a selection of example datasets and allows you to upload images in NiFTI format for use in VoluBA. 
+![screenshot](images/new_workflow.png)
 
-![snippet](images/upload.png)
+## Public volumes
 
-!!! info
-    You will need to sign in with your ORCID or EBRAINS credentials before you can upload image volumes. Being signed in using an EBRAINS account will furthermore allow VoluBA to remember your work in progress between sessions.
+Under `Public volumes` you can find a selection of example datasets. We created them for you to easily try out the
+features of VoluBA. By following our [Step-by-step tutorial](tutorial.md) you will learn how to successfully anchor our
+Hippocampus volume to the BigBrain reference space.
 
-Your data will be stored in a protected, private space. 
-It will not be accessible to other users, and can be permanently deleted after the alignment is done.
-After upload, the image data will be available for selection under `Private volumes`:
+Datasets published in the [EBRAINS Knowledge Graph](https://search.kg.ebrains.eu/) are not part of
+the `Public volumes`. To align an image volume of a dataset in reference space, you have to download the volume from the
+Knowledge Graph and upload it to VoluBA as a [private volume](#private-volumes).
 
-![snippet](images/select_private_volume.png)
+## Private volumes
 
+For anchoring your own image data you need to upload the volume to VoluBA. It will then be available for selection under
+`Private volumes`.
 
-Select a public or uploaded private input image, and click `Start` to proceed to the alignment.
+To protect your uploaded data, you have to sign in with your [ORCID](https://orcid.org/)
+or [EBRAINS](https://ebrains.eu) account first. The volumes will be stored in a private space that is not accessible to other
+users.
+
+!!! tip
+    [Register](https://ebrains.eu/register/) for EBRAINS to get access to more tools, services and data for neuroscientists.
+
+After login click on `Choose File` to select the image data you want to upload. VoluBA expects your files to be in NIfTI
+format (.nii or .nii.gz). Please convert your data, if it has a different filetype.
+
+!!! help
+    Convert your image files to NIfTI with the help of our [HOW TO](nifti_conversion.md).
+
+By clicking on `Upload` your data will be stored in your private space and is available for alignment. If you want to
+permanently delete one of the `Private volumes`, select the according image data as incoming volume and click on the red
+trash icon.
+
+![gif](gifs/private_volumes.gif)
+
