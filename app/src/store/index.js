@@ -173,8 +173,11 @@ const getStore = ({ user = null, experimentalFeatures = {} } = {}) => new Vuex.S
 
       const ivHost = process.env.IV_HOST || 'https://atlases.ebrains.eu/viewer/'
       const url = new URL(ivHost)
-      url.searchParams.set('templateSelected', 'Big Brain (Histology)')
-      url.searchParams.set('parcellationSelected', 'Grey/White matter')
+      url.searchParams.set('templateSelected', selectedReferenceVolume.templateName)
+      url.searchParams.set('parcellationSelected', selectedReferenceVolume.parcellationName)
+
+      console.log(url)
+      
       if (incTransformMatrix.slice) {
 
         incTransformMatrix.slice(12, 15)

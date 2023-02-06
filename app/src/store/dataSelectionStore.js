@@ -18,15 +18,24 @@ const dataSelectionStore = {
       {
         id: 'ref-1',
         name: 'BigBrain (2015)',
-        imageSource: 'precomputed://https://www.jubrain.fz-juelich.de/apps/neuroglancer/BigBrainRelease.2015/image'
+        imageSource: 'precomputed://https://www.jubrain.fz-juelich.de/apps/neuroglancer/BigBrainRelease.2015/image',
+        templateName: 'Big Brain (Histology)',
+        parcellationName: 'Grey/White matter'
+
       }, {
         id: 'waxholm',
         name: 'Waxholm (2021)',
-        theme: 'dark'
+        theme: 'dark',
+        imageSource: 'precomputed://https://neuroglancer.humanbrainproject.eu/precomputed/WHS_SD_rat/templates/v1.01/t2star_masked',
+        templateName: 'Waxholm Space rat brain MRI/DTI',
+        parcellationName: 'Waxholm Space rat brain atlas v3'
       }, {
         id: 'allen',
         name: 'Allen CCFv3',
-        theme: 'dark'
+        theme: 'dark',
+        imageSource: 'precomputed://https://neuroglancer.humanbrainproject.eu/precomputed/AMBA/templates/v3/stpt',
+        templateName: 'Allen Mouse Common Coordinate Framework v3',
+        parcellationName: 'Allen Mouse Common Coordinate Framework v3 2017'
       }
     ],
 
