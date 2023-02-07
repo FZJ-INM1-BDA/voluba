@@ -39,6 +39,8 @@ const dataSelectionStore = {
       }
     ],
 
+    selectedPrivateReferenceVolumeId: '',
+
     selectedIncomingVolumeId: null,
 
     incomingVolumes: DEFAULT_BUNDLED_INCOMING_VOLUMES,
@@ -49,6 +51,9 @@ const dataSelectionStore = {
     },
     setSelectedReferenceVolumeWithId (state, id) {
       state.selectedReferenceVolumeId = id
+    },
+    setSelectedPrivateReferenceVolumeWithId (state, id) {
+      state.selectedPrivateReferenceVolumeId = id
     },
     setSelectedIncomingVolumeId (state, id) {
       state.selectedIncomingVolumeId = id
@@ -69,8 +74,13 @@ const dataSelectionStore = {
     },
     selectReferenceVolumeWithId ({ commit, state }, id) {
       const vol = state.referenceVolumes.find(({ id: _id }) => _id === id)
-      if (vol) commit('setSelectedReferenceVolumeWithId', id)
-      
+      if (!id || vol) commit('setSelectedReferenceVolumeWithId', id)
+    },
+    selectPrivateReferenceVolumeWithId({ commit, state }, id) {
+      const vol = state.incomingVolumes.find(({ id: _id }) => _id === id)
+      // Set ref volume null if private is selected
+      commit('setSelectedReferenceVolumeWithId', id? null : state.referenceVolumes[0].id)
+      if (!id || vol) commit('setSelectedPrivateReferenceVolumeWithId', id)
     },
     selectIncomingVolumeWithId ({ commit, state }, id) {
       const vol = state.incomingVolumes.find(({ id: _id }) => _id === id)
@@ -100,10 +110,12 @@ const dataSelectionStore = {
             .map(raw => {
               return {
                 ...raw,
-                uploadUrl: state.uploadUrl
+                uploadUrl: state.uploadUrl,
+                id: raw.id? raw.id : Math.floor(Math.random() * 1000000)
               }
             })
             .map(processImageMetaData)
+          
           const newVolumes = DEFAULT_BUNDLED_INCOMING_VOLUMES.concat(volumes)
           
           dispatch('log', ['updateIncVolumes#axios#postprocess', newVolumes], {root: true})
@@ -175,7 +187,9 @@ const dataSelectionStore = {
     selectedReferenceVolume: state => state.referenceVolumes.find(v => v.id === state.selectedReferenceVolumeId),
     selectedIncomingVolume: state => state.incomingVolumes.find(v => v.id === state.selectedIncomingVolumeId),
     selectedReferenceVolumeId: state => state.selectedReferenceVolumeId,
+    selectedPrivateReferenceVolumeId: state => state.selectedPrivateReferenceVolumeId,
     referenceVolumes: state => state.referenceVolumes,
+    incomingVolumes: state => state.incomingVolumes,
     selectedIncomingVolumeNgAffine: (state, getters) => {
       const volume = getters.selectedIncomingVolume || {}
       const { extra } = volume || {}
