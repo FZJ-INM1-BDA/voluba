@@ -175,8 +175,6 @@ const getStore = ({ user = null, experimentalFeatures = {} } = {}) => new Vuex.S
       const url = new URL(ivHost)
       url.searchParams.set('templateSelected', selectedReferenceVolume.templateName)
       url.searchParams.set('parcellationSelected', selectedReferenceVolume.parcellationName)
-
-      console.log(url)
       
       if (incTransformMatrix.slice) {
 
@@ -207,6 +205,49 @@ const getStore = ({ user = null, experimentalFeatures = {} } = {}) => new Vuex.S
       console.log(`Navigating to: ${toUrl}`)
 
       openInNewWindow(toUrl)
+    },
+    viewInNeuroglancer: async function({ state, dispatch, getters }, payload){
+      
+      const selectedReferenceVolume = getters['dataSelectionStore/selectedReferenceVolume']
+      const selectedIncomingVolume = getters['dataSelectionStore/selectedIncomingVolume']
+
+      const uRLSearchParams = {
+        // "dimensions": {
+        //   "x": [0.000025, "m"], "y": [0.000025, "m"], "z": [0.000025, "m"]
+        // },
+        // "position": [241.5, 272.25, 227],
+        // "crossSectionScale": 1,
+        // "projectionOrientation": [-0.3059503138065338, -0.4342411160469055, -0.011582829989492893, 0.8471687436103821],
+        // "projectionScale": 1024,
+        "layers": [{
+          "type": "image",
+          "source": {
+            "url": selectedReferenceVolume.imageSource
+          },
+          "tab": "source",
+          "blend": "default",
+          "name": selectedReferenceVolume.name
+        }, {
+          "type": "image",
+          "source": {
+            "url": selectedIncomingVolume.imageSource
+          },
+          "tab": "source",
+          "blend": "default",
+          "name": selectedIncomingVolume.name
+        }],
+        "selectedLayer": {
+          "layer": selectedReferenceVolume.name,
+          "visible": true
+        },
+        "layout": "4panel"
+      }
+
+      const ivHost = 'https://voluba-mvp.apps.hbp.eu/vanilla.html#!'
+      let url = new URL(ivHost)      
+      url += JSON.stringify(uRLSearchParams)
+
+      openInNewWindow(url.toString())
     },
     downloadXformResult: function ({ state, getters }) {
       

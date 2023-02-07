@@ -59,6 +59,13 @@
           </div>
 
           <div
+            @click="openNeuroglancer"
+            v-b-tooltip.hover.bottom="'Open in the neuroglancer'"
+            class="btn btn-sm btn-outline-secondary">
+            <font-awesome-icon icon="table"></font-awesome-icon>
+          </div>
+
+          <div
             @click="handleSaveInCollab"
             ref="saveInCollab"
             :class="'btn btn-outline-secondary btn-sm' + ((isHbpOidcV2 && resumeWorkflow) ? '' : ' disabled')"
@@ -159,9 +166,13 @@ export default {
     ...mapActions([
       'downloadXformResult',
       'viewInSiibraExplorer',
+      'viewInNeuroglancer',
       'loadXformJsonFile',
       `modalMessage`
       ]),
+    openNeuroglancer() {
+      this.viewInNeuroglancer()
+    },
     showTransformResult(){
       const { bundledVolume, xformMap } = this.$refs['multiSelectVolume']
       const volumesWithXform = bundledVolume
@@ -173,8 +184,6 @@ export default {
           }
         })
       
-        console.log(11111)
-        console.log(volumesWithXform)
       this.viewInSiibraExplorer(volumesWithXform)
     },
     exportToHBP: function () {
