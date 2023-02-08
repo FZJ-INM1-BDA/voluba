@@ -1,7 +1,6 @@
 
 import { saveToFile, reverseTransposeMat4, multiplyXforms, flattenMat, packMat4 } from '@//constants'
 import Vuex from 'vuex'
-import axios from 'axios'
 import { AGREE_COOKIE_KEY, openInNewWindow, EXPORT_TRANSFORM_TYPE } from '@/constants';
 
 
@@ -171,25 +170,8 @@ const getStore = ({ user = null, experimentalFeatures = {} } = {}) => new Vuex.S
         translationFromCorner: Array.from(translationFromCorner),
       }
 
-      const ivHost = process.env.IV_HOST || 'https://atlases.ebrains.eu/viewer/'
-      const url = new URL(ivHost)
-      url.searchParams.set('templateSelected', selectedReferenceVolume.templateName)
-      url.searchParams.set('parcellationSelected', selectedReferenceVolume.parcellationName)
-
-      console.log(url)
-      
-      if (incTransformMatrix.slice) {
-
-        incTransformMatrix.slice(12, 15)
-        const o = [0, 0, 0, 1]
-        const po = [0.3140767216682434, -0.7418519854545593, 0.4988985061645508, -0.3195493221282959]
-        const pz = 1922235.5293810747
-        const p = incTransformMatrix.slice(12, 15).map((v, idx) => translationFromCorner && translationFromCorner[idx]
-          ? v + translationFromCorner[idx]
-          : v)
-        const z = 271017.69911504426
-        url.searchParams.set('navigation', [o.join('_'), po.join('_'), pz, p.join('_'), z].join('__'))
-      }
+      const ivHost = process.env.IV_HOST || 'https://atlases.ebrains.eu/viewer/#'
+      let url = ivHost + selectedReferenceVolume.siibra_explorer_url
 
       const { origin, pathname } = window.location
       const pluginUrl = new URL(`${origin}${pathname.replace(/\/$/, '')}/viewerPlugin/template.html`)
@@ -201,12 +183,15 @@ const getStore = ({ user = null, experimentalFeatures = {} } = {}) => new Vuex.S
         "transform", 
         [0,1,2].map(r => [0,1,2,3].map(c => incTransformMatrix[ c * 4 + r ])).reduce((acc, curr) => [...acc, ...curr], []).join(",")
       )
-      url.searchParams.set('pluginStates', pluginUrl.toString())
 
-      const toUrl = url.toString()
-      console.log(`Navigating to: ${toUrl}`)
+      const pluginUrlString = pluginUrl.toString()
+      
+      url += `?pl=${encodeURIComponent(JSON.stringify([pluginUrlString]))}`
 
-      openInNewWindow(toUrl)
+      console.log(`Navigating to: ${url}`)
+
+      openInNewWindow(url)
+
     },
     downloadXformResult: function ({ state, getters }) {
       

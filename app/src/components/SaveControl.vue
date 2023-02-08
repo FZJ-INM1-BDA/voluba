@@ -172,9 +172,6 @@ export default {
             xforms: xformMap.get(id) || []
           }
         })
-      
-        console.log(11111)
-        console.log(volumesWithXform)
       this.viewInSiibraExplorer(volumesWithXform)
     },
     exportToHBP: function () {
