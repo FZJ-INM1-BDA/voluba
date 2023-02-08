@@ -8,6 +8,7 @@
     <!-- mousedown needs to be capturing event into nehuba container -->
     <!-- otherwise, mousedown on landmarks will also be captured -->
     <div
+      v-if="showNehuba"
       @mousedown.capture="mousedown"
       @sliceRenderEvent="nehubaBase__sliceRenderEvent"
       @viewportToData="nehubaBase__viewportToData"
@@ -106,7 +107,7 @@
 <script>
 import { mapState, mapGetters, mapActions, mapMutations } from 'vuex'
 
-import { REFERENCE_COLOR, transposeMat4, UNPAIRED_COLOR, INCOMING_COLOR, annotationColorFocus, testBigbrain, determineElement, getRotationVec3, identityMat, invertQuat } from '@//constants'
+import { REFERENCE_COLOR, transposeMat4, UNPAIRED_COLOR, INCOMING_COLOR, annotationColorFocus, viewerConfigs, determineElement, getRotationVec3, identityMat, invertQuat } from '@//constants'
 
 import { incompatibleBrowserText } from '@/text'
 
@@ -115,6 +116,7 @@ import DragLandmarkMixin from '@/mixins/DragLandmarkMixin'
 import NehubaLandmarksOverlay from '@/components/NehubaLandmarksOverlay'
 import NehubaStatusCard from '@/components/NehubaStatusCard'
 import RotationWidgetComponent from '@/components/RotationWidget/RotationWidgetComponent'
+import Vue from 'vue'
 
 const DEFAULT_SHADER = `void main() {
   float x = toNormalized(getDataValue());
@@ -128,6 +130,8 @@ export default {
   ],
   data: function () {
     return {
+      
+      showNehuba: true,
       placeholderText: 'Loading nehuba ...',
       nehubaLoaded: false,
       pushUndoFlag: true,
@@ -164,7 +168,7 @@ export default {
       /**
        * temporary. need to retrieve config separately
        */
-      config: testBigbrain
+      config: viewerConfigs[0]
     }
   },
   mounted: function () {
@@ -263,6 +267,17 @@ export default {
     selectedIncomingVolumeId: function (newId, oldId) {
       if (newId === oldId) return
       this.selectedIncomingVolume = this.incomingVolumes.find(v => v.id === newId)
+    },
+    selectedReferenceVolumeId: async function(newId, oldId) {
+      if (newId === oldId) return 
+      this.config = viewerConfigs.find(v => v.id === newId)
+      await this.nehubaBase__destroyNehuba()
+      this.showNehuba = false
+      await Vue.nextTick()
+      this.showNehuba = true
+      await Vue.nextTick()
+      await this.nehubaBase__initNehuba()
+      await this.postNehubaInit()
     },
     appendNehubaFlag: function (flag) {
       if (flag === true) {
@@ -374,6 +389,7 @@ export default {
     ...mapActions('nehubaStore', [
       'setTranslInc',
       'rotIncBy',
+      'redrawNehuba'
     ]),
     ...mapMutations('nehubaStore', [
       'setReferenceTemplateTransform',
@@ -600,7 +616,9 @@ export default {
        * load meshes 
        * TODO for now, it's hard coded, big brain loads mesh 100 and 200
        */
-      this.$options.nehubaBase.nehubaBase__nehubaViewer.setMeshesToLoad([100, 200])
+      
+      const meshToLoad = this.selectedReferenceVolumeId === 'allen'? [997] : this.selectedReferenceVolumeId === 'ref-1'? [100, 200] : []
+      this.$options.nehubaBase.nehubaBase__nehubaViewer.setMeshesToLoad(meshToLoad)
 
       /**
        * user mouseover inc vol state
@@ -778,7 +796,8 @@ export default {
       addLandmarkMode: 'addLandmarkMode'
     }),
     ...mapGetters('dataSelectionStore', [
-      'selectedIncomingVolume'
+      'selectedIncomingVolume',
+      'selectedReferenceVolumeId'
     ]),
     ...mapGetters('viewerPreferenceStore', [
       'fragmentShader'
