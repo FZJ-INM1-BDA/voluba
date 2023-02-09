@@ -22,13 +22,17 @@ export type LandmarkPair = {
 export type LocalState = {
   stage: STAGE;
   incLocked: boolean;
+  addingLandmark: boolean;
   landmarkPairs: LandmarkPair[];
+  purgatory: Landmark|null;
 };
 
 export const defaultState: LocalState = {
   stage: STAGE.ALIGNMENT, // STAGE.SELECTION,
+  addingLandmark: false,
   incLocked: false,
   landmarkPairs: [],
+  purgatory: null,
 };
 
 export const nameSpace = `app`;

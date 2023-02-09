@@ -1,4 +1,6 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { select, Store } from '@ngrx/store';
+import * as app from "src/state/app"
 
 @Component({
   selector: 'voluba-control-menu',
@@ -6,4 +8,10 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
   styleUrls: ['./control-menu.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ControlMenuComponent {}
+export class ControlMenuComponent {
+  landmarks$ = this.store.pipe(
+    select(app.selectors.landmarks),
+  )
+
+  constructor(private store: Store){}
+}

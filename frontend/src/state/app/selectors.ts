@@ -9,3 +9,18 @@ export const incLocked = createSelector(
   featureSelector,
   (state) => state.incLocked
 );
+
+export const landmarks = createSelector(
+  featureSelector,
+  state => state.landmarkPairs
+)
+
+export const purgatory = createSelector(
+  featureSelector,
+  state => state.purgatory
+)
+
+export const addLmMode = createSelector(
+  featureSelector,
+  state => state.addingLandmark
+)

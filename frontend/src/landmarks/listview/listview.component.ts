@@ -13,22 +13,8 @@ import { LandmarkPair, Landmark } from '../const';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ListviewComponent {
-  @Input('landmark-pairs')
-  landmarkPair: LandmarkPair[] = [
-    {
-      color: '#ff2233',
-      id: 'foo-id',
-      name: 'foo-name',
-      incLm: {
-        position: [1, 2, 3],
-        targetVolumeId: 'foo-inclLm-target-volume',
-      },
-      tmplLm: {
-        position: [1, 2, 3],
-        targetVolumeId: 'foo-tmpLm-target-volume',
-      },
-    },
-  ];
+  @Input()
+  landmarkPair: LandmarkPair[] = [];
 
   displayedColumns: string[] = ['color', 'name', 'toTmpl', 'toInc'];
 

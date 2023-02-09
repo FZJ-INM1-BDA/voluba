@@ -96,6 +96,9 @@ declare namespace export_nehuba {
       readonly perspectiveOrientation: Observable<Float32Array>
       readonly all: Observable<{position: Float32Array, orientation: Float32Array, zoom: number, perspectiveZoom: number, perspectiveOrientation: Float32Array}>
     }
+    readonly mousePosition: {
+      readonly inVoxels: Observable<Float32Array>
+    }
   }
 
   function getNgPatchableObj(): ({ UrlHashBinding: typeof UrlHashBinding })

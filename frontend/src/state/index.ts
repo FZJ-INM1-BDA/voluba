@@ -25,7 +25,7 @@ function debug(reducer: ActionReducer<State>): ActionReducer<State> {
   };
 }
 
-export const effects = [outputs.effects.Effects];
+export const effects = [outputs.effects.Effects, app.effects.Effects];
 
 export const metaReducers: MetaReducer<State>[] = isDevMode()
   ? [

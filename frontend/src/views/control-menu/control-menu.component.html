@@ -27,7 +27,7 @@
 
 <ng-template #landmarkViewTmpl>
     <voluba-movable-portal title="Landmarks">
-        <voluba-landmark-listview></voluba-landmark-listview>
+        <voluba-landmark-listview [landmarkPair]="(landmarks$ | async )|| []"></voluba-landmark-listview>
         <voluba-landmark-toolbar></voluba-landmark-toolbar>
     </voluba-movable-portal>
 </ng-template>

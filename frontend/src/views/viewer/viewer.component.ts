@@ -14,6 +14,7 @@ import {
   of,
   switchMap,
   withLatestFrom,
+  tap,
 } from 'rxjs';
 import { MouseInteractionDirective } from 'src/mouse-interactions/mouse-interaction.directive';
 import * as app from 'src/state/app';
@@ -53,10 +54,23 @@ export class ViewerComponent implements AfterViewInit, OnDestroy {
   }
 
   ngAfterViewInit(): void {
-    if (!this.mouseInteractive)
+    if (!this.mouseInteractive) {
       throw new Error(`Cannot find mouse interactive directive`);
-    if (!this.viewerWrapper)
+    }
+    if (!this.viewerWrapper) {
       throw new Error(`Cannot find viewer wrapper module`);
+    }
+
+    this.viewerWrapper.mousePosition.subscribe(console.log)
+    const onClick$ = this.mouseInteractive.mousedown.pipe(
+      withLatestFrom(this.viewerWrapper.mousePosition.pipe(
+        // tap(val => console.log(val))
+      )),
+      map(([_, pos]) => pos)
+    )
+
+    onClick$.subscribe(console.log)
+    
 
     const dragOnIncVol$: Observable<{
       movementX: number;

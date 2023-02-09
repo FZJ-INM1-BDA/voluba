@@ -9,7 +9,7 @@ import {
   OnInit,
   Output,
 } from '@angular/core';
-import { distinctUntilChanged, filter, fromEvent, map, merge } from 'rxjs';
+import { distinctUntilChanged, fromEvent, map, merge } from 'rxjs';
 import { isHtmlElement, Mat4, PatchedSymbol } from 'src/const';
 
 export type NehubaLayer = {
@@ -156,6 +156,9 @@ export class NehubaViewerWrapperComponent
   ];
 
   @Output()
+  mousePosition = new EventEmitter<Float32Array>()
+
+  @Output()
   mousedownSliceView = new EventEmitter<{
     sliceView: export_nehuba.SliceView | null | undefined;
     event: MouseEvent;
@@ -195,7 +198,14 @@ export class NehubaViewerWrapperComponent
       };
     }
     this.nehubaViewer = export_nehuba.createNehubaViewer(config, console.error);
+
+    const subscription = this.nehubaViewer.mousePosition.inVoxels.subscribe(val => this.mousePosition.emit(val))
+    this.#onDestroyCb.push(() => subscription.unsubscribe())
+    
     this.#patchNehuba();
+    (() => {
+      (window as any).nehubaViewer = this.nehubaViewer
+    })()
   }
 
   ngAfterViewInit(): void {

@@ -35,23 +35,29 @@ export class MouseInteractionDirective implements OnDestroy, AfterViewInit {
   @Output()
   volubaDrag = new EventEmitter<{ movementX: number; movementY: number }>();
 
+  @Output()
+  mousedown = new EventEmitter<{ event: MouseEvent }>()
+
   ngAfterViewInit(): void {
     this.#htmlEl = this.el.nativeElement as HTMLElement;
 
-    const subscription = this.#getEventStream('mousedown')
-      .pipe(
-        switchMap(() =>
-          this.#getEventStream('mousemove').pipe(
-            takeUntil(this.#getEventStream('mouseup'))
+    const subscriptions = [
+      this.#getEventStream('mousedown')
+        .pipe(
+          switchMap(() =>
+            this.#getEventStream('mousemove').pipe(
+              takeUntil(this.#getEventStream('mouseup'))
+            )
           )
         )
-      )
-      .subscribe((ev) => {
-        const { movementX, movementY } = ev;
-        this.volubaDrag.emit({ movementX, movementY });
-      });
+        .subscribe((ev) => {
+          const { movementX, movementY } = ev;
+          this.volubaDrag.emit({ movementX, movementY });
+        }),
+      this.#getEventStream('mousedown').subscribe(event => this.mousedown.emit({ event }))
+    ]
 
-    this.#onDestroyCb.push(() => subscription.unsubscribe());
+    this.#onDestroyCb.push(() => subscriptions.forEach(sub => sub.unsubscribe()));
   }
 
   #onDestroyCb: (() => void)[] = [];
