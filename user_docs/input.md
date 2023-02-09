@@ -1,10 +1,21 @@
 # Loading input data
 
-The first step is to select the incoming volume you want to anchor. VoluBA provides a selection of example datasets
-but also allows you to upload your own image data. Select a [public](#public-volumes)
-or [uploaded private input image](#private-volumes) and click `Start` to proceed to the alignment.
+The anchoring process starts by selecting a [reference space](#reference-space) you want to anchor to as well as the incoming volume. VoluBA provides a selection of example datasets
+but also allows you to upload your own image data. Select an existing [public](#public-volumes) or [uploaded private input image](#private-volumes) and click `Start` to proceed to the alignment.
 
 ![screenshot](images/new_workflow.png)
+
+## Reference space
+
+In VoluBA the reference space defaults to the BigBrain model. Select a different space depending on the species your image data originates from. You can choose between the following:
+
+| species | reference space |
+|---------|-----------------|
+| human   | BigBrain (2015) |
+| rat     | Waxholm (2021)  |
+| mouse   | Allen CCFv3[^1] |
+
+[^1]: CCFv3 = Common Coordinate Framework v3
 
 ## Public volumes
 
@@ -29,7 +40,7 @@ users.
     [Register](https://ebrains.eu/register/) for EBRAINS to get access to more tools, services and data for neuroscientists.
 
 After login click on `Choose File` to select the image data you want to upload. VoluBA expects your files to be in NIfTI
-format (.nii or .nii.gz). Please convert your data, if it has a different filetype.
+format (.nii or .nii.gz). Please convert your data, if it has a different filetype. It is also advised to define the voxel resolution inside the NIfTI header via `pixdim` and `xyzt_units`, so that VoluBA initially displays the incoming volume in correct relation to the reference template. If you don't specify these values, VoluBA assumes 1 mm voxel resolution for your data.
 
 !!! help
     Convert your image files to NIfTI with the help of our [HOW TO](nifti_conversion.md).
@@ -37,6 +48,4 @@ format (.nii or .nii.gz). Please convert your data, if it has a different filety
 By clicking on `Upload` your data will be stored in your private space and is available for alignment. If you want to
 permanently delete one of the `Private volumes`, select the according image data as incoming volume and click on the red
 trash icon.
-
-![gif](gifs/private_volumes.gif)
 

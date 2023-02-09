@@ -1,74 +1,73 @@
 # Transforming the input volume 
 
+After preparing the incoming volume, you can now align it to the selected target space. 
 Anchoring an input image to the reference volume in VoluBA is typically performed in the following order:
 
- 1. Initial adjustment of coordinate axes orientations and scalings to match the target space
- 2. Interactive translation and rotation of the incoming data volume to set the position and 3D orientation (leading to a 3D similarity transformation)
- 3. Refinement of the initial alignment by entering additional corresponding pairs of anatomical landmarks  (leading to a 3D affine transformation)
+1. [Initial adjustment of coordinate axes orientations and scaling](#initial-adjustment-of-coordinate-axes-orientations-and-scaling) to match the target space
+2. [Interactive translation and rotation](#interactive-translation-and-rotation) of the incoming data volume to set the position and 3D orientation
+3. [Refinement](#refined-alignment-with-3d-landmarks) of the initial alignment by entering additional corresponding pairs of anatomical landmarks
 
-These steps can be performed and repeated in arbitrary order and are supported through a history browser, which allows to undo actions and roll back to any previous status of alignment. 
+These steps can be performed and repeated in arbitrary order and are supported through a [history browser](#inspecting-and-undoing-alignment-steps), which allows to undo actions and roll back to any previous status of alignment.
 
-VoluBA assumes a resolution of 1 μm for any volume, so you have to scale the volume to its actual resolution. For example,
-if the resolution of the incoming volume is 2 μm, scale it up by 2. You can also adjust the scale for each axis seperately
-by unticking `Isotropic`.
+## Initial adjustment of coordinate axes orientations and scaling
 
-![screenshot](images/volume_filter.png)
+The axis orientations and the voxel scaling can be modified using the **Transform Incoming Volume** dialog box, which also allows precise adjustment of position and rotation. The dialog is launched using the button with the brain icon on the left of the user interface:
 
-Adjust the appearance of the volume.
-You can choose between different color maps and also display RGB volumes.
+![snippet](images/transformation.png)
 
+If you didn't specify the voxel resolution in your NIfTI header, VoluBA assumes 1 mm voxel resolution. In this case, you need to scale the volume to its actual resolution. For example, if the resolution of the incoming volume is 100 μm, scale it down by 0.1. You can also adjust the scale for each axis separately by ticking off `Isotropic`.
 
-## Initial alignment with direct manipulation 
+Whenever you want to secure a transformation parameter, click on the lock. This locks the value so that it cannot be changed, for example by interactive manipulation. You can also fix all settings by clicking the lock on the top right next to the volume filters. It is useful to prevent you from accidentally changing the transformation parameters when inspecting the alignment.
 
-After upload and selection of an incoming data volume, VoluBA starts in overlay mode. 
-Here it allows direct manipulation of the input data position and orientation using the mouse pointer. 
-The position is changed by clicking & dragging the incoming volume in any of the orthogonal views. 
+## Interactive translation and rotation
+
+As mentioned above you can adjust the incoming volume's position and orientation by entering values into the **Transform Incoming Volume** dialog. Additionally, VoluBA allows direct manipulation of the input data's position and orientation using the mouse pointer. The position is changed by clicking & dragging the incoming volume in any of the orthogonal views. 
 By pressing shift while clicking & dragging, a rotation is applied. 
-![screenshot](images/initialalignment.png)
 
-The orientation and scaling of the coordinate axes of the input data can be changed modified using the “Transform” dialog box,
-which also allows precise adjustment of position and orientation. 
-The dialog is launched using the button with the brain icon on the left of the user interface:
-![snippet](images/fixscale.png)
-
+![gif](gifs/transform.gif)
 
 ## Refined alignment with 3D landmarks
 
-Once an acceptable alignment has been achieved based on the rigid transformations described above, you can start entering anatomical landmark pairs in either overlay or side-by-side mode to compute an affine refinement of the image transformation.
+Once an reasonable alignment has been achieved based on the 3D rigid transformations described above, you can start entering pairs of anatomical landmarks in either overlay or two pane mode to compute an affine refinement of the image transformation.
 
-!!! hint
-    Entering landmarks is usually more intuitive to perfom in side-by-side mode.
+!!! tip
+    Entering landmarks is usually more intuitive to perform in two pane mode.
 
-To enter landmarks, select the **Edit Landmarks** menu from the left side of the user interface.
-![snippet](images/launch_landmark_menu.png)
+To enter landmarks, select the **Edit landmarks** menu from the left side of the user interface. Click the plus to add a new pair of landmarks. In two pane mode, you are asked to first select a 3D point in the reference volume on the left, then the corresponding point in the input dataset on the right. Delete a single or all landmarks via the corresponding red trash button. Each landmark can be given a name, and the list of landmarks can be downloaded as a JSON file for reference and reuse. Thus, an existing list of landmarks can be loaded from your computer. 
 
-In side-by-side mode, you are asked to first select a 3d point in the reference volume, then the corresponding point in the input dataset:
-![screenshot](images/landmarks1.png)
+![image](images/landmarks1.png)
 
-In overlay mode, you enter two landmarks sequentially in the same window. They are distinguished by their colors:
-![screenshot](images/landmarks2.png)
+Entering landmarks does not immediately influence the position of the incoming volume. You need to explicitly request to compute the refined transformation.
+First, you need to select the type of transformation:
 
-Each landmark can be given a name, and the list of landmarks can be downloaded as a json file for reference and reuse. 
+| type                          | translation | rotation   | reflection | scale      | shear           |
+|-------------------------------|-------------|------------|------------|------------|-----------------|
+| Rigid                         | :fa-check:  | :fa-check: | 			|		     |                 |
+| Rigid (allow reflection)      | :fa-check:  | :fa-check: | :fa-check: |            |                 |
+| Similarity                    | :fa-check:  | :fa-check: |			| :fa-check: |                 |
+| Similarity (allow reflection) | :fa-check:  | :fa-check: | :fa-check: | :fa-check: |                 |
+| Affine                        | :fa-check:  | :fa-check: | :fa-check: | :fa-check: | :fa-check:      |
 
-Entering landmarks does not immediately influence the position of the incoming volume. You need to explicitely request to compute the refined transformation:
-![snippet](images/compute_transformation.png)
+From a set of landmarks, the affine transformation matrix can be recalculated. Click the blue calculator button to compute and display the transform based on the landmarks. Just as the previous adjustments of position, scale, rotation or axis orientation, the application of the affine transformation will be recorded in the history browser and can be reverted. 
 
-Just as the previous adjustments of position, scale, rotation or axis orientation, the application of the affine transformation will be recorded in the history browser and can be reverted. 
-
-!!! Hint
+!!! info
 	The initial rigid transformations (direct adjustment of position and orientation) have no influence on the computation of the refined affine transformation. 
 	The affine transformation estimation depends exclusively on the landmark pairs. 
 	Hence, when using landmark-based alignment, the initial alignment is only used to provide a better visual orientation for entering landmarks.
 
+In overlay mode, you enter two landmarks sequentially in the same window. They are distinguished by their colors: white pins mark the position in reference space and yellow pins indicate the location in the incoming volume:
+
+![screenshot](images/landmarks2.png)
 
 ## Inspecting and undoing alignment steps
 
 VoluBA tracks every step that you execute during the alignment process. 
-This includes translations, axis flips, rotations, scalings, and application of affine matrices that have been estimated from landmark pairs. 
-You can inspect and navigate the process using the history browser, which is accessible via the "rollback" button on the left: 
-![snippet](images/undoing.png)
+This includes translations, axis flips, rotations, scaling, and application of affine matrices that have been estimated from landmark pairs. 
+You can inspect and navigate the process using the history browser, which is accessible via the **history browser** button on the left: 
+
+![snippet](images/history.png)
 
 The history is implemented as a stack, from which the top element can be removed at any time, resulting in a rollback to the previous version of the alignment. 
-As long as no new action is applied to a recovered version of the history, the “undo” actions can be recalled again (“redo”). 
+As long as no new action is applied to a recovered version of the history, the **undo** actions can be recalled again (**redo**). 
 This allows you to conveniently navigate forward and backward your image alignment process.
 

@@ -14,6 +14,7 @@ img[alt="snippet"] {
   display: block;
   margin-left: auto;
   margin-right: auto;
+  border: 1px solid black;
 }
 
 img[alt="screenshot"] {
@@ -21,7 +22,7 @@ img[alt="screenshot"] {
   display: block;
   margin-left: auto;
   margin-right: auto;
-
+  border: 1px solid black;
 }
 
 img[alt="logo"] {
@@ -48,6 +49,7 @@ img[alt="gif"] {
     display: block;
     margin-left: auto;
     margin-right: auto;
+    border: 1px solid black;
 }
 
 table img
