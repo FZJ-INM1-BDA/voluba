@@ -1,5 +1,8 @@
 site_name: VoluBA User Documentation
 
+repo_url: 'https://github.com/FZJ-INM1-BDA/voluba'
+repo_name: 'GitHub'
+
 theme:
   name: 'readthedocs'
 
@@ -12,11 +15,29 @@ markdown_extensions:
   - admonition
   - codehilite
   - mdx_truly_sane_lists
+  - fontawesome_markdown
+  - footnotes
+  - mdx_math:
+      enable_dollar_delimiter: True
 
+extra_javascript:
+    - https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML
+    
 nav:
-  - Home: 'index.md'
-  - 'acknowledgement.md'
+  - About VoluBA: 'index.md'
   - 'requirements.md'
-  - 'input.md'
-  - 'alignment.md'
-  - 'results.md'
+  - 'acknowledgement.md'
+  - Workflow:
+    - 'input.md'
+    - 'views.md'
+    - 'filter.md'
+    - 'alignment.md'
+    - 'results.md'
+  - Tutorials:
+    - Step-by-step tutorial: 'tutorial.md'
+    - Video tutorial: 'video.md'
+  - How to:
+    - NIfTI conversion: 'nifti_conversion.md'
+  - Contact us:
+    - Support: 'mailto:support@ebrains.eu?subject=[VoluBA]'
+    - GitHub: 'https://github.com/FZJ-INM1-BDA/voluba/issues'
