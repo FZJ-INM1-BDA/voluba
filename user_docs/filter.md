@@ -8,7 +8,6 @@ With the help of `Volume filters` you can configure the presentation of the inco
 * [Contrast](#contrast)
 * [Color map](#color-map)
 * [Hide clamped](#hide-clamped)
-* [Hide zero](#hide-zero)
 
 ![screenshot](images/volume_filter.png)
 
@@ -48,5 +47,3 @@ especially recommend this color map for two-photon microscopy data.
 To hide the background of the incoming volume, tick the `Hide clamped` option. This removes all pixels with the lowest value.
 
 ![snippet](gifs/clamped.gif)
-
-# TODO ask Daviti what Hide zero does (or should do)
