@@ -92,7 +92,24 @@
           </div>
         </div>
       </div>
+
+        <!-- share -->
+        <div class="mt-2 input-group input-group-sm">
+          <div class="input-group-prepend">
+            <span class="input-group-text">
+              Share
+            </span>
+          </div>
+          <div class="input-group-append">
+            <div v-b-modal.share-volume v-b-tooltip.hover.bottom="'Share private volume'"
+              :class="'btn btn-outline-secondary btn-sm' + ((selectedIncomingVolume.visibility === 'private') ? '' : ' disabled')">
+              <font-awesome-icon icon="share-alt"></font-awesome-icon>
+            </div>
+          </div>
+        </div>
     </div>
+
+
 
     <b-tooltip
       tabindex="-1"
@@ -130,12 +147,53 @@
       <MultiselectVolume ref="multiSelectVolume" />
 
     </b-modal>
+
+    <b-modal id="share-volume" 
+      @ok="handleShareOk"
+      :ok-disabled="volumeSharing">
+      <template slot="modal-header">
+        Share volume
+      </template>
+
+      <div>
+        <p>Create a shared link for the private volume.</p> 
+
+        <InfoPopover class="text-warning"
+          placement="right" triggers="click blur">
+
+          <div class="text-left mb-1 mt-1">
+            <small class="d-inline-block lh-1">
+              <p> <font-awesome-icon icon="exclamation-triangle" class="mr-2" /> After sharing, the image will be publicly available!</p>
+              <p> <font-awesome-icon icon="exclamation-triangle" class="mr-2" /> Sharing cannot be undone!</p>
+            </small>
+          </div>
+
+        </InfoPopover>
+      </div>
+
+      <div v-if="sharedVolumeUrl">
+        Public URL: 
+        <a :href="sharedVolumeUrl" target="_blank"><i>{{ sharedVolumeUrl }}</i></a>
+      </div>
+
+      <template slot="modal-ok">        
+        <div>
+          <span>
+            {{sharedVolumeUrl? 'Close' : 'Share'}}
+          </span>
+
+          <div v-if="volumeSharing" class="d-inline-block spinnerAnimationCircle"></div>
+        </div>
+      </template>
+
+    </b-modal>
   </div>  
 </template>
 <script>
 import { mapActions, mapState, mapGetters } from 'vuex'
 import { openFileDialog, getTransformMatrixInNm } from '@/constants'
 import MultiselectVolume from '@/views/MultiselectVolume'
+import axios from 'axios'
 
 export default {
   components: {
@@ -145,7 +203,9 @@ export default {
     return {
       showExportToHBPTooltip: false,
       showSaveOnCollab: false,
-      showTransformResultInProgress: false
+      showTransformResultInProgress: false,
+      volumeSharing: false,
+      sharedVolumeUrl: null,      
     }
   },
   computed: {
@@ -250,7 +310,34 @@ export default {
           })
         }
       })
-    }
+    },
+    handleShareOk: function(event) {
+      if (!this.sharedVolumeUrl) {
+        event.preventDefault()
+        this.shareVolume()
+      }
+    },
+    shareVolume: function() {
+      this.volumeSharing = true
+      this.shareVolumeToServer(this.selectedIncomingVolume.name)
+    }, 
+    shareVolumeToServer: function(fileName) {
+      axios(`${process.env.VUE_APP_UPLOAD_URL}/share/${fileName}`, {
+        method: `GET`,
+        headers: { ...this.authHeader }
+      }).then(({ data }) => {
+          this.volumeSharing = false
+          this.sharedVolumeUrl = `${process.env.VUE_APP_UPLOAD_URL}${data}`
+        })
+        .catch(e => {
+          this.volumeSharing = false
+          return this.modalMessage({
+            title: 'Error',
+            variant: 'danger',
+            body: `Error resuming workflow: ${e.toString()}`
+          })
+        })
+    },
   }
 }
 </script>
