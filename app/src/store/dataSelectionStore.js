@@ -21,6 +21,7 @@ const dataSelectionStore = {
     ],
 
     selectedIncomingVolumeId: null,
+    selectedIncomingVolumeResolution: null,
 
     incomingVolumes: DEFAULT_BUNDLED_INCOMING_VOLUMES,
   },
@@ -34,6 +35,9 @@ const dataSelectionStore = {
     setSelectedIncomingVolumeId (state, id) {
       state.selectedIncomingVolumeId = id
     },
+    setSelectedIncomingVolumeResolution (state, resolution) {
+      state.selectedIncomingVolumeResolution = resolution
+    },
     setIncomingVolumes (state, { volumes }) {
       state.incomingVolumes = volumes
     },
@@ -43,7 +47,7 @@ const dataSelectionStore = {
       const vol = state.referenceVolumes.find(({ id: _id }) => _id === id)
       if (vol) commit('setSelectedReferenceVolumeWithId', id)
     },
-    selectIncomingVolumeWithId ({ commit, state }, id) {
+    selectIncomingVolumeWithId ({ commit, state, dispatch }, id) {
       const vol = state.incomingVolumes.find(({ id: _id }) => _id === id)
       if (vol) {
         if (vol.extra && vol.extra.neuroglancer && vol.extra.neuroglancer.transform) {
@@ -56,11 +60,31 @@ const dataSelectionStore = {
             { matrix },
             { root: true })
         }
+
+        dispatch('setIncomingVolumeResolution', id)
+
         commit('setSelectedIncomingVolumeId', id)
         const { shaderScaleFactor } = vol
         commit('viewerPreferenceStore/setShaderScaleFactor', shaderScaleFactor || 1, { root: true })
       } 
     },
+
+    async ['setIncomingVolumeResolution'] ({ commit, state, dispatch, rootGetters }, id) {
+      try {
+        const vol = state.incomingVolumes.find(({ id: _id }) => _id === id)
+        const authHeader= rootGetters['authStore/authHeader']
+        const config = {headers: {...authHeader}}
+        const { data } = await axios(`${vol.imageSource.substring(14)}/info`, config)
+        const resolution = data.scales[0].resolution
+
+        commit('setSelectedIncomingVolumeResolution', resolution);
+      } catch (error) {
+        dispatch('updateIncVolumesResult', {
+          error: error ? error : null
+        })
+      }
+    },
+
     updateIncVolumesResult (store, {error, message}) {
       /**
        * required for subscribe action

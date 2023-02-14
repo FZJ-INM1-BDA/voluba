@@ -155,6 +155,43 @@
         </section-component>
       </div>
 
+      <!-- Resolution -->
+      <div class="section-wrapper mb-1">
+        <div
+          @click="lockIncVol({ incVolTranslationLock: !incVolTranslationLock})">
+          <font-awesome-icon :icon="lockIconTranslation"></font-awesome-icon>
+        </div>
+        <section-component
+          :forceHide="incVolTranslationLock"
+          id="translation-component">
+          <template slot="header">
+            <strong :class="incVolTranslationLock ? 'text-muted' : ''">
+              Resolution
+            </strong>
+          </template>
+          <template slot="body">
+            <div>
+              <label class="mr-2">X-axis</label>
+              <input v-model="selectedResolutionX" @input="setResolution" type="number">
+            </div>
+            <div>
+              <label class="mr-2">Y-axis</label>
+              <input v-model="selectedResolutionY" @input="setResolution" type="number">
+            </div>
+            <div>
+              <label class="mr-2">Z-axis</label>
+              <input v-model="selectedResolutionZ" @input="setResolution" type="number">
+            </div>
+
+            <b-button size="sm" class="mt-3" @click="resetResolution">
+              Reset
+            </b-button>
+          </template>
+
+        </section-component>
+      </div>
+
+
       <!-- translation -->
       <div class="section-wrapper mb-1">
         <div
@@ -296,7 +333,11 @@ export default {
       scaleMax: 10,
       scaleStep: 0.01,
 
-      testValue: 0
+      testValue: 0,
+
+      selectedResolutionX: 0,
+      selectedResolutionY: 0,
+      selectedResolutionZ: 0,
     }
   },
   computed: {
@@ -310,10 +351,11 @@ export default {
       'incVolScaleLock',
     ]),
     ...mapGetters('dataSelectionStore', [
-      'selectedIncomingVolume',
+      'selectedIncomingVolume'
     ]),
     ...mapState('dataSelectionStore', [
-      'incomingVolumes'
+      'incomingVolumes',
+      'selectedIncomingVolumeResolution'
     ]),
     ...mapState('nehubaStore', {
       lockIconTranslation: state => state.incVolTranslationLock ? 'lock' : 'lock-open',
@@ -328,6 +370,7 @@ export default {
         return this.testScale[0]
       },
       set: function (value) {
+        this.selectedResolutionX = Math.round(+this.testScaleX * this.selectedIncomingVolumeResolution[0])
         this.scaleEvent({
           axis: 'x',
           value
@@ -339,6 +382,7 @@ export default {
         return this.testScale[1]
       },
       set: function (value) {
+        this.selectedResolutionY = Math.round(+this.testScaleY * this.selectedIncomingVolumeResolution[1])
         this.scaleEvent({
           axis: 'y',
           value
@@ -350,6 +394,7 @@ export default {
         return this.testScale[2]
       },
       set: function (value) {
+        this.selectedResolutionZ = Math.round(+this.testScaleZ * this.selectedIncomingVolumeResolution[2])
         this.scaleEvent({
           axis: 'z',
           value
@@ -478,6 +523,9 @@ export default {
       if (flag) {
         this.isotropicScaleEvent({ value: this.testScaleX })
       }
+    },
+    selectedIncomingVolumeResolution: function (flag) {
+      this.resetResolution()
     }
   },
   methods: {
@@ -511,6 +559,13 @@ export default {
         collapse: `scaleBySliderIsotropic`
       })
 
+      this.selectedResolutionX = Math.round(+this.testScaleX * this.selectedIncomingVolumeResolution[0])
+      this.selectedResolutionY = Math.round(+this.testScaleY * this.selectedIncomingVolumeResolution[1])
+      this.selectedResolutionZ = Math.round(+this.testScaleZ * this.selectedIncomingVolumeResolution[2])
+
+      this.setIsotropicScale(value)
+    },
+    setIsotropicScale: function(value) {
       this.setScaleInc({
         axis: 'x',
         value
@@ -610,7 +665,37 @@ export default {
         name: `flip on axis ${axis}`
       })
       this.flipAxis({ axis })
+    }, 
+    setResolution: function () {
+      const isotropic = +this.selectedResolutionX === +this.selectedResolutionY && +this.selectedResolutionY === +this.selectedResolutionZ
+
+      if (isotropic) {
+        this.setIsotropicScale(+this.selectedResolutionX/this.selectedIncomingVolumeResolution[0])
+      } else {
+          this.isotropic = false
+          const scaleX = +this.selectedResolutionX/this.selectedIncomingVolumeResolution[0]
+          const scaleY = +this.selectedResolutionY/this.selectedIncomingVolumeResolution[1]
+          const scaleZ = +this.selectedResolutionZ/this.selectedIncomingVolumeResolution[2]
+
+          this.scaleEvent({axis: 'x', value: scaleX})
+          this.scaleEvent({axis: 'y', value: scaleY})
+          this.scaleEvent({axis: 'z', value: scaleZ})
+      }
+    },
+
+
+    resetResolution: function () {
+      this.testScaleX = 1
+      this.testScaleY = 1
+      this.testScaleZ = 1
+      this.selectedResolutionX = this.selectedIncomingVolumeResolution[0]
+      this.selectedResolutionY = this.selectedIncomingVolumeResolution[1]
+      this.selectedResolutionZ = this.selectedIncomingVolumeResolution[2]
+      this.isotropic = this.testScaleX === this.testScaleY && this.testScaleY === this.testScaleZ  
     }
+  },
+  created: function () {
+    this.resetResolution()
   }
 }
 </script>
