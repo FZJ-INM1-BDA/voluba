@@ -85,6 +85,62 @@
           </div>
         </div>
       </div>
+
+      <!-- Resolution -->
+      <div class="section-wrapper mb-1">
+        <div
+          @click="lockIncVol({ incVolTranslationLock: !incVolTranslationLock})">
+          <font-awesome-icon :icon="lockIconTranslation"></font-awesome-icon>
+        </div>
+        <section-component
+          :forceHide="incVolTranslationLock"
+          id="translation-component">
+          <template slot="header">
+            <strong :class="incVolTranslationLock ? 'text-muted' : ''">
+              Resolution
+            </strong>
+          </template>
+          <template slot="body">
+            <div class="d-flex">
+              <label class="mr-2" @click="voxelSpace = false">Pysical</label>
+              <b-form-checkbox v-model="voxelSpace" switch></b-form-checkbox>
+              <label @click="voxelSpace = true">Voxel</label>
+            </div>
+            <div>
+              <label class="mr-2">X-axis</label>
+              <div class="input-group">
+                <input v-model="selectedResolutionX" @input="setResolution" type="number" class="form-control rounded-0">
+                <div class = "input-group-append">
+                  <span class = "input-group-text rounded-0">{{voxelSpace ? 'nm' : 'mm'}}</span>
+                </div>
+              </div>
+            </div>
+            <div>
+              <label class="mr-2 mt-2">Y-axis</label>
+              <div class="input-group">
+                <input v-model="selectedResolutionY" @input="setResolution" type="number" class="form-control rounded-0">
+                <div class = "input-group-append">
+                  <span class = "input-group-text rounded-0">{{voxelSpace ? 'nm' : 'mm'}}</span>
+                </div>
+              </div>
+            </div>
+            <div>
+              <label class="mr-2 mt-2">Z-axis</label>
+              <div class="input-group">
+                <input v-model="selectedResolutionZ" @input="setResolution" type="number" class="form-control rounded-0">
+                <div class = "input-group-append">
+                  <span class = "input-group-text rounded-0">{{voxelSpace ? 'nm' : 'mm'}}</span>
+                </div>
+              </div>
+            </div>
+
+            <b-button size="sm" class="mt-3" @click="resetResolution">
+              Reset
+            </b-button>
+          </template>
+
+        </section-component>
+      </div>
         
       <!-- scale -->
       <div class="section-wrapper mb-1">
@@ -152,42 +208,6 @@
               :step="0.01"
               :value="testScaleZ" />
           </template>
-        </section-component>
-      </div>
-
-      <!-- Resolution -->
-      <div class="section-wrapper mb-1">
-        <div
-          @click="lockIncVol({ incVolTranslationLock: !incVolTranslationLock})">
-          <font-awesome-icon :icon="lockIconTranslation"></font-awesome-icon>
-        </div>
-        <section-component
-          :forceHide="incVolTranslationLock"
-          id="translation-component">
-          <template slot="header">
-            <strong :class="incVolTranslationLock ? 'text-muted' : ''">
-              Resolution
-            </strong>
-          </template>
-          <template slot="body">
-            <div>
-              <label class="mr-2">X-axis</label>
-              <input v-model="selectedResolutionX" @input="setResolution" type="number">
-            </div>
-            <div>
-              <label class="mr-2">Y-axis</label>
-              <input v-model="selectedResolutionY" @input="setResolution" type="number">
-            </div>
-            <div>
-              <label class="mr-2">Z-axis</label>
-              <input v-model="selectedResolutionZ" @input="setResolution" type="number">
-            </div>
-
-            <b-button size="sm" class="mt-3" @click="resetResolution">
-              Reset
-            </b-button>
-          </template>
-
         </section-component>
       </div>
 
@@ -338,6 +358,7 @@ export default {
       selectedResolutionX: 0,
       selectedResolutionY: 0,
       selectedResolutionZ: 0,
+      voxelSpace: true
     }
   },
   computed: {
@@ -355,7 +376,8 @@ export default {
     ]),
     ...mapState('dataSelectionStore', [
       'incomingVolumes',
-      'selectedIncomingVolumeResolution'
+      'selectedIncomingVolumeResolution',
+      'selectedIncomingVolumeSize'
     ]),
     ...mapState('nehubaStore', {
       lockIconTranslation: state => state.incVolTranslationLock ? 'lock' : 'lock-open',
@@ -370,7 +392,7 @@ export default {
         return this.testScale[0]
       },
       set: function (value) {
-        this.selectedResolutionX = Math.round(+this.testScaleX * this.selectedIncomingVolumeResolution[0])
+        this.selectedResolutionX = Math.round(+this.testScaleX * this.selectedIncomingVolumeResolutionX)
         this.scaleEvent({
           axis: 'x',
           value
@@ -382,7 +404,9 @@ export default {
         return this.testScale[1]
       },
       set: function (value) {
-        this.selectedResolutionY = Math.round(+this.testScaleY * this.selectedIncomingVolumeResolution[1])
+        this.selectedResolutionY = Math.round(+this.testScaleY * this.selectedIncomingVolumeResolutionY
+        
+        )
         this.scaleEvent({
           axis: 'y',
           value
@@ -394,7 +418,7 @@ export default {
         return this.testScale[2]
       },
       set: function (value) {
-        this.selectedResolutionZ = Math.round(+this.testScaleZ * this.selectedIncomingVolumeResolution[2])
+        this.selectedResolutionZ = Math.round(+this.testScaleZ * this.selectedIncomingVolumeResolutionZ)
         this.scaleEvent({
           axis: 'z',
           value
@@ -516,7 +540,22 @@ export default {
     },
     renderedIncomingVolumes: function () {
       return [this.dummyIncomingTemplate].concat(this.$store.state.incomingVolumes)
-    }
+    },
+    selectedIncomingVolumeResolutionX: {
+      get: function () {
+        return this.voxelSpace? +this.selectedIncomingVolumeResolution[0].toFixed(0) : +(this.voxelToReal(this.selectedIncomingVolumeResolution[0], 0)).toFixed(2)
+      }
+    },
+    selectedIncomingVolumeResolutionY: {
+      get: function () {
+        return this.voxelSpace? +this.selectedIncomingVolumeResolution[1].toFixed(0) : +(this.voxelToReal(this.selectedIncomingVolumeResolution[1], 1)).toFixed(2)
+      }
+    },
+    selectedIncomingVolumeResolutionZ: {
+      get: function () {
+        return this.voxelSpace? +this.selectedIncomingVolumeResolution[2].toFixed(0) : +(this.voxelToReal(this.selectedIncomingVolumeResolution[2], 2)).toFixed(2)
+      }
+    },
   },
   watch: {
     isotropic: function (flag) {
@@ -526,6 +565,11 @@ export default {
     },
     selectedIncomingVolumeResolution: function (flag) {
       this.resetResolution()
+    },
+    voxelSpace: function (voxel) {
+      this.selectedResolutionX = voxel ? this.realToVoxel(this.selectedResolutionX, 0) : this.voxelToReal(this.selectedResolutionX, 0)
+      this.selectedResolutionY = voxel ? this.realToVoxel(this.selectedResolutionY, 1) : this.voxelToReal(this.selectedResolutionY, 1)
+      this.selectedResolutionZ = voxel ? this.realToVoxel(this.selectedResolutionZ, 2) : this.voxelToReal(this.selectedResolutionZ, 2)
     }
   },
   methods: {
@@ -559,9 +603,10 @@ export default {
         collapse: `scaleBySliderIsotropic`
       })
 
-      this.selectedResolutionX = Math.round(+this.testScaleX * this.selectedIncomingVolumeResolution[0])
-      this.selectedResolutionY = Math.round(+this.testScaleY * this.selectedIncomingVolumeResolution[1])
-      this.selectedResolutionZ = Math.round(+this.testScaleZ * this.selectedIncomingVolumeResolution[2])
+
+      this.selectedResolutionX = Math.round(+this.testScaleX * this.selectedIncomingVolumeResolutionX)
+      this.selectedResolutionY = Math.round(+this.testScaleY * this.selectedIncomingVolumeResolutionY)
+      this.selectedResolutionZ = Math.round(+this.testScaleZ * this.selectedIncomingVolumeResolutionZ)
 
       this.setIsotropicScale(value)
     },
@@ -670,12 +715,12 @@ export default {
       const isotropic = +this.selectedResolutionX === +this.selectedResolutionY && +this.selectedResolutionY === +this.selectedResolutionZ
 
       if (isotropic) {
-        this.setIsotropicScale(+this.selectedResolutionX/this.selectedIncomingVolumeResolution[0])
+        this.setIsotropicScale(+this.selectedResolutionX/this.selectedIncomingVolumeResolutionX)
       } else {
           this.isotropic = false
-          const scaleX = +this.selectedResolutionX/this.selectedIncomingVolumeResolution[0]
-          const scaleY = +this.selectedResolutionY/this.selectedIncomingVolumeResolution[1]
-          const scaleZ = +this.selectedResolutionZ/this.selectedIncomingVolumeResolution[2]
+          const scaleX = +this.selectedResolutionX/this.selectedIncomingVolumeResolutionX
+          const scaleY = +this.selectedResolutionY/this.selectedIncomingVolumeResolutionY
+          const scaleZ = +this.selectedResolutionZ/this.selectedIncomingVolumeResolutionZ
 
           this.scaleEvent({axis: 'x', value: scaleX})
           this.scaleEvent({axis: 'y', value: scaleY})
@@ -688,10 +733,16 @@ export default {
       this.testScaleX = 1
       this.testScaleY = 1
       this.testScaleZ = 1
-      this.selectedResolutionX = this.selectedIncomingVolumeResolution[0]
-      this.selectedResolutionY = this.selectedIncomingVolumeResolution[1]
-      this.selectedResolutionZ = this.selectedIncomingVolumeResolution[2]
+      this.selectedResolutionX = this.selectedIncomingVolumeResolutionX
+      this.selectedResolutionY = this.selectedIncomingVolumeResolutionY
+      this.selectedResolutionZ = this.selectedIncomingVolumeResolutionZ
       this.isotropic = this.testScaleX === this.testScaleY && this.testScaleY === this.testScaleZ  
+    },
+    voxelToReal: function (num, index) {
+      return +((num * this.selectedIncomingVolumeSize[index])/1e6).toFixed(2)
+    },
+    realToVoxel: function (num, index) {
+      return +((num / this.selectedIncomingVolumeSize[index])*1e6).toFixed(0)
     }
   },
   created: function () {

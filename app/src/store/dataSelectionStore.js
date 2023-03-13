@@ -22,6 +22,7 @@ const dataSelectionStore = {
 
     selectedIncomingVolumeId: null,
     selectedIncomingVolumeResolution: null,
+    selectedIncomingVolumeSize: null,
 
     incomingVolumes: DEFAULT_BUNDLED_INCOMING_VOLUMES,
   },
@@ -35,8 +36,9 @@ const dataSelectionStore = {
     setSelectedIncomingVolumeId (state, id) {
       state.selectedIncomingVolumeId = id
     },
-    setSelectedIncomingVolumeResolution (state, resolution) {
-      state.selectedIncomingVolumeResolution = resolution
+    setSelectedIncomingVolumeResolution (state, data) {
+      state.selectedIncomingVolumeResolution = data.resolution
+      state.selectedIncomingVolumeSize = data.size
     },
     setIncomingVolumes (state, { volumes }) {
       state.incomingVolumes = volumes
@@ -72,12 +74,13 @@ const dataSelectionStore = {
     async ['setIncomingVolumeResolution'] ({ commit, state, dispatch, rootGetters }, id) {
       try {
         const vol = state.incomingVolumes.find(({ id: _id }) => _id === id)
-        const authHeader= rootGetters['authStore/authHeader']
-        const config = {headers: {...authHeader}}
-        const { data } = await axios(`${vol.imageSource.substring(14)}/info`, config)
+        const { data } = await axios(`${vol.imageSource.substring(14)}/info`)
         const resolution = data.scales[0].resolution
-
-        commit('setSelectedIncomingVolumeResolution', resolution);
+        const size = data.scales[0].size
+        // const resolution = {}
+        // resolution.voxel = data.scales[0].resolution
+        // resolution.real = data.scales[0].resolution.map((r, i) => r * data.scales[0].size[i])
+        commit('setSelectedIncomingVolumeResolution', {resolution, size})
       } catch (error) {
         dispatch('updateIncVolumesResult', {
           error: error ? error : null
