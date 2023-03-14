@@ -162,7 +162,7 @@
             <template slot="append">
               <div class="input-group-append">
                 <div
-                  @click="removeLmp({ id: lmp.id })"
+                  @click="removeLmsLmp({ id: lmp.id })"
                   class="btn btn-sm btn-danger">
                   <font-awesome-icon icon="trash-alt"></font-awesome-icon>
                 </div>
@@ -340,7 +340,7 @@ export default {
       'removeAllLm',
       'setLmsActive',
       'changeLandmarkPairName',
-      'removeLmp'
+      'removeLmsLmp'
     ]),
     toggleLmIcons: function (id) {
       const foundId = this.lmIconOpenSet.find(i => i === id)
