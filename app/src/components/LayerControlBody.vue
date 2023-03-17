@@ -101,17 +101,20 @@
             </strong>
           </template>
           <template slot="body">
-            <div class="d-flex">
-              <label class="mr-2" @click="voxelSpace = false">Pysical</label>
-              <b-form-checkbox v-model="voxelSpace" switch></b-form-checkbox>
-              <label @click="voxelSpace = true">Voxel</label>
-            </div>
+
+            <b-form-radio-group
+              id="btn-radios-1"
+              v-model="selectedUnit"
+              :options="units"
+              :aria-describedby="'ariaDescribedby'"
+              name="radios-btn-default"
+              buttons></b-form-radio-group>
             <div>
               <label class="mr-2">X-axis</label>
               <div class="input-group">
                 <input v-model="selectedResolutionX" @input="setResolution" type="number" class="form-control rounded-0">
                 <div class = "input-group-append">
-                  <span class = "input-group-text rounded-0">{{voxelSpace ? 'nm' : 'mm'}}</span>
+                  <span class = "input-group-text rounded-0">{{selectedUnit}}</span>
                 </div>
               </div>
             </div>
@@ -120,7 +123,7 @@
               <div class="input-group">
                 <input v-model="selectedResolutionY" @input="setResolution" type="number" class="form-control rounded-0">
                 <div class = "input-group-append">
-                  <span class = "input-group-text rounded-0">{{voxelSpace ? 'nm' : 'mm'}}</span>
+                  <span class = "input-group-text rounded-0">{{selectedUnit}}</span>
                 </div>
               </div>
             </div>
@@ -129,7 +132,7 @@
               <div class="input-group">
                 <input v-model="selectedResolutionZ" @input="setResolution" type="number" class="form-control rounded-0">
                 <div class = "input-group-append">
-                  <span class = "input-group-text rounded-0">{{voxelSpace ? 'nm' : 'mm'}}</span>
+                  <span class = "input-group-text rounded-0">{{selectedUnit}}</span>
                 </div>
               </div>
             </div>
@@ -358,7 +361,9 @@ export default {
       selectedResolutionX: 0,
       selectedResolutionY: 0,
       selectedResolutionZ: 0,
-      voxelSpace: true
+
+      units: ['nm', 'μm', 'mm', 'cm'],
+      selectedUnit: 'nm'
     }
   },
   computed: {
@@ -392,7 +397,7 @@ export default {
         return this.testScale[0]
       },
       set: function (value) {
-        this.selectedResolutionX = Math.round(+this.testScaleX * this.selectedIncomingVolumeResolutionX)
+        this.selectedResolutionX = this.fixed(+this.testScaleX * this.selectedIncomingVolumeResolutionX)
         this.scaleEvent({
           axis: 'x',
           value
@@ -404,9 +409,7 @@ export default {
         return this.testScale[1]
       },
       set: function (value) {
-        this.selectedResolutionY = Math.round(+this.testScaleY * this.selectedIncomingVolumeResolutionY
-        
-        )
+        this.selectedResolutionY = this.fixed(+this.testScaleY * this.selectedIncomingVolumeResolutionY)
         this.scaleEvent({
           axis: 'y',
           value
@@ -418,7 +421,7 @@ export default {
         return this.testScale[2]
       },
       set: function (value) {
-        this.selectedResolutionZ = Math.round(+this.testScaleZ * this.selectedIncomingVolumeResolutionZ)
+        this.selectedResolutionZ = this.fixed(+this.testScaleZ * this.selectedIncomingVolumeResolutionZ)
         this.scaleEvent({
           axis: 'z',
           value
@@ -543,17 +546,17 @@ export default {
     },
     selectedIncomingVolumeResolutionX: {
       get: function () {
-        return this.voxelSpace? +this.selectedIncomingVolumeResolution[0].toFixed(0) : +(this.voxelToReal(this.selectedIncomingVolumeResolution[0], 0)).toFixed(2)
+        return this.nmToSelectedUnit(this.selectedIncomingVolumeResolution[0])
       }
     },
     selectedIncomingVolumeResolutionY: {
       get: function () {
-        return this.voxelSpace? +this.selectedIncomingVolumeResolution[1].toFixed(0) : +(this.voxelToReal(this.selectedIncomingVolumeResolution[1], 1)).toFixed(2)
+        return this.nmToSelectedUnit(this.selectedIncomingVolumeResolution[1])
       }
     },
     selectedIncomingVolumeResolutionZ: {
       get: function () {
-        return this.voxelSpace? +this.selectedIncomingVolumeResolution[2].toFixed(0) : +(this.voxelToReal(this.selectedIncomingVolumeResolution[2], 2)).toFixed(2)
+        return this.nmToSelectedUnit(this.selectedIncomingVolumeResolution[2])
       }
     },
   },
@@ -566,10 +569,10 @@ export default {
     selectedIncomingVolumeResolution: function (flag) {
       this.resetResolution()
     },
-    voxelSpace: function (voxel) {
-      this.selectedResolutionX = voxel ? this.realToVoxel(this.selectedResolutionX, 0) : this.voxelToReal(this.selectedResolutionX, 0)
-      this.selectedResolutionY = voxel ? this.realToVoxel(this.selectedResolutionY, 1) : this.voxelToReal(this.selectedResolutionY, 1)
-      this.selectedResolutionZ = voxel ? this.realToVoxel(this.selectedResolutionZ, 2) : this.voxelToReal(this.selectedResolutionZ, 2)
+    selectedUnit: function(newUnit, prevUnit) {
+      this.selectedResolutionX = this.changeUnit(this.selectedResolutionX, prevUnit)
+      this.selectedResolutionY = this.changeUnit(this.selectedResolutionY, prevUnit)
+      this.selectedResolutionZ = this.changeUnit(this.selectedResolutionZ, prevUnit)
     }
   },
   methods: {
@@ -604,9 +607,9 @@ export default {
       })
 
 
-      this.selectedResolutionX = Math.round(+this.testScaleX * this.selectedIncomingVolumeResolutionX)
-      this.selectedResolutionY = Math.round(+this.testScaleY * this.selectedIncomingVolumeResolutionY)
-      this.selectedResolutionZ = Math.round(+this.testScaleZ * this.selectedIncomingVolumeResolutionZ)
+      this.selectedResolutionX = this.fixed(+this.testScaleX * this.selectedIncomingVolumeResolutionX)
+      this.selectedResolutionY = this.fixed(+this.testScaleY * this.selectedIncomingVolumeResolutionY)
+      this.selectedResolutionZ = this.fixed(+this.testScaleZ * this.selectedIncomingVolumeResolutionZ)
 
       this.setIsotropicScale(value)
     },
@@ -710,17 +713,18 @@ export default {
         name: `flip on axis ${axis}`
       })
       this.flipAxis({ axis })
-    }, 
+    },
     setResolution: function () {
+      
       const isotropic = +this.selectedResolutionX === +this.selectedResolutionY && +this.selectedResolutionY === +this.selectedResolutionZ
 
       if (isotropic) {
         this.setIsotropicScale(+this.selectedResolutionX/this.selectedIncomingVolumeResolutionX)
       } else {
           this.isotropic = false
-          const scaleX = +this.selectedResolutionX/this.selectedIncomingVolumeResolutionX
-          const scaleY = +this.selectedResolutionY/this.selectedIncomingVolumeResolutionY
-          const scaleZ = +this.selectedResolutionZ/this.selectedIncomingVolumeResolutionZ
+          const scaleX = this.selectedResolutionX/this.selectedIncomingVolumeResolutionX
+          const scaleY = this.selectedResolutionY/this.selectedIncomingVolumeResolutionY
+          const scaleZ = this.selectedResolutionZ/this.selectedIncomingVolumeResolutionZ
 
           this.scaleEvent({axis: 'x', value: scaleX})
           this.scaleEvent({axis: 'y', value: scaleY})
@@ -728,22 +732,37 @@ export default {
       }
     },
 
+    nmToSelectedUnit: function (num) {
+      const div = this.selectedUnit === 'μm'? 1000 
+        : this.selectedUnit === 'mm'? 1e6
+          : this.selectedUnit === 'cm'? 1e7 : 1
+      return +num / div
+    },
 
+    changeUnit: function (num, prevUnit) {
+      const mult = prevUnit === 'μm'? 1000 
+        : prevUnit === 'mm'? 1e6
+          : prevUnit === 'cm'? 1e7 : 1
+      const nm = +num * mult
+      return this.fixed(this.nmToSelectedUnit(nm))
+    },
+    fixed: function (num) {
+      const decimal = this.selectedUnit === 'μm'? 2
+        : this.selectedUnit === 'mm'? 3
+          : this.selectedUnit === 'cm'? 4 : 0
+      return parseFloat(num.toFixed(decimal))
+    },
     resetResolution: function () {
       this.testScaleX = 1
       this.testScaleY = 1
       this.testScaleZ = 1
+      this.isotropic = true 
+
+      this.selectedUnit = 'nm'
       this.selectedResolutionX = this.selectedIncomingVolumeResolutionX
       this.selectedResolutionY = this.selectedIncomingVolumeResolutionY
       this.selectedResolutionZ = this.selectedIncomingVolumeResolutionZ
-      this.isotropic = this.testScaleX === this.testScaleY && this.testScaleY === this.testScaleZ  
     },
-    voxelToReal: function (num, index) {
-      return +((num * this.selectedIncomingVolumeSize[index])/1e6).toFixed(2)
-    },
-    realToVoxel: function (num, index) {
-      return +((num / this.selectedIncomingVolumeSize[index])*1e6).toFixed(0)
-    }
   },
   created: function () {
     this.resetResolution()
