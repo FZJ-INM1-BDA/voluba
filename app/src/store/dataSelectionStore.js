@@ -22,7 +22,6 @@ const dataSelectionStore = {
 
     selectedIncomingVolumeId: null,
     selectedIncomingVolumeResolution: null,
-    selectedIncomingVolumeSize: null,
 
     incomingVolumes: DEFAULT_BUNDLED_INCOMING_VOLUMES,
   },
@@ -38,7 +37,6 @@ const dataSelectionStore = {
     },
     setSelectedIncomingVolumeResolution (state, data) {
       state.selectedIncomingVolumeResolution = data.resolution
-      state.selectedIncomingVolumeSize = data.size
     },
     setIncomingVolumes (state, { volumes }) {
       state.incomingVolumes = volumes

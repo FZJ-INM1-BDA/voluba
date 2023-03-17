@@ -382,7 +382,6 @@ export default {
     ...mapState('dataSelectionStore', [
       'incomingVolumes',
       'selectedIncomingVolumeResolution',
-      'selectedIncomingVolumeSize'
     ]),
     ...mapState('nehubaStore', {
       lockIconTranslation: state => state.incVolTranslationLock ? 'lock' : 'lock-open',
