@@ -1,31 +1,35 @@
 <template>
-  <g
-    class="group"
+  <g class="group"
     @mouseenter="$emit('mouseenterPath')"
     @mouseleave="$emit('mouseleavePath')"
     @mousedown="$emit('mousedownPath')">
-    <path
-      :d="pathD1"
-      class="path thin">
-    </path>
-    <path
-      :d="pathD2"
-      class="path">
-    </path>
-    <path
-      :d="pathD3"
-      class="path thin">
-    </path>
 
-    <path
-      :d="pathD1x"
-      class="path thin">
-    </path>
+    <circle :cx="center[0]" :cy="center[1]" r="8%" :fill="circleFill"/>
 
-    <path
-      :d="pathD3x"
-      class="path thin">
-    </path>
+    <g>
+      <path
+        :d="pathD1"
+        class="path thin">
+      </path>
+      <path
+        :d="pathD2"
+        class="path">
+      </path>
+      <path
+        :d="pathD3"
+        class="path thin">
+      </path>
+
+      <path
+        :d="pathD1x"
+        class="path thin">
+      </path>
+
+      <path
+        :d="pathD3x"
+        class="path thin">
+      </path>
+    </g>
   </g>
 </template>
 <script>
@@ -47,9 +51,15 @@ export default {
       default: function (coord) {
         return coord
       }
+    },
+    fillColor: {
+      default: () => [255, 0, 0]
     }
   },
   computed: {
+    circleFill: function() {
+      return `rgb(${this.fillColor.join(', ')})`
+    },
     radius: function(){
       return this.width / 2
     },
@@ -172,11 +182,15 @@ export default {
 }
 </script>
 <style scoped>
+circle
+{
+  pointer-events: visiblePainted;
+}
 .path
 {
   pointer-events: visibleStroke;
   fill: none;
-  stroke: blue;
+  stroke: white;
 }
 
 .path:not(.thin)

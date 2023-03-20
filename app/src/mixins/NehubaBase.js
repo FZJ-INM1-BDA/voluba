@@ -157,7 +157,7 @@ export default {
       })
     },
     nehubaBase__destroyNehuba: function () {
-      return new Promise((resolve, reject) => {
+      return new Promise(resolve => {
         this.nehubaBase__nehubaBaseDestroyHook()
         if (this.$options && this.$options.nehubaBase) {
           if (this.$options.nehubaBase.nehubaBase__nehubaViewer) {
@@ -173,7 +173,8 @@ export default {
         defaultXform,
         defaultXform,
         defaultXform
-      ],
+      ]
+      this.nehubaBase__viewportToDatas = []
       this.nehubaBase__subscriptions.forEach(s => s.unsubscribe())
     },
     nehubaBase__navigationChanged: function () {
@@ -200,6 +201,9 @@ export default {
       ) {
         this.nehubaBase__navigationChanged()
       }
+    },
+    nehubaBase__setOrientation: function(orientation){    
+      this.$options.nehubaBase.nehubaBase__nehubaViewer.ngviewer.navigationState.pose.orientation.restoreState( orientation )
     }
   }
 }

@@ -548,6 +548,9 @@ export default {
 .lm-wrapper
 {
   display:flex;
+  max-height:50vh;
+  overflow-y: scroll;
+  overflow-x: hidden;
 }
 
 .lm-wrapper > .ref-lm-wrapper

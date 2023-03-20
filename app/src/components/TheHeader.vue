@@ -20,6 +20,7 @@
 
           <!-- global lock -->
           <div
+            v-if="showGlobalLock"
             v-b-tooltip.hover.bottom="'Lock Incoming Volume'"
             @click="toggleGlobalLock"
             class="mr-2 w-1em">
@@ -28,93 +29,17 @@
             </font-awesome-icon>
           </div>
 
-          <!-- opacity -->
-          <transition name="fade">
-            <b-nav-form
-              v-if="_step2Mode === 'overlay' && selectedIncomingVolumeType === 'image'">
-
-              <SliderComponent
-                v-b-tooltip.hover.bottom="'incoming volume opacity'"
-                class="transparent"
-                @minus="opacity = opacity - 0.05 < opacityMin ? opacityMin : opacity - 0.05"
-                @plus="opacity = opacity + 0.05 > opacityMax ? opacityMax : opacity + 0.05"
-                @textInput="opacity = $event"
-                @sliderInput="opacity = $event"
-                :min="opacityMin"
-                :max="opacityMax"
-                :step="opacityStep"
-                :value="opacity" />
-            </b-nav-form>
-          </transition>
-
-          <!-- color -->  
-          <transition name="fade">
+          <!-- Incoming Volume filter -->
+          <transition name="fade" v-if="selectedIncomingVolume">
             <b-nav-item-dropdown
-              :no-caret="true"
-              right
-              v-if="showColorPicker">
-              <template slot="button-content">
-                <div
-                  :style="{color: overlayColor.hex}"
-                  v-b-tooltip.hover="'incoming volume color'"
-                  class="btn btn-sm rounded-circle btn-outline-secondary">
-                  <font-awesome-icon class="icon" icon="palette"></font-awesome-icon>
-                </div>
-              </template>
-              <b-dropdown-item
-                class="nopadding">
-                <compact-picker
-                  class="compact-picker"
-                  v-model="overlayColor" />
-              </b-dropdown-item>
-            </b-nav-item-dropdown>
-
-          </transition>
-
-          <!-- threshold -->
-          <transition name="fade">
-            <b-nav-item-dropdown
-              text="Threshold"
-              right>
-                <SliderComponent
-                  name="Lower Threshold"
-                  :min="0"
-                  :max="1"
-                  :step="0.01"
-                  @sliderInput="lowerThreshold = $event"
-                  @minus="lowerThreshold -= 0.01"
-                  @plus="lowerThreshold += 0.01"
-                  :value="lowerThreshold"
-                  unit="" />
-                <SliderComponent
-                  name="Upper Threshold"
-                  :min="0"
-                  :max="1"
-                  :step="0.01"
-                  @sliderInput="upperThreshold = $event"
-                  @minus="upperThreshold -= 0.01"
-                  @plus="upperThreshold += 0.01"
-                  :value="upperThreshold"
-                  unit="" />
-            </b-nav-item-dropdown>
-          </transition>
-
-
-          <!-- colormap selection -->
-          <transition name="fade">
-            <b-nav-item-dropdown
-              :text="colorMapSelectionText"
-              right>
-              <b-dropdown-item
-                @click="selectColorMapByName({ name: null })">
-                Mono
-              </b-dropdown-item>
-              <b-dropdown-item
-                :key="colorMap.name"
-                @click="selectColorMapByName({ name: colorMap.name })"
-                v-for="colorMap in availableColorMaps">
-                {{ colorMap.name }}
-              </b-dropdown-item>
+                text="Volume filter"
+                right>
+              <b-dropdown-text>
+                <ng-layer-tune
+                    advanced-control="true"
+                    ng-layer-name="userlayer-0">
+                </ng-layer-tune>
+              </b-dropdown-text>
             </b-nav-item-dropdown>
           </transition>
 
@@ -164,25 +89,14 @@
 <script>
 import ProgressTracker from '@/components/layout/ProgressTracker'
 import SigningComponent from '@/components/SigninComponent'
-import SliderComponent from '@/components/layout/Slider'
 import { mapState, mapActions, mapGetters, mapMutations } from 'vuex'
-import { Compact } from 'vue-color'
 import { AGREE_COOKIE_KEY } from '@/constants'
 
 export default {
   name: 'HeaderComponent',
-  data: function () {
-    return {
-      opacityMin: 0,
-      opacityMax: 1.0,
-      opacityStep: 0.01,
-    }
-  },
   components: {
     ProgressTracker,
     SigningComponent,
-    CompactPicker: Compact,
-    SliderComponent
   },
   mounted() {
     const showCookie = (cb = () => {}) => {
@@ -191,11 +105,14 @@ export default {
 
     const showServerWarning = () => {
       if (this.serverWarnings && this.serverWarnings.length > 0) {
-        this.modalMessage({
-          variant: 'warning',
-          title: 'Image Server Warning',
-          htmlBody: makeHtmlFragmentForWarning({ serverWarnings: this.serverWarnings})
-        })
+        /**
+         * TODO reimplement server warning
+         */
+        // this.modalMessage({
+        //   variant: 'warning',
+        //   title: 'Image Server Warning',
+        //   htmlBody: makeHtmlFragmentForWarning({ serverWarnings: this.serverWarnings})
+        // })
       }
     }
 
@@ -213,17 +130,7 @@ export default {
   },
   computed: {
     ...mapGetters('dataSelectionStore', [
-      'selectedIncomingVolumeType'
-    ]),
-    ...mapState('viewerPreferenceStore', {
-      stateIncomingColor: state => state.incomingColor,
-      stateOverlayColor: state => state.overlayColor,
-      availableColorMaps: state => state.availableColorMaps,
-      stateLowerThreshold: state => state.lowerThreshold,
-      stateUpperThreshold: state => state.upperThreshold
-    }),
-    ...mapGetters('viewerPreferenceStore', [
-      'selectedColorMap'
+      'selectedIncomingVolume'
     ]),
     ...mapState('nehubaStore', {
       globalIncLock: state => state.incVolRotationLock && state.incVolTranslationLock && state.incVolScaleLock
@@ -237,22 +144,6 @@ export default {
       modeBtnVariant: state => state._step2Mode === 'overlay' ? 'outline-secondary' : 'info',
       agreedToCookie: 'agreedToCookie'
     }),
-    lowerThreshold: {
-      get: function () {
-        return this.stateLowerThreshold
-      },
-      set: function (lowerThreshold) {
-        this.setLowerThreshold({ lowerThreshold })
-      }
-    },
-    upperThreshold: {
-      get: function () {
-        return this.stateUpperThreshold
-      },
-      set: function (upperThreshold) {
-        this.setUpperThreshold({ upperThreshold })
-      }
-    },
     globalLockIcon: function () {
       return this.globalIncLock ?  'lock' : 'lock-open'
     },
@@ -261,27 +152,11 @@ export default {
         ? `Hi ${(this.user && this.user.name) || 'Unnamed User'}`
         : `Login`
     },
-    showColorPicker: function () {
-      return this._step2Mode === 'overlay' && this.selectedIncomingVolumeType === 'image' && !this.selectedColorMap
-    },
-    showColorMapSelection: function () {
-      return this._step2Mode === 'overlay' && this.selectedIncomingVolumeType === 'image'
-    },
-    colorMapSelectionText: function () {
-      return this.selectedColorMap
-        ? this.selectedColorMap.name
-        : 'Mono'
+    showGlobalLock: function () {
+      return this._step2Mode === 'overlay'
     },
     modeBtnTooltipText: function () {
       return `${this.mode === 'classic' ? 'Disable' : 'Enable'} two pane mode`
-    },
-    overlayColor: {
-      get: function () {
-        return this.stateOverlayColor
-      },
-      set: function (newColor) {
-        this.changeOverlayColor(newColor)
-      }
     },
     showProgressTracker: function () {
       const obj = this.$router.options.routes.find(r => r.path === this.$route.path)
@@ -293,14 +168,6 @@ export default {
       },
       set: function (mode) {
         this.$store.commit('_setStep2Mode', { mode })
-      }
-    },
-    opacity: {
-      get: function () {
-        return this.stateIncomingColor[3]
-      },
-      set: function (opacityVal) {
-        this.changeOpacity(Number(opacityVal))
       }
     }
   },
@@ -351,50 +218,10 @@ export default {
   z-index: 10;
   pointer-events: none;
 }
-#logo {
-  margin-right: 5px;
-}
-.description {
-  font-size: 12px;
-  margin-bottom: 0px;
-}
 .pointer-events
 {
   pointer-events: all;
 }
-.colour-box
-{
-  width: 20px;
-  height: 20px;
-  border: 1px solid black;
-  display:inline-block;
-}
-.nopadding
-{
-  padding: 0;
-}
-
-.icon
-{
-  filter: drop-shadow( 0px 1px rgba(0, 0, 0, 0.5))
-    drop-shadow(0px -1px rgba(0, 0, 0, 0.5))
-    drop-shadow(1px 0px rgba(0, 0, 0, 0.5))
-    drop-shadow(-1px 0px rgba(0, 0, 0, 0.5));
-}
-.compact-picker
-{
-  width: 250px;
-}
-.transparent
-{
-  opacity: 0.5;
-  transition: opacity linear 200ms;
-}
-.transparent:hover
-{
-  opacity: 1.0;
-}
-
 .w-1em
 {
   width:1em!important;

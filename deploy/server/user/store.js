@@ -1,11 +1,11 @@
-const { USER_DIR_VOLUBA_CONFIG_FILENAME, USER_DIR_VOLUBA_DIR_NAME } = require('./constants')
+const { USER_DIR_VOLUBA_CONFIG_FILENAME, USER_DIR_VOLUBA_DIR_NAME, EMAIL_CONTACT } = require('./constants')
 const { initUser: workflowInitUser } = require('./workflow/store')
 const { getSeafileHandle } = require('./util')
 const { Readable } = require('stream')
 
 const configFile = {
   name: 'Voluba config file',
-  contact: 'inm1-bda@fz-juelich.de'
+  contact: EMAIL_CONTACT
 }
 
 const masterInitUser = async ({ user }) => {

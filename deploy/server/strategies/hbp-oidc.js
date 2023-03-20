@@ -28,7 +28,9 @@ const cb = (tokenset, {sub, given_name, family_name, ...rest}, done) => {
     .then(() => {
       return {
         ...user,
-        seafileHandle
+        seafile: {
+          handle: seafileHandle
+        }
       }
     })
     .then(async user => {
