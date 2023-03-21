@@ -9,13 +9,11 @@ but also allows you to upload your own image data. Select an existing [public](#
 
 In voluba the reference space defaults to the BigBrain model. Select a different space depending on the species your image data originates from. You can choose between the following:
 
-| species | reference space |
-|---------|-----------------|
-| human   | BigBrain (2015) |
-| rat     | Waxholm (2021)  |
-| mouse   | Allen CCFv3[^1] |
-
-[^1]: CCFv3 = Common Coordinate Framework v3
+| species | reference space | publication | preview |
+|---------|-----------------|-|-|
+| human   | BigBrain (2015) | [https://doi.org/10.1126/science.1235381](https://doi.org/10.1126/science.1235381) | ![](images/human.png) |
+| rat     | Waxholm (2021)  | [https://doi.org/10.1016/j.neuroimage.2014.10.017](https://doi.org/10.1016/j.neuroimage.2014.10.017) | ![](images/rat.png) |
+| mouse   | Allen CCFv3 | [https://doi.org/10.1016/j.cell.2020.04.007](https://doi.org/10.1016/j.cell.2020.04.007) | ![](images/mouse.png) |
 
 ## Public volumes
 

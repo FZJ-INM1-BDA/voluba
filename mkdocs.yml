@@ -35,8 +35,10 @@ nav:
     - 'alignment.md'
     - 'results.md'
   - Tutorials:
-    - Step-by-step tutorial: 'tutorial.md'
-    - Video tutorial: 'video.md'
+    - 'tutorial.md'
+    - 'video.md'
+  - Examples:
+    - 'examples.md'
   - How to:
     - NIfTI conversion: 'nifti_conversion.md'
   - Contact us:
