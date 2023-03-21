@@ -3,7 +3,7 @@
 In this tutorial, you will anchor one of our public example datasets to BigBrain space. This means you can complete this tutorial without an EBRAINS or ORCID account.
 
 !!! warning
-    The purpose of this tutorial is not to achieve an anatomically correct alignment but rather demonstrate the general usage of VoluBA features.
+    The purpose of this tutorial is not to achieve an anatomically correct alignment but rather demonstrate the general usage of voluba features.
 
 ## Loading input data
 

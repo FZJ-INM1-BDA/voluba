@@ -1,6 +1,6 @@
 # Understanding the views
 
-After the selection of a target space and an input volume, VoluBA starts in [overlay mode](#overlay-mode). The incoming volume is presented as a semi-transparent layer on top of the reference space in a 3D view with orthogonal cross-sections. The axes of the template space are color-coded with the x-axis being red, the y-axis being green and the z-axis being blue. This arrangement of axes becomes particularly important when aligning the volume, as the transformations are applied along these axes.
+After the selection of a target space and an input volume, voluba starts in [overlay mode](#overlay-mode). The incoming volume is presented as a semi-transparent layer on top of the reference space in a 3D view with orthogonal cross-sections. The axes of the template space are color-coded with the x-axis being red, the y-axis being green and the z-axis being blue. This arrangement of axes becomes particularly important when aligning the volume, as the transformations are applied along these axes.
 
 <table>
     <ttop>

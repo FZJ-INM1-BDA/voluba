@@ -1,11 +1,11 @@
 <template>
   <div>
     <h3>
-      About VoluBA
+      About voluba
     </h3>
     <hr />
     <p>
-      Volumetric Brain Anchoring (VoluBA), was formerly known as Landmark-Reg.
+      Volumetric Brain Anchoring (voluba), was formerly known as Landmark-Reg.
     </p>
     <div class="row">
 
@@ -61,7 +61,7 @@ export default {
     return {
       docUrl: `https://voluba.readthedocs.io/en/latest/`,
       EMAIL_CONTACT: EMAIL_CONTACT,
-      emailUrl: `mailto:${EMAIL_CONTACT}?subject=[VoluBA] Queries`,
+      emailUrl: `mailto:${EMAIL_CONTACT}?subject=[voluba] Queries`,
       repoUrl: 'https://github.com/fzj-inm1-bda/voluba'
     }
   },

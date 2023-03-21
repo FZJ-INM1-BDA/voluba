@@ -1,6 +1,6 @@
 # NIfTI conversion
 
-For personal data VoluBA only supports the NIfTI-format (.nii or .nii.gz). To convert your data we recommend one of the following tools:
+For personal data voluba only supports the NIfTI-format (.nii or .nii.gz). To convert your data we recommend one of the following tools:
 
 1. [ITK-SNAP](#itk-snap)
 2. [3D Slicer](#3d-slicer)

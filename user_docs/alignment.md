@@ -1,7 +1,7 @@
 # Transforming the input volume 
 
 After preparing the incoming volume, you can now align it to the selected target space. 
-Anchoring an input image to the reference volume in VoluBA is typically performed in the following order:
+Anchoring an input image to the reference volume in voluba is typically performed in the following order:
 
 1. [Initial adjustment of coordinate axes orientations and scaling](#initial-adjustment-of-coordinate-axes-orientations-and-scaling) to match the target space
 2. [Interactive translation and rotation](#interactive-translation-and-rotation) of the incoming data volume to set the position and 3D orientation
@@ -15,13 +15,13 @@ The axis orientations and the voxel scaling can be modified using the **Transfor
 
 ![snippet](images/transformation.png)
 
-If you didn't specify the voxel resolution in your NIfTI header, VoluBA assumes 1 mm voxel resolution. In this case, you need to scale the volume to its actual resolution. For example, if the resolution of the incoming volume is 100 μm, scale it down by 0.1. You can also adjust the scale for each axis separately by ticking off `Isotropic`.
+If you didn't specify the voxel resolution in your NIfTI header, voluba assumes 1 mm voxel resolution. In this case, you need to scale the volume to its actual resolution. For example, if the resolution of the incoming volume is 100 μm, scale it down by 0.1. You can also adjust the scale for each axis separately by ticking off `Isotropic`.
 
 Whenever you want to secure a transformation parameter, click on the lock. This locks the value so that it cannot be changed, for example by interactive manipulation. You can also fix all settings by clicking the lock on the top right next to the volume filters. It is useful to prevent you from accidentally changing the transformation parameters when inspecting the alignment.
 
 ## Interactive translation and rotation
 
-As mentioned above you can adjust the incoming volume's position and orientation by entering values into the **Transform Incoming Volume** dialog. Additionally, VoluBA allows direct manipulation of the input data's position and orientation using the mouse pointer. The position is changed by clicking & dragging the incoming volume in any of the orthogonal views. 
+As mentioned above you can adjust the incoming volume's position and orientation by entering values into the **Transform Incoming Volume** dialog. Additionally, voluba allows direct manipulation of the input data's position and orientation using the mouse pointer. The position is changed by clicking & dragging the incoming volume in any of the orthogonal views. 
 By pressing shift while clicking & dragging, a rotation is applied. 
 
 ![gif](gifs/transform.gif)
@@ -61,7 +61,7 @@ In overlay mode, you enter two landmarks sequentially in the same window. They a
 
 ## Inspecting and undoing alignment steps
 
-VoluBA tracks every step that you execute during the alignment process. 
+voluba tracks every step that you execute during the alignment process. 
 This includes translations, axis flips, rotations, scaling, and application of affine matrices that have been estimated from landmark pairs. 
 You can inspect and navigate the process using the history browser, which is accessible via the **history browser** button on the left: 
 

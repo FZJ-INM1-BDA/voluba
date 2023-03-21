@@ -1,10 +1,11 @@
-site_name: VoluBA User Documentation
+site_name: voluba User Documentation
 
 repo_url: 'https://github.com/FZJ-INM1-BDA/voluba'
 repo_name: 'GitHub'
 
 theme:
   name: 'readthedocs'
+  logo: 'images/voluba.png'
 
 extra_css:
   - extra.css
@@ -24,7 +25,7 @@ extra_javascript:
     - https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML
     
 nav:
-  - About VoluBA: 'index.md'
+  - About voluba: 'index.md'
   - 'requirements.md'
   - 'acknowledgement.md'
   - Workflow:
@@ -39,5 +40,5 @@ nav:
   - How to:
     - NIfTI conversion: 'nifti_conversion.md'
   - Contact us:
-    - Support: 'mailto:support@ebrains.eu?subject=[VoluBA]'
-    - GitHub: 'https://github.com/FZJ-INM1-BDA/voluba/issues'
+    - Support: 'mailto:support@ebrains.eu?subject=[voluba]'
+    - GitHub Issues: 'https://github.com/FZJ-INM1-BDA/voluba/issues'
