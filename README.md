@@ -41,7 +41,5 @@ It has been developed in the [Human Brain Project](https://humanbrainproject.eu)
 It has been designed as a service of the [EBRAINS](https://ebrains.eu) infrastructure for brain research and developed in the [Human Brain Project](https://humanbrainproject.eu). 
 voluba has received funding from the European Union’s Horizon 2020 Framework Programme for Research and Innovation under the Specific Grant Agreement No. 945539 (Human Brain Project SGA3).
 
-[![logo](user_docs/images/EBRAINS_logo.png)](https://ebrains.eu)
-[![logo](user_docs/images/HBP_logo.png)](https://humanbrainproject.eu/en/)
-![logo](user_docs/images/EU_logo.jpg)
+![logo](user_docs/images/HBP_EBRAINS_logo.png)
 
