@@ -620,6 +620,14 @@ export default {
       const meshToLoad = this.selectedReferenceVolumeId === 'allen'? [997] : this.selectedReferenceVolumeId === 'ref-1'? [100, 200] : []
       this.$options.nehubaBase.nehubaBase__nehubaViewer.setMeshesToLoad(meshToLoad)
 
+            
+      if (this.selectedReferenceVolumeId === 'allen') {
+        this.$options.nehubaBase.nehubaBase__nehubaViewer.batchAddAndUpdateSegmentColors(new Map([ [997, { red: 220, green: 220, blue: 220 }] ]), { name: ' allenccfv3_auxmesh: ' })
+
+      } else if (this.selectedReferenceVolumeId === 'ref-1') {
+        this.$options.nehubaBase.nehubaBase__nehubaViewer.batchAddAndUpdateSegmentColors(new Map([ [100, { red: 220, green: 220, blue: 220 }], [ 200, { red: 220, green: 220, blue: 220 } ] ]), { name: ' tissue type: ' })
+      }
+
       /**
        * user mouseover inc vol state
        */
