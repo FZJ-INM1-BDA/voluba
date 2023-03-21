@@ -9,7 +9,6 @@ X. Gui, Y. Leprince, P. Chervakov, T. Dickscheid, D. Gogshelidze
 
 "voluba" is an acronym for **Volu**metric **B**rain **A**nchoring. 
 It is a browser based tool for interactive alignment of volumes of interest from brain imaging experiments with a high-resolution 3D reference brain model.
-The software is provided under the Apache 2.0 license.
 
 ![screenshot](user_docs/images/teaser.png)
 
