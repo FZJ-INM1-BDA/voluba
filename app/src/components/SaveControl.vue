@@ -12,7 +12,7 @@
       </div>
       <h5 class="title">
         <div>
-          Save Result
+          Use Result
         </div>
       </h5>
     </div>

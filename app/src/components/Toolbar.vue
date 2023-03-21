@@ -11,7 +11,7 @@
         v-b-tooltip.right.hover="incVolXformTitle"
         :class="showLayerControl ? 'btn-info' : 'btn-secondary'"
         @click="showLayerControl=!showLayerControl"
-        class="addBtn rounded-circle layer-control-toggle btn btn-sm btn-transition">
+        class="addBtn transformBtn rounded-circle layer-control-toggle btn btn-sm btn-transition">
         
         <font-awesome-icon icon="brain" />
       </div>
@@ -30,7 +30,7 @@
         v-b-tooltip.right.hover="editLandmarksTitle"
         @click="landmarkControlVisibilityChanged({visible : !landmarkControlVisible })"
         :class="landmarkControlVisible ? 'btn-info' : 'btn-secondary'"
-        class="addBtn rounded-circle landmarks-control-toggle btn-shadow btn-sm btn">
+        class="addBtn landmarksBtn rounded-circle landmarks-control-toggle btn-shadow btn-sm btn">
         <font-awesome-icon icon="map-marker-alt"/>
       </div>
       <landmark-control
@@ -46,7 +46,7 @@
         v-b-tooltip.right.hover="corticalPatchAlignmentTitle"
         @click="corticalAlignmentVisibilityChanged({ visible: !corticalAlignmentVisible })"
         :class="corticalAlignmentVisible ? 'btn-info' : 'btn-secondary'"
-        class="addBtn rounded-circle landmarks-control-toggle btn-shadow btn-sm btn">
+        class="addBtn corticalBtn rounded-circle landmarks-control-toggle btn-shadow btn-sm btn">
         <font-awesome-icon icon="ruler"></font-awesome-icon>
       </div>
       
@@ -59,10 +59,10 @@
     <div
       class="horizontalContainer d-flex flex-items">
       <div
-        v-b-tooltip.right.hover="'history browser'"
+        v-b-tooltip.right.hover="historyBrowserTitle"
         :class="showHistory ? 'btn-info' : 'btn-secondary'"
         @click="showHistory = !showHistory"
-        class="addBtn rounded-circle layer-control-toggle btn btn-sm">
+        class="addBtn historyBtn rounded-circle layer-control-toggle btn btn-sm">
         <font-awesome-icon icon="history" />
       </div>
 
@@ -77,10 +77,10 @@
     <div class="horizontalContainer d-flex flex-items">
 
       <div
-        v-b-tooltip.right.hover="'Share/Save transformation results.'"
+        v-b-tooltip.right.hover="'Use result'"
         @click="showSaveExportControl = !showSaveExportControl"
         :class="showSaveExportControl ? 'btn-info' : 'btn-secondary'"
-        class="addBtn pointer-events rounded-circle save-control-toggle btn-shadow btn btn-sm">
+        class="addBtn shareBtn pointer-events rounded-circle save-control-toggle btn-shadow btn btn-sm">
         <font-awesome-icon icon="share-alt" />
       </div>
 
@@ -258,6 +258,23 @@ export default {
   box-sizing: border-box;
   width: 2.5em;
   height: 2.5em;
+}
+
+.transformBtn {
+  background-color: #E06058;
+  border: none;
+}
+.landmarksBtn {
+  background-color: #4B8EB0;
+  border: none;
+}
+.corticalBtn {
+  background-color: #F28705;
+  border: none;
+}
+.shareBtn {
+  background-color: #234F73;
+  border: none;
 }
 
 .btn-shadow {
