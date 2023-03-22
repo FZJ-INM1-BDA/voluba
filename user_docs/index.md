@@ -1,9 +1,9 @@
-# voluba
+# About voluba
 
 "voluba" is an acronym for **Volu**metric **B**rain **A**nchoring. 
 It is a browser based tool for interactive alignment of volumes of interest from brain imaging experiments with a high-resolution 3D reference brain model.
 
-![screenshot](images/teaser.png)
+![image](images/teaser.png)
 
 Spatial anchoring of high-resolution volumes of interest (VOIs) from specific imaging experiments into the detailed anatomical context of a high-resolution reference model like [BigBrain](https://search.kg.ebrains.eu/instances/Dataset/d07f9305-1e75-4548-a348-b155fb323d31) is a practical problem due to the size of many high-resolution volumes (BigBrain is one Terabyte of data!), and the lack of automatic methods for image alignment with partial volumetric datasets.
 The main idea behind voluba is to allow interactive alignment to microscopic resolution 3D image volumes without downloading them to a local computer.
@@ -24,11 +24,4 @@ voluba uses [Vue](https://vuejs.org) for the reactive UI layer, [Vuex](https://v
 
 
 !!! Info
-	Found a bug? Get in touch with us at <support@ebrains.eu>
-
-<!-- [![logo](images/HBP_sm.jpg)](https://humanbrainproject.eu) -->
-[![logo](images/ebrains-logo-dark.svg)](https://ebrains.eu)
-
-<!-- - develop instance: <https://voluba-next.apps-dev.hbp.eu> -->
-<!-- - user documentation: <https://voluba-user-doc.apps-dev.hbp.eu/> -->
-<!-- - github repository: <https://github.com/fzj-inm1-bda/landmark-reg> -->
+	Visit our [developer documentation](https://voluba-user-doc.apps-dev.hbp.eu/) for more detailed information about the technical aspects of voluba.

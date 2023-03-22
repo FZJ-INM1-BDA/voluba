@@ -1,3 +1,4 @@
-mkdocs>=1.1,<2
-mkdocs-material
+mkdocs>=1.2.2
 mdx_truly_sane_lists
+fontawesome_markdown
+python-markdown-math

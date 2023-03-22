@@ -12,14 +12,44 @@ div.autodoc-members {
 img[alt="snippet"] {
   width: 40%;
   display: block;
-  margin-left:auto;
-  margin-right:auto;
+  margin-left: auto;
+  margin-right: auto;
+  border: 1px solid black;
 }
 
 img[alt="screenshot"] {
   width: 75%;
   display: block;
+  margin-left: auto;
+  margin-right: auto;
+  border: 1px solid black;
+}
 
+img[alt="logo"] {
+    height: 50px;
+    margin-left: 20px;
+    margin-right: 20px;
+}
+
+img[alt="icon"] {
+    height: 25px;
+    margin-right: 2px;
+    margin-left: 2px;
+}
+
+img[alt="logo_centered"] {
+    height: 50px;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+img[alt="gif"] {
+    width: 75%;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    border: 1px solid black;
 }
 
 table img
@@ -27,3 +57,6 @@ table img
   width: 100%;
 }
 
+.wy-side-nav-search{
+  background-color: #efefef;
+}
