@@ -52,13 +52,13 @@ By switching back to overlay mode, you can inspect the resulting alignment. If y
 You can now for example download and reuse the parameters of the affine transformation matrix or view the anchoring result in the interactive atlas viewer siibra-explorer. Click on the **Save/Share Transformation Results** and select the brain icon to open siibra-explorer.
 
 ![gif](gifs/tutorial_explorer.gif)
-s
+
 ## Essential information
 
 As seen from the tutorial, there is some information that is essential to anchor the volume as precisely as possible. When aligning your own imaging data, the anchoring process is facilitated when the following details are known about your data:
 
 * **Resolution of the incoming volume**  
-_If you don't specify the voxel resolution, you will need to scale your incoming volume accordingly._
+_If you don't specify the voxel resolution in the NIfTI header of your incoming volume, you will need to set it manually in voluba._
 * **Hemisphere and cytoarchitectonic area/region of extraction**  
 _You will need this information to find a corresponding location in reference space._
 * **Slicing direction of the incoming volume**  
