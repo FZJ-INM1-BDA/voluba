@@ -43,7 +43,7 @@ Open the **Edit Landmarks** dialog by clicking on the pin icon on the left. To a
 
 ![gif](gifs/tutorial_landmarks.gif)
 
-By switching back to overlay mode, you can inspect the resulting alignment. If you are not satisfied with the result, you can always roll back to any state of the previous alignment steps by using the history browser. 
+By switching back to overlay mode, you can inspect the resulting alignment. If you are not satisfied with the result, you can always roll back to any state of the previous alignment steps by using the history browser. Open the browser by clicking the gray history icon on the left.
 
 ![snippet](images/tutorial_history.png)
 
