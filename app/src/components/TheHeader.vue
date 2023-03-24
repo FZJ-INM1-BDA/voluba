@@ -36,8 +36,11 @@
                 right>
               <b-dropdown-text>
                 <ng-layer-tune
+                    ref="ngLayerTune"
                     advanced-control="true"
-                    ng-layer-name="userlayer-0">
+                    :nehuba-name="this.mode === 'classic' ? 'secondaryNehubaViewer' : 'primaryNehubaViewer'"
+                    :ng-layer-name="this.mode === 'classic' ? 'default' : 'userlayer-0'"
+                    >
                 </ng-layer-tune>
               </b-dropdown-text>
             </b-nav-item-dropdown>
@@ -168,6 +171,7 @@ export default {
       },
       set: function (mode) {
         this.$store.commit('_setStep2Mode', { mode })
+        setTimeout(() => this.$refs.ngLayerTune.forceRefreshShader(), 1000)
       }
     }
   },
