@@ -387,6 +387,7 @@ export default {
     },
     postNehubaInit: function () {
       window.secondaryNehubaViewer = this.$options.nehubaBase.nehubaBase__nehubaViewer
+      window.secondaryViewer = this.$options.nehubaBase.nehubaBase__nehubaViewer.ngviewer
     }
   },
   watch: {

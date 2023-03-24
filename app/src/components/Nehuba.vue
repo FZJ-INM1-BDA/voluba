@@ -706,6 +706,7 @@ export default {
        * debug
        */
       window.primaryNehubaViewer = this.$options.nehubaBase.nehubaBase__nehubaViewer
+      window.primaryViewer = this.$options.nehubaBase.nehubaBase__nehubaViewer.ngviewer
     },
     nehubaInputBinding: function ({ overrideTranslation = null, overrideRotation = null}) {
       if (overrideTranslation !== null) {
