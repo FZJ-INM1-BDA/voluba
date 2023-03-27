@@ -15,7 +15,7 @@ The axis orientations and the voxel scaling can be modified using the **Transfor
 
 ![snippet](images/transformation.png)
 
-If you didn't specify the voxel resolution in your NIfTI header, voluba assumes 1 mm voxel resolution. In this case, you need to scale the volume to its actual resolution. For example, if the resolution of the incoming volume is 100 μm, scale it down by 0.1. You can also adjust the scale for each axis separately by ticking off `Isotropic`.
+If you didn't specify the voxel resolution in your NIfTI header, voluba assumes 1 mm voxel resolution. In this case, you need to manually specify the actual resolution in the **Resolution** section. As the resolution and the scale are related to each other, the values change when either one is modified. This means you can also influence the resolution by scaling the volume. You can adjust the scale for all axes or for each axis separately by ticking off `Isotropic`.
 
 Whenever you want to secure a transformation parameter, click on the lock. This locks the value so that it cannot be changed, for example by interactive manipulation. You can also fix all settings by clicking the lock on the top right next to the volume filters. It is useful to prevent you from accidentally changing the transformation parameters when inspecting the alignment.
 

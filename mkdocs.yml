@@ -28,6 +28,7 @@ nav:
   - About voluba: 'index.md'
   - 'requirements.md'
   - 'acknowledgement.md'
+  - 'examples.md'
   - Workflow:
     - 'input.md'
     - 'views.md'
@@ -37,8 +38,6 @@ nav:
   - Tutorials:
     - 'tutorial.md'
     - 'video.md'
-  - Examples:
-    - 'examples.md'
   - How to:
     - NIfTI conversion: 'nifti_conversion.md'
   - Contact us:
