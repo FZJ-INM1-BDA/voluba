@@ -227,7 +227,11 @@ const getStore = ({ user = null, experimentalFeatures = {} } = {}) => new Vuex.S
         ['@type']: EXPORT_TRANSFORM_TYPE,
         transformMatrixInNm
       }
-      saveToFile(JSON.stringify(json, null, 2), 'application/json', 'transformMatrix.json')
+      saveToFile({
+        data: JSON.stringify(json, null, 2),
+        mimeType: 'application/json',
+        filename: 'transformMatrix.json'
+      })
     },
     modalMessage: function () {
       /**

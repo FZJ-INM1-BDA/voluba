@@ -37,6 +37,7 @@ const dataSelectionStore = {
     ],
 
     selectedIncomingVolumeId: null,
+    selectedIncomingVolumeResolution: null,
 
     incomingVolumes: DEFAULT_BUNDLED_INCOMING_VOLUMES,
   },
@@ -49,6 +50,9 @@ const dataSelectionStore = {
     },
     setSelectedIncomingVolumeId (state, id) {
       state.selectedIncomingVolumeId = id
+    },
+    setSelectedIncomingVolumeResolution (state, data) {
+      state.selectedIncomingVolumeResolution = data.resolution
     },
     setIncomingVolumes (state, { volumes }) {
       state.incomingVolumes = volumes
@@ -69,15 +73,46 @@ const dataSelectionStore = {
       if (vol) commit('setSelectedReferenceVolumeWithId', id)
       
     },
-    selectIncomingVolumeWithId ({ commit, state }, id) {
+    selectIncomingVolumeWithId ({ commit, state, dispatch }, id) {
       const vol = state.incomingVolumes.find(({ id: _id }) => _id === id)
       if (vol) {
+        if (vol.extra && vol.extra.neuroglancer && vol.extra.neuroglancer.transform) {
+          const cleansedTransform = JSON.parse(JSON.stringify(vol.extra.neuroglancer.transform))
+          const { mat4 } = export_nehuba
+          const matrix = mat4.fromValues( ...cleansedTransform[0], ...cleansedTransform[1], ...cleansedTransform[2], ...cleansedTransform[3])
+          mat4.transpose(matrix, matrix)
+          commit(
+            'nehubaStore/setIncTransformMatrix',
+            { matrix },
+            { root: true })
+        }
+
+        dispatch('setIncomingVolumeResolution', id)
+
         commit('setSelectedIncomingVolumeId', id)
         const { shaderScaleFactor } = vol
         commit('viewerPreferenceStore/setShaderScaleFactor', shaderScaleFactor || 1, { root: true })
       } 
     },
-    updateIncVolumesResult () {
+
+    async ['setIncomingVolumeResolution'] ({ commit, state, dispatch, rootGetters }, id) {
+      try {
+        const vol = state.incomingVolumes.find(({ id: _id }) => _id === id)
+        const { data } = await axios(`${vol.imageSource.substring(14)}/info`)
+        const resolution = data.scales[0].resolution
+        const size = data.scales[0].size
+        // const resolution = {}
+        // resolution.voxel = data.scales[0].resolution
+        // resolution.real = data.scales[0].resolution.map((r, i) => r * data.scales[0].size[i])
+        commit('setSelectedIncomingVolumeResolution', {resolution, size})
+      } catch (error) {
+        dispatch('updateIncVolumesResult', {
+          error: error ? error : null
+        })
+      }
+    },
+
+    updateIncVolumesResult (store, {error, message}) {
       /**
        * required for subscribe action
        */

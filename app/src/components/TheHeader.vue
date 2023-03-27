@@ -36,8 +36,11 @@
                 right>
               <b-dropdown-text>
                 <ng-layer-tune
+                    ref="ngLayerTune"
                     advanced-control="true"
-                    ng-layer-name="userlayer-0">
+                    :viewer-variable-name="this.twoPaneMode ? 'secondaryViewer' : 'primaryViewer'"
+                    :ng-layer-name="this.twoPaneMode ? 'default' : 'userlayer-0'"
+                    >
                 </ng-layer-tune>
               </b-dropdown-text>
             </b-nav-item-dropdown>
@@ -97,6 +100,11 @@ export default {
   components: {
     ProgressTracker,
     SigningComponent,
+  },
+  data: function () {
+    return {
+      twoPaneMode: false
+    }
   },
   mounted() {
     const showCookie = (cb = () => {}) => {
@@ -168,6 +176,8 @@ export default {
       },
       set: function (mode) {
         this.$store.commit('_setStep2Mode', { mode })
+        setTimeout(() => {this.twoPaneMode =  mode === 'classic'}, 500)
+        setTimeout(() => this.$refs.ngLayerTune.forceRefreshShader(), 1000)
       }
     }
   },

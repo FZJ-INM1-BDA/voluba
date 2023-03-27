@@ -999,12 +999,15 @@ export const openInNewWindow = (url) => {
   document.body.removeChild(link)
 }
 
-export const saveToFile = (data, mimeType, filename) => {
-  var blob = new Blob([data], {type: mimeType})
-  var link = document.createElement('a')
-  var url = URL.createObjectURL(blob)
+export const saveToFile = ({ url, data, mimeType, filename }) => {
+  let _url = url
+  if (!_url) {
+    const blob = new Blob([data], {type: mimeType})
+    _url = URL.createObjectURL(blob)
+  }
 
-  link.setAttribute('href', url)
+  const link = document.createElement('a')
+  link.setAttribute('href', _url)
   link.setAttribute('download', filename)
   link.style.visibility = 'hidden'
 
