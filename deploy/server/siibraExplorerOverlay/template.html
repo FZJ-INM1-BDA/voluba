@@ -52,6 +52,14 @@
         while (!el.forceRefreshShader) {
             await new Promise(rs => setTimeout(() => rs(), 160))
         }
+
+        window.addEventListener('message', async ev => {
+            const { method } = ev.data
+            if (method === "sxplr.onparcellationSelected") {
+                setTimeout(el.forceRefreshShader())
+                await new Promise(rs => setTimeout(() => rs(), 160))
+            }
+        })
         el.forceRefreshShader()
     })()
 </script>
