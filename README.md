@@ -1,34 +1,44 @@
-# VoluBA - interactive alignment of volumes of interest to high-resolution brain reference models
+[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
-X. Gui, Y. Leprince, P. Chervakov, T. Dickscheid
+# voluba - interactive alignment of volumes of interest to high-resolution brain reference models
+
+X. Gui, Y. Leprince, P. Chervakov, T. Dickscheid, D. Gogshelidze
 
 *Copyright 2017-2020 [Big Data Analytics Group](https://www.fz-juelich.de/inm/inm-1/EN/Forschung/Big_Data_Analytics/Big_Data_Analytics_node.html), [Institute of Neuroscience and Medicine (INM-1)](https://www.fz-juelich.de/inm/inm-1/), [Forschungszentrum Jülich](https://www.url.com)*
 
 
-"VoluBA" is an acronym for **Volu**metric **B**rain **A**nchoring. 
+"voluba" is an acronym for **Volu**metric **B**rain **A**nchoring. 
 It is a browser based tool for interactive alignment of volumes of interest from brain imaging experiments with a high-resolution 3D reference brain model.
-The software is provided under the Apache 2.0 license.
 
 ![screenshot](user_docs/images/teaser.png)
 
 Spatial anchoring of high-resolution volumes of interest (VOIs) from specific imaging experiments into the detailed anatomical context of a high-resolution reference model like [BigBrain](https://search.kg.ebrains.eu/instances/Dataset/d07f9305-1e75-4548-a348-b155fb323d31) is a practical problem due to the size of many high-resolution volumes (BigBrain is one Terabyte of data!), and the lack of automatic methods for image alignment with partial volumetric datasets.
-The main idea behind VoluBA is to allow interactive alignmnt to microscopic resolution 3D image volumes without downloading them to a local computer.
-Instead, VoluBA allows to upload your own volume of interest - which is typically significantly smaller - to a private space on a server, perform the interactive image alignment in your web browser, and retrieve the resulting parameters of the spatial alignment.
+The main idea behind voluba is to allow interactive alignment to microscopic resolution 3D image volumes without downloading them to a local computer.
+Instead, voluba allows to upload your own volume of interest - which is typically significantly smaller - to a private space on the server, perform the interactive image alignment in your web browser, and retrieve the resulting parameters of the spatial alignment. The dataset will be linked to your ORCID id and not be shared or exposed to anybody else.
 
-In VoluBA, the image alignment is performed by interactive manipulation of the input dataset's position and rotation, flipping of coordinate axes, and entering of 3D landmarks. 
-Besides downloading the resulting transformation parameters, the aligned image can be opened in [EBRAINS Interactive Atlas Viewer](https://atlases.ebrains.eu/viewer) to see it in the comprehensive 3D context offered by the [EBRAINS brain atlases](https//ebrains.eu/services/atlases). 
-The main installation is hosted at <https://voluba.apps.hbp.eu> and currently setup for anchoring high-resolution volumes of interest (VOIs) to the microscopic resolution human brain model ["BigBrain"](https://search.kg.ebrains.eu/instances/Dataset/d07f9305-1e75-4548-a348-b155fb323d31).
+voluba offers a highly interactive workflow. 
+First, you log in with their ORCID or EBRAINS account to upload a dataset into your private working space for the anchoring process. 
+You can choose three different reference volumes: the microscopic resolution human brain model ["BigBrain"](https://search.kg.ebrains.eu/instances/Dataset/d07f9305-1e75-4548-a348-b155fb323d31), the Waxholm space template of the Sprague Dawley rat, and the Allen mouse brain.
+The input volume is presented as a graphical overlay in a 3D view with orthogonal cross sections, and you can optimize the visualization by customizing contrast, brightness, colormaps, and intensity thresholds. 
+You can then directly manipulate the relative position and orientation of the input volume with your mouse point, and adjust of voxel scaling and axis orientations to obtain a rigid transformation. 
+Then, you can use voluba's 3D landmark editor to refine the transformation by specifying pairs of corresponding points between the volumes, further facilitated by an optional side-by-side view. 
+The landmarks enable a recalculation of the linear transformation matrix with additional degrees of freedom, including shearing. 
+Alignment actions can be performed and repeated in arbitrary order, supported through a history browser which allows to undo individual anchoring steps. 
 
-VoluBA requires `node >10`. To run a local development instance, do
+You can download the resulting transformation parameters in json format, open the aligned image can be in the atlas viewer [siibra-explorer](https://atlases.ebrains.eu/viewer/go/bigbrain) to see it in the anatomical context of the [EBRAINS human brain atlas](https//ebrains.eu/services/atlases), and also obtain a private URL to your anchored image that you can share with colleagues. 
+
+## Technical details 
+
+voluba requires `node >10`. To run a local development instance, do
 ```bash
 cd app && npm run serve
 ```
- VoluBA uses [Vue](https://vuejs.org) for the reactive UI layer, [Vuex](https://vuex.vuejs.org/) for state management, and [Bootstrap 4](https://getbootstrap.com/docs/4.0) for layout.
+ voluba uses [Vue](https://vuejs.org) for the reactive UI layer, [Vuex](https://vuex.vuejs.org/) for state management, and [Bootstrap 4](https://getbootstrap.com/docs/4.0) for layout.
 Building on the [neuroglancer](https://github.com/google/neuroglancer) technology, it allows to interact with very large image volumes.
 It has been developed in the [Human Brain Project](https://humanbrainproject.eu) as an online service for integration of image data to brain atlases within the [EBRAINS](https://ebrains.eu) infrastructure for brain research.
 
-[![logo](user_docs/images/ebrains-logo-dark.svg)](https://ebrains.eu)
-
 It has been designed as a service of the [EBRAINS](https://ebrains.eu) infrastructure for brain research and developed in the [Human Brain Project](https://humanbrainproject.eu). 
-VoluBA has received funding from the European Union’s Horizon 2020 Framework Programme for Research and Innovation under the Framework Partnership Agreement No. 650003 (HBP FPA).
+voluba has received funding from the European Union’s Horizon 2020 Framework Programme for Research and Innovation under the Specific Grant Agreement No. 945539 (Human Brain Project SGA3).
+
+![logo](user_docs/images/HBP_EBRAINS_logo.png)
 
