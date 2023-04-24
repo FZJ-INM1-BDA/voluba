@@ -85,6 +85,65 @@
           </div>
         </div>
       </div>
+
+      <!-- Resolution -->
+      <div class="section-wrapper mb-1">
+        <div
+          @click="lockIncVol({ incVolTranslationLock: !incVolTranslationLock})">
+          <font-awesome-icon :icon="lockIconTranslation"></font-awesome-icon>
+        </div>
+        <section-component
+          :forceHide="incVolTranslationLock"
+          id="translation-component">
+          <template slot="header">
+            <strong :class="incVolTranslationLock ? 'text-muted' : ''">
+              Resolution
+            </strong>
+          </template>
+          <template slot="body">
+
+            <b-form-radio-group
+              id="btn-radios-1"
+              v-model="selectedUnit"
+              :options="units"
+              :aria-describedby="'ariaDescribedby'"
+              name="radios-btn-default"
+              buttons></b-form-radio-group>
+            <div>
+              <label class="mr-2">X-axis</label>
+              <div class="input-group">
+                <input v-model="selectedResolutionX" @input="setResolution" type="number" class="form-control rounded-0">
+                <div class = "input-group-append">
+                  <span class = "input-group-text rounded-0">{{selectedUnit}}</span>
+                </div>
+              </div>
+            </div>
+            <div>
+              <label class="mr-2 mt-2">Y-axis</label>
+              <div class="input-group">
+                <input v-model="selectedResolutionY" @input="setResolution" type="number" class="form-control rounded-0">
+                <div class = "input-group-append">
+                  <span class = "input-group-text rounded-0">{{selectedUnit}}</span>
+                </div>
+              </div>
+            </div>
+            <div>
+              <label class="mr-2 mt-2">Z-axis</label>
+              <div class="input-group">
+                <input v-model="selectedResolutionZ" @input="setResolution" type="number" class="form-control rounded-0">
+                <div class = "input-group-append">
+                  <span class = "input-group-text rounded-0">{{selectedUnit}}</span>
+                </div>
+              </div>
+            </div>
+
+            <b-button size="sm" class="mt-3" @click="resetResolution">
+              Reset
+            </b-button>
+          </template>
+
+        </section-component>
+      </div>
         
       <!-- scale -->
       <div class="section-wrapper mb-1">
@@ -154,6 +213,7 @@
           </template>
         </section-component>
       </div>
+
 
       <!-- translation -->
       <div class="section-wrapper mb-1">
@@ -296,7 +356,14 @@ export default {
       scaleMax: 10,
       scaleStep: 0.01,
 
-      testValue: 0
+      testValue: 0,
+
+      selectedResolutionX: 0,
+      selectedResolutionY: 0,
+      selectedResolutionZ: 0,
+
+      units: ['nm', 'μm', 'mm', 'cm'],
+      selectedUnit: 'nm'
     }
   },
   computed: {
@@ -310,10 +377,11 @@ export default {
       'incVolScaleLock',
     ]),
     ...mapGetters('dataSelectionStore', [
-      'selectedIncomingVolume',
+      'selectedIncomingVolume'
     ]),
     ...mapState('dataSelectionStore', [
-      'incomingVolumes'
+      'incomingVolumes',
+      'selectedIncomingVolumeResolution',
     ]),
     ...mapState('nehubaStore', {
       lockIconTranslation: state => state.incVolTranslationLock ? 'lock' : 'lock-open',
@@ -328,6 +396,7 @@ export default {
         return this.testScale[0]
       },
       set: function (value) {
+        this.selectedResolutionX = this.fixed(+this.testScaleX * this.selectedIncomingVolumeResolutionX)
         this.scaleEvent({
           axis: 'x',
           value
@@ -339,6 +408,7 @@ export default {
         return this.testScale[1]
       },
       set: function (value) {
+        this.selectedResolutionY = this.fixed(+this.testScaleY * this.selectedIncomingVolumeResolutionY)
         this.scaleEvent({
           axis: 'y',
           value
@@ -350,6 +420,7 @@ export default {
         return this.testScale[2]
       },
       set: function (value) {
+        this.selectedResolutionZ = this.fixed(+this.testScaleZ * this.selectedIncomingVolumeResolutionZ)
         this.scaleEvent({
           axis: 'z',
           value
@@ -471,13 +542,36 @@ export default {
     },
     renderedIncomingVolumes: function () {
       return [this.dummyIncomingTemplate].concat(this.$store.state.incomingVolumes)
-    }
+    },
+    selectedIncomingVolumeResolutionX: {
+      get: function () {
+        return this.nmToSelectedUnit(this.selectedIncomingVolumeResolution[0])
+      }
+    },
+    selectedIncomingVolumeResolutionY: {
+      get: function () {
+        return this.nmToSelectedUnit(this.selectedIncomingVolumeResolution[1])
+      }
+    },
+    selectedIncomingVolumeResolutionZ: {
+      get: function () {
+        return this.nmToSelectedUnit(this.selectedIncomingVolumeResolution[2])
+      }
+    },
   },
   watch: {
     isotropic: function (flag) {
       if (flag) {
         this.isotropicScaleEvent({ value: this.testScaleX })
       }
+    },
+    selectedIncomingVolumeResolution: function (flag) {
+      this.resetResolution()
+    },
+    selectedUnit: function(newUnit, prevUnit) {
+      this.selectedResolutionX = this.changeUnit(this.selectedResolutionX, prevUnit)
+      this.selectedResolutionY = this.changeUnit(this.selectedResolutionY, prevUnit)
+      this.selectedResolutionZ = this.changeUnit(this.selectedResolutionZ, prevUnit)
     }
   },
   methods: {
@@ -511,6 +605,14 @@ export default {
         collapse: `scaleBySliderIsotropic`
       })
 
+
+      this.selectedResolutionX = this.fixed(+this.testScaleX * this.selectedIncomingVolumeResolutionX)
+      this.selectedResolutionY = this.fixed(+this.testScaleY * this.selectedIncomingVolumeResolutionY)
+      this.selectedResolutionZ = this.fixed(+this.testScaleZ * this.selectedIncomingVolumeResolutionZ)
+
+      this.setIsotropicScale(value)
+    },
+    setIsotropicScale: function(value) {
       this.setScaleInc({
         axis: 'x',
         value
@@ -610,7 +712,56 @@ export default {
         name: `flip on axis ${axis}`
       })
       this.flipAxis({ axis })
-    }
+    },
+    setResolution: function () {
+      
+      const isotropic = +this.selectedResolutionX === +this.selectedResolutionY && +this.selectedResolutionY === +this.selectedResolutionZ
+
+      if (isotropic) {
+        this.setIsotropicScale(+this.selectedResolutionX/this.selectedIncomingVolumeResolutionX)
+      } else {
+          this.isotropic = false
+          const scaleX = this.selectedResolutionX/this.selectedIncomingVolumeResolutionX
+          const scaleY = this.selectedResolutionY/this.selectedIncomingVolumeResolutionY
+          const scaleZ = this.selectedResolutionZ/this.selectedIncomingVolumeResolutionZ
+
+          this.scaleEvent({axis: 'x', value: scaleX})
+          this.scaleEvent({axis: 'y', value: scaleY})
+          this.scaleEvent({axis: 'z', value: scaleZ})
+      }
+    },
+
+    nmToSelectedUnit: function (num) {
+      const div = this.selectedUnit === 'μm'? 1000 
+        : this.selectedUnit === 'mm'? 1e6
+          : this.selectedUnit === 'cm'? 1e7 : 1
+      return +num / div
+    },
+
+    changeUnit: function (num, prevUnit) {
+      const mult = prevUnit === 'μm'? 1000 
+        : prevUnit === 'mm'? 1e6
+          : prevUnit === 'cm'? 1e7 : 1
+      const nm = +num * mult
+      return this.fixed(this.nmToSelectedUnit(nm))
+    },
+    fixed: function (num) {
+      const decimal = this.selectedUnit === 'μm'? 2
+        : this.selectedUnit === 'mm'? 3
+          : this.selectedUnit === 'cm'? 4 : 0
+      return parseFloat(num.toFixed(decimal))
+    },
+    resetResolution: function () {
+      this.testScaleX = 1
+      this.testScaleY = 1
+      this.testScaleZ = 1
+      this.isotropic = true 
+
+      this.selectedUnit = 'nm'
+      this.selectedResolutionX = this.selectedIncomingVolumeResolutionX
+      this.selectedResolutionY = this.selectedIncomingVolumeResolutionY
+      this.selectedResolutionZ = this.selectedIncomingVolumeResolutionZ
+    },
   }
 }
 </script>

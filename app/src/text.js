@@ -1,5 +1,5 @@
 
-export const INC_VOL_XFORM_TITLE = `Transform Incoming Volume`
+export const INC_VOL_XFORM_TITLE = `Transform incoming volume`
 
 export const incompatibleBrowserText = `Incompatible browser detected. Please use the latest version of Chrome of Firefox.
 
