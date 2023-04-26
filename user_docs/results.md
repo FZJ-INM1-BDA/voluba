@@ -10,6 +10,7 @@ The result can be used in several ways, which are all accessible via the **Share
 
 ![snippet](images/results.png)
 
+- In case you uploaded your own image data: Download the image data with an updated NIfTI affine, that includes the applied transformations.
 - Export the affine transformation parameters in a simple, plaintext JSON file for sharing and reuse. The stored transformation file can be re-imported in voluba and be utilized in other tools and workflows.
 - Load your input dataset as a semi-transparent overlay in the interactive atlas viewer siibra-explorer, to see it in the comprehensive context of the brain atlas in reference space. This way, you can investigate the aligned image volume relative to all the data that is registered with the corresponding reference atlas.
 - Generate a private URL to view and share the anchored volume as a remote dataset in neuroglancer-based image viewers.
