@@ -39,7 +39,8 @@ nav:
     - 'tutorial.md'
     - 'video.md'
   - How to:
-    - NIfTI conversion: 'nifti_conversion.md'
+    - 'nifti_conversion.md'
+    - 'transform_format.md'
   - Contact us:
     - Support: 'mailto:support@ebrains.eu?subject=[voluba]'
     - GitHub Issues: 'https://github.com/FZJ-INM1-BDA/voluba/issues'
