@@ -68,7 +68,7 @@
 
           <div
             v-b-modal.multiselect-volume
-            v-b-tooltip.hover.bottom="'View the anchoring result in the interactive viewer'"
+            v-b-tooltip.hover.bottom="'View the anchoring result in siibra explorer'"
             class="btn btn-sm btn-outline-secondary">
             <font-awesome-icon icon="brain"></font-awesome-icon>
           </div>
@@ -83,11 +83,11 @@
           </div>
           
           <div
-            @click="exportToHBP"
+            v-b-modal.export-ebrains-workflow="isHbpOidcV2"
             @mouseenter="showExportToHBPTooltip = true"
             @mouseleave="showExportToHBPTooltip = false"
             ref="exportToHBP"
-            class="btn btn-outline-secondary btn-sm disabled">
+            :class="'btn btn-outline-secondary btn-sm' + (isHbpOidcV2 ? '' : ' disabled')">
             <font-awesome-icon icon="file-export"/>
           </div>
         </div>
@@ -128,9 +128,9 @@
       :target="() => $refs['exportToHBP']"
       :show="showExportToHBPTooltip">
       <span class="d-block">
-        Publish on HBP platform
+        Publish transformation on HBP platform
       </span>
-      <small class="font-italic text-muted">coming soon</small>
+      <small v-if="!isHbpOidcV2" class="font-italic text-muted">You must sign in via ebrains IAM to use this functionality.</small>
     </b-tooltip>
 
     <b-modal id="multiselect-volume"
@@ -182,7 +182,7 @@
         <a :href="sharedVolumeUrl" target="_blank"><i>{{ sharedVolumeUrl }}</i></a>
       </div>
 
-      <template slot="modal-ok">        
+      <template slot="modal-ok">     
         <div>
           <span>
             {{sharedVolumeUrl? 'Close' : 'Share'}}
@@ -193,17 +193,28 @@
       </template>
 
     </b-modal>
-  </div>  
+
+    <!-- ebrains workflow export modal -->
+    <b-modal id="export-ebrains-workflow"
+      :hide-footer="true">
+      <template slot="modal-header">
+        Export transform result to ebrains workflow
+      </template>
+      <ExportsErains></ExportsErains>
+    </b-modal>
+  </div>
 </template>
 <script>
 import { mapActions, mapState, mapGetters } from 'vuex'
 import { openFileDialog, getTransformMatrixInNm } from '@/constants'
+import ExportsErains from "@/components/exports/ExportsEbrains"
 import MultiselectVolume from '@/views/MultiselectVolume'
 import axios from 'axios'
 
 export default {
   components: {
-    MultiselectVolume
+    MultiselectVolume,
+    ExportsErains,
   },
   data: function () {
     return {
@@ -211,7 +222,8 @@ export default {
       showSaveOnCollab: false,
       showTransformResultInProgress: false,
       volumeSharing: false,
-      sharedVolumeUrl: null,      
+      sharedVolumeUrl: null,
+      isHbpOidcV2: true
     }
   },
   computed: {
@@ -273,7 +285,7 @@ export default {
         })
       this.viewInSiibraExplorer(volumesWithXform)
     },
-    exportToHBP: function () {
+    exportToHBP: async function () {
       /**
        * TODO
        * enable export data to HBP curation pipeline

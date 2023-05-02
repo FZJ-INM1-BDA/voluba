@@ -136,7 +136,7 @@ const dataSelectionStore = {
               }
             })
             .map(processImageMetaData)
-          const newVolumes = DEFAULT_BUNDLED_INCOMING_VOLUMES.concat(volumes)
+          const newVolumes = volumes
           
           dispatch('log', ['updateIncVolumes#axios#postprocess', newVolumes], {root: true})
           dispatch('appendToIncomingVolumes', { volumes: newVolumes })
