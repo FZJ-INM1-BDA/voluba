@@ -42,7 +42,7 @@ An example transformMatrix.json in voluba looks like this:
 
 * `incoming volume`: anchored volume
 * `reference volume`: reference space that `incoming volume` was anchored to
-* `version`: version of voluba (?)
+* `version`: schema version
 * `@type`: schema to validate a transformMatrix.json
 * `transformMatrixInNm`: $4\times4$ affine matrix, that encodes the transformations in nm, that the user applied to `incoming volume` in voluba
 
