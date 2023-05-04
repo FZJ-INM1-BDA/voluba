@@ -71,19 +71,19 @@ Concatenating the converted voluba affine matrix with the original NIfTI affine 
 updated_NIfTI_affine = converted_voluba_affine * uploaded_NIfTI_affine
 ```
 
-## Convert an affine of a different format to voluba affine matrix
+## Convert a NIfTI affine to voluba affine matrix
 
-Sometimes you may have already applied transformations to an image volume with a different tool (e.g. Slicer, Neuroglancer). For example, you have a histology image volume as well as an associated segmentation, that you aligned to the histology. Now if you want to anchor both image volumes to a reference space, you can make use of the segmentation-to-histology-transformation. We do **not** recommend to do an alignment with voluba for each volume independently, as the segmentation will most probably not match the histology because the anchoring is done interactively. Instead, you can use voluba to align the histology volume to the reference space and adjust the resulting voluba affine matrix for the segmentation. For this, you will need to convert the segmentation-to-histology affine matrix (e.g. NIfTI, Neuroglancer) into a voluba matrix:
+Sometimes you may have already applied transformations to an image volume with a different tool. For example, you have a histology image volume as well as an associated segmentation, that you aligned to the histology. Now if you want to anchor both image volumes to a reference space, you can make use of the segmentation-to-histology-transformation. We do **not** recommend to do an alignment with voluba for each volume independently, as the segmentation will most probably not match the histology because the anchoring is done interactively. Instead, you can use voluba to align the histology volume to the reference space and adjust the resulting voluba affine matrix for the segmentation. For this, you will need to convert the segmentation-to-histology NIfTI affine into a voluba matrix:
 
 ```python
-# affine of different format to voluba
+# NIfTI affine to voluba
 for n in range(3):
   voluba_affine[n][n] = affine_matrix[n][n] / voxelSize[n]
   voluba_affine[n][3] = (affine_matrix[n][3] - (voxelSize[n] / 2)) * spatialUnits.toNanometers()
 ```
 
 * `voxelSize`: voxel size (respectively image spacing or resolution) of the image volume
-* `spatialUnits.toNanometers()`: conversion factor from the spatial units (units of `voxelSize`) of an affine in the desired format to nm. For example, in NIfTI format the spatial unit is usually mm, so the factor equals $10^6$.
+* `spatialUnits.toNanometers()`: conversion factor from the spatial units (units of `voxelSize`) of a NIfTI affine to nm. For example, in NIfTI format the spatial unit is usually mm, so the factor equals $10^6$.
 
 After that, you can simply concatenate the voluba affine matrix of the histology volume with the converted segmentation-to-histology affine matrix. The resulting affine matrix can then be written into the transformMatrix.json for the segmentation volume and be used in voluba.
 
