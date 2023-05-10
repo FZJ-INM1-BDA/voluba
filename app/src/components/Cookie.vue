@@ -2,7 +2,7 @@
   <div>
     <div class="main">
       <p>
-        voluba uses ‘cookies’ (text files placed on your computer) to verify login details, remember user choices and preferences, and in some instances determine site permissions. Cookies also provide, in anonymous form, the number of visitors accessing the HBP Public Website, features users access during website visits, and the general location of the user based on IP address.
+        voluba uses 'cookies' (text files placed on your computer) to verify login details, remember user choices and preferences, and in some instances determine site permissions. Cookies also provide, in anonymous form, the number of visitors accessing the HBP Public Website, features users access during website visits, and the general location of the user based on IP address.
       </p>
       <p>
         voluba uses at least the following cookies:
