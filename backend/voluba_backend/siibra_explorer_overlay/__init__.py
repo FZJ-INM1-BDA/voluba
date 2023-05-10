@@ -10,14 +10,15 @@ router = APIRouter()
 def islen(num: int):
     return lambda variable: isinstance(variable, list) and len(variable) == num
 
-islen4 = islen(4)
-islen3 = islen(3)
-
 def verify_transform(transform: str):
     return_result = [float(v) for v in transform.split(",")]
-    assert islen3(return_result)
-    assert all([islen4(row) for row in return_result])
-    assert all([isinstance(row, (int, float)) for row in return_result for item in row])
+    assert islen(12)(return_result)
+    return [
+        return_result[:4],
+        return_result[4:8],
+        return_result[8:12],
+        [0, 0, 0, 1]
+    ]
 
 @router.get("/template.html", include_in_schema=False)
 def get_template(precomputed: str, transform: str):
