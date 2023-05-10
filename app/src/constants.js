@@ -3,7 +3,7 @@
 export const AGREE_COOKIE_KEY = `landmark-reg : agreed to cookie`
 
 export const loginMethods = [{
-  name: 'HBP Keycloak',
+  name: 'ebrains keycloak',
   imgSrc: null,
   href: '/hbp-oidc-v2/auth',
   disabled: false

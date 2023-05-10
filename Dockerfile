@@ -39,26 +39,20 @@ WORKDIR /frontend/app/dist
 RUN for f in $(find . -type f); do gzip < $f > $f.gz && brotli < $f > $f.br; done
 
 # deploy container
-FROM node:12-alpine
+FROM python:3.10-alpine
+RUN pip install -U pip
 
-ENV NODE_ENV=production
+COPY backend/requirements.txt requirements.txt
+RUN pip install -r requirements.txt
 
-ARG PORT
-ENV PORT=${PORT:-8080}
-EXPOSE ${PORT:-8080}
+RUN mkdir /voluba
+RUN chown -R nobody /api
+WORKDIR /voluba
 
-RUN apk --no-cache add ca-certificates
-RUN mkdir /landmark-reg-app
-WORKDIR /landmark-reg-app
+COPY --from=builder /frontend/app/dist /voluba/public
+ENV PATH_TO_STATIC=/voluba/public
 
-RUN mkdir public
+USER nobody
 
-COPY --from=compressor /frontend/app/dist ./public
-COPY --from=builder /frontend/deploy .
-
-RUN npm i
-
-# DEPLOY ENV
-# IV_HOST, HOSTNAME
-
-ENTRYPOINT ["node", "server/server.js"]
+EXPOSE 8080
+ENTRYPOINT uvicorn app:app --port 8080

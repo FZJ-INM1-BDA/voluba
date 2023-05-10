@@ -762,9 +762,6 @@ export default {
       this.selectedResolutionY = this.selectedIncomingVolumeResolutionY
       this.selectedResolutionZ = this.selectedIncomingVolumeResolutionZ
     },
-  },
-  created: function () {
-    this.resetResolution()
   }
 }
 </script>
