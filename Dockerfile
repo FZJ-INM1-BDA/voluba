@@ -39,14 +39,14 @@ WORKDIR /frontend/app/dist
 RUN for f in $(find . -type f); do gzip < $f > $f.gz && brotli < $f > $f.br; done
 
 # deploy container
-FROM python:3.10-alpine
+FROM python:3.10
 RUN pip install -U pip
 
 COPY backend/requirements.txt requirements.txt
 RUN pip install -r requirements.txt
 
-RUN mkdir /voluba
-RUN chown -R nobody /api
+COPY ./backend/voluba_backend /voluba
+RUN chown -R nobody /voluba
 WORKDIR /voluba
 
 COPY --from=builder /frontend/app/dist /voluba/public
@@ -55,4 +55,4 @@ ENV PATH_TO_STATIC=/voluba/public
 USER nobody
 
 EXPOSE 8080
-ENTRYPOINT uvicorn app:app --port 8080
+ENTRYPOINT uvicorn app:app --port 8080 --host 0.0.0.0
