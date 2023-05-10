@@ -23,7 +23,7 @@
 <script>
 import { getExportJson } from "@/store"
 
-const hostname = 'http://localhost:5000'
+const hostname = ""  // 'http://localhost:5000/'
 export default {
   data() {
     return {
@@ -57,7 +57,7 @@ export default {
       const { state, getters } = this.$store
       const json = getExportJson({ state, getters })
       try {
-        const resp = await fetch(`${hostname}/ebrains`, {
+        const resp = await fetch(`${hostname}ebrains`, {
           method: 'POST',
           body: JSON.stringify(json),
           headers: {
