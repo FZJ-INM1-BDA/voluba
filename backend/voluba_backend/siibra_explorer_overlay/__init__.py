@@ -12,7 +12,7 @@ def islen4(variable):
     assert len(variable) == 4
 
 def verify_transform(transform: str):
-    return_result = json.loads(transform)
+    return_result = [float(v) for v in transform.split(",")]
     assert islen4(return_result)
     assert all([islen4(row) for row in return_result])
     assert all([isinstance(row, (int, float)) for row in return_result for item in row])
