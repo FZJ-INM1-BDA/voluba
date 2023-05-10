@@ -7,13 +7,15 @@ with open(Path(__file__).parent / 'template.html', 'r') as fp:
 
 router = APIRouter()
 
-def islen4(variable):
-    assert isinstance(variable, list)
-    assert len(variable) == 4
+def islen(num: int):
+    return lambda variable: isinstance(variable, list) and len(variable) == num
+
+islen4 = islen(4)
+islen3 = islen(3)
 
 def verify_transform(transform: str):
     return_result = [float(v) for v in transform.split(",")]
-    assert islen4(return_result)
+    assert islen3(return_result)
     assert all([islen4(row) for row in return_result])
     assert all([isinstance(row, (int, float)) for row in return_result for item in row])
 
