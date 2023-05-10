@@ -6,6 +6,7 @@ import voluba_config
 import voluba_user
 import voluba_auth
 from ebrains_router import router as ebrains_router
+from siibra_explorer_overlay import router as sxplr_plugin_router
 
 app = FastAPI()
 
@@ -25,6 +26,7 @@ app.add_middleware(SessionMiddleware, secret_key=voluba_config.SESSION_SECRET, m
 app.include_router(voluba_auth.router)
 app.include_router(voluba_user.router, prefix="/user", tags=["users"])
 app.include_router(ebrains_router, prefix="/ebrains", tags=["ebrains"])
+app.include_router(sxplr_plugin_router, prefix="/viewerPlugin", include_in_schema=False)
 
 path_to_static = voluba_config.PATH_TO_STATIC
 
