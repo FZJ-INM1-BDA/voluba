@@ -11,7 +11,7 @@ These steps can be performed and repeated in arbitrary order and are supported t
 
 ## Initial adjustment of coordinate axes orientations and scaling
 
-The axis orientations and the voxel scaling can be modified using the **Transform Incoming Volume** dialog box, which also allows precise adjustment of position and rotation. The dialog is launched using the button with the brain icon on the left of the user interface:
+The axis orientations and the voxel scaling can be modified using the **Transform incoming volume** dialog box, which also allows precise adjustment of position and rotation. The dialog is launched using the button with the brain icon on the left of the user interface:
 
 ![snippet](images/transformation.png)
 
@@ -21,7 +21,7 @@ Whenever you want to secure a transformation parameter, click on the lock. This 
 
 ## Interactive translation and rotation
 
-As mentioned above you can adjust the incoming volume's position and orientation by entering values into the **Transform Incoming Volume** dialog. Additionally, voluba allows direct manipulation of the input data's position and orientation using the mouse pointer. The position is changed by clicking & dragging the incoming volume in any of the orthogonal views. 
+As mentioned above you can adjust the incoming volume's position and orientation by entering values into the **Transform incoming volume** dialog. Additionally, voluba allows direct manipulation of the input data's position and orientation using the mouse pointer. The position is changed by clicking & dragging the incoming volume in any of the orthogonal views. 
 By pressing shift while clicking & dragging, a rotation is applied. 
 
 ![gif](gifs/transform.gif)
@@ -63,7 +63,7 @@ In overlay mode, you enter two landmarks sequentially in the same window. They a
 
 voluba tracks every step that you execute during the alignment process. 
 This includes translations, axis flips, rotations, scaling, and application of affine matrices that have been estimated from landmark pairs. 
-You can inspect and navigate the process using the history browser, which is accessible via the **history browser** button on the left: 
+You can inspect and navigate the process using the history browser, which is accessible via the **History browser** button on the left: 
 
 ![snippet](images/history.png)
 
