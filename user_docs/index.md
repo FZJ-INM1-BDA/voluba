@@ -10,7 +10,7 @@ The main idea behind voluba is to allow interactive alignment to microscopic res
 Instead, voluba allows to upload your own volume of interest - which is typically significantly smaller - to a private space on the server, perform the interactive image alignment in your web browser, and retrieve the resulting parameters of the spatial alignment. The dataset will be linked to your ORCID id and not be shared or exposed to anybody else.
 
 voluba offers a highly interactive workflow. 
-First, you log in with their ORCID or EBRAINS account to upload a dataset into your private working space for the anchoring process. 
+First, you log in with your ORCID or EBRAINS account to upload a dataset into your private working space for the anchoring process. 
 You can choose three different reference volumes: the microscopic resolution human brain model ["BigBrain"](https://search.kg.ebrains.eu/instances/Dataset/d07f9305-1e75-4548-a348-b155fb323d31), the Waxholm space template of the Sprague Dawley rat, and the Allen mouse brain.
 The input volume is presented as a graphical overlay in a 3D view with orthogonal cross sections, and you can optimize the visualization by customizing contrast, brightness, colormaps, and intensity thresholds. 
 You can then directly manipulate the relative position and orientation of the input volume with your mouse point, and adjust of voxel scaling and axis orientations to obtain a rigid transformation. 
