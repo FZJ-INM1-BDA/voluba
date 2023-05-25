@@ -52,9 +52,14 @@ class JobProgressModel(BaseModel):
     def run(self, context:'WorkProgress'):
         logger.debug(f"Running {self.name}")
         self.status = JobProgressEnum.RUNNING
-        self._run(context)
-        logger.debug(f"Running {self.name} completed!")
-        self.status = JobProgressEnum.COMPLETED
+        try:
+            self._run(context)
+        except Exception as e:
+            self.status = JobProgressEnum.ERROR
+            self.detail = str(e)
+        else:
+            logger.debug(f"Running {self.name} completed!")
+            self.status = JobProgressEnum.COMPLETED
 
     def _run(self, context: 'WorkProgress'):
         raise NotImplementedError
@@ -136,7 +141,7 @@ class CreateKgDataAnalysisInstance(JobProgressModel):
             # TODO s2s token cannot seem to query instances in review space
             # personal tokens do not suffer from this limitation, which is why on webUI, everything seems fine
             # for now, load the jsonld (fetched and saved while using a personal token)
-            path_to_jsonld = Path(__file__).parent / "voluba_webservice_jsonld.json",
+            path_to_jsonld = Path(__file__).parent / "voluba_webservice_jsonld.json"
             with open(path_to_jsonld, "r") as fp:
                 KG_INSTANCES.voluba_webservice_version = WebServiceVersion.from_jsonld(json.load(fp=fp), kg_client)
         
