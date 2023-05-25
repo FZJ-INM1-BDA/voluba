@@ -1,6 +1,6 @@
 from voluba_store import VolubaStore
 
-from .models import StartWorkflowResp, WorkflowV1_1, WorkProgress, UploadToDP, CreateKgTransformFileInstance, CreateKgIncVolFileInstance, CreateKgDataAnalysisInstance
+from .models import StartWorkflowResp, WorkflowV1_1, WorkProgress, UploadToDP, CreateKgTransformFileInstance, CreateKgIncVolFileInstance, CreateKgDataAnalysisInstance, VolubaUser
 
 from uuid import uuid4
 from fastapi import APIRouter, Request, BackgroundTasks, Cookie, Depends
@@ -13,10 +13,11 @@ worflow_store = VolubaStore()
 
 router = APIRouter()
 
-# TODO add check that user is authenticated
-
 @router.post("", response_model=StartWorkflowResp)
 def start_workflow(body: WorkflowV1_1, request: Request, bg: BackgroundTasks):
+    user = get_user(request)
+    if not user:
+        raise HTTPException(401, detail="You need to be authenticated to use this endpoint.")
     job_id = str(uuid4())
     result=StartWorkflowResp(job_id=job_id)
     work=WorkProgress(
@@ -27,7 +28,8 @@ def start_workflow(body: WorkflowV1_1, request: Request, bg: BackgroundTasks):
             CreateKgTransformFileInstance(),
             CreateKgIncVolFileInstance(),
             CreateKgDataAnalysisInstance(),
-        ]
+        ],
+        user=VolubaUser(**user)
     )
     worflow_store.set_value(job_id, work)
     bg.add_task(work.start)

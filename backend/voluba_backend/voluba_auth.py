@@ -46,9 +46,13 @@ router = APIRouter(include_in_schema=False)
 
 def process_hbp_user(resp):
     userinfo = resp.get("userinfo")
+    given_name = userinfo.get("given_name")
+    family_name = userinfo.get("family_name")
     return {
         'id': f'hbp-oidc-v2:{userinfo.get("sub")}',
-        'name': f'{userinfo.get("given_name")} {userinfo.get("family_name")}',
+        'name': f'{given_name} {family_name}',
+        'given_name': given_name,
+        'family_name': family_name,
         'type': 'hbp-oidc-v2',
         'idToken': resp.get("id_token"),
         'accessToken': resp.get("access_token"),
@@ -74,9 +78,13 @@ async def ebrains_callback(request: Request):
 
 def process_orcid_user(resp):
     userinfo = resp.get("userinfo")
+    given_name = userinfo.get("given_name")
+    family_name = userinfo.get("family_name")
     return {
         'id': f'orcid:{userinfo.get("sub")}',
-        'name': f'{userinfo.get("given_name")} {userinfo.get("family_name")}',
+        'name': f'{given_name} {family_name}',
+        'given_name': given_name,
+        'family_name': family_name,
         'type': 'orcid-oidc',
         'idToken': resp.get("id_token"),
         'accessToken': resp.get("access_token"),
