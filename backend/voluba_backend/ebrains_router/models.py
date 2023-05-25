@@ -12,6 +12,7 @@ import json
 from hashlib import md5
 from datetime import datetime
 import requests
+from pathlib import Path
 
 from voluba_auth import S2SToken
 from .const import SPC_NAME_TO_ID_VOCAB, KG_INSTANCES, KG_IDS, SPC_NAME_TO_KG_ID, STRING_CONST
@@ -127,7 +128,12 @@ class CreateKgDataAnalysisInstance(JobProgressModel):
         auth_token = S2SToken.get_token()
         kg_client = KGClient(auth_token, host=KG_ROOT)
         if KG_INSTANCES.voluba_webservice_version is None:
-            KG_INSTANCES.voluba_webservice_version = WebServiceVersion.from_id(KG_IDS.VOLUBA_WEBSERVICE_VERSION_ID, kg_client, scope="any")
+            # TODO s2s token cannot seem to query instances in review space
+            # personal tokens do not suffer from this limitation, which is why on webUI, everything seems fine
+            # for now, load the jsonld (fetched and saved while using a personal token)
+            path_to_jsonld = Path(__file__).parent / "voluba_webservice_jsonld.json",
+            with open(path_to_jsonld, "r") as fp:
+                KG_INSTANCES.voluba_webservice_version = WebServiceVersion.from_jsonld(json.load(fp=fp), kg_client)
         
         assert context.param.reference_volume in SPC_NAME_TO_KG_ID, f"Expecting reference volume {context.param.reference_volume!r} be in {', '.join(SPC_NAME_TO_KG_ID.keys())}, but is not."
 
