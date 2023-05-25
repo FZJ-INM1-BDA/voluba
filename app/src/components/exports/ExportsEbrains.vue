@@ -1,5 +1,12 @@
 <template>
   <div>
+    <b-form-textarea v-model="description"
+      :aria-placeholder="descriptionPlaceholder"
+      :placeholder="descriptionPlaceholder"
+      class="mb-2">
+
+    </b-form-textarea>
+    <div></div>
     <b-button @click="start"
       :disabled="isBusy"
       class="start-button"
@@ -32,6 +39,8 @@ export default {
       pollResults: [],
       jobId: null,
       periodicId: null,
+      description: '',
+      descriptionPlaceholder: '(Optional) Enter a description for this transformation.',
     }
   },
   filters: {
@@ -59,7 +68,10 @@ export default {
       try {
         const resp = await fetch(`${hostname}ebrains`, {
           method: 'POST',
-          body: JSON.stringify(json),
+          body: JSON.stringify({
+            ...json,
+            description: this.description
+          }),
           headers: {
             'content-type': 'application/json'
           }

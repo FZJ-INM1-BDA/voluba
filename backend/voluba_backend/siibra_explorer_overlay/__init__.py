@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Response
 from pathlib import Path
+from typing import List
 import json
 
 with open(Path(__file__).parent / 'template.html', 'r') as fp:
@@ -10,7 +11,12 @@ router = APIRouter()
 def islen(num: int):
     return lambda variable: isinstance(variable, list) and len(variable) == num
 
-def verify_transform(transform: str):
+def verify_transform(transform: str) -> List[List[float]]:
+    """
+    transform is provided as a str of 12 comma separated floats,
+    reshaped to 4x3 row major affine.
+    This function checks the validity and returns the actual affine.
+    """
     return_result = [float(v) for v in transform.split(",")]
     assert islen(12)(return_result)
     return [
