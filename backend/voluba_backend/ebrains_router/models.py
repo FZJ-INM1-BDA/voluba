@@ -14,6 +14,7 @@ from hashlib import md5
 from datetime import datetime
 import requests
 from pathlib import Path
+from uuid import uuid4
 
 from voluba_auth import S2SToken
 from .const import SPC_NAME_TO_ID_VOCAB, KG_INSTANCES, KG_IDS, SPC_NAME_TO_KG_ID, STRING_CONST
@@ -65,11 +66,13 @@ class UploadToDP(JobProgressModel):
         auth_token = S2SToken.get_token()
         client = BucketApiClient(token=auth_token)
         bucket = client.buckets.get_bucket(DP_BUCKET_NAME)
+
+        _id = str(uuid4())
         
         assert context.param.reference_volume in SPC_NAME_TO_ID_VOCAB, f"Expecting reference volume name {context.param.reference_volume} is in {', '.join(SPC_NAME_TO_ID_VOCAB.keys())}, but is not."
         sanitized_spc_id = SPC_NAME_TO_ID_VOCAB[context.param.reference_volume].replace("/", ".")
         incoming_vol_id = context.param.content_hash or f'name.{context.param.incoming_volume}'
-        bucket_filename = f"{sanitized_spc_id}_{incoming_vol_id}_transform_{context.param.version}.json"
+        bucket_filename = f"{sanitized_spc_id}_{incoming_vol_id}_transform_{context.param.version}_{_id}.json"
 
         # Unfortunately, bucket API does not yet support stringIO, and must write it to disk first.
         with NamedTemporaryFile("w", suffix=".json", encoding="utf-8", delete=False) as fp:
