@@ -1,0 +1,90 @@
+{
+	"@type": [
+		"https://openminds.ebrains.eu/core/WebServiceVersion"
+	],
+	"@id": "https://kg.ebrains.eu/api/instances/eb1eb844-3544-45cf-829e-1094225d0007",
+	"https://openminds.ebrains.eu/vocab/fullName": "VoluBA - Volumetric Brain Anchoring",
+	"https://openminds.ebrains.eu/vocab/shortName": "VoluBA",
+	"https://openminds.ebrains.eu/vocab/accessibility": {
+		"@id": "https://kg.ebrains.eu/api/instances/f1389b7e-0965-4d23-9ddb-2575d4ac2fad"
+	},
+	"https://openminds.ebrains.eu/vocab/copyright": {
+		"@type": [
+			"https://openminds.ebrains.eu/core/Copyright"
+		],
+		"https://openminds.ebrains.eu/vocab/holder": {
+			"@id": "https://kg.ebrains.eu/api/instances/561a0c75-a414-45b0-a24e-e2f8e680ec2e"
+		},
+		"https://openminds.ebrains.eu/vocab/year": "2017"
+	},
+	"https://openminds.ebrains.eu/vocab/fullDocumentation": {
+		"@id": "https://kg.ebrains.eu/api/instances/12aa623f-0313-4ab0-919a-d8e5c6afdad0"
+	},
+	"https://openminds.ebrains.eu/vocab/funding": [
+		{
+			"@id": "https://kg.ebrains.eu/api/instances/586250ba-571d-4a14-813a-d997c500e9f7"
+		},
+		{
+			"@id": "https://kg.ebrains.eu/api/instances/754aeb36-9420-4484-9b50-6ca0eb806a0d"
+		},
+		{
+			"@id": "https://kg.ebrains.eu/api/instances/082a5bf9-1612-4a44-9b19-d6757a0a83ec"
+		},
+		{
+			"@id": "https://kg.ebrains.eu/api/instances/7c0695e3-2031-49d9-9253-d07c9db2d230"
+		}
+	],
+	"https://openminds.ebrains.eu/vocab/hasPart": {
+		"@id": "https://kg.ebrains.eu/api/instances/7a77ccdb-c62d-42a4-a373-a47619d34e74"
+	},
+	"https://openminds.ebrains.eu/vocab/homepage": "https://voluba.apps.hbp.eu/#/",
+	"https://openminds.ebrains.eu/vocab/inputFormat": [
+		{
+			"@id": "https://kg.ebrains.eu/api/instances/f7c21b4d-b27d-4a5c-b184-d2aa66100466"
+		},
+		{
+			"@id": "https://kg.ebrains.eu/api/instances/f9099808-731f-453e-8e81-404ec482a721"
+		},
+		{
+			"@id": "https://kg.ebrains.eu/api/instances/ee347aa2-4746-44e7-968a-467d04e4969d"
+		},
+		{
+			"@id": "https://kg.ebrains.eu/api/instances/caeef910-8691-4e88-83a0-726ea844c2d9"
+		}
+	],
+	"https://openminds.ebrains.eu/vocab/keyword": [
+		{
+			"@id": "https://kg.ebrains.eu/api/instances/21d46eb1-7933-4418-98af-d3d92d9babe3"
+		},
+		{
+			"@id": "https://kg.ebrains.eu/api/instances/4d294fe1-5cbe-4ae4-bcdc-88866798550b"
+		},
+		{
+			"@id": "https://kg.ebrains.eu/api/instances/f04a66d9-9c24-4076-84cd-155607587fa0"
+		},
+		{
+			"@id": "https://kg.ebrains.eu/api/instances/dadd102a-2472-40b0-a500-be168bd6b64f"
+		},
+		{
+			"@id": "https://kg.ebrains.eu/api/instances/5a2fb93a-e5ab-4638-b1fc-065dd49506dc"
+		},
+		{
+			"@id": "https://kg.ebrains.eu/api/instances/4ccfa2b8-fe75-4a17-98b7-e01b922c8f03"
+		}
+	],
+	"https://openminds.ebrains.eu/vocab/outputFormat": [
+		{
+			"@id": "https://kg.ebrains.eu/api/instances/ee347aa2-4746-44e7-968a-467d04e4969d"
+		},
+		{
+			"@id": "https://kg.ebrains.eu/api/instances/caeef910-8691-4e88-83a0-726ea844c2d9"
+		}
+	],
+	"https://openminds.ebrains.eu/vocab/releaseDate": "2020-01-04T00:00:00",
+	"https://openminds.ebrains.eu/vocab/repository": {
+		"@id": "https://kg.ebrains.eu/api/instances/f9a4d451-0c39-424f-9b0e-e903ee6fdf8a"
+	},
+	"https://openminds.ebrains.eu/vocab/supportChannel": "support@ebrains.eu",
+	"https://openminds.ebrains.eu/vocab/versionIdentifier": "v0",
+	"https://openminds.ebrains.eu/vocab/versionInnovation": "This version has no official release on GitHub. VoluBA was previously known as landmark-reg."
+}
