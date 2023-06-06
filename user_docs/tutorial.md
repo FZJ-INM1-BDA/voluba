@@ -25,7 +25,7 @@ In this section, we will transform the Hippocampus volume to a (more or less) an
 
 ### Rough positioning
 
-You can either perform all transformations with the **Transform Incoming Volume** dialog (brain icon on the left) or you can use your mouse for translation (Drag & Drop) and rotation (Shift & Drag).
+You can either perform all transformations with the **Transform incoming volume** dialog (brain icon on the left) or you can use your mouse for translation (Drag & Drop) and rotation (Shift & Drag).
 
 The first thing that strikes is, that the coronal view of the incoming Hippocampus volume is displayed in the axial view of the BigBrain template (bottom left). To transform this plane to the BigBrain coronal view, we need to rotate the volume around the x-axis by 90°.
 
@@ -39,7 +39,7 @@ Next, we will roughly move the volume to the BigBrain Hippocampus by translating
 
 The current anchoring result already looks reasonable. But we can make it even more precise. To refine the transformation matrix, we now enter pairs of landmarks. For selecting landmarks, the two pane mode is very useful. You can activate it by clicking the **mode** button on the top right. Now you will see the reference template on the left and the incoming volume on the right side.
 
-Open the **Edit Landmarks** dialog by clicking on the pin icon on the left. To add a landmark select the plus icon. You are now asked to add a landmark to the reference volume first. After that you can position a pin on the corresponding location in the incoming volume on the right. The more landmarks you add, the more accurate the recalculated transformation matrix will be. To start the calculation, select a transformation type and click the calculator icon. We choose `Affine` here.
+Open the **Edit landmarks** dialog by clicking on the pin icon on the left. To add a landmark select the plus icon. You are now asked to add a landmark to the reference volume first. After that you can position a pin on the corresponding location in the incoming volume on the right. The more landmarks you add, the more accurate the recalculated transformation matrix will be. To start the calculation, select a transformation type and click the calculator icon. We choose `Affine` here.
 
 ![gif](gifs/tutorial_landmarks.gif)
 
@@ -49,7 +49,7 @@ By switching back to overlay mode, you can inspect the resulting alignment. If y
 
 ## Using the result
 
-You can now for example download and reuse the parameters of the affine transformation matrix or view the anchoring result in the interactive atlas viewer siibra-explorer. Click on the **Save/Share Transformation Results** and select the brain icon to open siibra-explorer.
+You can now for example download and reuse the parameters of the affine transformation matrix or view the anchoring result in the interactive atlas viewer siibra-explorer. Click on the **Use Result** and select the brain icon to open siibra-explorer.
 
 ![gif](gifs/tutorial_explorer.gif)
 
