@@ -11,7 +11,7 @@ Instead, voluba allows to upload your own volume of interest - which is typicall
 
 voluba offers a highly interactive workflow. 
 First, you log in with their ORCID or EBRAINS account to upload a dataset into your private working space for the anchoring process. 
-You can choose three different reference volumes: the microscopic resolution human brain model ["BigBrain"](https://search.kg.ebrains.eu/instances/Dataset/d07f9305-1e75-4548-a348-b155fb323d31), the Waxholm space template of the Sprague Dawley rat, and the Allen mouse brain.
+You can choose three different reference volumes: the microscopic resolution human brain model ["BigBrain"](https://search.kg.ebrains.eu/instances/Dataset/d07f9305-1e75-4548-a348-b155fb323d31), [the Waxholm space template of the Sprague Dawley rat](https://doi.org/10.21203/rs.3.rs-2466303/v1), and the [Allen mouse CCF v3](https://doi.org/10.1016/j.cell.2020.04.007).
 The input volume is presented as a graphical overlay in a 3D view with orthogonal cross sections, and you can optimize the visualization by customizing contrast, brightness, colormaps, and intensity thresholds. 
 You can then directly manipulate the relative position and orientation of the input volume with your mouse point, and adjust of voxel scaling and axis orientations to obtain a rigid transformation. 
 Then, you can use voluba's 3D landmark editor to refine the transformation by specifying pairs of corresponding points between the volumes, further facilitated by an optional side-by-side view. 

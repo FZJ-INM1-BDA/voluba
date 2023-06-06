@@ -12,7 +12,7 @@ In voluba the reference space defaults to the BigBrain model. Select a different
 | species | reference space | publication | preview |
 |---------|-----------------|-|-|
 | human   | BigBrain (2015) | [https://doi.org/10.1126/science.1235381](https://doi.org/10.1126/science.1235381) | ![](images/human.png) |
-| rat     | Waxholm (2021)  | [https://doi.org/10.1016/j.neuroimage.2014.10.017](https://doi.org/10.1016/j.neuroimage.2014.10.017) | ![](images/rat.png) |
+| rat     | WHS-SD atlas  | [https://doi.org/10.21203/rs.3.rs-2466303/v1](https://doi.org/10.21203/rs.3.rs-2466303/v1) | ![](images/rat.png) |
 | mouse   | Allen CCFv3 | [https://doi.org/10.1016/j.cell.2020.04.007](https://doi.org/10.1016/j.cell.2020.04.007) | ![](images/mouse.png) |
 
 ## Public volumes
