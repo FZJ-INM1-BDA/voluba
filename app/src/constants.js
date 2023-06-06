@@ -199,7 +199,6 @@ export const getDefaultNehubaConfigLight = (sourceUrl) => {
             "annotationColor": "#cccccc",
             "visible":false,
             "type": "image",
-            // "source": "precomputed://http://imedv02.ime.kfa-juelich.de:8287/precomputed/BigBrainRelease.2015/8bit",
             "source": "precomputed://https://neuroglancer.humanbrainproject.org/precomputed/BigBrainRelease.2015/8bit",
             "transform": [
               [
@@ -355,7 +354,6 @@ export const viewerConfigs = [
           " grey value: ": {
             "annotationColor": "#cccccc",
             "type": "image",
-            // "source": "precomputed://http://imedv02.ime.kfa-juelich.de:8287/precomputed/BigBrainRelease.2015/8bit",
             "source": "precomputed://https://neuroglancer.humanbrainproject.org/precomputed/BigBrainRelease.2015/8bit",
             "transform": [
               [
@@ -387,7 +385,6 @@ export const viewerConfigs = [
           " tissue type: ": {
             "annotationColor": "#cccccc",
             "type": "segmentation",
-            // "source": "precomputed://http://imedv02.ime.kfa-juelich.de:8287/precomputed/BigBrainRelease.2015/classif",
             "source": "precomputed://https://neuroglancer.humanbrainproject.org/precomputed/BigBrainRelease.2015/classif",
             "segments": [
               "0"
