@@ -109,7 +109,7 @@
 <script>
 import { mapState, mapGetters, mapActions, mapMutations } from 'vuex'
 
-import { REFERENCE_COLOR, transposeMat4, UNPAIRED_COLOR, INCOMING_COLOR, annotationColorFocus, testBigbrain, determineElement, getRotationVec3, identityMat, invertQuat, _getLayerTransform, convertNmToVoxel, slightlyAjar } from '@//constants'
+import { REFERENCE_COLOR, transposeMat4, UNPAIRED_COLOR, INCOMING_COLOR, annotationColorFocus, testBigbrain, determineElement, getRotationVec3, identityMat, invertQuat, _getLayerTransform, convertNmToVoxel, slightlyAjar, viewerConfigs } from '@//constants'
 
 import { incompatibleBrowserText } from '@/text'
 
@@ -527,10 +527,8 @@ export default {
       }
       if ((!this.incVolTranslationLock && this.movingIncoming) || (!this.incVolRotationLock && this.rotatingIncoming)) {
         const {vec3, mat4, quat} = window.export_nehuba
-
         const deltaX = event.movementX
         const deltaY = event.movementY
-
         if (!this.incVolTranslationLock && this.movingIncoming) {
           this.pushUndo({ name: 'translating incoming volume' })
           /**
@@ -548,7 +546,6 @@ export default {
 
           vec3.transformMat4(pos, pos, sliceView.invViewMatrix)
           vec3.sub(pos, pos, sliceView.centerDataPosition)
-
           const prevTranslVec = mat4.getTranslation(vec3.create(), xformMat)
           
           /**

@@ -14,8 +14,8 @@
       @mouseenterOnIcon="hoverLandmarkPair({ incId: $event.lmId, hover: true })"
       @mouseleaveOnIcon="hoverLandmarkPair({ incId: $event.lmId, hover: false })"
       ref = "lmOverlay"
-      v-if = "dataToViewport.length > 2"
-      :dataToViewport = "dataToViewport"
+      v-if="false"
+      :dataToViewportWeakMap = "dataToViewportWeakMap"
       :landmarks = "incomingLandmarks"
       class = "landmarks-overlay" />
 
@@ -294,7 +294,7 @@ export default {
       return this.nehubaBase__viewportElements
     },
     dataToViewportWeakMap: function () {
-      return this.nehuxbaBase__dataToViewportWeakMap
+      return this.nehubaBase__dataToViewportWeakMap
     },
     placeholderText: function () {
       return this.errorMessage
