@@ -82,16 +82,21 @@ const dataSelectionStore = {
     selectIncomingVolumeWithId ({ commit, state, dispatch }, id) {
       const vol = state.incomingVolumes.find(({ id: _id }) => _id === id)
       if (vol) {
-        if (vol.extra && vol.extra.neuroglancer && vol.extra.neuroglancer.transform) {
-          const cleansedTransform = JSON.parse(JSON.stringify(vol.extra.neuroglancer.transform))
-          const { mat4 } = export_nehuba
-          const matrix = mat4.fromValues( ...cleansedTransform[0], ...cleansedTransform[1], ...cleansedTransform[2], ...cleansedTransform[3])
-          mat4.transpose(matrix, matrix)
-          commit(
-            'nehubaStore/setIncTransformMatrix',
-            { matrix },
-            { root: true })
-        }
+        /**
+         * nehuba v2's transform is all kind of wacked. 
+         * TODO incorporate transform 
+         */
+        // if (vol.extra && vol.extra.neuroglancer && vol.extra.neuroglancer.transform) {
+        //   const cleansedTransform = JSON.parse(JSON.stringify(vol.extra.neuroglancer.transform))
+        //   const { mat4, vec3 } = export_nehuba
+        //   const matrix = mat4.fromValues( ...cleansedTransform[0], ...cleansedTransform[1], ...cleansedTransform[2], ...cleansedTransform[3])
+        //   mat4.transpose(matrix, matrix)
+        //   const transform = mat4.getTranslation(vec3.create(), matrix)
+        //   commit(
+        //     'nehubaStore/setIncTransformMatrix',
+        //     { matrix },
+        //     { root: true })
+        // }
 
         dispatch('setIncomingVolumeResolution', id)
 

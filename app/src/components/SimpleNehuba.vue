@@ -130,14 +130,17 @@ export default {
         Array.from(realXform.slice(0, 4)),
         Array.from(realXform.slice(4, 8)),
         Array.from(realXform.slice(8, 12)),
-        Array.from(realXform.slice(12, 16))
       ]
-      this.config.dataset.initialNgState.layers.default.transform = transform
     }
     
-    const additionalConfig = this.viewerNavigationStateString && JSON.parse(this.viewerNavigationStateString)
+    const layers = window.primaryViewer.state.children.get("layers").toJSON()
+    const config = window.primaryViewer.state.toJSON()
+    this.config.dataset.initialNgState = {
+      ...config,
+      layers: layers.map(layer => layer.name === 'userlayer-0' ? layer : ({ ...layer, visible: false }))
+    }
 
-    this.nehubaBase__initNehuba(additionalConfig)
+    this.nehubaBase__initNehuba()
       .then(this.postNehubaInit)
       .catch(e => {
         this.log(['nehubaBase initNehubaError', e])

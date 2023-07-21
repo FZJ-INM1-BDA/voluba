@@ -518,6 +518,7 @@ export default {
       this.pushUndoFlag = false
     },
     mousemove: function (event) {
+      if (!this.showDoubleOverlay) return
       if (!this.$options.nonReactiveData.sliceViewOnMouseDownElement) return
       /**
        * allows for user drag whole volume, without deselecting incoming volume
