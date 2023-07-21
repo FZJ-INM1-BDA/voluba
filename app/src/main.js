@@ -18,6 +18,7 @@ import '!!file-loader?context=third_party&name=chunk_worker.bundle.js!export-neh
 import '!!file-loader?context=third_party&name=draco.bundle.js!export-nehuba/dist/min/draco.bundle.js'
 import '!!file-loader?context=third_party&name=async_computation.bundle.js!export-nehuba/dist/min/async_computation.bundle.js'
 import '!!file-loader?context=third_party&name=blosc.bundle.js!export-nehuba/dist/min/blosc.bundle.js'
+import './assets/main.css'
 
 Vue.config.productionTip = false
 
@@ -26,21 +27,28 @@ let experimentalFeatures = {}
 try {
   experimentalFeatures = JSON.parse(process.env.VUE_APP_ENABLE_EXPERIMENTAL_FEATURES || '{}')
 } catch (e) {
+  // eslint-disable-next-line
   console.error(`process.env.VUE_APP_ENABLE_EXPERIMENTAL_FEATURES ${process.env.VUE_APP_ENABLE_EXPERIMENTAL_FEATURES} cannot be parsed a JSON dictionary`, e)
 }
 
+
 const initVue = ({user} = {}) => {
-  new Vue({
+  const store = getStore({ user, experimentalFeatures })
+  
+  const vueApp = new Vue({
     router,
-    store: getStore({ user, experimentalFeatures }),
+    store,
     render: h => h(App),
   }).$mount('#app')
+
+  window.voluba = vueApp
+  window.store = store
 }
 
 axios.get('user')
   .then(({data: user}) => {
     initVue({ user })
   })
-  .catch(e => {
+  .catch(() => {
     initVue()
   })

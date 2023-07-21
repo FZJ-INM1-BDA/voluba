@@ -8,6 +8,7 @@
     <!-- mousedown needs to be capturing event into nehuba container -->
     <!-- otherwise, mousedown on landmarks will also be captured -->
     <div
+      v-if="showNehuba"
       @mousedown.capture="mousedown"
       @sliceRenderEvent="nehubaBase__sliceRenderEvent"
       @viewportToData="nehubaBase__viewportToData"
@@ -117,6 +118,7 @@ import DragLandmarkMixin from '@/mixins/DragLandmarkMixin'
 import NehubaLandmarksOverlay from '@/components/NehubaLandmarksOverlay'
 import NehubaStatusCard from '@/components/NehubaStatusCard'
 import RotationWidgetComponent from '@/components/RotationWidget/RotationWidgetComponent'
+import Vue from 'vue'
 
 const DEFAULT_SHADER = `void main() {
   float x = toNormalized(getDataValue());
@@ -130,6 +132,8 @@ export default {
   ],
   data: function () {
     return {
+      
+      showNehuba: true,
       placeholderText: 'Loading nehuba ...',
       nehubaLoaded: false,
       pushUndoFlag: true,
@@ -167,7 +171,7 @@ export default {
       /**
        * temporary. need to retrieve config separately
        */
-      config: testBigbrain
+      config: viewerConfigs[0]
     }
   },
   mounted: function () {
@@ -195,26 +199,30 @@ export default {
       if (!('export_nehuba' in window)) return
       const { quat, mat4 } = window.export_nehuba
       switch (type) {
-        case 'setPrimaryNehubaNavigation':
+        case 'setPrimaryNehubaNavigation': {
           const vec3 = window.export_nehuba.vec3
           this.$options.nehubaBase.nehubaBase__nehubaViewer.setPosition(vec3.fromValues(...payload.coord))
           break
+        }
         case 'alignReference':
           this.$options.nehubaBase.nehubaBase__nehubaViewer.ngviewer.navigationState.pose.orientation.restoreState([0, 0, 0, 1])
           break
-        case 'alignIncoming':
+        case 'alignIncoming': {
           if (!this.committedTransform) return
           const newQuat = mat4.getRotation(quat.create(), mat4.fromValues(...this.committedTransform))
           this.$options.nehubaBase.nehubaBase__nehubaViewer.ngviewer.navigationState.pose.orientation.restoreState(Array.from(newQuat))
           break
-        case 'deleteIncomingVolume':
+        }
+        case 'deleteIncomingVolume': {
           const { incomingVolume = {} } = payload
           const { imageSource } = incomingVolume
-          if (!imageSource)
+          if (!imageSource) {
             return
+          }
           const key = `{"baseUrls":["${imageSource.replace('precomputed://', '')}"],"path":"","type":"precomputed:MultiscaleVolumeChunkSource"}`
           this.$options.nehubaBase.nehubaBase__nehubaViewer.ngviewer.chunkManager.memoize.map.delete(key)
           break
+        }
         default:
       }
     })
@@ -262,6 +270,17 @@ export default {
     selectedIncomingVolumeId: function (newId, oldId) {
       if (newId === oldId) return
       this.selectedIncomingVolume = this.incomingVolumes.find(v => v.id === newId)
+    },
+    selectedReferenceVolumeId: async function(newId, oldId) {
+      if (newId === oldId) return 
+      this.config = viewerConfigs.find(v => v.id === newId)
+      await this.nehubaBase__destroyNehuba()
+      this.showNehuba = false
+      await Vue.nextTick()
+      this.showNehuba = true
+      await Vue.nextTick()
+      await this.nehubaBase__initNehuba()
+      await this.postNehubaInit()
     },
     appendNehubaFlag: function (flag) {
       if (flag === true) {
@@ -337,14 +356,6 @@ export default {
       }
     },
     mouseOverIncoming: function (val) {
-      if (this.$options.nonReactiveData.ngUserLayer.layer.opacity) {
-        if (val) {
-          this.$options.nonReactiveData.ngUserLayer.layer.opacity.restoreState(this.opacity * 0.8)
-        } else {
-          this.$options.nonReactiveData.ngUserLayer.layer.opacity.restoreState(this.opacity)
-        }
-      }
-
       this.nehubaInputBinding({
         overrideRotation: val && !this.incVolRotationLock,
         overrideTranslation: val && !this.incVolTranslationLock
@@ -383,6 +394,7 @@ export default {
     ...mapActions('nehubaStore', [
       'setTranslInc',
       'rotIncBy',
+      'redrawNehuba'
     ]),
     ...mapMutations('nehubaStore', [
       'setReferenceTemplateTransform',
@@ -470,7 +482,7 @@ export default {
 
       document.addEventListener('mousemove', this.mousemove, true)
 
-      document.addEventListener('mouseup', ev => {
+      document.addEventListener('mouseup', () => {
 
         /**
          * on mosue up, remove event listener
@@ -622,7 +634,17 @@ export default {
        * load meshes 
        * TODO for now, it's hard coded, big brain loads mesh 100 and 200
        */
-      this.$options.nehubaBase.nehubaBase__nehubaViewer.setMeshesToLoad([100, 200])
+      
+      const meshToLoad = this.selectedReferenceVolumeId === 'allen'? [997] : this.selectedReferenceVolumeId === 'ref-1'? [100, 200] : []
+      this.$options.nehubaBase.nehubaBase__nehubaViewer.setMeshesToLoad(meshToLoad)
+
+            
+      if (this.selectedReferenceVolumeId === 'allen') {
+        this.$options.nehubaBase.nehubaBase__nehubaViewer.batchAddAndUpdateSegmentColors(new Map([ [997, { red: 220, green: 220, blue: 220 }] ]), { name: ' allenccfv3_auxmesh: ' })
+
+      } else if (this.selectedReferenceVolumeId === 'ref-1') {
+        this.$options.nehubaBase.nehubaBase__nehubaViewer.batchAddAndUpdateSegmentColors(new Map([ [100, { red: 220, green: 220, blue: 220 }], [ 200, { red: 220, green: 220, blue: 220 } ] ]), { name: ' tissue type: ' })
+      }
 
       /**
        * TODO buggy for the new version of nehuba, so only allow rotation and translation via lock
@@ -714,6 +736,7 @@ export default {
        * debug
        */
       window.primaryNehubaViewer = this.$options.nehubaBase.nehubaBase__nehubaViewer
+      window.primaryViewer = this.$options.nehubaBase.nehubaBase__nehubaViewer.ngviewer
     },
     nehubaInputBinding: function ({ overrideTranslation = null, overrideRotation = null}) {
       if (overrideTranslation !== null) {
@@ -812,7 +835,8 @@ export default {
       addLandmarkMode: 'addLandmarkMode'
     }),
     ...mapGetters('dataSelectionStore', [
-      'selectedIncomingVolume'
+      'selectedIncomingVolume',
+      'selectedReferenceVolumeId'
     ]),
     ...mapGetters('viewerPreferenceStore', [
       'fragmentShader'

@@ -1,4 +1,5 @@
 import { identityMatFlattened } from '../constants'
+import { incompatibleBrowserText } from "@/text"
 
 const browserCompatible = () => 'WebGL2RenderingContext' in window
 
@@ -413,11 +414,10 @@ const nehubaStore = {
       if (!state.appendNehubaFlag)
         return [0, 0, 0, 1]
       
-      const { quat, mat4, vec3 } = window.export_nehuba
+      const { quat, mat4 } = window.export_nehuba
       
       const incXM = mat4.fromValues(...state.incTransformMatrix)
       if (mat4.determinant(incXM) < 0){
-        const flippedVec = vec3.fromValues(...state.flippedState)
         const negM = mat4.create()
         negM[0] = -1
         mat4.mul(incXM, incXM, negM)

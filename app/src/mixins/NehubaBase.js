@@ -178,7 +178,7 @@ export default {
       })
     },
     nehubaBase__destroyNehuba: function () {
-      return new Promise((resolve, reject) => {
+      return new Promise(resolve => {
         this.nehubaBase__nehubaBaseDestroyHook()
         if (this.$options && this.$options.nehubaBase) {
           if (this.$options.nehubaBase.nehubaBase__nehubaViewer) {

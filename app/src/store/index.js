@@ -1,7 +1,6 @@
 
 import { saveToFile, reverseTransposeMat4, multiplyXforms, flattenMat, packMat4 } from '@//constants'
 import Vuex from 'vuex'
-import axios from 'axios'
 import { AGREE_COOKIE_KEY, openInNewWindow, EXPORT_TRANSFORM_TYPE } from '@/constants';
 
 
@@ -15,6 +14,51 @@ import nehubaStore from './nehubaStore'
 import getAuthStore from './authStore'
 
 const ALLOW_UPLOAD = process.env.VUE_APP_ALLOW_UPLOAD
+
+export function getExportJson({ state, getters }){
+
+  const { nehubaStore } = state
+  const { incTransformMatrix } = nehubaStore
+
+  const selectedIncomingVolume = getters['dataSelectionStore/selectedIncomingVolume']
+  const selectedReferenceVolume = getters['dataSelectionStore/selectedReferenceVolume']
+
+  const incomingVolume = (selectedIncomingVolume && selectedIncomingVolume.name) || 'Unknown incoming volume'
+  const referenceVolume = (selectedReferenceVolume && selectedReferenceVolume.name) || 'Unknown reference volume'
+  
+  const ngAffine = getters['dataSelectionStore/selectedIncomingVolumeNgAffine']
+  const { mat4 } = window.export_nehuba
+  const ngAffineMat4 = mat4.fromValues(
+    ...ngAffine.reduce((acc, curr) => acc.concat(curr), [])
+  )
+
+  mat4.invert(ngAffineMat4, ngAffineMat4)
+  const incXformMat4 = mat4.fromValues(...incTransformMatrix)
+  mat4.transpose(incXformMat4, incXformMat4)
+  const out = mat4.mul(
+    mat4.create(),
+    ngAffineMat4,
+    incXformMat4
+  )
+  const transformMatrixInNm = packMat4(Array.from(out))
+
+  const contentHash = (() => {
+    try {
+      return selectedIncomingVolume['extra']['contentHash']
+    } catch (e) {
+      return null
+    }
+  })()
+  const json = {
+    incomingVolume,
+    contentHash,
+    referenceVolume,
+    version: 1.01,
+    ['@type']: EXPORT_TRANSFORM_TYPE,
+    transformMatrixInNm
+  }
+  return json
+}
 
 const getStore = ({ user = null, experimentalFeatures = {} } = {}) => new Vuex.Store({
   modules: {
@@ -141,20 +185,14 @@ const getStore = ({ user = null, experimentalFeatures = {} } = {}) => new Vuex.S
         })
       }
     },
-    viewInInteractiveViewerV2: async function({ state, dispatch, getters }, payload){
+    viewInSiibraExplorer: async function({ state, dispatch, getters }, payload){
 
       const { nehubaStore, viewerPreferenceStore } = state
       const { incTransformMatrix } =  nehubaStore
-      const { incomingColor } = viewerPreferenceStore
 
       const selectedReferenceVolume = getters['dataSelectionStore/selectedReferenceVolume']
       const incRotQuat = getters['nehubaStore/incRotQuat']
       const dim = getters['nehubaStore/dim']
-      const fragmentShader = getters['viewerPreferenceStore/fragmentShader']
-
-      const shader = fragmentShader
-      const opacity = incomingColor[3]
-
       const { vec3, quat } = export_nehuba
       const translationFromCorner = vec3.fromValues(...dim)
       vec3.scale(translationFromCorner, translationFromCorner, 0.5)
@@ -177,96 +215,36 @@ const getStore = ({ user = null, experimentalFeatures = {} } = {}) => new Vuex.S
         translationFromCorner: Array.from(translationFromCorner),
       }
 
-      const host = process.env.VUE_APP_OVERWRITE_TRANSFORM_RESULT_HOST || ''
-      axios.post(`${host}transformResult/v2`, json)
-        .then(({ data: redirectUrl }) => {
-          if (redirectUrl) {
-            console.log(redirectUrl)
-            openInNewWindow(redirectUrl)
-          } else {
-            throw new Error('url not defined')
-          }
-        })
-        .catch(e => dispatch('log', ['store#actions#viewInInteractiveViewer', { error: e }]))
-    },
+      const ivHost = process.env.IV_HOST || 'https://atlases.ebrains.eu/viewer/#'
+      let url = ivHost + selectedReferenceVolume.siibra_explorer_url
 
-    //TODO deprecate
-    viewInInteractiveViewer: function ({ state, dispatch, getters }) {
-      const { nehubaStore, viewerPreferenceStore } = state
-
-      const { incTransformMatrix } =  nehubaStore
-      const { incomingColor } = viewerPreferenceStore
-
-      const selectedReferenceVolume = getters['dataSelectionStore/selectedReferenceVolume']
-      const selectedIncomingVolume = getters['dataSelectionStore/selectedIncomingVolume']
-      const incRotQuat = getters['nehubaStore/incRotQuat']
-      const dim = getters['nehubaStore/dim']
-      const fragmentShader = getters['viewerPreferenceStore/fragmentShader']
-
-      const shader = fragmentShader
-      const opacity = incomingColor[3]
-
-      const { vec3, quat } = export_nehuba
-      const translationFromCorner = vec3.fromValues(...dim)
-      vec3.scale(translationFromCorner, translationFromCorner, 0.5)
-      vec3.transformQuat(translationFromCorner, translationFromCorner, quat.invert(quat.create(), quat.fromValues(...incRotQuat)))
-
-      const json = {
-        selectedIncomingVolume,
-        selectedReferenceVolume,
-        incTransformMatrix,
-        opacity,
-        translationFromCorner: Array.from(translationFromCorner),
-        shader
+      const { origin, pathname } = window.location
+      const pluginUrl = new URL(`${origin}${pathname.replace(/\/$/, '')}/viewerPlugin/template.html`)
+      if (selectedIncomingVolumes.length !== 1) {
+        throw new Error(`selectedIncomingVolumes needs to be exactly 1, but the supplid is ${selectedIncomingVolumes.length}`)
       }
+      pluginUrl.searchParams.set("precomputed", selectedIncomingVolumes[0].imageSource)
+      pluginUrl.searchParams.set(
+        "transform", 
+        [0,1,2].map(r => [0,1,2,3].map(c => incTransformMatrix[ c * 4 + r ])).reduce((acc, curr) => [...acc, ...curr], []).join(",")
+      )
 
-      const host = process.env.VUE_APP_OVERWRITE_TRANSFORM_RESULT_HOST || ''
-      axios.post(`${host}transformResult`, json)
-        .then(({ data }) => {
-          const { id, url } = data
-          if (url) {
-            openInNewWindow(url)
-          } else {
-            throw new Error('url not defined')
-          }
-        })
-        .catch(e => dispatch('log', ['store#actions#viewInInteractiveViewer', { error: e }]))
+      const pluginUrlString = pluginUrl.toString()
+      
+      url += `?pl=${encodeURIComponent(JSON.stringify([pluginUrlString]))}`
+
+      console.log(`Navigating to: ${url}`)
+
+      openInNewWindow(url)
+
     },
     downloadXformResult: function ({ state, getters }) {
-      
-      const { nehubaStore } = state
-      const { incTransformMatrix } = nehubaStore
-
-      const selectedIncomingVolume = getters['dataSelectionStore/selectedIncomingVolume']
-      const selectedReferenceVolume = getters['dataSelectionStore/selectedReferenceVolume']
-
-      const incomingVolume = (selectedIncomingVolume && selectedIncomingVolume.name) || 'Unknown incoming volume'
-      const referenceVolume = (selectedReferenceVolume && selectedReferenceVolume.name) || 'Unknown reference volume'
-      
-      const ngAffine = getters['dataSelectionStore/selectedIncomingVolumeNgAffine']
-      const { mat4 } = window.export_nehuba
-      const ngAffineMat4 = mat4.fromValues(
-        ...ngAffine.reduce((acc, curr) => acc.concat(curr), [])
-      )
-
-      mat4.invert(ngAffineMat4, ngAffineMat4)
-      const incXformMat4 = mat4.fromValues(...incTransformMatrix)
-      mat4.transpose(incXformMat4, incXformMat4)
-      const out = mat4.mul(
-        mat4.create(),
-        ngAffineMat4,
-        incXformMat4
-      )
-      const transformMatrixInNm = packMat4(Array.from(out))
-
-      const json = {
-        incomingVolume,
-        referenceVolume,
-        version: 1.1,
-        ['@type']: EXPORT_TRANSFORM_TYPE,
-        transformMatrixInNm
-      }
-      saveToFile(JSON.stringify(json, null, 2), 'application/json', 'transformMatrix.json')
+      const json = getExportJson({ state, getters })
+      saveToFile({
+        data: JSON.stringify(json, null, 2),
+        mimeType: 'application/json',
+        filename: 'transformMatrix.json'
+      })
     },
     modalMessage: function () {
       /**
@@ -279,10 +257,10 @@ const getStore = ({ user = null, experimentalFeatures = {} } = {}) => new Vuex.S
     corticalAlignmentVisibilityChanged ({ commit }, { visible }) {
       commit('setCorticalAlignmentVisibility', { visible })
     },
-    uploadVolume ({ dispatch }) {
+    uploadVolume () {
       // dispatch('openModal', {modalId: 'uploadModal'})
     },
-    openModal (store, { modalId }) {
+    openModal () {
       /**
        * required for subscribe action
        */

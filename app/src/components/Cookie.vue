@@ -2,10 +2,10 @@
   <div>
     <div class="main">
       <p>
-        Volume Brain Anchoring (VoluBA) uses ‘cookies’ (text files placed on your computer) to verify login details, remember user choices and preferences, and in some instances determine site permissions. Cookies also provide, in anonymous form, the number of visitors accessing the HBP Public Website, features users access during website visits, and the general location of the user based on IP address.
+        voluba uses 'cookies' (text files placed on your computer) to verify login details, remember user choices and preferences, and in some instances determine site permissions. Cookies also provide, in anonymous form, the number of visitors accessing the HBP Public Website, features users access during website visits, and the general location of the user based on IP address.
       </p>
       <p>
-        VoluBA uses at least the following cookies:
+        voluba uses at least the following cookies:
       </p>
       <p>
         <strong>
@@ -33,7 +33,7 @@
     <!-- showmore info -->
     <div v-if="showMore">
       <div class="showmore-item">
-        <strong>Data controller(s)</strong>: VoluBA is the data controller for your login information.
+        <strong>Data controller(s)</strong>: voluba is the data controller for your login information.
       </div>
       <div class="showmore-item">
         <strong>List of partners responsible</strong>:

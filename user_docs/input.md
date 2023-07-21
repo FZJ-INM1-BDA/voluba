@@ -1,22 +1,49 @@
-# Setting up the input data
+# Loading input data
 
-To support large datasets, VoluBA visualizes images from multi-resolution chunks. 
-This means that it will not interpret your image files right away, but needs to make them accessible over an http interface that support multi-resolution chunks.
+The anchoring process starts by selecting a [reference space](#reference-space) you want to anchor to as well as the incoming volume. voluba provides a selection of example datasets
+but also allows you to upload your own image data. Select an existing [public](#public-volumes) or [uploaded private input image](#private-volumes) and click `Start` to proceed to the alignment.
 
-The default installation of VoluBA at <https://voluba.apps.hbp.eu> hosts its reference volumes in a specifically converted [precomputed format](https://github.com/google/neuroglancer/tree/master/src/neuroglancer/datasource/precomputed) on a public webserver.
-For the input datasets, it relies on a dedicated *image service* hosted for the [EBRAINS](https://ebrains.eu) infrastructure by [Forschungszentrum Jülich](https://fz-juelich.de).
-This image service provides a selection of example datasets and allows you to upload images in NiFTI format for use in VoluBA. 
+![screenshot](images/new_workflow.png)
 
-![snippet](images/upload.png)
+## Reference space
 
-!!! info
-    You will need to sign in with your ORCID or EBRAINS credentials before you can upload image volumes. Being signed in using an EBRAINS account will furthermore allow VoluBA to remember your work in progress between sessions.
+In voluba the reference space defaults to the BigBrain model. Select a different space depending on the species your image data originates from. You can choose between the following:
 
-Your data will be stored in a protected, private space. 
-It will not be accessible to other users, and can be permanently deleted after the alignment is done.
-After upload, the image data will be available for selection under `Private volumes`:
+| species | reference space | publication | preview |
+|---------|-----------------|-|-|
+| human   | BigBrain (2015) | [https://doi.org/10.1126/science.1235381](https://doi.org/10.1126/science.1235381) | ![](images/human.png) |
+| rat     | WHS-SD atlas  | [https://doi.org/10.21203/rs.3.rs-2466303/v1](https://doi.org/10.21203/rs.3.rs-2466303/v1) | ![](images/rat.png) |
+| mouse   | Allen CCFv3 | [https://doi.org/10.1016/j.cell.2020.04.007](https://doi.org/10.1016/j.cell.2020.04.007) | ![](images/mouse.png) |
 
-![snippet](images/select_private_volume.png)
+## Public volumes
 
+Under `Public volumes` you can find a selection of example datasets. We created them for you to easily try out the
+features of voluba. By following our [Step-by-step tutorial](tutorial.md) you will learn how to successfully anchor our
+Hippocampus volume to the BigBrain reference space.
 
-Select a public or uploaded private input image, and click `Start` to proceed to the alignment.
+Datasets published in the [EBRAINS Knowledge Graph](https://search.kg.ebrains.eu/) are not part of
+the `Public volumes`. To align an image volume of a dataset in reference space, you have to download the volume from the
+Knowledge Graph and upload it to voluba as a [private volume](#private-volumes).
+
+## Private volumes
+
+For anchoring your own image data you need to upload the volume to voluba. It will then be available for selection under
+`Private volumes`.
+
+To protect your uploaded data, you have to sign in with your [ORCID](https://orcid.org/)
+or [EBRAINS](https://ebrains.eu) account first. The volumes will be stored in a private space that is not accessible to other
+users.
+
+!!! tip
+    [Register](https://ebrains.eu/register/) for EBRAINS to get access to more tools, services and data for neuroscientists.
+
+After login click on `Choose File` to select the image data you want to upload. voluba expects your files to be in NIfTI
+format (.nii or .nii.gz). Please convert your data, if it has a different filetype. It is also advised to define the voxel resolution inside the NIfTI header via `pixdim` and `xyzt_units`, so that voluba initially displays the incoming volume in correct relation to the reference template. If you don't specify these values, voluba assumes 1 mm voxel resolution for your data.
+
+!!! help
+    Convert your image files to NIfTI with the help of our [HOW TO](nifti_conversion.md).
+
+By clicking on `Upload` your data will be stored in your private space and is available for alignment. If you want to
+permanently delete one of the `Private volumes`, select the according image data as incoming volume and click on the red
+trash icon.
+
