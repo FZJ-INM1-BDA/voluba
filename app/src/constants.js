@@ -109,6 +109,11 @@ export const DEFAULT_BUNDLED_INCOMING_VOLUMES_1 = [
     id: 'test-london',
     name: 'test london dataset (raw) LADAF-2020-31/brain/25.08um_complete-organ',
     imageSource: 'n5://gs://ucl-hip-ct-35a68e99feaae8932b1d44da0358940b/LADAF-2020-31/brain/25.08um_complete-organ'
+  },
+  {
+    id: '7.72um_complete-organ_bm18',
+    name: '7.72um_complete-organ_bm18',
+    imageSource: 'n5://gs://ucl-hip-ct-35a68e99feaae8932b1d44da0358940b/LADAF-2021-17/brain/7.72um_complete-organ_bm18'
   }
 ]
 
