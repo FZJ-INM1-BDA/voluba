@@ -62,7 +62,7 @@
 </template>
 <script>
 import LandmarkComponent from '@/components/LandmarkUnit'
-import { LANDMARK_ICON_THRESHOLD } from '@/constants'
+import { LANDMARK_ICON_THRESHOLD, determineElement } from '@/constants'
 
 export default {
   props: {
@@ -70,10 +70,16 @@ export default {
       type: '2x2' | 'slice' | 'perspective',
       default: '2x2'
     },
-    dataToViewport: {
-      type: Array,
+    viewportElements: {
+      type: Set,
       default: function () {
-        return []
+        return new Set()
+      }
+    },
+    dataToViewportWeakMap: {
+      type: WeakMap,
+      default: function () {
+        return new WeakMap()
       }
     },
     landmarks: {
@@ -86,7 +92,8 @@ export default {
   data: function () {
     return {
       draggedLmId: null,
-      draggedPanelIdx: null
+      draggedPanelIdx: null,
+      idxToHtmlElementMap: null,
     }
   },
   watch: {
@@ -110,22 +117,72 @@ export default {
         this.$emit('mousedownOnIcon', {lmId, panelIdx})
       }
     },
+    assignViewPort: function () {
+      
+      const {
+        viewportElements: viewportElementsSet,
+        idxToHtmlElementMap,
+      } = this
+
+      const assignKeys = () => {
+        this.idxToHtmlElementMap = null
+
+        const cache = new Map()
+        const cacheSet = new Set()
+        const elements = Array.from(viewportElementsSet)
+        for (const element of elements) {
+          const idx = determineElement(element)
+          if (idx !== null) {
+            cache.set(idx, element)
+            cacheSet.add(element)
+          }
+        }
+        if (cache.size !== 3) {
+          console.warn(`nehubalandmarksoverlay, cache size !== 3, but equal to: ${cache.size}. Aborting ...`)
+          return
+        }
+        this.idxToHtmlElementMap = cache
+      }
+
+      // testing assignment
+      if (!idxToHtmlElementMap) return assignKeys()
+      for (const key of idxToHtmlElementMap.values()) {
+        if (!viewportElementsSet.has(key)) {
+          assignKeys()
+          break
+        }
+      }
+    },
     calcZOffset: function (idx, lm) {
-      return this.dataToViewport[idx](lm.coord.map(v => v * 1e6))[2]
+      this.assignViewPort()
+      const {
+        dataToViewportWeakMap,
+        idxToHtmlElementMap,
+      } = this
+      if (!idxToHtmlElementMap) return 0
+
+      const fn = dataToViewportWeakMap.get(
+        idxToHtmlElementMap.get(idx)
+      )
+      
+      const val = fn(lm.coord)
+      return val[2]
     },
     calcTransformStyle: function (idx, lm) {
-      if (this.dataToViewport[idx]) {
-        /**
-         * data provided is in mm, data needed is in nm
-         */
-        const translated = this.dataToViewport[idx](lm.coord.map(v => v * 1e6))
-        return {
-          transform: `translate(${translated[0]}px, ${translated[1]}px)`
-        }
-      } else {
-        return {
+      this.assignViewPort()
+      const {
+        dataToViewportWeakMap,
+        idxToHtmlElementMap,
+      } = this
+      if (!idxToHtmlElementMap) return {}
 
-        }
+      const fn = dataToViewportWeakMap.get(
+        idxToHtmlElementMap.get(idx)
+      )
+
+      const val = fn(lm.coord)
+      return {
+        transform: `translate(${val[0]}px, ${val[1]}px)`
       }
     }
   },

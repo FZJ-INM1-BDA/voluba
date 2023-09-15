@@ -107,7 +107,7 @@ const linearStore = {
       const { mat4 } = window.export_nehuba
       const { landmarkInverseMatrix } = state
       
-      const flattenedMatrix = landmarkInverseMatrix.flatMap((arr, arrI) => arr.map((v, elIdx) => elIdx === 3 && arrI !== 3 ? v * 1e6 : v ))
+      const flattenedMatrix = landmarkInverseMatrix.flatMap((arr, arrI) => arr.map((v, elIdx) => elIdx === 3 && arrI !== 3 ? v : v ))
       const transposedM = mat4.transpose(mat4.create(), mat4.fromValues(...flattenedMatrix))
 
       const matrix = Array.from(transposedM)

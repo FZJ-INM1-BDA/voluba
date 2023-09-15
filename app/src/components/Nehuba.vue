@@ -34,7 +34,8 @@
       ref="lmOverlay"
       v-if="appendNehubaFlag && showReferenceLandmarkOverlay"
       :perspectiveOrientation="compoundPerspectiveOrientation"
-      :dataToViewport="dataToViewport"
+      :viewportElements="viewportElements"
+      :dataToViewportWeakMap="dataToViewportWeakMap"
       :landmarks="referenceLandmarks"
       class="landmarks-overlay" />
 
@@ -45,7 +46,8 @@
       @mouseleaveOnIcon="handleMouseleaveOnIcon({ event: $event, incId: $event.lmId, hover: false })"
       ref="lmOverlay1"
       v-if="appendNehubaFlag && showIncomingLandmarkOverlay"
-      :dataToViewport="dataToViewport"
+      :viewportElements="viewportElements"
+      :dataToViewportWeakMap="dataToViewportWeakMap"
       :landmarks="incomingLandmarks"
       class="landmarks-overlay" />
     
@@ -107,7 +109,7 @@
 <script>
 import { mapState, mapGetters, mapActions, mapMutations } from 'vuex'
 
-import { REFERENCE_COLOR, transposeMat4, UNPAIRED_COLOR, INCOMING_COLOR, annotationColorFocus, viewerConfigs, determineElement, getRotationVec3, identityMat, invertQuat } from '@//constants'
+import { REFERENCE_COLOR, transposeMat4, UNPAIRED_COLOR, INCOMING_COLOR, annotationColorFocus, testBigbrain, determineElement, getRotationVec3, identityMat, invertQuat, _getLayerTransform, convertNmToVoxel, slightlyAjar, viewerConfigs } from '@//constants'
 
 import { incompatibleBrowserText } from '@/text'
 
@@ -140,7 +142,7 @@ export default {
       /**
        * managed layer state
        */
-      mouseOverIncoming: false,
+      mouseOverIncoming: true,
       movingIncoming: false,
       movingIncomingIndex: null,
       rotatingIncoming: false,
@@ -162,6 +164,7 @@ export default {
       committedTransform: null,
       viewerNavigationPosition: [0, 0, 0],
       viewerMousePosition: [0, 0, 0],
+      viewerMousePositionVoxel: [0, 0, 0],
       viewerSliceOrientation: [0, 0, 0, 1],
       viewerPerspectiveOrientation: [0, 0, 0, 1],
 
@@ -198,7 +201,7 @@ export default {
       switch (type) {
         case 'setPrimaryNehubaNavigation': {
           const vec3 = window.export_nehuba.vec3
-          this.$options.nehubaBase.nehubaBase__nehubaViewer.setPosition(vec3.fromValues(...payload.coord.map(v => v * 1e6)), true)
+          this.$options.nehubaBase.nehubaBase__nehubaViewer.setPosition(vec3.fromValues(...payload.coord))
           break
         }
         case 'alignReference':
@@ -310,8 +313,11 @@ export default {
         this.changeOpacity(1.0)
       }
     },
+    nehubaBase__mousePositionVoxel: function(array) {
+      this.viewerMousePositionVoxel = array || [0, 0, 0]
+    },
     nehubaBase__mousePosition: function (array) {
-      this.viewerMousePosition = array
+      this.viewerMousePosition = array || [0, 0, 0]
     },
     nehubaBase__navigationPosition: function (array) {
       this.viewerNavigationPosition = array
@@ -319,14 +325,13 @@ export default {
     },
     incTransformMatrix: function (array) {
       if (!this.$options.nonReactiveData.ngUserLayer) return
-      const { mat4 } = window.export_nehuba
-
-      const matrix = mat4.fromValues(...array)
-      /**
-       * xform matrix sometimes a bit wonky
-       */
-      this.$options.nonReactiveData.ngUserLayer.layer.transform.transform = matrix
-      this.$options.nonReactiveData.ngUserLayer.layer.transform.changed.dispatch()
+      
+      const { transformHandle } = _getLayerTransform(this.$options.nonReactiveData.ngUserLayer)
+      if (!transformHandle) return
+      transformHandle.value = {
+        ...transformHandle.value,
+        transform: new Float64Array(array)
+      }
     },
     /**
      * may becoming obsolete
@@ -371,8 +376,8 @@ export default {
     subscriptions: [],
     ngUserLayer: null,
     managedLayers: [],
-    mousedownMatrix: null,
-    timeoutId: null
+    timeoutId: null,
+    sliceViewOnMouseDownElement: null
   },
   methods: {
     ...mapActions({
@@ -433,7 +438,7 @@ export default {
          */
         this.addLandmark({
           landmark: {
-            coord: this.viewerMousePosition.map(v => v / 1e6)
+            coord: this.viewerMousePositionVoxel
           }
         })
         return
@@ -448,6 +453,10 @@ export default {
         }, 300)
         return
       }
+      
+      const _element = event.srcElement || event.target
+      this.$options.nonReactiveData.sliceViewOnMouseDownElement = _element
+
       if (this.incVolTranslationLock && this.incVolRotationLock) 
         return
       if (this.incVolTranslationLock || this.incVolRotationLock) {
@@ -458,7 +467,6 @@ export default {
       }
 
       this.incomingVolumeSelected = true
-      this.$options.nonReactiveData.mousedownMatrix = Array.from(this.incTransformMatrix)
 
       this.mousemoveStart = [event.screenX, event.screenY]
 
@@ -491,7 +499,7 @@ export default {
         this.movingIncomingIndex = null
         this.rotateAbsoluteStart = null
 
-        this.$options.nonReactiveData.mousedownMatrix = null
+        this.$options.nonReactiveData.sliceViewOnMouseDownElement = null
 
         this.pushUndoFlag = true
       }, {
@@ -510,6 +518,8 @@ export default {
       this.pushUndoFlag = false
     },
     mousemove: function (event) {
+      if (!this.showDoubleOverlay) return
+      if (!this.$options.nonReactiveData.sliceViewOnMouseDownElement) return
       /**
        * allows for user drag whole volume, without deselecting incoming volume
        */
@@ -518,31 +528,33 @@ export default {
       }
       if ((!this.incVolTranslationLock && this.movingIncoming) || (!this.incVolRotationLock && this.rotatingIncoming)) {
         const {vec3, mat4, quat} = window.export_nehuba
-
         const deltaX = event.movementX
         const deltaY = event.movementY
-
         if (!this.incVolTranslationLock && this.movingIncoming) {
           this.pushUndo({ name: 'translating incoming volume' })
           /**
            * first, translation mouse delta into 3d delta
            */
           let pos = vec3.fromValues(deltaX, deltaY, 0)
-          if (!this.nehubaBase__viewportToDatas[this.movingIncomingIndex])
-            return
-          vec3.transformMat4(pos, pos, this.nehubaBase__viewportToDatas[this.movingIncomingIndex])
+          
+          const sliceView = this.nehubaBase__elementToSliceViewWeakMap.get(this.$options.nonReactiveData.sliceViewOnMouseDownElement)
+          if (!sliceView) return
           
           /**
            * get previous translate
            */
           const xformMat = mat4.fromValues(...this.incTransformMatrix)
+
+          vec3.transformMat4(pos, pos, sliceView.invViewMatrix)
+          vec3.sub(pos, pos, sliceView.centerDataPosition)
           const prevTranslVec = mat4.getTranslation(vec3.create(), xformMat)
           
           /**
            * account for navigation movement
            */
-          vec3.subtract(pos, pos, vec3.fromValues(...this.viewerNavigationPosition))
-
+          const currNavVoxel = convertNmToVoxel(this.nehubabase__coordinateSpace, this.viewerNavigationPosition, "vec3")
+          // vec3.subtract(pos, pos, vec3.fromValues(...currNavVoxel))
+          // console.log(this.viewerNavigationPosition)
           /**
            * add delta & set xformMat
            */
@@ -550,7 +562,8 @@ export default {
           
           this.setTranslInc({
             axis: 'xyz',
-            value: Array.from(pos).map(v => v / 1e6)
+            value: Array.from(pos),
+            ngCoordinateSpace: this.nehubabase__coordinateSpace
           })
         }
 
@@ -584,6 +597,9 @@ export default {
     },
     updateMouseOverIncVolState: function ({mouseOverUserlayer}) {
 
+      
+      // BUG: nehuba getValueAt does not respect updated transform
+      return
       if (this._showIncVolOverlay && !this._showRefVol) return
 
       this.mouseOverIncoming = mouseOverUserlayer
@@ -609,7 +625,7 @@ export default {
       /**
        * set reference volume transform matrix
        */
-      const transform = this.$options.nehubaBase.nehubaBase__nehubaViewer.ngviewer.layerManager.managedLayers[0].layer.transform.toJSON()
+      const { transformArray: transform } = _getLayerTransform(this.$options.nehubaBase.nehubaBase__nehubaViewer.ngviewer.layerManager.managedLayers[0])
       this.setReferenceTemplateTransform({ transform })
 
       /**
@@ -629,13 +645,25 @@ export default {
       }
 
       /**
+       * TODO buggy for the new version of nehuba, so only allow rotation and translation via lock
+       */
+      this.$options.nehubaBase.nehubaBase__nehubaViewer.ngviewer.inputEventBindings.sliceView.bindings.set('at:mousedown0', {stopPropagation: true})
+      this.$options.nehubaBase.nehubaBase__nehubaViewer.ngviewer.inputEventBindings.sliceView.bindings.set('at:shift+mousedown0', {stopPropagation: true})
+
+      /**
        * user mouseover inc vol state
        */
       this.$options.nonReactiveData.subscriptions.push(
         this.$options.nehubaBase.nehubaBase__nehubaViewer.mouseOver.layer
-          .filter(v => v.layer.name === 'userlayer-0')
+          .filter(v => {
+            // console.log('tapping',  v)
+            return v.layer.name === 'userlayer-0'
+          })
           .filter(v => typeof v !== 'undefined')
-          .map(ev => ev.value !== null)
+          .map(ev => {
+            // console.log('mapping', ev.value, ev.layer.name)
+            return ev.value !== null
+          })
           .distinctUntilChanged()
           .map(bool => ({mouseOverUserlayer: bool}))
           .subscribe(this.updateMouseOverIncVolState)
@@ -678,23 +706,23 @@ export default {
        * remove guiding grey boxes
        * 
        */
-      const hideGuidingGreyLine = ({layer}) => {
-        let flag = false
-        return () => {
-          if (flag) return
-          flag = true
+      // const hideGuidingGreyLine = ({handlers , layer}) => {
+      //   let flag = false
+      //   return () => {
+      //     if (flag) return
+      //     flag = true
 
-          const source = layer.annotationLayerState.value.source
-          source.annotationMap.clear()
-          source.changed.dispatch()
-        }
-      }
+      //     const source = layer.annotationLayerState.value.source
+      //     source.annotationMap.clear()
+      //     source.changed.dispatch()
+      //   }
+      // }
       
-      mgdLayers.forEach(l => {
-        const layer = l.layer
-        const handlers = l.layer.annotationLayerState.changed.handlers
-        handlers.add(hideGuidingGreyLine({handlers, layer}))
-      })
+      // mgdLayers.forEach(l => {
+      //   const layer = l.layer
+      //   const handlers = l.layer.annotationLayerState.changed.handlers
+      //   handlers.add(hideGuidingGreyLine({handlers, layer}))
+      // })
       
       /**
        * emit ready so that second nehuba can be shown if necessary
@@ -762,7 +790,7 @@ export default {
         source: uri,
         opacity,
         shader,
-        transform: (this.incTransformMatrix && transposeMat4(this.incTransformMatrix)) || transform
+        transform: slightlyAjar || (this.incTransformMatrix && transposeMat4(this.incTransformMatrix)) || transform
       }
       const newNgLayer = viewer.layerSpecification.getLayer(name, newLayer)
       const ngUserLayer = viewer.layerManager.addManagedLayer(newNgLayer)
@@ -836,10 +864,10 @@ export default {
       }
     },
     showReferenceLandmarkOverlay: function () {
-      return this.nehubaLoaded && this.dataToViewport.length > 2 && this._showRefVol
+      return this.nehubaLoaded && this.viewportElements.size > 2 && this._showRefVol
     },
     showIncomingLandmarkOverlay: function () {
-      return this.nehubaLoaded && this.dataToViewport.length > 2 && this._showIncVolOverlay
+      return this.nehubaLoaded && this.viewportElements.size > 2 && this._showIncVolOverlay
     },
     showDoubleOverlay: function () {
       return this.$store.state._step2Mode === 'overlay'
@@ -847,8 +875,11 @@ export default {
     cid: function () {
       return this.nehubaBase__cid
     },
-    dataToViewport: function () {
-      return this.nehubaBase__dataToViewport
+    viewportElements: function () {
+      return this.nehubaBase__viewportElements || new Set()
+    },
+    dataToViewportWeakMap: function () {
+      return this.nehubaBase__dataToViewportWeakMap
     },
     storedIncomingLandmarks: function () {
       const {vec3,  mat4} = window.export_nehuba
@@ -858,7 +889,7 @@ export default {
          * return all incoming landmarks
          */
         ? this._storeIncomingLandmarks.map(lm => {
-            const coord = vec3.fromValues(...lm.coord.map(v => v * 1e6))
+            const coord = vec3.fromValues(...lm.coord)
             vec3.transformMat4(coord, coord, incVM)
             const lmp = this._storeLandmarkPairs.find(lmp => lmp.incId === lm.id)
             return {
@@ -866,7 +897,7 @@ export default {
               ...lm,
               ...(lmp ? { name: lmp.name } : {}),
               color: this.overlayColorHex,
-              coord: Array.from(coord).map(v => v / 1e6)
+              coord: Array.from(coord)
             }
           })
         /**
@@ -881,7 +912,7 @@ export default {
               id: 'tmplm',
               name: 'tmplm',
               color: this.addLandmarkMode === 'incoming' ? INCOMING_COLOR : REFERENCE_COLOR,
-              coord: this.viewerMousePosition.map(v => v / 1e6),
+              coord: this.viewerMousePositionVoxel,
               temporary: true,
               active: true
             }
@@ -913,7 +944,7 @@ export default {
               id: 'tmplm',
               name: 'tmplm',
               color: this.addLandmarkMode === 'incoming' ? INCOMING_COLOR : REFERENCE_COLOR,
-              coord: this.viewerMousePosition.map(v => v / 1e6),
+              coord: this.viewerMousePositionVoxel,
               temporary: true,
               active: true
             }
@@ -921,9 +952,11 @@ export default {
         : this.storedReferenceLandmarks
     },
     navStatusText: function () {
+      if (!this.viewerNavigationPosition) return `navigation (mm) initialising`
       return `navigation (mm): ${this.viewerNavigationPosition.map(v => (v / 1e6).toFixed(3)).join(', ')}`
     },
     mousePosStatusText: function () {
+      if (!this.viewerMousePosition) return `mouse (mm) initialising`
       return `mouse (mm): ${this.viewerMousePosition.map(v => (v / 1e6).toFixed(3)).join(', ')}`
     }
   },
