@@ -3,32 +3,12 @@
 
     <div class="container d-flex flex-row vertical-separator-container">
 
-      <div class="flex-grow-1 flex-shrink-1" v-if="advancedFlag">
-        <h4>
-          Advanced workflow
-        </h4>
-        
-        <button
-          @click="advancedFlag = !advancedFlag"
-          class="btn btn-sm btn-outline-primary">
-          Toggle basic
-        </button>
-
-        <AdvancedDataselection />
-      </div>
-
       <!-- new workflow -->
-      <div v-if="!advancedFlag" class = "flex-grow-1 flex-shrink-1">
+      <div class = "flex-grow-1 flex-shrink-1">
 
         <h4>
           New workflow
         </h4>
-
-        <button
-          @click="advancedFlag = !advancedFlag"
-          class="btn btn-sm btn-outline-primary">
-          Toggle advanced
-        </button>
 
         <!-- select reference volumes -->
         <div>
@@ -118,8 +98,6 @@ import { mapActions, mapGetters, mapState } from 'vuex';
 import InfoPopover from '@/components/InfoPopover'
 import IncomingVolumeSelection from '@/components/IncomingVolumeSelection'
 import ReferenveVolumeSelection from '@/components/ReferenveVolumeSelection'
-import AdvancedDataselection from '@/components/AdvancedDataselection'
-
 
 export default {
   components: {
@@ -127,15 +105,13 @@ export default {
     InfoPopover,
     IncomingVolumeSelection,
     ReferenveVolumeSelection,
-    ResumeWorkflowComponent,
-    AdvancedDataselection,
+    ResumeWorkflowComponent
   },
   data: function () {
     return {
       timeoutId:null,
       incVolSelMessage: null,
       incVolSelError: null,
-      advancedFlag: false,
     }
   },
   computed: {

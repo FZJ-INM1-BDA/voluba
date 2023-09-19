@@ -59,7 +59,7 @@ const dataSelectionStore = {
       for (const vol of volumes){
         const ids = new Set(finalVolumes.map(v => v.id))
         if (ids.has(vol.id)) continue
-        finalVolumes.push(vol)
+        finalVolumes.append(vol)
       }
       state.incomingVolumes = finalVolumes
     }
@@ -67,11 +67,10 @@ const dataSelectionStore = {
   actions: {
     appendToIncomingVolumes({ commit, state }, { volumes }){
       const { incomingVolumes } = state
-      const newVolumeIds = volumes.map(vol => vol.id)
       commit('setIncomingVolumes', { 
         volumes: [
-          ...incomingVolumes.filter(vol => !newVolumeIds.includes(vol.id)),
-          ...volumes,
+          ...incomingVolumes,
+          ...volumes
         ]
        })
     },
