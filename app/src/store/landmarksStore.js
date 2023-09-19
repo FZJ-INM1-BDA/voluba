@@ -172,7 +172,7 @@ const landmarksStore = {
          */
         const {mat4, vec3 } = window.export_nehuba
 
-        const coord = landmark.coord || primaryNehubaNavigationPosition
+        const coord = (landmark.coord && landmark.coord.map(v => v * 1e6)) || primaryNehubaNavigationPosition
         const xform = mat4.fromValues(...incTransformMatrix)
         mat4.invert(xform, xform)
         const pos = vec3.fromValues(...coord)
@@ -183,7 +183,7 @@ const landmarksStore = {
           id: incId,
           name: incId,
           active: true,
-          coord: Array.from(pos)
+          coord: Array.from(pos).map(v => v / 1e6)
         }
         const refLm = referenceLandmarks.find(lm => landmarkPairs.findIndex(lmp => lmp.refId === lm.id) < 0)
         if (refLm) {
@@ -450,9 +450,9 @@ const landmarksStore = {
         if (!incLm)
           return
         const incXform = mat4.fromValues(...incTransformMatrix)
-        const coord = vec3.fromValues(...incLm.coord)
+        const coord = vec3.fromValues(...incLm.coord.map(v => v * 1e6))
         vec3.transformMat4(coord, coord, incXform)
-        payload.coord = Array.from(coord)
+        payload.coord = Array.from(coord).map(v => v / 1e6)
       }
 
       if (payload.coord) {

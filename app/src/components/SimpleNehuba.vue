@@ -14,8 +14,8 @@
       @mouseenterOnIcon="hoverLandmarkPair({ incId: $event.lmId, hover: true })"
       @mouseleaveOnIcon="hoverLandmarkPair({ incId: $event.lmId, hover: false })"
       ref = "lmOverlay"
-      v-if="false"
-      :dataToViewportWeakMap = "dataToViewportWeakMap"
+      v-if = "dataToViewport.length > 2"
+      :dataToViewport = "dataToViewport"
       :landmarks = "incomingLandmarks"
       class = "landmarks-overlay" />
 
@@ -112,7 +112,6 @@ export default {
 
       viewerNavigationPosition: [0, 0, 0],
       viewerMousePosition: [0, 0, 0],
-      viewerMousePositionVoxel: [0, 0, 0],
 
       subscriptions: [],
       config: this.baseConfig ? JSON.parse(JSON.stringify(this.baseConfig)) : null,
@@ -130,17 +129,14 @@ export default {
         Array.from(realXform.slice(0, 4)),
         Array.from(realXform.slice(4, 8)),
         Array.from(realXform.slice(8, 12)),
+        Array.from(realXform.slice(12, 16))
       ]
+      this.config.dataset.initialNgState.layers.default.transform = transform
     }
     
-    const layers = window.primaryViewer.state.children.get("layers").toJSON()
-    const config = window.primaryViewer.state.toJSON()
-    this.config.dataset.initialNgState = {
-      ...config,
-      layers: layers.map(layer => layer.name === 'userlayer-0' ? layer : ({ ...layer, visible: false }))
-    }
+    const additionalConfig = this.viewerNavigationStateString && JSON.parse(this.viewerNavigationStateString)
 
-    this.nehubaBase__initNehuba()
+    this.nehubaBase__initNehuba(additionalConfig)
       .then(this.postNehubaInit)
       .catch(e => {
         this.log(['nehubaBase initNehubaError', e])
@@ -267,7 +263,7 @@ export default {
             id: 'tmplm',
             name: 'tmplm',
             color: INCOMING_COLOR,
-            coord: this.viewerMousePositionVoxel,
+            coord: this.viewerMousePosition.map(v => v / 1e6),
             temporary: true,
             active: true
           }
@@ -293,11 +289,8 @@ export default {
     cid: function () {
       return this.nehubaBase__cid
     },
-    viewportElements: function () {
-      return this.nehubaBase__viewportElements
-    },
-    dataToViewportWeakMap: function () {
-      return this.nehubaBase__dataToViewportWeakMap
+    dataToViewport: function () {
+      return this.nehubaBase__dataToViewport
     },
     placeholderText: function () {
       return this.errorMessage
@@ -305,11 +298,9 @@ export default {
         : this.loadingText
     },
     navStatusText: function () {
-      if (!this.viewerNavigationPosition) return `navigation (mm) initialising`
       return `navigation (mm): ${this.viewerNavigationPosition.map(v => (v / 1e6).toFixed(3)).join(', ')}`
     },
     mousePosStatusText: function () {
-      if (!this.viewerMousePosition) return `mouse (mm) initialising`
       return `mouse (mm): ${this.viewerMousePosition.map(v => (v / 1e6).toFixed(3)).join(', ')}`
     }
   },
@@ -422,10 +413,7 @@ export default {
       layer.layer.transform.changed.dispatch()
     },
     nehubaBase__mousePosition: function (array) {
-      this.viewerMousePosition = array || [0, 0, 0]
-    },
-    nehubaBase__mousePositionVoxel: function(array) {
-      this.viewerMousePositionVoxel = array || [0, 0, 0]
+      this.viewerMousePosition = array
     },
     nehubaBase__navigationPosition: function (array) {
       this.viewerNavigationPosition = array

@@ -15,9 +15,6 @@ import './dep'
 
 import '!!file-loader?context=third_party&name=main.bundle.js!export-nehuba/dist/min/main.bundle.js'
 import '!!file-loader?context=third_party&name=chunk_worker.bundle.js!export-nehuba/dist/min/chunk_worker.bundle.js'
-import '!!file-loader?context=third_party&name=draco.bundle.js!export-nehuba/dist/min/draco.bundle.js'
-import '!!file-loader?context=third_party&name=async_computation.bundle.js!export-nehuba/dist/min/async_computation.bundle.js'
-import '!!file-loader?context=third_party&name=blosc.bundle.js!export-nehuba/dist/min/blosc.bundle.js'
 import './assets/main.css'
 
 Vue.config.productionTip = false
