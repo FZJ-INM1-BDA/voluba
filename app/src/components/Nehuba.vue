@@ -328,10 +328,42 @@ export default {
       
       const { transformHandle } = _getLayerTransform(this.$options.nonReactiveData.ngUserLayer)
       if (!transformHandle) return
-      transformHandle.value = {
-        ...transformHandle.value,
-        transform: new Float64Array(array)
+      const len = transformHandle.value.transform.length
+      if (len === 25) {
+        /**
+         * 0, 1, 2, 3, 4
+         * 5, 6, 7, 8, 9
+         * 10, 11, 12, 13, 14
+         * 15, 16, 17, 18, 19
+         * 20, 21, 22, 23, 24
+         */
+        const newArray = new Float64Array(25)
+        for (let i = 0; i < array.length; i++) {
+          const col = i % 4
+          const row = (i - col) / 4
+          const newidx = row < 3 // displacement is always on last row
+            ? row * 5 + col
+            : (row + 1) * 5 + col
+          newArray[newidx] = array[i]
+        }
+        newArray[18] = 1
+        newArray[23] = 0
+        newArray[24] = 1
+
+        transformHandle.value = {
+          ...transformHandle.value,
+          transform: new Float64Array(newArray)
+        }
+        return
       }
+      if (len === 16) {
+        transformHandle.value = {
+          ...transformHandle.value,
+          transform: new Float64Array(array)
+        }
+        return
+      }
+      throw new Error(`Expected existing transform to be of either length 16 or 25, but was ${len}`)
     },
     /**
      * may becoming obsolete

@@ -110,7 +110,7 @@ const nehubaStore = {
       state.incomingVolumeSelected = bool
     },
 
-    setIncTransformMatrix (state, { matrix}) {
+    setIncTransformMatrix (state, { matrix }) {
       state.incTransformMatrix = matrix
     },
     setPrimaryNehubaNavigationPosition (state, array) {
