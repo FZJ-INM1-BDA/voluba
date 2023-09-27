@@ -271,6 +271,9 @@ export default {
     selectedReferenceVolumeId: async function(newId, oldId) {
       if (newId === oldId) return 
       this.config = viewerConfigs.find(v => v.id === newId)
+      if (!this.config) {
+        throw new Error(`Cannot find config with id ${newId}`)
+      }
       await this.nehubaBase__destroyNehuba()
       this.showNehuba = false
       await Vue.nextTick()

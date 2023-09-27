@@ -318,9 +318,13 @@ export const getDefaultNehubaConfigLight = (sourceUrl) => {
 }
 
 
+export const WAXHOLM_ID = "WHS-SD atlas"
+export const ALLEN_ID = "Allen CCFv3"
+export const BIGBRAIN_ID = "ref-1"
+
 export const viewerConfigs = [
   {
-    "id": "ref-1",
+    "id": BIGBRAIN_ID,
     "configName": "BigBrain",
     "globals": {
       "hideNullImageValues": true,
@@ -522,7 +526,7 @@ export const viewerConfigs = [
   },
 
   {
-    "id": "allen",
+    "id": ALLEN_ID,
     "configName": "Allen",
     "globals": {
       "hideNullImageValues": true,
@@ -727,7 +731,7 @@ export const viewerConfigs = [
   }, 
 
   {
-    "id": "waxholm",
+    "id": WAXHOLM_ID,
     "configName": "Waxholm",
     "globals": {
       "hideNullImageValues": true,

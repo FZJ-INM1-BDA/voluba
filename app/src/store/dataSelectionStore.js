@@ -1,4 +1,4 @@
-import { UPLOAD_URL, DEFAULT_BUNDLED_INCOMING_VOLUMES_0, DEFAULT_BUNDLED_INCOMING_VOLUMES_1, processImageMetaData, identityMat } from "@/constants";
+import { UPLOAD_URL, DEFAULT_BUNDLED_INCOMING_VOLUMES_0, DEFAULT_BUNDLED_INCOMING_VOLUMES_1, processImageMetaData, identityMat, WAXHOLM_ID, ALLEN_ID, BIGBRAIN_ID } from "@/constants";
 import axios from 'axios'
 
 const defaultVIds = [`colin-1`]
@@ -16,19 +16,19 @@ const dataSelectionStore = {
     selectedReferenceVolumeId: 'ref-1',
     referenceVolumes: [
       {
-        id: 'ref-1',
+        id: BIGBRAIN_ID,
         name: 'BigBrain (2015)',
         imageSource: 'precomputed://https://neuroglancer.humanbrainproject.org/precomputed/BigBrainRelease.2015/8bit',
         siibra_explorer_url: '/a:juelich:iav:atlas:v1.0.0:1/t:minds:core:referencespace:v1.0.0:a1655b99-82f1-420f-a3c2-fe80fd4c8588/p:juelich:iav:atlas:v1.0.0:4/'
 
       }, {
-        id: 'WHS-SD atlas',
+        id: WAXHOLM_ID,
         name: 'WHS-SD atlas',
         theme: 'dark',
         imageSource: 'precomputed://https://neuroglancer.humanbrainproject.eu/precomputed/WHS_SD_rat/templates/v1.01/t2star_masked',
         siibra_explorer_url: '/a:minds:core:parcellationatlas:v1.0.0:522b368e-49a3-49fa-88d3-0870a307974a/t:minds:core:referencespace:v1.0.0:d5717c4a-0fa1-46e6-918c-b8003069ade8/p:minds:core:parcellationatlas:v1.0.0:ebb923ba-b4d5-4b82-8088-fa9215c2e1fe-v4/'
       }, {
-        id: 'CCFv3_2017',
+        id: ALLEN_ID,
         name: 'CCFv3_2017',
         theme: 'dark',
         imageSource: 'precomputed://https://neuroglancer.humanbrainproject.eu/precomputed/AMBA/templates/v3/stpt',
