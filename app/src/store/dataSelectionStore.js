@@ -1,4 +1,4 @@
-import { UPLOAD_URL, DEFAULT_BUNDLED_INCOMING_VOLUMES_0, DEFAULT_BUNDLED_INCOMING_VOLUMES_1, processImageMetaData, identityMat } from "@/constants";
+import { UPLOAD_URL, DEFAULT_BUNDLED_INCOMING_VOLUMES_0, DEFAULT_BUNDLED_INCOMING_VOLUMES_1, processImageMetaData, identityMat, getResSize } from "@/constants";
 import axios from 'axios'
 
 const defaultVIds = [`colin-1`]
@@ -108,42 +108,7 @@ const dataSelectionStore = {
     },
 
     async ['setIncomingVolumeResolution'] ({ commit, state, dispatch, rootGetters }, id) {
-      const replaceUrl = url => {
-        return url.replace(/^gs:\/\//, "https://storage.googleapis.com/")
-      }
-      const getResSize = async (_url) => {
-        if (_url.startsWith("precomputed://")) {
-          const url = replaceUrl(_url.substring(14))
-          const { data } = await axios(`${url}/info`)
-          const resolution = data.scales[0].resolution
-          const size = data.scales[0].size
-          return { resolution, size }
-        }
-        if (_url.startsWith("n5://")) {
-          const url = replaceUrl(_url.substring(5))
-          const cvtToNm = (num, unit) => {
-            if (num.length !== unit.length) {
-              throw new Error(`n5.cvtToNm error! ${num.length} must equal to ${unit.length}`)
-            }
-            const cvt = {
-              "m": 1e9,
-              "mm": 1e6,
-              "um": 1e3,
-              "nm": 1,
-            }
-            if (unit.some(u => !(u in cvt))) {
-              throw new Error(`some unit in ${unit} not in ${cvt}`)
-            }
-            return unit.map((u, i) => cvt[u] * num[i])
-          }
-          const { data } = await axios(`${url}/attributes.json`)
-          const { data: s0Data } = await axios(`${url}/s0/attributes.json`)
-          
-          const resolution = cvtToNm(data.resolution, data.units)
-          const size = s0Data.dimensions
-          return { resolution, size }
-        }
-      }
+
       try {
         const vol = state.incomingVolumes.find(({ id: _id }) => _id === id)
         const { resolution, size } = await getResSize(vol.imageSource)
