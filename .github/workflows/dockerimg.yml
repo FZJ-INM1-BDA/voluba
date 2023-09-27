@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - master
+      - mvp_nehubaUpdated
       - staging
 
     # do not rebuild if...
@@ -17,26 +18,28 @@ env:
 jobs:
   build-docker-img:
     runs-on: ubuntu-latest
-    env:
-      DOCKERIMG: voluba
 
     steps:
     - uses: actions/checkout@v2
+    - name: 'Setup envvar'
+      run: |
+        if [[ $GITHUB_REF == 'refs/heads/master' ]]; then
+            echo "DOCKERIMG=voluba:latest" >> "$GITHUB_ENV"
+        fi
+        if [[ $GITHUB_REF == 'refs/heads/staging' ]]; then
+            echo "DOCKERIMG=voluba:staging" >> "$GITHUB_ENV"
+        fi
+        if [[ $GITHUB_REF == 'refs/heads/mvp_nehubaUpdated' ]]; then
+            echo "DOCKERIMG=voluba:mvp_nehubaUpdated" >> "$GITHUB_ENV"
+        fi
     - name: 'Setup tags'
       run: |
-        echo "Using github.ref: $GITHUB_REF"
-        DOCKERTAG=unknown
-        if [[ $GITHUB_REF == "refs/heads/master" ]]
+        if [[ -z "$DOCKERIMG" ]]
         then
-          echo "using latest tag"
-          DOCKERTAG=latest
+          echo "DOCKERIMG not set!"
+          exit 1
         fi
-        if [[ $GITHUB_REF == "refs/heads/staging" ]]
-        then
-          echo "using latest tag"
-          DOCKERTAG=staging
-        fi
-        DOCKER_IMGSTREAM=${{ secrets.EBRAINS_DOCKER_REG_VOLUBA_NSP }}/${{ env.DOCKERIMG }}:$DOCKERTAG
+        DOCKER_IMGSTREAM=${{ secrets.EBRAINS_DOCKER_REG_VOLUBA_NSP }}/${DOCKERIMG}
         echo "Setting docker image stream to $DOCKER_IMGSTREAM"
         echo "DOCKER_IMGSTREAM=$DOCKER_IMGSTREAM" >> $GITHUB_ENV
     - name: 'Set matomo env var'

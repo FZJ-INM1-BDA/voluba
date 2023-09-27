@@ -99,6 +99,21 @@ export const DEFAULT_BUNDLED_INCOMING_VOLUMES_1 = [
       57600000,
       52800000
     ]
+  },
+  {
+    id: 'test-gds-proxy',
+    name: 'test google dataset (proxied) 20210601/4nm_raw',
+    imageSource: 'precomputed://https://1um.brainatlas.eu:7012/h01-release/data/20210601/4nm_raw'
+  },
+  {
+    id: 'test-london',
+    name: 'test london dataset (raw) LADAF-2020-31/brain/25.08um_complete-organ',
+    imageSource: 'n5://gs://ucl-hip-ct-35a68e99feaae8932b1d44da0358940b/LADAF-2020-31/brain/25.08um_complete-organ'
+  },
+  {
+    id: '7.72um_complete-organ_bm18',
+    name: '7.72um_complete-organ_bm18',
+    imageSource: 'n5://gs://ucl-hip-ct-35a68e99feaae8932b1d44da0358940b/LADAF-2021-17/brain/7.72um_complete-organ_bm18'
   }
 ]
 
@@ -109,7 +124,7 @@ export const patchSliceViewPanel = function (sliceViewPanel) {
       const viewportToDataEv = new CustomEvent('viewportToData', {
         bubbles: true,
         detail: {
-          viewportToData: this.sliceView.viewportToData
+          sliceView: this.sliceView
         }
       })
       this.element.dispatchEvent(viewportToDataEv)
@@ -298,7 +313,7 @@ export const getDefaultNehubaConfigLight = (sourceUrl) => {
         //   ]
         // },
         "drawZoomLevels": {
-          "cutOff": 20000,
+          "cutOff": 20,
           "color": [
             0.5,
             0,
@@ -308,10 +323,10 @@ export const getDefaultNehubaConfigLight = (sourceUrl) => {
         },
         "hideImages": false,
         "waitForMesh": false,
-        // "restrictZoomLevel": {
-        //   "minZoom": 1200000,
-        //   "maxZoom": 3500000
-        // }
+        "restrictZoomLevel": {
+          "minZoom": 1200000 * 0.002,
+          "maxZoom": 3500000* 0.002
+        }
       }
     }
   }
@@ -477,46 +492,32 @@ export const viewerConfigs = [
           1,
           1
         ],
-        "fixedZoomPerspectiveSlices": {
-          "sliceViewportWidth": 300,
-          "sliceViewportHeight": 300,
-          "sliceZoom": 563818.3562426177,
-          "sliceViewportSizeMultiplier": 2
-        },
-        "mesh": {
-          "backFaceColor": [
-            1,
-            1,
-            1,
-            1
-          ],
-          "removeBasedOnNavigation": true,
-          "flipRemovedOctant": true
-        },
-        "centerToOrigin": true,
-        "drawSubstrates": {
-          "color": [
-            0,
-            0,
-            0.5,
-            0.15
-          ]
-        },
-        "drawZoomLevels": {
-          "cutOff": 200000,
-          "color": [
-            0.5,
-            0,
-            0,
-            0.15
-          ]
-        },
-        "hideImages": false,
-        "waitForMesh": true,
-        "restrictZoomLevel": {
-          "minZoom": 1200000,
-          "maxZoom": 3500000
-        }
+        "removeBasedOnNavigation": true,
+        "flipRemovedOctant": true
+      },
+      "centerToOrigin": true,
+      "drawSubstrates": {
+        "color": [
+          0,
+          0,
+          0.5,
+          0.15
+        ]
+      },
+      "drawZoomLevels": {
+        "cutOff": 200000,
+        "color": [
+          0.5,
+          0,
+          0,
+          0.15
+        ]
+      },
+      "hideImages": false,
+      "waitForMesh": true,
+      "restrictZoomLevel": {
+        "minZoom": 1200000 * 0.004,
+        "maxZoom": 3500000 * 0.004
       }
     }
   },
@@ -1345,6 +1346,14 @@ export const identityMat = [
   [0,    0,    0,    1.0]
 ]
 
+export const slightlyAjar = [
+  
+  [1.0,  0,    0,    -1e6],
+  [0,    1.0,  0,    -1e6],
+  [0,    0,    1.0,  -1e6],
+  [0,    0,    0,    1.0]
+]
+
 export const identityMatFlattened = [
   1.0,  0,    0,    0,
   0,    1.0,  0,    0,
@@ -1381,3 +1390,60 @@ export const multiplyXforms = async xformMs => {
 
 export const EXPORT_TRANSFORM_TYPE = 'https://voluba.apps.hbp.eu/@types/tranform'
 export const EXPORT_LANDMARKS_TYPE = 'https://voluba.apps.hbp.eu/@types/landmarks'
+
+/**
+ * 
+ * @param {NG Layer} layer 
+ * @returns Handle to transform object HANDLES WITH CARE! 
+ * 
+ */
+export function _getLayerTransform(layer) {
+  
+  const dataSources = layer.layer.dataSources
+  if (dataSources.length !== 1) {
+    throw new Error(`managed layer needs to have exactly 1 data source, but has ${dataSources.length} instead`)
+  }
+  if (dataSources[0].loadState) {
+    return {
+      transformArray: dataSources[0].loadState.transform.value.transform,
+      transformHandle: dataSources[0].loadState.transform,
+      dataSources,
+    }
+  }
+  return {
+    transform: dataSources[0].spec.transform.transform
+  }
+}
+
+export function convertVoxelToNm(ngCoordinateSpace, input, type) {
+  
+  const { x, y, z } = ngCoordinateSpace || {}
+  if (!x || !y || !z) {
+    throw new Error(`neuroglancer coordinateSpace not defined!`)
+  }
+  if (type === "vec3") {
+    return [x, y, z].map((scaleTuple, idx) => scaleTuple[0] * input[idx] * 1e9)
+  }
+  if (type === "x") {
+    return x[0] * input * 1e9
+  }
+  if (type === "y") {
+    return y[0] * input * 1e9
+  }
+  if (type === "z") {
+    return z[0] * input * 1e9
+  }
+  throw new Error(`type ${type} not yet implemented`)
+}
+
+export function convertNmToVoxel(ngCoordinateSpace, input, type) {
+  
+  const { x, y, z } = ngCoordinateSpace || {}
+  if (!x || !y || !z) {
+    throw new Error(`neuroglancer coordinateSpace not defined!`)
+  }
+  if (type === "vec3") {
+    return [x, y, z].map((scaleTuple, idx) => input[idx] / 1e9 / scaleTuple[0])
+  }
+  throw new Error(`type ${type} not yet implemented`)
+}
