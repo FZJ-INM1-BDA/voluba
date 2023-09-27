@@ -228,6 +228,16 @@ export default {
     })
   },
   watch: {
+    overrideRotation: function (rotLock) {
+      this.nehubaInputBinding({
+        overrideRotation: rotLock,
+      })
+    },
+    overrideTranslation: function(translLock) {
+      this.nehubaInputBinding({
+        overrideTranslation: translLock
+      })
+    },
     showOriginal: function (flag) {
       if (this.$options.nonReactiveData.ngUserLayer) this.$options.nonReactiveData.ngUserLayer.setVisible(flag)
     },
@@ -387,22 +397,6 @@ export default {
         this.$options.nonReactiveData.ngUserLayer = ngUserLayer
       }
     },
-    mouseOverIncoming: function (val) {
-      this.nehubaInputBinding({
-        overrideRotation: val && !this.incVolRotationLock,
-        overrideTranslation: val && !this.incVolTranslationLock
-      })
-    },
-    incVolRotationLock: function (lock) {
-      this.nehubaInputBinding({
-        overrideRotation: !lock
-      })
-    },
-    incVolTranslationLock: function (lock) {
-      this.nehubaInputBinding({
-        overrideTranslation: !lock
-      })
-    }
   },
   nonReactiveData: {
     subscriptions: [],
@@ -871,6 +865,18 @@ export default {
     ...mapGetters('viewerPreferenceStore', [
       'fragmentShader'
     ]),
+    overrideRotation: function(){
+      if (this._step2Mode === "classic") {
+        return false
+      }
+      return this.mouseOverIncoming && !this.incVolRotationLock
+    },
+    overrideTranslation: function(){
+      if (this._step2Mode === "classic") {
+        return false
+      }
+      return this.mouseOverIncoming && !this.incVolTranslationLock
+    },
     showOverScreen: function () {
       return this.addLandmarkMode && this.addLandmarkMode === 'incoming' && this._step2Mode === 'classic'
     },
