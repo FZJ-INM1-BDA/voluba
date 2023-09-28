@@ -1,5 +1,4 @@
 import { mapActions } from "vuex";
-import { determineElement } from '@/constants'
 
 const DragLandmarkMixin = {
   data: function () {
@@ -7,8 +6,7 @@ const DragLandmarkMixin = {
       dragLandmark__draggedLmId : null,
       dragLandmark__draggedPanelIdx : null,
       dragLandmark__volume: null,
-      dragLandmark__quat: null,
-      dragLandmark__idxToViewportElementMap: null
+      dragLandmark__quat: null 
     }
   },
   methods: {
@@ -16,6 +14,7 @@ const DragLandmarkMixin = {
       'translateLandmarkPosBy'
     ]),
     dragLandmark__handleMousedownOnIcon: function ({lmId, panelIdx, volume, transform, ...rest}) {
+
       const { mat4, quat } = window.export_nehuba
 
       this.dragLandmark__draggedLmId = lmId
@@ -31,12 +30,11 @@ const DragLandmarkMixin = {
       document.addEventListener('mouseup', this.dragLandmark__handleMouseup, {capture: true, once: true})
     },
     dragLandmark__handleMousemove: function (event) {
-      const {
-        dragLandmark__sliceView
-      } = this
-      if (!dragLandmark__sliceView) return
+      if (!this.dragLandmark__isDraggingLandmark)
+        return
       
-      if (!('export_nehuba' in window)) return
+      if (!('export_nehuba' in window))
+        return
 
       const deltaX = event.movementX
       const deltaY = event.movementY
@@ -47,12 +45,12 @@ const DragLandmarkMixin = {
       /**
        * translate move in 2D to move in 3D
        */
-      vec3.transformMat4(pos, pos, dragLandmark__sliceView.invViewMatrix)
+      vec3.transformMat4(pos, pos, this.nehubaBase__viewportToDatas[this.dragLandmark__draggedPanelIdx])
 
       /**
        * account for navigation movement
        */
-      vec3.sub(pos, pos, dragLandmark__sliceView.centerDataPosition)
+      vec3.subtract(pos, pos, this.dragLandmark__viewerNavigationPos)
 
       /**
        * account for rotation (if defined)
@@ -60,10 +58,11 @@ const DragLandmarkMixin = {
       if (this.dragLandmark__quat) {
         vec3.transformQuat(pos, pos, quat.fromValues(...this.dragLandmark__quat))
       }
+      
       this.translateLandmarkPosBy({
         volume: this.dragLandmark__volume,
         id: this.dragLandmark__draggedLmId,
-        value: pos
+        value: Array.from(pos).map(v => v / 1e6) // in mm
       })
     },
     dragLandmark__handleMouseup: function (event) {
@@ -75,46 +74,16 @@ const DragLandmarkMixin = {
     }
   },
   computed: {
-    dragLandmark__sliceView: function () {
-      /**
-       * TODO reimplement nehubaBase__viewportToDatas is no longer defined
-       */
-      const {
-        dragLandmark__draggedLmId,
-        dragLandmark__draggedPanelIdx,
-        dragLandmark__idxToViewportElementMap,
-        nehubaBase__elementToSliceViewWeakMap
-      } = this
-      if (dragLandmark__draggedLmId === null) return null
-      if (dragLandmark__draggedPanelIdx === null) return null
-      if (!dragLandmark__idxToViewportElementMap) return null
-      const el = dragLandmark__idxToViewportElementMap.get(this.dragLandmark__draggedPanelIdx)
-      if (!el) return null
-      const sliceView = nehubaBase__elementToSliceViewWeakMap.get(el)
-      return sliceView
-    }
-  },
-  watch: {
-    viewportElements: function(val) {
-      
-      if (
-        this.dragLandmark__idxToViewportElementMap &&
-        Array.from(this.dragLandmark__idxToViewportElementMap.values()).every(el => val.has(el))
-      ) {
-        return
-      }
-      this.dragLandmark__idxToViewportElementMap = null
-
-      const newMap = new Map()
-      for (const el of Array.from(val)) {
-        const idx = determineElement(el)
-        newMap.set(idx, el)
-      }
-      if (newMap.size !== 3) {
-        console.warn(`drag landmark mixing, cache size !== 3, but equal to: ${newMap.size}. Aborting ...`)
-        return
-      }
-      this.dragLandmark__idxToViewportElementMap = newMap
+    dragLandmark__viewerNavigationPos: function () {
+      return this.nehubaBase__navigationPosition
+        ? this.nehubaBase__navigationPosition
+        : [0, 0, 0]
+    },
+    dragLandmark__isDraggingLandmark: function () {
+      return this.dragLandmark__draggedLmId !== null
+        && this.dragLandmark__draggedPanelIdx !== null
+        && this.nehubaBase__viewportToDatas
+        && this.nehubaBase__viewportToDatas[this.dragLandmark__draggedPanelIdx]
     }
   }
 }

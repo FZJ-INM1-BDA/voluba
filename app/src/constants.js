@@ -1,5 +1,4 @@
 /* eslint-disable */
-import axios from 'axios'
 
 export const AGREE_COOKIE_KEY = `landmark-reg : agreed to cookie`
 
@@ -14,42 +13,6 @@ export const loginMethods = [{
   href: '/orcid-oidc/auth',
   disabled: false
 }]
-const replaceUrl = url => {
-  return url.replace(/^gs:\/\//, "https://storage.googleapis.com/")
-}
-export const getResSize = async (_url) => {
-  if (_url.startsWith("precomputed://")) {
-    const url = replaceUrl(_url.substring(14))
-    const { data } = await axios(`${url}/info`)
-    const resolution = data.scales[0].resolution
-    const size = data.scales[0].size
-    return { resolution, size }
-  }
-  if (_url.startsWith("n5://")) {
-    const url = replaceUrl(_url.substring(5))
-    const cvtToNm = (num, unit) => {
-      if (num.length !== unit.length) {
-        throw new Error(`n5.cvtToNm error! ${num.length} must equal to ${unit.length}`)
-      }
-      const cvt = {
-        "m": 1e9,
-        "mm": 1e6,
-        "um": 1e3,
-        "nm": 1,
-      }
-      if (unit.some(u => !(u in cvt))) {
-        throw new Error(`some unit in ${unit} not in ${cvt}`)
-      }
-      return unit.map((u, i) => cvt[u] * num[i])
-    }
-    const { data } = await axios(`${url}/attributes.json`)
-    const { data: s0Data } = await axios(`${url}/s0/attributes.json`)
-    
-    const resolution = cvtToNm(data.resolution, data.units)
-    const size = s0Data.dimensions
-    return { resolution, size }
-  }
-}
 
 export const arrayBufferToBase64String = (arraybuffer) => {
   const bytes = new Uint8Array( arraybuffer )
@@ -146,7 +109,7 @@ export const patchSliceViewPanel = function (sliceViewPanel) {
       const viewportToDataEv = new CustomEvent('viewportToData', {
         bubbles: true,
         detail: {
-          sliceView: this.sliceView
+          viewportToData: this.sliceView.viewportToData
         }
       })
       this.element.dispatchEvent(viewportToDataEv)
@@ -335,7 +298,7 @@ export const getDefaultNehubaConfigLight = (sourceUrl) => {
         //   ]
         // },
         "drawZoomLevels": {
-          "cutOff": 20,
+          "cutOff": 20000,
           "color": [
             0.5,
             0,
@@ -345,10 +308,10 @@ export const getDefaultNehubaConfigLight = (sourceUrl) => {
         },
         "hideImages": false,
         "waitForMesh": false,
-        "restrictZoomLevel": {
-          "minZoom": 1200000 * 0.002,
-          "maxZoom": 3500000* 0.002
-        }
+        // "restrictZoomLevel": {
+        //   "minZoom": 1200000,
+        //   "maxZoom": 3500000
+        // }
       }
     }
   }
@@ -514,32 +477,46 @@ export const viewerConfigs = [
           1,
           1
         ],
-        "removeBasedOnNavigation": true,
-        "flipRemovedOctant": true
-      },
-      "centerToOrigin": true,
-      "drawSubstrates": {
-        "color": [
-          0,
-          0,
-          0.5,
-          0.15
-        ]
-      },
-      "drawZoomLevels": {
-        "cutOff": 200000,
-        "color": [
-          0.5,
-          0,
-          0,
-          0.15
-        ]
-      },
-      "hideImages": false,
-      "waitForMesh": true,
-      "restrictZoomLevel": {
-        "minZoom": 1200000 * 0.004,
-        "maxZoom": 3500000 * 0.004
+        "fixedZoomPerspectiveSlices": {
+          "sliceViewportWidth": 300,
+          "sliceViewportHeight": 300,
+          "sliceZoom": 563818.3562426177,
+          "sliceViewportSizeMultiplier": 2
+        },
+        "mesh": {
+          "backFaceColor": [
+            1,
+            1,
+            1,
+            1
+          ],
+          "removeBasedOnNavigation": true,
+          "flipRemovedOctant": true
+        },
+        "centerToOrigin": true,
+        "drawSubstrates": {
+          "color": [
+            0,
+            0,
+            0.5,
+            0.15
+          ]
+        },
+        "drawZoomLevels": {
+          "cutOff": 200000,
+          "color": [
+            0.5,
+            0,
+            0,
+            0.15
+          ]
+        },
+        "hideImages": false,
+        "waitForMesh": true,
+        "restrictZoomLevel": {
+          "minZoom": 1200000,
+          "maxZoom": 3500000
+        }
       }
     }
   },
@@ -1368,14 +1345,6 @@ export const identityMat = [
   [0,    0,    0,    1.0]
 ]
 
-export const slightlyAjar = [
-  
-  [1.0,  0,    0,    -1e6],
-  [0,    1.0,  0,    -1e6],
-  [0,    0,    1.0,  -1e6],
-  [0,    0,    0,    1.0]
-]
-
 export const identityMatFlattened = [
   1.0,  0,    0,    0,
   0,    1.0,  0,    0,
@@ -1412,60 +1381,3 @@ export const multiplyXforms = async xformMs => {
 
 export const EXPORT_TRANSFORM_TYPE = 'https://voluba.apps.hbp.eu/@types/tranform'
 export const EXPORT_LANDMARKS_TYPE = 'https://voluba.apps.hbp.eu/@types/landmarks'
-
-/**
- * 
- * @param {NG Layer} layer 
- * @returns Handle to transform object HANDLES WITH CARE! 
- * 
- */
-export function _getLayerTransform(layer) {
-  
-  const dataSources = layer.layer.dataSources
-  if (dataSources.length !== 1) {
-    throw new Error(`managed layer needs to have exactly 1 data source, but has ${dataSources.length} instead`)
-  }
-  if (dataSources[0].loadState) {
-    return {
-      transformArray: dataSources[0].loadState.transform.value.transform,
-      transformHandle: dataSources[0].loadState.transform,
-      dataSources,
-    }
-  }
-  return {
-    transform: dataSources[0].spec.transform.transform
-  }
-}
-
-export function convertVoxelToNm(ngCoordinateSpace, input, type) {
-  
-  const { x, y, z } = ngCoordinateSpace || {}
-  if (!x || !y || !z) {
-    throw new Error(`neuroglancer coordinateSpace not defined!`)
-  }
-  if (type === "vec3") {
-    return [x, y, z].map((scaleTuple, idx) => scaleTuple[0] * input[idx] * 1e9)
-  }
-  if (type === "x") {
-    return x[0] * input * 1e9
-  }
-  if (type === "y") {
-    return y[0] * input * 1e9
-  }
-  if (type === "z") {
-    return z[0] * input * 1e9
-  }
-  throw new Error(`type ${type} not yet implemented`)
-}
-
-export function convertNmToVoxel(ngCoordinateSpace, input, type) {
-  
-  const { x, y, z } = ngCoordinateSpace || {}
-  if (!x || !y || !z) {
-    throw new Error(`neuroglancer coordinateSpace not defined!`)
-  }
-  if (type === "vec3") {
-    return [x, y, z].map((scaleTuple, idx) => input[idx] / 1e9 / scaleTuple[0])
-  }
-  throw new Error(`type ${type} not yet implemented`)
-}

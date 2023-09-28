@@ -95,7 +95,7 @@ import HeaderComponent from "@/components/TheHeader";
 import NehubaComponent from "@/components/Nehuba";
 import SimpleNehubaComponent from "@/components/SimpleNehuba";
 import ToolbarComponent from "@/components/Toolbar";
-import { getDefaultNehubaConfigLight, getResSize } from "@/constants";
+import { getDefaultNehubaConfigLight } from "@/constants";
 import { START_FROM_SCRATCH_MODAL_TITLE } from "@/text";
 
 import LoadLandmarkPairsModal from "@/components/modals/LoadLandmarkPairsModal";
@@ -155,26 +155,25 @@ export default {
       const internalVolubaVolumeUrl = `https://1um.brainatlas.eu:7008/voluba/voluba.json`
       fetch(internalVolubaVolumeUrl)
         .then(res => res.json())
-        .then(async ({ voluba_sources }) =>
-          await Promise.allSettled(
-            voluba_sources.map(async ({ name, url }) => {
-              const { resolution, size } = await getResSize(url)
-              const dim = [0, 1, 2].map(idx => size[idx] * resolution[idx]) // dimension in nm
-              return {
-                name,
-                url,
-                dim
-              }
+        .then(({ voluba_sources }) => {
+          return Promise.all(
+            voluba_sources.map(({ name, url }) => {
+              const pingUrl = url.replace(/^precomputed:\/\//, '') + '/info'
+              return fetch(pingUrl)
+                .then(res => res.json())
+                .then(info => {
+                  const { size, resolution } = info.scales[0]
+                  const dim = [0, 1, 2].map(idx => size[idx] * resolution[idx]) // dimension in nm
+                  return {
+                    name,
+                    url,
+                    dim
+                  }
+                })
             })
           )
-        ).then(arr => {
-          const failed = arr.filter(item => item.status === "rejected")
-          const succeeded = arr.filter(item => item.status === "fulfilled")
-          if (failed.length > 0) {
-            console.warn(`${failed.length} URLs failed. Reasons: ${failed.map(v => v.reason)}`)
-          }
-          return succeeded.map(v => v.value)
-        }).then(voluba_sources => {
+        })
+        .then(voluba_sources => {
           appendToIncomingVolumes({ 
             volumes: voluba_sources.map(({ name, url, dim }, idx) => {
               return {

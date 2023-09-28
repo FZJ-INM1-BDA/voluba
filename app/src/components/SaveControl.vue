@@ -223,6 +223,7 @@ export default {
       showTransformResultInProgress: false,
       volumeSharing: false,
       sharedVolumeUrl: null,
+      isHbpOidcV2: true
     }
   },
   computed: {
