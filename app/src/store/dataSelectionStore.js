@@ -40,6 +40,8 @@ const dataSelectionStore = {
     selectedIncomingVolumeResolution: null,
 
     incomingVolumes: DEFAULT_BUNDLED_INCOMING_VOLUMES,
+
+    coordinateSpace: null,
   },
   mutations: {
     setUploadUrl (state, { uploadUrl }) {
@@ -62,9 +64,15 @@ const dataSelectionStore = {
         finalVolumes.push(vol)
       }
       state.incomingVolumes = finalVolumes
+    },
+    setViewerCoordinateSpace (state, { coordinateSpace }) {
+      state.coordinateSpace = coordinateSpace
     }
   },
   actions: {
+    setViewerCoordinateSpace({ commit }, { coordinateSpace }){
+      commit('setViewerCoordinateSpace', { coordinateSpace })
+    },
     appendToIncomingVolumes({ commit, state }, { volumes }){
       const { incomingVolumes } = state
       const newVolumeIds = volumes.map(vol => vol.id)
@@ -216,13 +224,6 @@ const dataSelectionStore = {
     selectedIncomingVolume: state => state.incomingVolumes.find(v => v.id === state.selectedIncomingVolumeId),
     selectedReferenceVolumeId: state => state.selectedReferenceVolumeId,
     referenceVolumes: state => state.referenceVolumes,
-    selectedIncomingVolumeNgAffine: (state, getters) => {
-      const volume = getters.selectedIncomingVolume || {}
-      const { extra } = volume || {}
-      const { neuroglancer } = extra || {}
-      const { transform } = neuroglancer || {}
-      return transform || identityMat
-    },
     selectedIncomingVolumeType: (state, getters) => {
       const volume = getters.selectedIncomingVolume || {}
       const { extra } = volume || {}

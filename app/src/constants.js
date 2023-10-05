@@ -1410,7 +1410,8 @@ export const multiplyXforms = async xformMs => {
   return transposeMat4(Array.from(outMat))
 }
 
-export const EXPORT_TRANSFORM_TYPE = 'https://voluba.apps.hbp.eu/@types/tranform'
+export const _EXPORT_TRANSFORM_TYPE = "https://voluba.apps.hbp.eu/@types/tranform"
+export const EXPORT_TRANSFORM_TYPE = 'https://voluba.apps.hbp.eu/@types/transform'
 export const EXPORT_LANDMARKS_TYPE = 'https://voluba.apps.hbp.eu/@types/landmarks'
 
 /**
@@ -1460,12 +1461,23 @@ export function convertVoxelToNm(ngCoordinateSpace, input, type) {
 
 export function convertNmToVoxel(ngCoordinateSpace, input, type) {
   
+  const cvt = {
+    "m": 1e9,
+    "mm": 1e6,
+    "um": 1e3,
+    "nm": 1,
+  }
   const { x, y, z } = ngCoordinateSpace || {}
   if (!x || !y || !z) {
     throw new Error(`neuroglancer coordinateSpace not defined!`)
   }
+  for (const [ _, unit ] of [x, y, z]) {
+    if (!unit in cvt) {
+      throw new Error(`Unit ${unit} not in ${JSON.stringify(cvt)}`)
+    }
+  }
   if (type === "vec3") {
-    return [x, y, z].map((scaleTuple, idx) => input[idx] / 1e9 / scaleTuple[0])
+    return [x, y, z].map(([value, unit], idx) => input[idx] / cvt[unit] / value)
   }
   throw new Error(`type ${type} not yet implemented`)
 }

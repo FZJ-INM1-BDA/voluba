@@ -109,7 +109,7 @@
 <script>
 import { mapState, mapGetters, mapActions, mapMutations } from 'vuex'
 
-import { REFERENCE_COLOR, transposeMat4, UNPAIRED_COLOR, INCOMING_COLOR, annotationColorFocus, testBigbrain, determineElement, getRotationVec3, identityMat, invertQuat, _getLayerTransform, convertNmToVoxel, slightlyAjar, viewerConfigs } from '@//constants'
+import { REFERENCE_COLOR, transposeMat4, UNPAIRED_COLOR, INCOMING_COLOR, annotationColorFocus, determineElement, getRotationVec3, identityMat, invertQuat, _getLayerTransform, slightlyAjar, viewerConfigs } from '@//constants'
 
 import { incompatibleBrowserText } from '@/text'
 
@@ -578,7 +578,7 @@ export default {
           /**
            * account for navigation movement
            */
-          const currNavVoxel = convertNmToVoxel(this.nehubabase__coordinateSpace, this.viewerNavigationPosition, "vec3")
+
           // vec3.subtract(pos, pos, vec3.fromValues(...currNavVoxel))
           // console.log(this.viewerNavigationPosition)
           /**
@@ -588,8 +588,7 @@ export default {
           
           this.setTranslInc({
             axis: 'xyz',
-            value: Array.from(pos),
-            ngCoordinateSpace: this.nehubabase__coordinateSpace
+            value: Array.from(pos)
           })
         }
 

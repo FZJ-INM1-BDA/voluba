@@ -304,13 +304,11 @@ const nehubaStore = {
 
       commit("setIncTransformMatrix", { matrix: Array.from(xformMat) })
     },
-    setTranslInc ({commit, state}, {axis, value, ngCoordinateSpace}) {
+    setTranslInc ({commit, state}, {axis, value}) {
       const { incTransformMatrix, flippedState } = state
       if (axis !== 'x' && axis !== 'y' && axis !== 'z' && axis !== 'xyz') {
         return
       }
-
-      // const value = convertVoxelToNm(ngCoordinateSpace, uncorrectedValue, axis === 'xyz' ? "vec3" : axis)
 
       const mIdx = axis === 'x'
         ? 12

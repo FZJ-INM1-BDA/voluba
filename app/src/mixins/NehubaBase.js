@@ -1,4 +1,5 @@
-import { defaultXform, determineElement, patchSliceViewPanel, convertVoxelToNm } from '@//constants'
+import { patchSliceViewPanel, convertVoxelToNm } from '@//constants'
+import { mapActions, mapState } from "vuex";
 import Vue from 'vue'
 
 export default {
@@ -9,7 +10,6 @@ export default {
   // nehubaBase: {},
   data: function () {
     return {
-      nehubabase__coordinateSpace: {},
       nehubaBase__nehubaInitStatus: false,
       nehubaBase__cid: null,
       nehubaBase__subscriptions: [], 
@@ -37,6 +37,9 @@ export default {
     })
   },
   methods: {
+    ...mapActions('dataSelectionStore', [
+      'setViewerCoordinateSpace'
+    ]),
     nehubaBase__viewportToData: function (event) {
       const { sliceView } = event.detail || {}
       const element = event.srcElement || event.originalTarget
@@ -121,7 +124,9 @@ export default {
         })
 
         nehubaViewer.ngviewer.coordinateSpace.changed.add(() => {
-          this.nehubabase__coordinateSpace = nehubaViewer.ngviewer.coordinateSpace.toJSON()
+          this.setViewerCoordinateSpace({
+            coordinateSpace: nehubaViewer.ngviewer.coordinateSpace.toJSON()
+          })
         })
         
         this.nehubaBase__subscriptions.push(
@@ -131,7 +136,7 @@ export default {
           nehubaViewer.navigationState.position.inVoxels
             .subscribe(posVoxel => {
               try {
-                this.nehubaBase__navigationPosition = convertVoxelToNm(this.nehubabase__coordinateSpace, posVoxel, "vec3")
+                this.nehubaBase__navigationPosition = convertVoxelToNm(this.coordinateSpace, posVoxel, "vec3")
               } catch (e) {
 
               }
@@ -156,7 +161,7 @@ export default {
               return
             }
             this.nehubaBase__mousePositionVoxel = Array.from(mouseVoxels)
-            this.nehubaBase__mousePosition = convertVoxelToNm(this.nehubabase__coordinateSpace, mouseVoxels, "vec3")
+            this.nehubaBase__mousePosition = convertVoxelToNm(this.coordinateSpace, mouseVoxels, "vec3")
           })
         )
 
@@ -214,5 +219,10 @@ export default {
     nehubaBase__setOrientation: function(orientation){    
       this.$options.nehubaBase.nehubaBase__nehubaViewer.ngviewer.navigationState.pose.orientation.restoreState( orientation )
     }
+  },
+  computed: {
+    ...mapState('dataSelectionStore',[
+      'coordinateSpace',
+    ]),
   }
 }

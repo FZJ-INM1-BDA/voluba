@@ -1,7 +1,7 @@
 
-import { saveToFile, reverseTransposeMat4, multiplyXforms, flattenMat, packMat4 } from '@//constants'
+import { saveToFile, convertNmToVoxel, multiplyXforms, flattenMat } from '@//constants'
 import Vuex from 'vuex'
-import { AGREE_COOKIE_KEY, openInNewWindow, EXPORT_TRANSFORM_TYPE } from '@/constants';
+import { AGREE_COOKIE_KEY, openInNewWindow, EXPORT_TRANSFORM_TYPE, _EXPORT_TRANSFORM_TYPE } from '@/constants';
 
 
 import nonLinearStore from './nonLinearStore'
@@ -15,10 +15,40 @@ import getAuthStore from './authStore'
 
 const ALLOW_UPLOAD = process.env.VUE_APP_ALLOW_UPLOAD
 
+function deepEqual(arr1, arr2){
+  if (typeof arr1 !== typeof arr2) {
+    return false
+  }
+  switch (typeof arr1) {
+    case "boolean":
+    case "string":
+    case "number":
+    case "undefined":
+    case "bigint": {
+      return arr1 === arr2
+    }
+    case "object": { break }
+    default: {
+      throw new Error(`Cannot compare type ${typeof arr1}`)
+    }
+  }
+  const arr1IsArray = Array.isArray(arr1)
+  const arr2IsArray = Array.isArray(arr2)
+  if (arr1IsArray !== arr2IsArray) {
+    return false
+  }
+  if (arr1IsArray) {
+    return arr1.every((item, idx) => deepEqual(item, arr2[idx]))
+  }
+  return Object.keys(arr1).every(key => deepEqual(arr1[key], arr2[key]))
+}
+
 export function getExportJson({ state, getters }){
 
-  const { nehubaStore } = state
+  const { nehubaStore, dataSelectionStore } = state
+
   const { incTransformMatrix } = nehubaStore
+  const { coordinateSpace } = dataSelectionStore
 
   const selectedIncomingVolume = getters['dataSelectionStore/selectedIncomingVolume']
   const selectedReferenceVolume = getters['dataSelectionStore/selectedReferenceVolume']
@@ -26,22 +56,6 @@ export function getExportJson({ state, getters }){
   const incomingVolume = (selectedIncomingVolume && selectedIncomingVolume.name) || 'Unknown incoming volume'
   const referenceVolume = (selectedReferenceVolume && selectedReferenceVolume.name) || 'Unknown reference volume'
   
-  const ngAffine = getters['dataSelectionStore/selectedIncomingVolumeNgAffine']
-  const { mat4 } = window.export_nehuba
-  const ngAffineMat4 = mat4.fromValues(
-    ...ngAffine.reduce((acc, curr) => acc.concat(curr), [])
-  )
-
-  mat4.invert(ngAffineMat4, ngAffineMat4)
-  const incXformMat4 = mat4.fromValues(...incTransformMatrix)
-  mat4.transpose(incXformMat4, incXformMat4)
-  const out = mat4.mul(
-    mat4.create(),
-    ngAffineMat4,
-    incXformMat4
-  )
-  const transformMatrixInNm = packMat4(Array.from(out))
-
   const contentHash = (() => {
     try {
       return selectedIncomingVolume['extra']['contentHash']
@@ -53,9 +67,10 @@ export function getExportJson({ state, getters }){
     incomingVolume,
     contentHash,
     referenceVolume,
-    version: 1.01,
+    version: 1.02,
     ['@type']: EXPORT_TRANSFORM_TYPE,
-    transformMatrixInNm
+    transform: incTransformMatrix,
+    coordinateSpace
   }
   return json
 }
@@ -146,28 +161,56 @@ const getStore = ({ user = null, experimentalFeatures = {} } = {}) => new Vuex.S
         window && window.localStorage && window.localStorage.setItem(key, payload[key])
       }
     },
-    loadXformJsonFile: function ({ dispatch, commit, getters }, { json }) {
+    loadXformJsonFile: function ({ dispatch, commit, state }, { json }) {
       /**
        * TODO check incoming/ref volume
        * TODO sanitize transformMatrixInNm. string? NaN?
        */
       try {
-        const { transformMatrixInNm, version, ['@type']: type } = json
+        const { transformMatrixInNm, version, ['@type']: type, transform, coordinateSpace: jsonCoordinateSpace } = json
         let matrix
-        
-        if (type && type !== EXPORT_TRANSFORM_TYPE) {
+        if (type && type !== EXPORT_TRANSFORM_TYPE && type !== _EXPORT_TRANSFORM_TYPE) {
           throw new Error(`JSON is not a transform json file!`)
         }
-        if (version >= 1) {
-          const { mat4 } = window.export_nehuba
-          const ngAffine = getters['dataSelectionStore/selectedIncomingVolumeNgAffine']
-          const ngAffineMat = mat4.fromValues(...flattenMat(ngAffine))
-          const xformMat = mat4.fromValues(...flattenMat(transformMatrixInNm))
-          const out = mat4.mul(mat4.create(), ngAffineMat, xformMat)
-          mat4.transpose(out, out)
-          matrix = Array.from(out)
-        } else {
-          matrix = reverseTransposeMat4(transformMatrixInNm)
+        switch (version) {
+          case 1:
+          case 1.01: {
+            const { mat4 } = window.export_nehuba
+            const { dataSelectionStore } = state
+            const { coordinateSpace } = dataSelectionStore
+            const { x, y, z } = coordinateSpace
+
+            const xformMat = mat4.fromValues(...flattenMat(transformMatrixInNm))
+            mat4.transpose(xformMat, xformMat)
+            matrix = Array.from(xformMat)
+            dispatch('modalMessage', {
+              title: `Earlier version of transform`,
+              variant: `warning`,
+              body: `You supplied a transform json with version number < v1.02. This version of transform is quite unstable, and is prone to breakage. Please consider generate newer versions.`
+            })
+            const [nx, ny, nz] = convertNmToVoxel(coordinateSpace, matrix.slice(12,15), "vec3")
+            matrix[12] = nx
+            matrix[13] = ny
+            matrix[14] = nz
+            break
+          }
+          case 1.02: {
+            const { dataSelectionStore } = state
+            const { coordinateSpace } = dataSelectionStore
+            if (!deepEqual(coordinateSpace, jsonCoordinateSpace)) {
+
+              dispatch('modalMessage', {
+                title: `CoordinateSpace mismatch`,
+                variant: `warn`,
+                body: `Current coordinate space ${JSON.stringify(coordinateSpace)} does not match to that of transform file ${JSON.stringify(jsonCoordinateSpace)}`
+              })
+            }
+            matrix = transform
+            break
+          }
+          default: {
+            throw new Error(`type with value ${version} cannot be parsed.`)
+          }
         }
 
         dispatch('pushUndo', {
@@ -185,9 +228,9 @@ const getStore = ({ user = null, experimentalFeatures = {} } = {}) => new Vuex.S
         })
       }
     },
-    viewInSiibraExplorer: async function({ state, dispatch, getters }, payload){
+    viewInSiibraExplorer: async function({ state, getters }, payload){
 
-      const { nehubaStore, viewerPreferenceStore } = state
+      const { nehubaStore } = state
       const { incTransformMatrix } =  nehubaStore
 
       const selectedReferenceVolume = getters['dataSelectionStore/selectedReferenceVolume']
