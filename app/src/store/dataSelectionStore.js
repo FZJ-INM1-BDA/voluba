@@ -1,11 +1,11 @@
-import { UPLOAD_URL, DEFAULT_BUNDLED_INCOMING_VOLUMES_0, DEFAULT_BUNDLED_INCOMING_VOLUMES_1, processImageMetaData, identityMat } from "@/constants";
+import { UPLOAD_URL, DEFAULT_BUNDLED_INCOMING_VOLUMES_0, DEFAULT_BUNDLED_INCOMING_VOLUMES_1, processImageMetaData, identityMat, getResSize } from "@/constants";
 import axios from 'axios'
 
 const defaultVIds = [`colin-1`]
 let DEFAULT_BUNDLED_INCOMING_VOLUMES = []
 
 const vols = [...DEFAULT_BUNDLED_INCOMING_VOLUMES_0, ...DEFAULT_BUNDLED_INCOMING_VOLUMES_1]
-DEFAULT_BUNDLED_INCOMING_VOLUMES = vols.filter(v => defaultVIds.includes(v.id))
+DEFAULT_BUNDLED_INCOMING_VOLUMES = vols.filter(v => !defaultVIds.includes(v.id))
 
 const dataSelectionStore = {
   namespaced: true,
@@ -55,16 +55,23 @@ const dataSelectionStore = {
       state.selectedIncomingVolumeResolution = data.resolution
     },
     setIncomingVolumes (state, { volumes }) {
-      state.incomingVolumes = volumes
+      const finalVolumes = []
+      for (const vol of volumes){
+        const ids = new Set(finalVolumes.map(v => v.id))
+        if (ids.has(vol.id)) continue
+        finalVolumes.push(vol)
+      }
+      state.incomingVolumes = finalVolumes
     }
   },
   actions: {
     appendToIncomingVolumes({ commit, state }, { volumes }){
       const { incomingVolumes } = state
+      const newVolumeIds = volumes.map(vol => vol.id)
       commit('setIncomingVolumes', { 
         volumes: [
-          ...incomingVolumes,
-          ...volumes
+          ...incomingVolumes.filter(vol => !newVolumeIds.includes(vol.id)),
+          ...volumes,
         ]
        })
     },
@@ -76,16 +83,21 @@ const dataSelectionStore = {
     selectIncomingVolumeWithId ({ commit, state, dispatch }, id) {
       const vol = state.incomingVolumes.find(({ id: _id }) => _id === id)
       if (vol) {
-        if (vol.extra && vol.extra.neuroglancer && vol.extra.neuroglancer.transform) {
-          const cleansedTransform = JSON.parse(JSON.stringify(vol.extra.neuroglancer.transform))
-          const { mat4 } = export_nehuba
-          const matrix = mat4.fromValues( ...cleansedTransform[0], ...cleansedTransform[1], ...cleansedTransform[2], ...cleansedTransform[3])
-          mat4.transpose(matrix, matrix)
-          commit(
-            'nehubaStore/setIncTransformMatrix',
-            { matrix },
-            { root: true })
-        }
+        /**
+         * nehuba v2's transform is all kind of wacked. 
+         * TODO incorporate transform 
+         */
+        // if (vol.extra && vol.extra.neuroglancer && vol.extra.neuroglancer.transform) {
+        //   const cleansedTransform = JSON.parse(JSON.stringify(vol.extra.neuroglancer.transform))
+        //   const { mat4, vec3 } = export_nehuba
+        //   const matrix = mat4.fromValues( ...cleansedTransform[0], ...cleansedTransform[1], ...cleansedTransform[2], ...cleansedTransform[3])
+        //   mat4.transpose(matrix, matrix)
+        //   const transform = mat4.getTranslation(vec3.create(), matrix)
+        //   commit(
+        //     'nehubaStore/setIncTransformMatrix',
+        //     { matrix },
+        //     { root: true })
+        // }
 
         dispatch('setIncomingVolumeResolution', id)
 
@@ -96,14 +108,10 @@ const dataSelectionStore = {
     },
 
     async ['setIncomingVolumeResolution'] ({ commit, state, dispatch, rootGetters }, id) {
+
       try {
         const vol = state.incomingVolumes.find(({ id: _id }) => _id === id)
-        const { data } = await axios(`${vol.imageSource.substring(14)}/info`)
-        const resolution = data.scales[0].resolution
-        const size = data.scales[0].size
-        // const resolution = {}
-        // resolution.voxel = data.scales[0].resolution
-        // resolution.real = data.scales[0].resolution.map((r, i) => r * data.scales[0].size[i])
+        const { resolution, size } = await getResSize(vol.imageSource)
         commit('setSelectedIncomingVolumeResolution', {resolution, size})
       } catch (error) {
         dispatch('updateIncVolumesResult', {
