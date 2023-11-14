@@ -42,11 +42,11 @@ First, you need to select the type of transformation:
 
 | type                          | translation | rotation   | reflection | scale      | shear           |
 |-------------------------------|-------------|------------|------------|------------|-----------------|
-| Rigid                         | :fa-check:  | :fa-check: | 			|		     |                 |
-| Rigid (allow reflection)      | :fa-check:  | :fa-check: | :fa-check: |            |                 |
-| Similarity                    | :fa-check:  | :fa-check: |			| :fa-check: |                 |
-| Similarity (allow reflection) | :fa-check:  | :fa-check: | :fa-check: | :fa-check: |                 |
-| Affine                        | :fa-check:  | :fa-check: | :fa-check: | :fa-check: | :fa-check:      |
+| Rigid                         | ✔️ | ✔️ | 			|		     |                 |
+| Rigid (allow reflection)      | ✔️ | ✔️ | ✔️ |            |                 |
+| Similarity                    | ✔️ | ✔️ |			| ✔️ |                 |
+| Similarity (allow reflection) | ✔️ | ✔️ | ✔️ | ✔️ |                 |
+| Affine                        | ✔️ | ✔️ | ✔️ | ✔️ | ✔️      |
 
 From a set of landmarks, the affine transformation matrix can be recalculated. Click the blue calculator button to compute and display the transform based on the landmarks. Just as the previous adjustments of position, scale, rotation or axis orientation, the application of the affine transformation will be recorded in the history browser and can be reverted. 
 
