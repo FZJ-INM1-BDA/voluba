@@ -18,7 +18,7 @@ For personal data voluba only supports the NIfTI-format (.nii or .nii.gz). To co
 1. Install 3D Slicer 
 2. Launch 3D Slicer 
 3. Open your file (via File &rightarrow; Add Data OR File &rightarrow; Add DICOM Data &rightarrow; Import DICOM files &rightarrow; Select patient 
-4. &rightarrow; Select volume on bottom by double-clicking (Will open view))
+4. &rightarrow; Select volume on bottom by double-clicking (Will open view)
 5. Save file as NIfTI (via File &rightarrow; Save Data &rightarrow; check the file, under FileFormat select "NifTI (.nii)" or "NifTI (
    .nii.gz)", choose your output directory under Directory)
 

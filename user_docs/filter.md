@@ -3,7 +3,7 @@
 With the help of `Volume filters` you can configure the presentation of the incoming volume in overlay mode. On the one hand, adjusting the appearance of the input facilitates the distinction between the incoming and the reference volume. On the other hand it is also useful for revealing significant structures that are important features for alignment. You can choose between the following filters:
 
 * [Opacity](#opacity)
-* [Lower & Higher threshold](#lower--higher-threshold)
+* [Lower & Higher threshold](#lower-higher-threshold)
 * [Brightness](#brightness)
 * [Contrast](#contrast)
 * [Color map](#color-map)
