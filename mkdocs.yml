@@ -16,7 +16,6 @@ markdown_extensions:
   - admonition
   - codehilite
   - mdx_truly_sane_lists
-  - fontawesome_markdown
   - footnotes
   - mdx_math:
       enable_dollar_delimiter: True
