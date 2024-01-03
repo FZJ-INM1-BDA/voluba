@@ -39,7 +39,7 @@ WORKDIR /frontend/app/dist
 RUN for f in $(find . -type f); do gzip < $f > $f.gz && brotli < $f > $f.br; done
 
 # deploy container
-FROM python:3.10
+FROM python:3.10-alpine
 RUN pip install -U pip
 
 COPY backend/requirements.txt requirements.txt
