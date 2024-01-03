@@ -217,8 +217,28 @@ export default {
         default:
       }
     });
+
+    /**
+     * Fetch Custom Src if user is defined
+     */
+    if (this.user) {
+      fetch(`user/customSrc`)
+        .then(res => res.json())
+        .then(json => {
+          const customSrc = json.customSrc || []
+          appendToIncomingVolumes({
+            volumes: customSrc
+          })
+        })
+        .catch(e => {
+          console.warn(`Failed to load custom src: ${e.toString()}`)
+        })
+    }
   },
   computed: {
+    ...mapState('authStore', [
+      'user'
+    ]),
     ...mapState('nehubaStore', [
       'appendNehubaFlag'
     ]),
