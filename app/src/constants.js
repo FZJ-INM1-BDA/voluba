@@ -327,21 +327,11 @@ export const getDefaultNehubaConfigLight = (sourceUrl) => {
         },
         // "centerToOrigin": true,
         "drawSubstrates": {
-          "color": [
-            0,
-            0,
-            0.5,
-            0.15
-          ]
+          "color": [0,0,0.5,0.15]
         },
         "drawZoomLevels": {
           "cutOff": 20,
-          "color": [
-            0.5,
-            0,
-            0,
-            0.15
-          ]
+          "color": [0.5,0,0,0.15]
         },
         "hideImages": false,
         "waitForMesh": false,
@@ -354,10 +344,51 @@ export const getDefaultNehubaConfigLight = (sourceUrl) => {
   }
 }
 
+export const TMPL_IDS = {
+  BIG_BRAIN: "ref-1",
+  MEBRAINS: "mebrains",
+  WAXHOLM: "WHS-SD atlas",
+  ALLEN_CCFV3: "CCFv3_2017",
+}
+
+export const REFERENCE_VOLUMES = [
+  {
+    id: TMPL_IDS.BIG_BRAIN,
+    name: 'BigBrain (2015)',
+    imageSource: 'precomputed://https://neuroglancer.humanbrainproject.org/precomputed/BigBrainRelease.2015/8bit',
+    siibra_explorer_url: '/a:juelich:iav:atlas:v1.0.0:1/t:minds:core:referencespace:v1.0.0:a1655b99-82f1-420f-a3c2-fe80fd4c8588/p:juelich:iav:atlas:v1.0.0:4/',
+    meshesToLoad: [100, 200],
+    meshLayerName: ' tissue type: '
+  },
+  {
+    id: TMPL_IDS.WAXHOLM,
+    name: 'WHS-SD atlas',
+    theme: 'dark',
+    imageSource: 'precomputed://https://neuroglancer.humanbrainproject.eu/precomputed/WHS_SD_rat/templates/v1.01/t2star_masked',
+    siibra_explorer_url: '/a:minds:core:parcellationatlas:v1.0.0:522b368e-49a3-49fa-88d3-0870a307974a/t:minds:core:referencespace:v1.0.0:d5717c4a-0fa1-46e6-918c-b8003069ade8/p:minds:core:parcellationatlas:v1.0.0:ebb923ba-b4d5-4b82-8088-fa9215c2e1fe-v4/',
+    meshesToLoad: [],
+    meshLayerName: null,
+  }, {
+    id: TMPL_IDS.ALLEN_CCFV3,
+    name: 'CCFv3_2017',
+    theme: 'dark',
+    imageSource: 'precomputed://https://neuroglancer.humanbrainproject.eu/precomputed/AMBA/templates/v3/stpt',
+    siibra_explorer_url: '/a:juelich:iav:atlas:v1.0.0:2/t:minds:core:referencespace:v1.0.0:265d32a0-3d84-40a5-926f-bf89f68212b9/p:minds:core:parcellationatlas:v1.0.0:05655b58-3b6f-49db-b285-64b5a0276f83/',
+    meshesToLoad: [997],
+    meshLayerName: ' allenccfv3_auxmesh: '
+  }, {
+    id: TMPL_IDS.MEBRAINS,
+    name: 'MEBRAINS',
+    imageSource: 'precomputed://https://neuroglancer.humanbrainproject.eu/precomputed/data-repo-ng-bot/siibra-config/20230307-mebrains-template/MEBRAINS_T1_masked',
+    siibra_explorer_url: '/a:juelich:iav:atlas:v1.0.0:monkey/t:minds:core:referencespace:v1.0.0:MEBRAINS/p:minds:core:parcellationatlas:v1.0.0:e3235c039c6f54c3ba151568c829f117',
+    meshesToLoad: [1],
+    meshLayerName: ' mebrains_auxmesh: '
+  }
+]
 
 export const viewerConfigs = [
   {
-    "id": "ref-1",
+    "id": TMPL_IDS.BIG_BRAIN,
     "configName": "BigBrain",
     "globals": {
       "hideNullImageValues": true,
@@ -476,7 +507,7 @@ export const viewerConfigs = [
   },
 
   {
-    "id": "CCFv3_2017",
+    "id": TMPL_IDS.ALLEN_CCFV3,
     "configName": "Allen",
     "globals": {
       "hideNullImageValues": true,
@@ -611,7 +642,7 @@ export const viewerConfigs = [
   }, 
 
   {
-    "id": "WHS-SD atlas",
+    "id": TMPL_IDS.WAXHOLM,
     "configName": "Waxholm",
     "globals": {
       "hideNullImageValues": true,
@@ -744,6 +775,131 @@ export const viewerConfigs = [
           "2": 0,
           "3": 6.123234262925839e-17
         }
+      }
+    }
+  }, 
+
+  {
+    "id": TMPL_IDS.MEBRAINS,
+    "configName": "MEBRAINS",
+    "globals": {
+      "hideNullImageValues": true,
+      "useNehubaLayout": {
+        "keepDefaultLayouts": false
+      },
+      "useNehubaMeshLayer": true,
+      "rightClickWithCtrlGlobal": false,
+      "zoomWithoutCtrlGlobal": false,
+      "useCustomSegmentColors": true
+    },
+    "zoomWithoutCtrl": true,
+    "hideNeuroglancerUI": true,
+    "rightClickWithCtrl": true,
+    "rotateAtViewCentre": true,
+    "enableMeshLoadingControl": true,
+    "zoomAtViewCentre": true,
+    "restrictUserNavigation": true,
+    "disableSegmentSelection": true,
+    "dataset": {
+      "imageBackground": [0,0,0,0],
+      "initialNgState": {
+        "showDefaultAnnotations": true,
+        "defaultAnnotationColor": "#cccccc",
+        "layers": {
+          " mebrains: ": {
+            "visible": true,
+            "annotationColor": "#cccccc",
+            "type": "image",
+            "source": "precomputed://https://neuroglancer.humanbrainproject.eu/precomputed/data-repo-ng-bot/siibra-config/20230307-mebrains-template/MEBRAINS_T1_masked",
+            "transform": [[1.0, 0.0, 0.0, -43400000.765919685], [0.0, 1.0, 0.0, -51400000.765919685], [0.0, 0.0, 1.0, -28200000.002980232], [0.0, 0.0, 0.0, 1.0]]
+          },
+          " mebrains_auxmesh: ": {
+            "visible": true,
+            "annotationColor": "#cccccc",
+            "type": "segmentation",
+            "source": "precomputed://https://neuroglancer.humanbrainproject.eu/precomputed/data-repo-ng-bot/20230313-mebrains-meshes",
+            "selectedAlpha": 0,
+            "notSelectedAlpha": 0,
+            "transform": [[1.0, 0.0, 0.0, -43400000.765919685], [0.0, 1.0, 0.0, -51400000.765919685], [0.0, 0.0, 1.0, -28200000.002980232], [0.0, 0.0, 0.0, 1.0]]
+          },
+        },
+        "navigation": {
+          "pose": {
+            "position": {
+              "voxelSize": [
+                21166.666015625,
+                20000,
+                21166.666015625
+              ],
+              "voxelCoordinates": [
+                0, //-21.8844051361084,
+                0, //16.288618087768555,
+                0 //28.418994903564453
+              ]
+            }
+          },
+          "zoomFactor": 350000
+        },
+        "perspectiveOrientation": [
+          0.3140767216682434,
+          -0.7418519854545593,
+          0.4988985061645508,
+          -0.3195493221282959
+        ],
+        "perspectiveZoom": 1922200
+      }
+    },
+    "layout": {
+      "useNehubaPerspective": {
+        "perspectiveSlicesBackground": [0,0,0,1],
+        "removePerspectiveSlicesBackground": {
+          "mode": "<",
+          "color": [0.1,0.1,0.1,1]
+        },
+        "perspectiveBackground": [0,0,0,1],
+        "fixedZoomPerspectiveSlices": {
+          "sliceViewportWidth": 600,
+          "sliceViewportHeight": 600,
+          "sliceZoom": 56382,
+          "sliceViewportSizeMultiplier": 4
+        },
+        "mesh": {
+          "backFaceColor": [0,0,0,1],
+          "removeBasedOnNavigation": true,
+          "flipRemovedOctant": true,
+          "surfaceParcellation": false
+        },
+        "centerToOrigin": true,
+        "drawSubstrates": {
+          "color": [0.5,0.5,1,0.2]
+        },
+        "drawZoomLevels": {
+          "cutOff": 2
+        },
+        "restrictZoomLevel": {
+          "minZoom": 120000 * 0.04,
+          "maxZoom": 350000 * 0.04
+        }
+      },
+      "views": {
+          "slice1": {
+            "0": -0.7071067690849304,
+            "1": 0,
+            "2": 0,
+            "3": 0.7071067690849304
+          },
+          "slice2": {
+            "0": -0.5,
+            "1": -0.5,
+            "2": 0.5,
+            "3": 0.5
+          },
+          "slice3": {
+            "0": 1,
+            "1": 0,
+            "2": 0,
+            "3": 6.123234262925839e-17
+          }
       }
     }
   }, 

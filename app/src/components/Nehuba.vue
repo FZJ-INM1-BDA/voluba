@@ -654,19 +654,13 @@ export default {
       this.setReferenceTemplateTransform({ transform })
 
       /**
-       * load meshes 
-       * TODO for now, it's hard coded, big brain loads mesh 100 and 200
+       * load meshes if defined
        */
-      
-      const meshToLoad = this.selectedReferenceVolumeId === 'CCFv3_2017'? [997] : this.selectedReferenceVolumeId === 'ref-1'? [100, 200] : []
-      this.$options.nehubaBase.nehubaBase__nehubaViewer.setMeshesToLoad(meshToLoad)
-
-            
-      if (this.selectedReferenceVolumeId === 'CCFv3_2017') {
-        this.$options.nehubaBase.nehubaBase__nehubaViewer.batchAddAndUpdateSegmentColors(new Map([ [997, { red: 220, green: 220, blue: 220 }] ]), { name: ' allenccfv3_auxmesh: ' })
-
-      } else if (this.selectedReferenceVolumeId === 'ref-1') {
-        this.$options.nehubaBase.nehubaBase__nehubaViewer.batchAddAndUpdateSegmentColors(new Map([ [100, { red: 220, green: 220, blue: 220 }], [ 200, { red: 220, green: 220, blue: 220 } ] ]), { name: ' tissue type: ' })
+      const { meshLayerName, meshesToLoad } = this.selectedReferenceVolume
+      if (meshLayerName && meshesToLoad.length > 0) {
+        this.$options.nehubaBase.nehubaBase__nehubaViewer.setMeshesToLoad(meshesToLoad)
+        const cmap = new Map(meshesToLoad.map(lblIdx => [lblIdx, { red: 220, green: 220, blue: 220 }]))
+        this.$options.nehubaBase.nehubaBase__nehubaViewer.batchAddAndUpdateSegmentColors(cmap, { name: meshLayerName })
       }
 
       /**
@@ -859,7 +853,8 @@ export default {
     }),
     ...mapGetters('dataSelectionStore', [
       'selectedIncomingVolume',
-      'selectedReferenceVolumeId'
+      'selectedReferenceVolumeId',
+      'selectedReferenceVolume',
     ]),
     ...mapGetters('viewerPreferenceStore', [
       'fragmentShader'
