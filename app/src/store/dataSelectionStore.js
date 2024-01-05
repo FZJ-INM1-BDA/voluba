@@ -38,6 +38,7 @@ const dataSelectionStore = {
 
     selectedIncomingVolumeId: null,
     selectedIncomingVolumeResolution: null,
+    selectedIncomingVolumeSize: null,
 
     incomingVolumes: DEFAULT_BUNDLED_INCOMING_VOLUMES,
 
@@ -54,7 +55,8 @@ const dataSelectionStore = {
       state.selectedIncomingVolumeId = id
     },
     setSelectedIncomingVolumeResolution (state, data) {
-      state.selectedIncomingVolumeResolution = data.resolution
+      state.selectedIncomingVolumeResolution = [...data.resolution]
+      state.selectedIncomingVolumeSize = [...data.size]
     },
     setIncomingVolumes (state, { volumes }) {
       const finalVolumes = []
@@ -230,6 +232,10 @@ const dataSelectionStore = {
       const { neuroglancer } = extra || {}
       const { type = 'image' } = neuroglancer || {}
       return type
+    },
+    selectedIncomeVolumeDim: (state) => {
+      const { selectedIncomingVolumeSize } = state
+      return selectedIncomingVolumeSize
     }
   }
 }

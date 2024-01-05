@@ -110,7 +110,7 @@ export const DEFAULT_BUNDLED_INCOMING_VOLUMES_1 = [
   {
     id: 'inc-1',
     name: 'Nucleus subthalamicus (B20)',
-    imageSource: 'precomputed://https://neuroglancer-dev.humanbrainproject.org/precomputed/landmark-reg/B20_stn_l/v10',
+    imageSource: 'precomputed://https://data-proxy.ebrains.eu/api/v1/buckets/reference-atlas-data/precomputed/landmark-reg/B20_stn_l/v10',
     dim: [
       16208000,
       13056000,
@@ -120,7 +120,7 @@ export const DEFAULT_BUNDLED_INCOMING_VOLUMES_1 = [
   {
     id: 'nucleus-subthalamicus',
     name: 'Nucleus subthalamicus',
-    imageSource: 'precomputed://https://neuroglancer-dev.humanbrainproject.org/precomputed/landmark-reg/B20_stn_l/v10',
+    imageSource: 'precomputed://https://data-proxy.ebrains.eu/api/v1/buckets/reference-atlas-data/precomputed/landmark-reg/B20_stn_l/v10',
     dim: [
       16208000,
       13056000,
@@ -130,7 +130,7 @@ export const DEFAULT_BUNDLED_INCOMING_VOLUMES_1 = [
   {
     id: 'inc-2',
     name: 'Hippocampus unmasked',
-    imageSource: 'precomputed://https://neuroglancer-dev.humanbrainproject.org/precomputed/landmark-reg/hippocampus-unmasked',
+    imageSource: 'precomputed://https://data-proxy.ebrains.eu/api/v1/buckets/reference-atlas-data/precomputed/landmark-reg/hippocampus-unmasked',
     dim: [
       57600000,
       57600000,
@@ -326,14 +326,14 @@ export const getDefaultNehubaConfigLight = (sourceUrl) => {
           "flipRemovedOctant": true
         },
         // "centerToOrigin": true,
-        // "drawSubstrates": {
-        //   "color": [
-        //     0,
-        //     0,
-        //     0.5,
-        //     0.15
-        //   ]
-        // },
+        "drawSubstrates": {
+          "color": [
+            0,
+            0,
+            0.5,
+            0.15
+          ]
+        },
         "drawZoomLevels": {
           "cutOff": 20,
           "color": [
@@ -346,8 +346,8 @@ export const getDefaultNehubaConfigLight = (sourceUrl) => {
         "hideImages": false,
         "waitForMesh": false,
         "restrictZoomLevel": {
-          "minZoom": 1200000 * 0.002,
-          "maxZoom": 3500000* 0.002
+          "minZoom": 1200000 * 0.004,
+          "maxZoom": 3500000* 0.004
         }
       }
     }
@@ -378,12 +378,7 @@ export const viewerConfigs = [
     "restrictUserNavigation": true,
     "disableSegmentSelection": true,
     "dataset": {
-      "imageBackground": [
-        1,
-        1,
-        1,
-        1
-      ],
+      "imageBackground": [1,1,1,1],
       "initialNgState": {
         "showDefaultAnnotations": true,
         "defaultAnnotationColor": "#cccccc",
@@ -393,30 +388,10 @@ export const viewerConfigs = [
             "type": "image",
             "source": "precomputed://https://neuroglancer.humanbrainproject.org/precomputed/BigBrainRelease.2015/8bit",
             "transform": [
-              [
-                1,
-                0,
-                0,
-                -70677184
-              ],
-              [
-                0,
-                1,
-                0,
-                -70010000
-              ],
-              [
-                0,
-                0,
-                1,
-                -58788284
-              ],
-              [
-                0,
-                0,
-                0,
-                1
-              ]
+              [1,0,0,-70677184],
+              [0,1,0,-70010000],
+              [0,0,1,-58788284],
+              [0,0,0,1]
             ]
           },
           " tissue type: ": {
@@ -429,30 +404,10 @@ export const viewerConfigs = [
             "selectedAlpha": 0,
             "notSelectedAlpha": 0,
             "transform": [
-              [
-                1,
-                0,
-                0,
-                -70666600
-              ],
-              [
-                0,
-                1,
-                0,
-                -72910000
-              ],
-              [
-                0,
-                0,
-                1,
-                -58777700
-              ],
-              [
-                0,
-                0,
-                0,
-                1
-              ]
+              [1,0,0,-70666600],
+              [0,1,0,-72910000],
+              [0,0,1,-58777700],
+              [0,0,0,1]
             ]
           }
         },
@@ -484,68 +439,44 @@ export const viewerConfigs = [
     },
     "layout": {
       "views": "hbp-neuro",
-      "planarSlicesBackground": [
-        1,
-        1,
-        1,
-        1
-      ],
+      "planarSlicesBackground": [1,1,1,1],
       "useNehubaPerspective": {
         "enableShiftDrag": false,
         "doNotRestrictUserNavigation": false,
-        "perspectiveSlicesBackground": [
-          1,
-          1,
-          1,
-          1
-        ],
+        "perspectiveSlicesBackground": [1,1,1,1],
         "removePerspectiveSlicesBackground": {
-          "color": [
-            1,
-            1,
-            1,
-            1
-          ],
+          "color": [1,1,1,1],
           "mode": "=="
         },
-        "perspectiveBackground": [
-          1,
-          1,
-          1,
-          1
-        ],
+        "perspectiveBackground": [1,1,1,1],
         "removeBasedOnNavigation": true,
-        "flipRemovedOctant": true
+        "flipRemovedOctant": true,
+        "fixedZoomPerspectiveSlices": {
+          "sliceViewportWidth": 300,
+          "sliceViewportHeight": 300,
+          "sliceZoom": 563820,
+          "sliceViewportSizeMultiplier": 2
+        },
+        "centerToOrigin": true,
+        "drawSubstrates": {
+          "color": [0,0,0.5,0.15]
+        },
+        "drawZoomLevels": {
+          "cutOff": 200000 * 0.00004,
+          "color": [0.5,0,0,0.15]
+        },
+        "hideImages": false,
+        "waitForMesh": true,
+        "restrictZoomLevel": {
+          "minZoom": 1200000 * 0.004,
+          "maxZoom": 3500000 * 0.004
+        }
       },
-      "centerToOrigin": true,
-      "drawSubstrates": {
-        "color": [
-          0,
-          0,
-          0.5,
-          0.15
-        ]
-      },
-      "drawZoomLevels": {
-        "cutOff": 200000,
-        "color": [
-          0.5,
-          0,
-          0,
-          0.15
-        ]
-      },
-      "hideImages": false,
-      "waitForMesh": true,
-      "restrictZoomLevel": {
-        "minZoom": 1200000 * 0.004,
-        "maxZoom": 3500000 * 0.004
-      }
     }
   },
 
   {
-    "id": "allen",
+    "id": "CCFv3_2017",
     "configName": "Allen",
     "globals": {
       "hideNullImageValues": true,
@@ -566,12 +497,7 @@ export const viewerConfigs = [
     "restrictUserNavigation": true,
     "disableSegmentSelection": true,
     "dataset": {
-      "imageBackground": [
-        0,
-        0,
-        0,
-        0
-      ],
+      "imageBackground": [0,0,0,0],
       "initialNgState": {
         "showDefaultAnnotations": true,
         "defaultAnnotationColor": "#cccccc",
@@ -582,30 +508,10 @@ export const viewerConfigs = [
             "type": "image",
             "source": "precomputed://https://neuroglancer.humanbrainproject.eu/precomputed/AMBA/templates/v3/stpt",
             "transform": [
-              [
-                1,
-                0,
-                0,
-                -5737500
-              ],
-              [
-                0,
-                1,
-                0,
-                -6637500
-              ],
-              [
-                0,
-                0,
-                1,
-                -4037500
-              ],
-              [
-                0,
-                0,
-                0,
-                1
-              ]
+              [1,0,0,-5737500],
+              [0,1,0,-6637500],
+              [0,0,1,-4037500],
+              [0,0,0,1]
             ]
           },
           " allenccfv3_auxmesh: ": {
@@ -616,30 +522,10 @@ export const viewerConfigs = [
             "selectedAlpha": 0,
             "notSelectedAlpha": 0,
             "transform": [
-              [
-                0,
-                0,
-                -1,
-                5670000
-              ],
-              [
-                -1,
-                0,
-                0,
-                6570000
-              ],
-              [
-                0,
-                -1,
-                0,
-                3970000
-              ],
-              [
-                0,
-                0,
-                0,
-                1
-              ]
+              [0,0,-1,5670000],
+              [-1,0,0,6570000],
+              [0,-1,0,3970000],
+              [0,0,0,1]
             ]
           },
         },
@@ -670,87 +556,62 @@ export const viewerConfigs = [
       }
     },
     "layout": {
-            "useNehubaPerspective": {
-                "perspectiveSlicesBackground": [
-                    0,
-                    0,
-                    0,
-                    1
-                ],
-                "removePerspectiveSlicesBackground": {
-                    "mode": "<",
-                    "color": [
-                        0.1,
-                        0.1,
-                        0.1,
-                        1
-                    ]
-                },
-                "perspectiveBackground": [
-                    0,
-                    0,
-                    0,
-                    1
-                ],
-                "fixedZoomPerspectiveSlices": {
-                    "sliceViewportWidth": 300,
-                    "sliceViewportHeight": 300,
-                    "sliceZoom": 56381.835624261774,
-                    "sliceViewportSizeMultiplier": 2
-                },
-                "mesh": {
-                    "backFaceColor": [
-                        0,
-                        0,
-                        0,
-                        1
-                    ],
-                    "removeBasedOnNavigation": true,
-                    "flipRemovedOctant": true,
-                    "surfaceParcellation": false
-                },
-                "centerToOrigin": true,
-                "drawSubstrates": {
-                    "color": [
-                        0.5,
-                        0.5,
-                        1,
-                        0.2
-                    ]
-                },
-                "drawZoomLevels": {
-                    "cutOff": 15000
-                },
-                "restrictZoomLevel": {
-                    "minZoom": 120000,
-                    "maxZoom": 350000
-                }
-            },
-            "views": {
-                "slice1": {
-                    "0": -0.7071067690849304,
-                    "1": 0,
-                    "2": 0,
-                    "3": 0.7071067690849304
-                },
-                "slice2": {
-                    "0": -0.5,
-                    "1": -0.5,
-                    "2": 0.5,
-                    "3": 0.5
-                },
-                "slice3": {
-                    "0": 1,
-                    "1": 0,
-                    "2": 0,
-                    "3": 6.123234262925839e-17
-                }
-            }
+      "useNehubaPerspective": {
+        "perspectiveSlicesBackground": [0,0,0,1],
+        "removePerspectiveSlicesBackground": {
+          "mode": "<",
+          "color": [0.1,0.1,0.1,1]
+        },
+        "perspectiveBackground": [0,0,0,1],
+        "fixedZoomPerspectiveSlices": {
+          "sliceViewportWidth": 300,
+          "sliceViewportHeight": 300,
+          "sliceZoom": 56381.835624261774,
+          "sliceViewportSizeMultiplier": 2
+        },
+        "mesh": {
+          "backFaceColor": [0,0,0,1],
+          "removeBasedOnNavigation": true,
+          "flipRemovedOctant": true,
+          "surfaceParcellation": false
+        },
+        "centerToOrigin": true,
+        "drawSubstrates": {
+          "color": [0.5,0.5,1,0.2]
+        },
+        "drawZoomLevels": {
+          "cutOff": 200000
+        },
+        "restrictZoomLevel": {
+          "minZoom": 120000 * 0.004,
+          "maxZoom": 350000 * 0.004
+        }
+      },
+      "views": {
+          "slice1": {
+            "0": -0.7071067690849304,
+            "1": 0,
+            "2": 0,
+            "3": 0.7071067690849304
+          },
+          "slice2": {
+            "0": -0.5,
+            "1": -0.5,
+            "2": 0.5,
+            "3": 0.5
+          },
+          "slice3": {
+            "0": 1,
+            "1": 0,
+            "2": 0,
+            "3": 6.123234262925839e-17
+          }
+      }
     }
   }, 
 
   {
-    "id": "waxholm",
+    "id": "WHS-SD atlas",
     "configName": "Waxholm",
     "globals": {
       "hideNullImageValues": true,
@@ -771,12 +632,7 @@ export const viewerConfigs = [
     "restrictUserNavigation": true,
     "disableSegmentSelection": true,
     "dataset": {
-      "imageBackground": [
-        0,
-        0,
-        0,
-        0
-      ],
+      "imageBackground": [0,0,0,0],
       "initialNgState": {
         "showDefaultAnnotations": true,
         "defaultAnnotationColor": "#cccccc",
@@ -787,30 +643,10 @@ export const viewerConfigs = [
             "type": "image",
             "source": "precomputed://https://neuroglancer.humanbrainproject.eu/precomputed/WHS_SD_rat/templates/v1.01/t2star_masked",
             "transform": [
-              [
-                1,
-                0,
-                0,
-                -9550781
-              ],
-              [
-                0,
-                1,
-                0,
-                -24355468
-              ],
-              [
-                0,
-                0,
-                1,
-                -9707031
-              ],
-              [
-                0,
-                0,
-                0,
-                1
-              ]
+              [1,0,0,-9550781],
+              [0,1,0,-24355468],
+              [0,0,1,-9707031],
+              [0,0,0,1]
             ]
           },
           " waxholm_auxmesh: ": {
@@ -824,30 +660,10 @@ export const viewerConfigs = [
               "0"
             ],
             "transform": [
-              [
-                0,
-                0,
-                -1,
-                5670000
-              ],
-              [
-                -1,
-                0,
-                0,
-                6570000
-              ],
-              [
-                0,
-                -1,
-                0,
-                3970000
-              ],
-              [
-                0,
-                0,
-                0,
-                1
-              ]
+              [0,0,-1,5670000],
+              [-1,0,0,6570000],
+              [0,-1,0,3970000],
+              [0,0,0,1]
             ]
           },
         },
@@ -878,82 +694,57 @@ export const viewerConfigs = [
       }
     },
     "layout": {
-            "useNehubaPerspective": {
-                "perspectiveSlicesBackground": [
-                    0,
-                    0,
-                    0,
-                    1
-                ],
-                "removePerspectiveSlicesBackground": {
-                    "mode": "<",
-                    "color": [
-                        0.1,
-                        0.1,
-                        0.1,
-                        1
-                    ]
-                },
-                "perspectiveBackground": [
-                    0,
-                    0,
-                    0,
-                    1
-                ],
-                "fixedZoomPerspectiveSlices": {
-                    "sliceViewportWidth": 300,
-                    "sliceViewportHeight": 300,
-                    "sliceZoom": 56381.835624261774,
-                    "sliceViewportSizeMultiplier": 2
-                },
-                "mesh": {
-                    "backFaceColor": [
-                        0,
-                        0,
-                        0,
-                        1
-                    ],
-                    "removeBasedOnNavigation": true,
-                    "flipRemovedOctant": true,
-                    "surfaceParcellation": false
-                },
-                "centerToOrigin": true,
-                "drawSubstrates": {
-                    "color": [
-                        0.5,
-                        0.5,
-                        1,
-                        0.2
-                    ]
-                },
-                "drawZoomLevels": {
-                    "cutOff": 15000
-                },
-                "restrictZoomLevel": {
-                    "minZoom": 120000,
-                    "maxZoom": 350000
-                }
-            },
-            "views": {
-                "slice1": {
-                    "0": -0.7071067690849304,
-                    "1": 0,
-                    "2": 0,
-                    "3": 0.7071067690849304
-                },
-                "slice2": {
-                    "0": -0.5,
-                    "1": -0.5,
-                    "2": 0.5,
-                    "3": 0.5
-                },
-                "slice3": {
-                    "0": 1,
-                    "1": 0,
-                    "2": 0,
-                    "3": 6.123234262925839e-17
-                }
-            }
+      "useNehubaPerspective": {
+        "perspectiveSlicesBackground": [0,0,0,1],
+        "removePerspectiveSlicesBackground": {
+          "mode": "<",
+          "color": [0.1,0.1,0.1,1]
+        },
+        "perspectiveBackground": [0,0,0,1],
+        "fixedZoomPerspectiveSlices": {
+          "sliceViewportWidth": 300,
+          "sliceViewportHeight": 300,
+          "sliceZoom": 56381.835624261774,
+          "sliceViewportSizeMultiplier": 2
+        },
+        "mesh": {
+          "backFaceColor": [0,0,0,1],
+          "removeBasedOnNavigation": true,
+          "flipRemovedOctant": true,
+          "surfaceParcellation": false
+        },
+        "centerToOrigin": true,
+        "drawSubstrates": {
+          "color": [0.5,0.5,1,0.2]
+        },
+        "drawZoomLevels": {
+          "cutOff": 15000
+        },
+        "restrictZoomLevel": {
+          "minZoom": 120000 * 0.004,
+          "maxZoom": 350000 * 0.004
+        }
+      },
+      "views": {
+        "slice1": {
+          "0": -0.7071067690849304,
+          "1": 0,
+          "2": 0,
+          "3": 0.7071067690849304
+        },
+        "slice2": {
+          "0": -0.5,
+          "1": -0.5,
+          "2": 0.5,
+          "3": 0.5
+        },
+        "slice3": {
+          "0": 1,
+          "1": 0,
+          "2": 0,
+          "3": 6.123234262925839e-17
+        }
+      }
     }
   }, 
 
@@ -1478,6 +1269,16 @@ export function convertNmToVoxel(ngCoordinateSpace, input, type) {
   }
   if (type === "vec3") {
     return [x, y, z].map(([value, unit], idx) => input[idx] / cvt[unit] / value)
+  }
+  
+  if (type === "x") {
+    return input / 1e9 / x[0]
+  }
+  if (type === "y") {
+    return input / 1e9 / y[0]
+  }
+  if (type === "z") {
+    return input / 1e9 / z[0]
   }
   throw new Error(`type ${type} not yet implemented`)
 }

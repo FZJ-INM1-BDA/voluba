@@ -151,7 +151,7 @@ export default {
     ]),
   },
   beforeDestroy: function() {
-    console.log("before destroy yo")
+    
   }
 }
 </script>

@@ -387,16 +387,11 @@ const nehubaStore = {
   },
   getters: {
     dim: (state, getters, rootState, rootGetters) => {
-      const vol = rootGetters['dataSelectionStore/selectedIncomingVolume']
-      return (vol && vol.dim) || [0, 0, 0]
+      return rootGetters['dataSelectionStore/selectedIncomeVolumeDim']
     },
     size: (state, getters, rootState, rootGetters) => {
-      // template specific
-      return [
-        6572,
-        7404,
-        5711
-      ]
+      const { dataSelectionStore } = rootState
+      return dataSelectionStore['selectedIncomingVolumeSize']
     },
     incRotQuat: state => {
       if (!state.appendNehubaFlag) return [0, 0, 0, 1]
