@@ -658,11 +658,11 @@ export default {
        * TODO for now, it's hard coded, big brain loads mesh 100 and 200
        */
       
-      const meshToLoad = this.selectedReferenceVolumeId === 'allen'? [997] : this.selectedReferenceVolumeId === 'ref-1'? [100, 200] : []
+      const meshToLoad = this.selectedReferenceVolumeId === 'CCFv3_2017'? [997] : this.selectedReferenceVolumeId === 'ref-1'? [100, 200] : []
       this.$options.nehubaBase.nehubaBase__nehubaViewer.setMeshesToLoad(meshToLoad)
 
             
-      if (this.selectedReferenceVolumeId === 'allen') {
+      if (this.selectedReferenceVolumeId === 'CCFv3_2017') {
         this.$options.nehubaBase.nehubaBase__nehubaViewer.batchAddAndUpdateSegmentColors(new Map([ [997, { red: 220, green: 220, blue: 220 }] ]), { name: ' allenccfv3_auxmesh: ' })
 
       } else if (this.selectedReferenceVolumeId === 'ref-1') {

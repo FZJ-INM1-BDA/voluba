@@ -329,6 +329,7 @@
 import SectionComponent from '@/components/layout/Section'
 import SliderComponent from '@/components/layout/Slider'
 import { mapState, mapActions, mapGetters } from 'vuex'
+import { convertVoxelToNm, convertNmToVoxel } from "@/constants"
 
 import { INC_VOL_XFORM_TITLE } from '@/text'
 
@@ -382,6 +383,7 @@ export default {
     ...mapState('dataSelectionStore', [
       'incomingVolumes',
       'selectedIncomingVolumeResolution',
+      'coordinateSpace',
     ]),
     ...mapState('nehubaStore', {
       lockIconTranslation: state => state.incVolTranslationLock ? 'lock' : 'lock-open',
@@ -522,14 +524,7 @@ export default {
         const {vec3, mat4} = window.export_nehuba
         const xformMat = mat4.fromValues(...this.incTransformMatrix)
         const translVec = mat4.getTranslation(vec3.create(), xformMat)
-        return Array.from(translVec)
-      }
-    },
-    dummyIncomingTemplate: function () {
-      return {
-        id: 'placeholder',
-        text: '-- Please select a dataset --',
-        value: -1
+        return convertVoxelToNm(this.coordinateSpace, translVec, "vec3")
       }
     },
     selectedIncomingVolumeName: function () {
@@ -539,9 +534,6 @@ export default {
     },
     referenceURLs: function () {
       return this.$store.state.referenceURLs
-    },
-    renderedIncomingVolumes: function () {
-      return [this.dummyIncomingTemplate].concat(this.$store.state.incomingVolumes)
     },
     selectedIncomingVolumeResolutionX: {
       get: function () {
@@ -637,23 +629,24 @@ export default {
 
       pos[idx] = delta || value
 
+
+      const incXM = mat4.fromValues(...this.incTransformMatrix)
+
+      /**
+       * account for internal scaling
+       */
+      const incScale = mat4.getScaling(vec3.create(), incXM)
+      vec3.inverse(incScale, incScale)
+      vec3.mul(pos, pos, incScale)
+
+      /**
+       * account for internal rotation of inc volume
+       */
+      const incRot = mat4.getRotation(quat.create(), incXM)
+      quat.invert(incRot, incRot)
+      vec3.transformQuat(pos, pos, incRot)
+
       if (delta) {
-
-        const incXM = mat4.fromValues(...this.incTransformMatrix)
-
-        /**
-         * account for internal scaling
-         */
-        const incScale = mat4.getScaling(vec3.create(), incXM)
-        vec3.inverse(incScale, incScale)
-        vec3.mul(pos, pos, incScale)
-        
-        /**
-         * account for internal rotation of inc volume
-         */
-        const incRot = mat4.getRotation(quat.create(), incXM)
-        quat.invert(incRot, incRot)
-        vec3.transformQuat(pos, pos, incRot)
 
         this.pushUndo({
           name: 'translate by slider delta',
@@ -662,10 +655,12 @@ export default {
 
         this.translIncBy({
           axis: 'xyz',
-          value: Array.from(pos)
+          value: convertNmToVoxel(this.coordinateSpace, pos, "vec3")
         })
-      } else if (value) {
-        
+      }
+      
+      if (value) {
+
         this.pushUndo({
           name: 'translate by slider value',
           collapse: 'translateBySliderValue'
@@ -673,7 +668,7 @@ export default {
 
         this.setTranslInc({
           axis,
-          value
+          value: convertNmToVoxel(this.coordinateSpace, value * 1e6, axis)
         })
       }
 
