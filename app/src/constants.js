@@ -907,34 +907,29 @@ export const viewerConfigs = [
 ]
 
 export const getRotationVec3 = (index) => {
-  if ('export_nehuba' in window) {
-    return index === 0
-    ? {
-        vec31: window.export_nehuba.vec3.fromValues(0, 0, 1),
-        vec32: window.export_nehuba.vec3.fromValues(1, 0, 0)
-      }
-    : index === 1
-      ? {
-          vec31: window.export_nehuba.vec3.fromValues(0, 0, 1),
-          vec32: window.export_nehuba.vec3.fromValues(0, 1, 0)
-        }
-      : index === 2
-        ? {
-            vec31: window.export_nehuba.vec3.fromValues(0, -1, 0),
-            vec32: window.export_nehuba.vec3.fromValues(1, 0, 0)
-          }
-        : (console.warn('getRotationVec3 index > 2, returning null'), {
-            vec31: null,
-            vec32: null
-          })
-    
-  } else {
-    console.warn('export_nehuba is not present in window, has it not been exported?')
+  if (!('export_nehuba' in window)) {
+    throw new Error(`export_nehuba is not present in window, has it not been exported?`)
+  }
+  if (index === 0) {
     return {
-      vec31: null,
-      vec32: null
+      vec31: window.export_nehuba.vec3.fromValues(0, 0, 1),
+      vec32: window.export_nehuba.vec3.fromValues(1, 0, 0)
     }
   }
+  if (index === 1) {
+    return {
+      vec31: window.export_nehuba.vec3.fromValues(0, 0, 1),
+      vec32: window.export_nehuba.vec3.fromValues(0, 1, 0)
+    }
+  }
+  if (index === 2) {
+    return {
+      vec31: window.export_nehuba.vec3.fromValues(0, -1, 0),
+      vec32: window.export_nehuba.vec3.fromValues(1, 0, 0)
+    }
+  }
+  throw new Error(`getRotationVec3 only supports index 0, 1, 2`)
+  
 }
 
 export const incomingTemplateActiveOpacity = 0.8

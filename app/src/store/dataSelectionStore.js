@@ -214,8 +214,8 @@ const dataSelectionStore = {
       return type
     },
     selectedIncomeVolumeDim: (state) => {
-      const { selectedIncomingVolumeSize } = state
-      return selectedIncomingVolumeSize
+      const { selectedIncomingVolumeSize: size, selectedIncomingVolumeResolution: res } = state
+      return [0, 1, 2].map(idx => size[idx] * res[idx])
     }
   }
 }

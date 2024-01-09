@@ -606,15 +606,7 @@ export default {
     },
     setIsotropicScale: function(value) {
       this.setScaleInc({
-        axis: 'x',
-        value
-      })
-      this.setScaleInc({
-        axis: 'y',
-        value
-      })
-      this.setScaleInc({
-        axis: 'z',
+        axis: 'xyz',
         value
       })
     },

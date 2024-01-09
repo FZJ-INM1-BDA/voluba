@@ -1,11 +1,12 @@
-import { identityMatFlattened } from '../constants'
+import { identityMatFlattened, convertNmToVoxel } from '../constants'
 import { incompatibleBrowserText } from "@/text"
 
 const browserCompatible = () => 'WebGL2RenderingContext' in window
 
 const getMirrorMat = (flippedState, dim) => {
-  if (! ('export_nehuba' in window))
+  if (! ('export_nehuba' in window)) {
     return null
+  }
   const { vec3, mat4 } = window.export_nehuba
   
   const applyMirror = mat4.create()
@@ -137,32 +138,34 @@ const nehubaStore = {
         incVolScaleLock: incVolScaleLock !== null ? incVolScaleLock : state.incVolScaleLock
       })
     },
-    flipAxis ({ commit, state, getters, dispatch }, { axis }) {
-      const { flippedState: currentFlippedState  } = state
-      const { dim } = getters
+    flipAxis ({ commit, state, dispatch }, { axis }) {
+      const { flippedState: currentFlippedState, incTransformMatrix } = state
+      
+      const { mat4, vec3 } = window.export_nehuba
 
-      const idx = axis === 0
-        ? 0
-        : axis === 1
-          ? 5
-          : axis === 2
-            ? 10
-            : -1
-
-      if (idx < 0) return
+      /**
+       * @type {'x' | 'y' | 'z'}
+       */
+      let parsedAxis = null
+      if (axis === 0) {
+        parsedAxis = 'x'
+      }
+      if (axis === 1) {
+        parsedAxis = 'y'
+      }
+      if (axis === 2) {
+        parsedAxis = 'z'
+      }
 
       const flippedState = currentFlippedState.map((v, id) => id === axis ? v * -1 : v)
 
-      const mirrorVec = [1, 1, 1]
-      mirrorVec[axis] = -1
-      const mirror = getMirrorMat(mirrorVec, dim)
-      
-      if (!mirror) return
+      const cXform = mat4.fromValues(...incTransformMatrix)
+      const cScaling = mat4.getScaling(vec3.create(), cXform)
 
-      const { applyMirror } = mirror
+      cScaling[axis] *= -1 * currentFlippedState[axis]
       
       commit('setFlippedState', { flippedState })
-      dispatch('multiplyIncXformMatrix', Array.from(applyMirror))
+      dispatch('setScaleInc', { axis: parsedAxis, value: cScaling[axis] })
     },
     highlightIncomingVolume ({ commit }, bool) {
       commit('setIncomingVolumeHighlighted', bool)
@@ -179,9 +182,9 @@ const nehubaStore = {
           )
         })
     },
-    rotIncBy ({ state, getters, dispatch }, { quaternion }) {
+    rotIncBy ({ state, getters, dispatch, commit }, { quaternion }) {
 
-      const { flippedState, incTransformMatrix } = state
+      const { incTransformMatrix } = state
       if (!quaternion) {
         return
       }
@@ -190,8 +193,12 @@ const nehubaStore = {
       }
       const {quat, vec3, mat4} = window.export_nehuba
       
-      const axis = vec3.create()
+      const cXformMat = mat4.fromValues(...incTransformMatrix)
+
+      const axis = vec3.fromValues(1, 0, 0)
       const rotQuat = quat.fromValues(...quaternion)
+      // necessary to normalize?
+      quat.normalize(rotQuat, rotQuat)
       const angle = quat.getAxisAngle(axis, rotQuat)
       const rotMat = mat4.fromRotation(mat4.create(), angle, rotQuat)
 
@@ -202,106 +209,84 @@ const nehubaStore = {
 
       const xformMat = mat4.create()
 
-      /**
-       * translation mat for operations at the center of the volume
-       */
-      const { size: _size } = getters
-      const size = [..._size]
+      if (getters.originAtCenter) {
+        const centralizeMatrix = mat4.fromTranslation(mat4.create(), getters.centerVoxel.map(v => v * -1))
+        const decentralizeMatrix = mat4.fromTranslation(mat4.create(), getters.centerVoxel)
 
-      /**
-       * get mirror mats
-       */
-      const mirror = getMirrorMat(flippedState, size)
+        mat4.mul(xformMat, centralizeMatrix, xformMat)
 
-      if (!mirror) return
-
-      const { undoMirror } = mirror
-
-      /**
-       * undo mirror & undo scale
-       */
-      const cXformMat = mat4.fromValues(...incTransformMatrix)
-      const cScaling = mat4.getScaling(vec3.create(), cXformMat)
-      const ivCScaling = vec3.inverse(vec3.create(), cScaling)
-      const cScalingMat = mat4.fromScaling(mat4.create(), ivCScaling)
-      mat4.mul(xformMat, undoMirror, cScalingMat)
-
-      /**
-       * apply translation correction
-       */
-
-      const incTransl = vec3.mul(size, size, cScaling)
-      vec3.scale(incTransl, incTransl, 0.5)
-      const incTranslMat = mat4.fromTranslation(mat4.create(), incTransl)
-      mat4.mul(xformMat, xformMat, incTranslMat)
-
-      /**
-       * save invert
-       */
-      const invert = mat4.invert(mat4.create(), xformMat)
-
-      /**
-       * apply rotation
-       */
-      mat4.mul(xformMat, xformMat, rotMat)
-
-      /**
-       * apply invert
-       */
-      mat4.mul(xformMat, xformMat, invert)
-
-      dispatch('multiplyIncXformMatrix', Array.from(xformMat))
+        mat4.mul(
+          xformMat,
+          rotMat,
+          xformMat)
+        
+        mat4.mul(xformMat, decentralizeMatrix, xformMat)
+        
+        mat4.mul(xformMat, cXformMat, xformMat)
+        
+        commit("setIncTransformMatrix", { matrix: Array.from(xformMat) })
+        return
+      }
+      throw new Error(`non origin rotinc not yet implemented`)
     },
 
-    setScaleInc ({commit, state, getters}, {axis, value}) {
+    setScaleInc ({ commit, state, getters }, { axis, value }) {
 
       const { incTransformMatrix } = state
-      const { mat4, vec3 } = window.export_nehuba
+      const { mat4, vec3, quat } = window.export_nehuba
 
-      if (axis !== 'x' && axis !== 'y' && axis !== 'z') {
+      if (axis !== 'x' && axis !== 'y' && axis !== 'z' && axis !== "xyz") {
         return
       }
-      if (Number.isNaN(value) || !(value > 0)) {
+      if (Number.isNaN(value)) {
         return
       }
-      const idx = axis === 'x'
-        ? 0
-        : axis === 'y'
-          ? 1
-          : 2
-
-      const { size } = getters
-      const dimVec = vec3.fromValues(...size)
 
       const cXform = mat4.fromValues(...incTransformMatrix)
-
-      /**
-       * returning mat
-       */
-      const xformMat = mat4.create()
+      const cRot = mat4.getRotation(quat.create(), cXform)
 
       /**
        * apply scale
        */
       const oldScale = mat4.getScaling(vec3.create(), cXform)
-      const newScale = vec3.fromValues(1, 1, 1)
-      newScale[idx] = value / oldScale[idx]
+      const newScale = vec3.copy(vec3.create(), oldScale)
+
+      if (axis === "x") {
+        newScale[0] = value / oldScale[0]
+      }
+      if (axis === "y") {
+        newScale[1] = value / oldScale[1]
+      }
+      if (axis === "z") {
+        newScale[2] = value / oldScale[2]
+      }
+      if (axis === "xyz") {
+        newScale[0] = value / oldScale[0]
+        newScale[1] = value / oldScale[1]
+        newScale[2] = value / oldScale[2]
+      }
       const scaleMat = mat4.fromScaling(mat4.create(), newScale)
-      mat4.mul(xformMat, scaleMat, xformMat)
 
       /**
-       * apply excess transform
+       * returning mat
        */
-      const xtraScale = vec3.sub(vec3.create(), vec3.fromValues(1,1,1), newScale)
-      vec3.scale(xtraScale, xtraScale, 0.5)
-      vec3.mul(xtraScale, xtraScale, dimVec)
-      mat4.mul(xformMat, mat4.fromTranslation(mat4.create(), xtraScale), xformMat)
-      
-      /**
-       * apply original xform
-       */
-      mat4.mul(xformMat, cXform, xformMat)
+      const xformMat = mat4.create()
+      if (getters.originAtCenter) {
+        const centralizeMatrix = mat4.fromTranslation(mat4.create(), getters.centerVoxel.map(v => v * -1))
+        const decentralizeMatrix = mat4.fromTranslation(mat4.create(), getters.centerVoxel)
+        mat4.mul(xformMat, centralizeMatrix, xformMat)
+        mat4.mul(xformMat, scaleMat, xformMat)
+        mat4.mul(xformMat, decentralizeMatrix, xformMat)
 
+        mat4.mul(xformMat, cXform, xformMat)
+
+      }
+
+      if (!getters.originAtCenter) {
+        
+        const cXlate = mat4.getTranslation(vec3.create(), cXform)
+        mat4.fromRotationTranslationScale(xformMat, cRot, cXlate, newScale)
+      }
       commit("setIncTransformMatrix", { matrix: Array.from(xformMat) })
     },
     setTranslInc ({commit, state}, {axis, value}) {
@@ -434,6 +419,17 @@ const nehubaStore = {
       mat4.fromTranslation(translMat, transl)
       mat4.mul(incM, translMat, incM)
       return Array.from(incM)
+    },
+    originAtCenter: () => {
+      return true
+    },
+    centerVoxel: (state, getters, rootState, rootGetters) => {
+      
+      const dim = rootGetters['dataSelectionStore/selectedIncomeVolumeDim']
+      const { dataSelectionStore } = rootState
+      const { coordinateSpace } = dataSelectionStore
+      const dimVox = convertNmToVoxel(coordinateSpace, dim, "vec3")
+      return dimVox.map(v => v / 2)
     },
   },
 }
