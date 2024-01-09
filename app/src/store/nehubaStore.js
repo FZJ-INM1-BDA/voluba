@@ -249,7 +249,7 @@ const nehubaStore = {
        * apply scale
        */
       const oldScale = mat4.getScaling(vec3.create(), cXform)
-      const newScale = vec3.copy(vec3.create(), oldScale)
+      const newScale = vec3.fromValues(1, 1, 1)
 
       if (axis === "x") {
         newScale[0] = value / oldScale[0]
