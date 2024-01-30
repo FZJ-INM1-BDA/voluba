@@ -87,7 +87,7 @@ class UploadToDP(JobProgressModel):
             fp.write("\n")
         bucket.upload(fp.name, bucket_filename)
         os.unlink(fp.name)
-        self.detail = f'{DP_ROOT}/v1/buckets/{DP_BUCKET_NAME}/{bucket_filename}'
+        self.detail = f'{DP_ROOT}/api/v1/buckets/{DP_BUCKET_NAME}/{bucket_filename}'
 
 class CreateKgTransformFileInstance(JobProgressModel):
     name=STRING_CONST.CreateKgTransformFileInstName
