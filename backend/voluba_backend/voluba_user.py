@@ -33,8 +33,13 @@ def custom_src(request: Request):
 
     # n.b. do not "get_repo_by_name"
     # based on localization, the default repo name may be "My Library" or "Meine Bibliothek" etc
-    lib: Repo = client.repos.get_default_repo()
     
+    my_libraries = client.repos.get_repos_by_name("my-siibra-library")
+    if len(my_libraries) == 0:
+        my_libraries = client.repos.get_repos_by_name("My Library")
+    assert len(my_libraries) == 1
+
+    lib: Repo = my_libraries[0]
     file = lib.get_file("/voluba/customSrc.json")
     custom_src = json.loads(file.get_content())
     return JSONResponse(custom_src)
