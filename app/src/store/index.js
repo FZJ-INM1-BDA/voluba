@@ -1,5 +1,5 @@
 
-import { saveToFile, convertNmToVoxel, multiplyXforms, flattenMat } from '@//constants'
+import { saveToFile, convertNmToVoxel, convertVoxelToNm, multiplyXforms, flattenMat } from '@//constants'
 import Vuex from 'vuex'
 import { AGREE_COOKIE_KEY, openInNewWindow, EXPORT_TRANSFORM_TYPE, _EXPORT_TRANSFORM_TYPE } from '@/constants';
 
@@ -230,46 +230,31 @@ const getStore = ({ user = null, experimentalFeatures = {} } = {}) => new Vuex.S
     },
     viewInSiibraExplorer: async function({ state, getters }, payload){
 
-      const { nehubaStore } = state
+      const { nehubaStore, dataSelectionStore } = state
       const { incTransformMatrix } =  nehubaStore
+      const { coordinateSpace } = dataSelectionStore
 
       const selectedReferenceVolume = getters['dataSelectionStore/selectedReferenceVolume']
-      const incRotQuat = getters['nehubaStore/incRotQuat']
-      const dim = getters['nehubaStore/dim']
-      const { vec3, quat } = export_nehuba
-      const translationFromCorner = vec3.fromValues(...dim)
-      vec3.scale(translationFromCorner, translationFromCorner, 0.5)
-      vec3.transformQuat(translationFromCorner, translationFromCorner, quat.invert(quat.create(), quat.fromValues(...incRotQuat)))
-
-      const selectedIncomingVolumes = []
-      for (const incVol of payload) {
-        const { xforms, ...rest } = incVol
-        selectedIncomingVolumes.push({
-          ...rest,
-          xform: await multiplyXforms(xforms)
-        })
-      }
-
-      const json = {
-        selectedReferenceVolume,
-        selectedIncomingVolumes,
-
-        incTransformMatrix,
-        translationFromCorner: Array.from(translationFromCorner),
-      }
 
       const ivHost = process.env.IV_HOST || 'https://atlases.ebrains.eu/viewer/#'
       let url = ivHost + selectedReferenceVolume.siibra_explorer_url
 
       const { origin, pathname } = window.location
       const pluginUrl = new URL(`${origin}${pathname.replace(/\/$/, '')}/viewerPlugin/template.html`)
-      if (selectedIncomingVolumes.length !== 1) {
-        throw new Error(`selectedIncomingVolumes needs to be exactly 1, but the supplid is ${selectedIncomingVolumes.length}`)
+      if (payload.length !== 1) {
+        throw new Error(`payload needs to be exactly 1, but the supplid is ${payload.length}`)
       }
-      pluginUrl.searchParams.set("precomputed", selectedIncomingVolumes[0].imageSource)
+      pluginUrl.searchParams.set("precomputed", payload[0].imageSource)
+      const output = [...incTransformMatrix]
+      const nm = convertVoxelToNm(coordinateSpace, output.slice(12,15), "vec3")
+      
+      output[12] = nm[0]
+      output[13] = nm[1]
+      output[14] = nm[2]
+
       pluginUrl.searchParams.set(
         "transform", 
-        [0,1,2].map(r => [0,1,2,3].map(c => incTransformMatrix[ c * 4 + r ])).reduce((acc, curr) => [...acc, ...curr], []).join(",")
+        [0,1,2].map(r => [0,1,2,3].map(c => output[ c * 4 + r ])).reduce((acc, curr) => [...acc, ...curr], []).join(",")
       )
 
       const pluginUrlString = pluginUrl.toString()
