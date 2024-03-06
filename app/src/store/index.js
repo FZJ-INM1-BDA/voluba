@@ -252,6 +252,9 @@ const getStore = ({ user = null, experimentalFeatures = {} } = {}) => new Vuex.S
       output[13] = nm[1]
       output[14] = nm[2]
 
+      const { mat4 } = window.export_nehuba
+      mat4.transpose(output, output)
+
       pluginUrl.searchParams.set(
         "transform", 
         [0,1,2].map(r => [0,1,2,3].map(c => output[ c * 4 + r ])).reduce((acc, curr) => [...acc, ...curr], []).join(",")
