@@ -1,0 +1,27 @@
+<form [formGroup]="inputCtrl">
+    <mat-form-field>
+        <mat-label>
+            Select template
+        </mat-label>
+        <mat-select formControlName="selectedTemplate">
+            <mat-option
+                *ngFor="let volume of (availableTemplates$ | async)"
+                [value]="volume['@id']">
+                {{ volume.name }}
+            </mat-option>
+        </mat-select>
+    </mat-form-field>
+    <p></p>
+    <mat-form-field>
+        <mat-label>
+            Select volume to be aligned
+        </mat-label>
+        <mat-select formControlName="selectedIncoming">
+            <mat-option
+                *ngFor="let volume of availableIncomings$ | async"
+                [value]="volume['@id']">
+                {{ volume.name }}
+            </mat-option>
+        </mat-select>
+    </mat-form-field>
+</form>
