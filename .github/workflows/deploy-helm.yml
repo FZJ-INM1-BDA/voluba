@@ -1,0 +1,39 @@
+name: Trigger deploy with helm
+on:
+  workflow_call:
+
+    inputs:
+      DEPLOYMENT_NAME:
+        required: true
+        type: string
+      IMAGE_TAG:
+        required: true
+        type: string
+
+    secrets:
+      KUBECONFIG:
+        required: true
+
+env:
+  path_to_helm: .helm/voluba-prod
+  INGRESS_HOST: '[{ "host": "voluba-staging.apps.tc.humanbrainproject.eu", "paths": [{ "path": "/", "pathType": "Prefix" }] }]'
+  TLS: '[{ "secretName": "voluba-rc-tc-secret", "hosts": ["voluba-staging.apps.tc.humanbrainproject.eu"] }]'
+  ENV_HOSTNAME: 'https://voluba-staging.apps.tc.humanbrainproject.eu'
+
+jobs:
+  trigger-deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: 'Deploy'
+      run: |
+        kubecfg_path=${{ runner.temp }}/.kube_config
+        echo "${{ secrets.KUBECONFIG }}" > $kubecfg_path
+
+        helm --kubeconfig=$kubecfg_path \
+          upgrade \
+          --reuse-values \
+          --set image.tag=${{ inputs.IMAGE_TAG }} \
+          ${{ inputs.DEPLOYMENT_NAME }} ${{ env.path_to_helm }}
+
+        rm $kubecfg_path

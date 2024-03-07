@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - master
-      - mvp_nehubaUpdated
       - staging
 
     # do not rebuild if...
@@ -14,23 +13,22 @@ on:
 
 env:
   OKD_URL: https://okd.hbp.eu:443
-
 jobs:
   build-docker-img:
     runs-on: ubuntu-latest
-
+    env:
+      DOCKERIMG: voluba
+    outputs:
+      VERSION: ${{ steps.setting-vars.outputs.VERSION }}
     steps:
-    - uses: actions/checkout@v2
-    - name: 'Setup envvar'
+    - uses: actions/checkout@v4
+    - name: 'Setup tags'
       run: |
         if [[ $GITHUB_REF == 'refs/heads/master' ]]; then
             echo "DOCKERIMG=voluba:latest" >> "$GITHUB_ENV"
         fi
         if [[ $GITHUB_REF == 'refs/heads/staging' ]]; then
             echo "DOCKERIMG=voluba:staging" >> "$GITHUB_ENV"
-        fi
-        if [[ $GITHUB_REF == 'refs/heads/mvp_nehubaUpdated' ]]; then
-            echo "DOCKERIMG=voluba:mvp_nehubaUpdated" >> "$GITHUB_ENV"
         fi
     - name: 'Setup tags'
       run: |
@@ -48,14 +46,16 @@ jobs:
         echo "MATOMO_ID=${{ secrets.MATOMO_ID_PROD }}" >> $GITHUB_ENV
 
     - name: 'Set version variable & expmt feature flag'
+      id: 'setting-vars'
       run: |
         GIT_HASH=$(git rev-parse --short HEAD)
         echo "Setting GIT_HASH: $GIT_HASH"
-        echo "GIT_HASH=$GIT_HASH" >> $GITHUB_ENV
+        echo "GIT_HASH=$GIT_HASH" >> $GITHUB_OUTPUT
 
-        # VERSION=$(jq -r '.version' package.json)
-        # echo "Setting VERSION: $VERSION"
-        # echo "VERSION=$VERSION" >> $GITHUB_ENV
+        VERSION=$(jq -r '.version' app/package.json)
+        echo "Setting VERSION: $VERSION"
+        echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+        echo "VERSION=$VERSION" >> $GITHUB_ENV
 
         # VUE_APP_ENABLE_EXPERIMENTAL_FEATURES="{}"
 
@@ -79,8 +79,43 @@ jobs:
           -u '${{ secrets.EBRAINS_DOCKER_REG_USER }}' \
           -p '${{ secrets.EBRAINS_DOCKER_REG_TOKEN }}' \
           docker-registry.ebrains.eu
+        
         echo "Pushing $DOCKER_IMGSTREAM"
         docker push $DOCKER_IMGSTREAM
+    
+    - name: 'Tag and push version'
+      if: ${{ github.ref == 'refs/heads/master' }}
+      run: |
+        VERSIONED_DOCKER_IMGSTREAM=${{ secrets.EBRAINS_DOCKER_REG_VOLUBA_NSP }}/${{ env.DOCKERIMG }}:$VERSION
+        echo "Tagging and pushing $VERSIONED_DOCKER_IMGSTREAM"
+        docker tag $DOCKER_IMGSTREAM $VERSIONED_DOCKER_IMGSTREAM
+        
+        docker login \
+          -u '${{ secrets.EBRAINS_DOCKER_REG_USER }}' \
+          -p '${{ secrets.EBRAINS_DOCKER_REG_TOKEN }}' \
+          docker-registry.ebrains.eu
+        
+        docker push $VERSIONED_DOCKER_IMGSTREAM
+
+  deploy-prod-on-rancher:
+    needs: [ build-docker-img ]
+    if: ${{ github.ref == 'refs/heads/master' && success() }}
+    uses: ./.github/workflows/deploy-helm.yml
+    with:
+      DEPLOYMENT_NAME: voluba-prod
+      IMAGE_TAG: ${{ needs.build-docker-img.outputs.VERSION }}
+    secrets:
+      KUBECONFIG: ${{ secrets.KUBECONFIG }}
+
+  deploy-rc-on-rancher:
+    needs: [ build-docker-img ]
+    if: ${{ github.ref == 'refs/heads/staging' && success() }}
+    uses: ./.github/workflows/deploy-helm.yml
+    with:
+      DEPLOYMENT_NAME: voluba-rc
+      IMAGE_TAG: staging
+    secrets:
+      KUBECONFIG: ${{ secrets.KUBECONFIG }}
 
   deploy-on-okd:
     needs: [ build-docker-img ]

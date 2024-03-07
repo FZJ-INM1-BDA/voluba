@@ -15,7 +15,7 @@ def verify_transform(transform: str):
     
     to_number = [ float(v) for v in transform.split(",") ]
 
-    if len(to_number) != 12 or any([math.isnan(v) for v in to_number]):
+    if len(to_number) != 12 or any(math.isnan(v) for v in to_number):
         return None
     return [
         to_number[:4],
