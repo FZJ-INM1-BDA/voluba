@@ -4,19 +4,19 @@
             <mat-label>
                 Translate X
             </mat-label>
-            <input formControlName="translateX" type="number" matInput>
+            <input [step]="1e6" formControlName="translateX" type="number" matInput>
         </mat-form-field>
         <mat-form-field class="input">
             <mat-label>
                 Translate Y
             </mat-label>
-            <input formControlName="translateY" type="number" matInput>
+            <input [step]="1e6" formControlName="translateY" type="number" matInput>
         </mat-form-field>
         <mat-form-field class="input">
             <mat-label>
                 Translate Z
             </mat-label>
-            <input formControlName="translateZ" type="number" matInput>
+            <input [step]="1e6" formControlName="translateZ" type="number" matInput>
         </mat-form-field>
     </div>
 
@@ -31,19 +31,55 @@
             <mat-label>
                 Scale X
             </mat-label>
-            <input formControlName="scaleX" type="number" matInput>
+            <input [step]="0.1" formControlName="scaleX" type="number" matInput>
         </mat-form-field>
         <mat-form-field class="input">
             <mat-label>
                 Scale Y
             </mat-label>
-            <input formControlName="scaleY" type="number" matInput>
+            <input [step]="0.1" formControlName="scaleY" type="number" matInput>
         </mat-form-field>
         <mat-form-field class="input">
             <mat-label>
                 Scale Z
             </mat-label>
-            <input formControlName="scaleZ" type="number" matInput>
+            <input [step]="0.1" formControlName="scaleZ" type="number" matInput>
         </mat-form-field>
+    </div>
+    
+    <div class="section">
+        <!-- <mat-slider [min]="-180" [max]="180">
+            <input matSliderThumb formControlName="rotX" showTickMarks>
+        </mat-slider> -->
+        <mat-form-field class="input">
+            <mat-label>
+                Rotation X
+            </mat-label>
+            <input [step]="1" formControlName="rotX" type="number" matInput>
+        </mat-form-field>
+        <mat-form-field class="input">
+            <mat-label>
+                Rotation Y
+            </mat-label>
+            <input [step]="1" formControlName="rotY" type="number" matInput>
+        </mat-form-field>
+        <mat-form-field class="input">
+            <mat-label>
+                Rotation Z
+            </mat-label>
+            <input [step]="1" formControlName="rotZ" type="number" matInput>
+        </mat-form-field>
+    </div>
+
+    <div class="section">
+        <button mat-button (click)="rotate90('x')">
+            Rotate 90 deg X
+        </button>
+        <button mat-button (click)="rotate90('y')">
+            Rotate 90 deg Y
+        </button>
+        <button mat-button (click)="rotate90('z')">
+            Rotate 90 deg Z
+        </button>
     </div>
 </form>

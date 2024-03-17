@@ -1,5 +1,5 @@
 import { createReducer, on } from '@ngrx/store';
-import { defaultState } from './consts';
+import { defaultState, MODE } from './consts';
 import * as actions from './actions';
 
 export const reducer = createReducer(
@@ -31,5 +31,11 @@ export const reducer = createReducer(
   on(actions.purgePurgatory, state => ({
     ...state,
     purgatory: null
+  })),
+  on(actions.toggleMode, state => ({
+    ...state,
+    mode: (state.mode === MODE.DEFAULT)
+    ? MODE.SIDE_BY_SIDE
+    : MODE.DEFAULT
   }))
 );

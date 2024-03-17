@@ -14,69 +14,38 @@ export class Effects {
       ofType(actions.rotateIncBy),
       withLatestFrom(
         this.store.pipe(select(inputs.selectors.selectedIncoming)),
-        this.store.pipe(select(selectors.flippedState)),
-        this.store.pipe(select(selectors.incMatrixMat4))
+        this.store.pipe(select(selectors.incMatrixMat4)),
+        this.store.pipe(
+          select(inputs.selectors.centerVoxel)
+        )
       ),
       filter(([_0, incoming, _1, _2]) => !!incoming),
-      map(([input, incoming, flippedState, cXformMat]) => {
+      map(([input, incoming, cXformMat, centerVoxel]) => {
         const { mat4, vec3, quat } = export_nehuba;
-        const { processQuatInput, getMirrorMat, processVec3Input } = consts;
+        const { processQuatInput } = consts;
 
         const rotQuat = processQuatInput(input);
 
         const angle = quat.getAxisAngle(vec3.create(), rotQuat);
         const rotMat = mat4.fromRotation(mat4.create(), angle, rotQuat);
         if (!angle) return actions.dry();
-
-        const { size } = incoming!;
-        const sizeVec3 = processVec3Input({ array: size });
-        const { applyMirror, undoMirror } = getMirrorMat(
-          flippedState,
-          sizeVec3
-        );
-
+        if (!centerVoxel) return actions.dry()
+        
         const xformMat = mat4.create();
+        
+        const centralizeMatrix = mat4.fromTranslation(mat4.create(), centerVoxel.map(v => v * -1))
+        const decentralizeMatrix = mat4.fromTranslation(mat4.create(), centerVoxel)
 
-        /**
-         * undo mirror & undo scale
-         */
-        const cScaling = mat4.getScaling(vec3.create(), cXformMat);
-        const ivCScaling = vec3.inverse(vec3.create(), cScaling);
-        const cScalingMat = mat4.fromScaling(mat4.create(), ivCScaling);
-        mat4.mul(xformMat, undoMirror, cScalingMat);
+        mat4.mul(xformMat, centralizeMatrix, xformMat)
 
-        /**
-         * apply translation correction
-         */
-
-        const incTransl = vec3.mul(sizeVec3, sizeVec3, cScaling);
-        vec3.scale(incTransl, incTransl, 0.5);
-        const incTranslMat = mat4.fromTranslation(mat4.create(), incTransl);
-        mat4.mul(xformMat, xformMat, incTranslMat);
-
-        /**
-         * save invert
-         */
-        const invert = mat4.invert(mat4.create(), xformMat);
-
-        /**
-         * apply rotation
-         */
-        try {
-          mat4.mul(xformMat, xformMat, rotMat);
-        } catch (e) {
-          debugger;
-        }
-
-        /**
-         * apply invert
-         */
-        mat4.mul(xformMat, xformMat, invert);
-
-        /**
-         * multiply original transform to get current transform
-         */
-        mat4.mul(xformMat, xformMat, cXformMat);
+        mat4.mul(
+          xformMat,
+          rotMat,
+          xformMat)
+        
+        mat4.mul(xformMat, decentralizeMatrix, xformMat)
+        
+        mat4.mul(xformMat, cXformMat, xformMat)
 
         return actions.setIncMatrix({
           text: Array.from(xformMat).join(','),
@@ -84,6 +53,42 @@ export class Effects {
       })
     )
   );
+
+  setScaleEffect = createEffect(() => this.actions$.pipe(
+    ofType(actions.setIncScale),
+    withLatestFrom(
+      this.store.pipe(
+        select(selectors.incMatrixMat4)
+      ),
+      this.store.pipe(
+        select(inputs.selectors.centerVoxel),
+      )
+    ),
+    map(([vec3Input, cXform, centerVoxel]) => {
+      
+      const { mat4, vec3 } = export_nehuba;
+      
+      const oldScale = mat4.getScaling(vec3.create(), cXform)
+      const newScale = consts.processVec3Input(vec3Input)
+      vec3.div(newScale, newScale, oldScale)
+      
+      const scaleMat = mat4.fromScaling(mat4.create(), newScale)
+
+      const xformMat = mat4.create()
+
+      const centralizeMatrix = mat4.fromTranslation(mat4.create(), vec3.scale(vec3.create(), centerVoxel!, -1) )
+      const decentralizeMatrix = mat4.fromTranslation(mat4.create(), centerVoxel!)
+      mat4.mul(xformMat, centralizeMatrix, xformMat)
+      mat4.mul(xformMat, scaleMat, xformMat)
+      mat4.mul(xformMat, decentralizeMatrix, xformMat)
+
+      mat4.mul(xformMat, cXform, xformMat)
+      
+      return actions.setIncMatrix({
+        text: Array.from(xformMat).join(",")
+      })
+    })
+  ))
 
   setTranslateEffect = createEffect(() =>
     this.actions$.pipe(

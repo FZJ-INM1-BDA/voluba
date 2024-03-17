@@ -4,7 +4,7 @@ import { nameSpace, STAGE, LandmarkPair, Landmark } from './consts';
 export const goToStage = createAction(
   `[${nameSpace}] goToStage`,
   props<{
-    stage: STAGE;
+    stage: keyof typeof STAGE;
   }>()
 );
 
@@ -54,4 +54,8 @@ export const setAddLandmarkMode = createAction(
   props<{
     mode: boolean
   }>()
+)
+
+export const toggleMode = createAction(
+  `[${nameSpace}] toggleMode`
 )

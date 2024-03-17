@@ -6,13 +6,13 @@ const bigbrain: TVolume = {
       '@type': 'siibra/volume/v0.0.1',
       providers: {
         'neuroglancer/precomputed':
-          'https://neuroglancer.humanbrainproject.eu/precomputed/BigBrainRelease.2015/8bit',
+          'http://127.0.0.1:8080/sharded/BigBrainRelease.2015/8bit',
         'neuroglancer/precomputed/surface':
           'https://neuroglancer.humanbrainproject.eu/precomputed/BigBrainRelease.2015/classif_mesh 100',
       },
     },
   ],
-  size: [6572, 7404, 5711],
+  dim: [6572, 7404, 5711],
 };
 
 const waxholm: TVolume = {
@@ -27,7 +27,7 @@ const waxholm: TVolume = {
       },
     },
   ],
-  size: [512, 1024, 512],
+  dim: [512, 1024, 512].map(v => v * 39062.5),
 };
 
 const colin: TVolume = {
@@ -42,7 +42,7 @@ const colin: TVolume = {
       },
     },
   ],
-  size: [151, 188, 154],
+  dim: [151, 188, 154].map(v => v * 1e6),
 };
 
 type Volume = {
@@ -57,7 +57,7 @@ export type TVolume = {
   '@id': string;
   name: string;
   volumes: Volume[];
-  size: number[];
+  dim: number[];
 };
 export const nameSpace = `[inputs]`;
 export type LocalState = {
@@ -69,7 +69,7 @@ export type LocalState = {
 
 export const defaultState: LocalState = {
   templateVolumes: [bigbrain, waxholm],
-  incomingVolumes: [colin],
+  incomingVolumes: [waxholm],
   selectedTemplate: bigbrain, //null,
-  selectedIncoming: colin, //null
+  selectedIncoming: waxholm, //null
 };

@@ -8,6 +8,7 @@ import { ViewsModule } from 'src/views/views.module';
 import { StoreModule } from '@ngrx/store';
 import { reducers, metaReducers, effects } from 'src/state';
 import { EffectsModule } from '@ngrx/effects';
+import { SharedModule } from 'src/sharedModule/sharedModule';
 
 @NgModule({
   declarations: [AppComponent],
@@ -16,6 +17,7 @@ import { EffectsModule } from '@ngrx/effects';
     LayoutModule,
     BrowserAnimationsModule,
     ViewsModule,
+    SharedModule,
     StoreModule.forRoot(reducers, {
       metaReducers,
     }),

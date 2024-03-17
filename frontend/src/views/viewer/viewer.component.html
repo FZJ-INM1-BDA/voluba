@@ -1,34 +1,49 @@
-<voluba-nehuba-viewer-wrapper
-    volubaMouseInteraction
-    [stopPropagation]="!(incLocked$ | async)"
-    >
-</voluba-nehuba-viewer-wrapper>
+<ng-template [ngIf]="view$ | async" let-view>
 
-<voluba-four-corners>
-    <div topleft>
-        <voluba-control-menu></voluba-control-menu>
+    <div class="viewer-wrapper">
+
+        <voluba-nehuba-viewer-wrapper
+            (mousePosition)="onMousePosition($event)"
+            (mousedown)="onMouseDown($event.event)"
+            volubaMouseInteraction
+            [stopPropagation]="!(incLocked$ | async)"
+            >
+        </voluba-nehuba-viewer-wrapper>
+    
+        <div *ngIf="!view.isDefaultMode">
+            <h1>
+                HELLO WORLD
+            </h1>
+        </div>
     </div>
-    <div topright>
-        <ng-template  [ngIf]="view$ | async" let-view>
-            
+    
+    
+    <voluba-four-corners>
+        <div topleft>
+            <voluba-control-menu></voluba-control-menu>
+        </div>
+        <div topright>
+            <button mat-icon-button (click)="toggleMode()">
+                <mat-icon fontIcon="lock"></mat-icon>
+            </button>
             <button mat-icon-button (click)="toggleIncLocked()">
                 <mat-icon [fontIcon]="view.incLocked ? 'lock' : 'lock_open'"></mat-icon>
             </button>
-        </ng-template>
-    </div>
-    <div bottomleft>
-        <!-- <mat-card class="tmp">
-            <mat-card-content>
-            </mat-card-content>
-        </mat-card>
-        <mat-card class="tmp">
-            <mat-card-content>
-                <voluba-history-listview></voluba-history-listview>
-            </mat-card-content>
-        </mat-card> -->
-    </div>
-    <div bottomright>
-        <!-- bottomright -->
-    </div>
-</voluba-four-corners>
-
+        </div>
+        <div bottomleft>
+            <!-- <mat-card class="tmp">
+                <mat-card-content>
+                </mat-card-content>
+            </mat-card>
+            <mat-card class="tmp">
+                <mat-card-content>
+                    <voluba-history-listview></voluba-history-listview>
+                </mat-card-content>
+            </mat-card> -->
+        </div>
+        <div bottomright>
+            <!-- bottomright -->
+        </div>
+    </voluba-four-corners>
+        
+</ng-template>

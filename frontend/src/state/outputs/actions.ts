@@ -26,6 +26,11 @@ export const setIncTranslationZ = createAction(
   props<{ value: number }>()
 );
 
+export const setIncScale = createAction(
+  `[${nameSpace}] setIncScale`,
+  props<Vec3Input>()
+);
+
 export const setIncScaleX = createAction(
   `[${nameSpace}] setIncScaleX`,
   props<{ value: number }>()

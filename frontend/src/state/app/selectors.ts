@@ -1,5 +1,5 @@
 import { createSelector } from '@ngrx/store';
-import { nameSpace, LocalState } from './consts';
+import { nameSpace, LocalState, MODE } from './consts';
 
 const featureSelector = (state: any) => state[nameSpace] as LocalState;
 
@@ -23,4 +23,9 @@ export const purgatory = createSelector(
 export const addLmMode = createSelector(
   featureSelector,
   state => state.addingLandmark
+)
+
+export const isDefaultMode = createSelector(
+  featureSelector,
+  state => state.mode === MODE.DEFAULT
 )

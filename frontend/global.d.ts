@@ -9,6 +9,8 @@ declare namespace export_nehuba {
     static mul(rec: vec3, src: vec3, m: vec3): vec3
     static inverse(rec: vec3, src: vec3): vec3
     static scale(rec: vec3, src: vec3, s: number): vec3
+    static divide(out: vec3, a: vec3, b: vec3): vec3
+    static div(out: vec3, a: vec3, b: vec3): vec3
   }
 
   class quat extends Float32Array {
@@ -18,6 +20,8 @@ declare namespace export_nehuba {
     static setAxisAngle(rec: quat, axis: vec3, angle: number): quat
     static getAxisAngle(rec: vec3, q: quat): number
     static invert(rec: quat, src: quat): quat
+    static normalize(rec: quat, src: quat): quat
+    static fromEuler(rec: quat, x: number, y: number, z: number): quat
   }
 
   class mat4 extends Float32Array {

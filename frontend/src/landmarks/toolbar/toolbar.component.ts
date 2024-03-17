@@ -1,14 +1,24 @@
-import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Inject, Optional, inject } from '@angular/core';
 import { select, Store } from '@ngrx/store';
+import { NEVER, filter, map, of, switchMap, takeUntil, withLatestFrom } from 'rxjs';
+import { VOLUBA_NEHUBA_TOKEN, VolubeNehuba, isVec3 } from 'src/const';
 import * as app from "src/state/app"
+import * as inputs from "src/state/inputs"
+import { DestroyDirective } from 'src/util/destroy.directive';
 
 @Component({
   selector: 'voluba-landmark-toolbar',
   templateUrl: './toolbar.component.html',
   styleUrls: ['./toolbar.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  hostDirectives: [
+    DestroyDirective
+  ]
 })
-export class ToolbarComponent implements OnDestroy{
+export class ToolbarComponent {
+
+  #destroyed$ = inject(DestroyDirective).destroyed$
+
   bla = this.store.pipe(
     select(app.selectors.purgatory),
   )
@@ -18,14 +28,74 @@ export class ToolbarComponent implements OnDestroy{
     select(app.selectors.addLmMode)
   )
 
-  #onDestroy: (() => void)[] = []
-  constructor(private store: Store){
-    const sub = this.addLmMode$.subscribe(val => this.#addLmMode = val)
-    this.#onDestroy.push(() => sub.unsubscribe())
-  }
-  
-  ngOnDestroy(): void {
-    while (this.#onDestroy.length > 0) this.#onDestroy.pop()!()
+  lmToAdd$ = this.addLmMode$.pipe(
+    switchMap(flag => flag
+      ? this.vn.mouseover.pipe(
+        map(v => v && Array.from(v)),
+        filter(isVec3)
+      )
+      : of(null))
+  )
+
+  constructor(
+    private store: Store,
+    @Optional() @Inject(VOLUBA_NEHUBA_TOKEN) private vn: VolubeNehuba
+  ){
+    this.addLmMode$.pipe(
+      takeUntil(this.#destroyed$)
+    ).subscribe(flag => {
+      this.#addLmMode = flag
+    })
+
+    this.lmToAdd$.pipe(
+      switchMap(lm => !!lm
+        ? this.vn.mousedown.pipe(map(() => lm))
+        : NEVER
+      ),
+      withLatestFrom(
+        this.store.pipe(
+          select(inputs.selectors.selectedTemplate)
+        ),
+        this.store.pipe(
+          select(inputs.selectors.selectedIncoming)
+        ),
+        this.store.pipe(
+          select(app.selectors.purgatory)
+        ),
+      ),
+      takeUntil(this.#destroyed$)
+    ).subscribe(([lm, referenceVol, incomingVol, purgatory]) => {
+      
+      if (!referenceVol) {
+        this.store.dispatch(
+          app.actions.error({
+            message: `Attempting to add landmark without defining reference vol`
+          })
+        )
+        return
+      }
+      if (!incomingVol) {
+        
+        this.store.dispatch(
+          app.actions.error({
+            message: `Attempting to add landmark without defining incoming vol`
+          })
+        )
+        return
+      }
+      const volId = !!purgatory
+      ? incomingVol['@id']
+      : referenceVol['@id']
+      
+      this.store.dispatch(
+        app.actions.addLandmark({
+          landmark: {
+            position: lm,
+            targetVolumeId: volId
+          }
+        })
+      )
+    })
   }
 
   #tmp = 0

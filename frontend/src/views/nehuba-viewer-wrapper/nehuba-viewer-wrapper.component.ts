@@ -5,12 +5,13 @@ import {
   ElementRef,
   EventEmitter,
   Input,
-  OnDestroy,
   OnInit,
   Output,
+  inject,
 } from '@angular/core';
-import { distinctUntilChanged, fromEvent, map, merge } from 'rxjs';
+import { distinctUntilChanged, fromEvent, map, merge, takeUntil } from 'rxjs';
 import { isHtmlElement, Mat4, PatchedSymbol } from 'src/const';
+import { DestroyDirective } from 'src/util/destroy.directive';
 
 export type NehubaLayer = {
   id: string;
@@ -18,7 +19,7 @@ export type NehubaLayer = {
   transform: Mat4;
 };
 
-const _config = {
+const lightmode = {
   configName: 'BigBrain',
   globals: {
     hideNullImageValues: true,
@@ -117,6 +118,20 @@ const _config = {
   },
 };
 
+const darkmode = {
+  ...lightmode,
+  dataset: {
+    ...lightmode.dataset,
+    imageBackground: [0.2, 0.2, 0.2, 1]
+  },
+  layout: {
+    ...lightmode.layout,
+    planarSlicesBackground: [0, 0, 0, 0],
+  }
+}
+
+const _config = darkmode
+
 type LayerProperties = {
   transform: export_nehuba.mat4;
 };
@@ -127,15 +142,19 @@ type LayerProperties = {
   styleUrls: ['./nehuba-viewer-wrapper.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   exportAs: 'nehubaViewerWrapper',
+  hostDirectives: [
+    DestroyDirective
+  ]
 })
-export class NehubaViewerWrapperComponent
-  implements OnDestroy, OnInit, AfterViewInit
-{
+export class NehubaViewerWrapperComponent implements OnInit, AfterViewInit {
+
+  #destroyed$ = inject(DestroyDirective).destroyed$
+
   @Input()
   layers: NehubaLayer[] = [
     {
       id: 'big brain grey value',
-      url: 'precomputed://https://neuroglancer.humanbrainproject.org/precomputed/BigBrainRelease.2015/8bit',
+      url: 'precomputed://https://neuroglancer.humanbrainproject.org/precomputed/BigBrainRelease.2015/8bit' && 'precomputed://http://127.0.0.1:8080/sharded/BigBrainRelease.2015/8bit',
       transform: [
         [1, 0, 0, -70677184],
         [0, 1, 0, -70010000],
@@ -145,7 +164,7 @@ export class NehubaViewerWrapperComponent
     },
     {
       id: 'bla',
-      url: 'precomputed://https://neuroglancer.humanbrainproject.eu/precomputed/JuBrain/v2.2c/colin27_seg',
+      url: 'precomputed://https://neuroglancer.humanbrainproject.eu/precomputed/JuBrain/v2.2c/colin27_seg' && 'precomputed://http://127.0.0.1:8080/sharded/WHS_SD_rat/templates/v1.01/t2star_masked/',
       transform: [
         [1.0, 0.0, 0.0, -75500000.0],
         [0.0, 1.0, 0.0, -111500000.0],
@@ -163,8 +182,6 @@ export class NehubaViewerWrapperComponent
     sliceView: export_nehuba.SliceView | null | undefined;
     event: MouseEvent;
   }>();
-
-  #onDestroyCb: (() => void)[] = [];
 
   nehubaViewer: export_nehuba.NehubaViewer | null = null;
   elementToSliceViewWeakMap = new WeakMap<
@@ -199,8 +216,10 @@ export class NehubaViewerWrapperComponent
     }
     this.nehubaViewer = export_nehuba.createNehubaViewer(config, console.error);
 
-    const subscription = this.nehubaViewer.mousePosition.inVoxels.subscribe(val => this.mousePosition.emit(val))
-    this.#onDestroyCb.push(() => subscription.unsubscribe())
+    const subscription = this.nehubaViewer.mousePosition.inVoxels.subscribe(val => {
+      this.mousePosition.emit(val)
+    })
+    this.#destroyed$.subscribe(subscription.unsubscribe)
     
     this.#patchNehuba();
     (() => {
@@ -209,7 +228,7 @@ export class NehubaViewerWrapperComponent
   }
 
   ngAfterViewInit(): void {
-    const subscription = merge(
+    merge(
       fromEvent<MouseEvent>(this.el.nativeElement, 'mousedown', {
         capture: true,
       }).pipe(
@@ -225,17 +244,11 @@ export class NehubaViewerWrapperComponent
       fromEvent<MouseEvent>(this.el.nativeElement, 'mouseup', {
         capture: true,
       }).pipe(map((ev) => ({ event: ev, sliceView: null })))
-    )
-      .pipe(
-        distinctUntilChanged((o, n) => o === n || o?.sliceView === n?.sliceView)
-      )
-      .subscribe((v) => this.mousedownSliceView.emit(v));
+    ).pipe(
+      distinctUntilChanged((o, n) => o === n || o?.sliceView === n?.sliceView),
+      takeUntil(this.#destroyed$),
+    ).subscribe((v) => this.mousedownSliceView.emit(v));
 
-    this.#onDestroyCb.push(() => subscription.unsubscribe());
-  }
-
-  ngOnDestroy(): void {
-    while (this.#onDestroyCb.length) this.#onDestroyCb.pop()?.();
   }
 
   #patchNehuba() {

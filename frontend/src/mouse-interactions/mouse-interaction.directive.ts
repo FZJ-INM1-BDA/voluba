@@ -27,6 +27,12 @@ export class MouseInteractionDirective implements OnDestroy, AfterViewInit {
   @Input()
   stopPropagation = false;
 
+/**
+ * on the one hand, the mousemove even needs to be bubbled,  so mouseover.inVoxel will be triggered
+ * on the other, we need to prevent user interaction with the actual canvas
+ */
+  stopPropagationEvents: SupportedEvents[] = ["mousedown", "mouseup"]
+
   #htmlEl: HTMLElement | null = null;
   #eventSubject: _Subject<SupportedEvents> = new Subject();
 
@@ -70,7 +76,7 @@ export class MouseInteractionDirective implements OnDestroy, AfterViewInit {
   #getEventStream<T extends SupportedEvents>(eventname: T) {
     if (!this.#eventsHandled.has(eventname)) {
       const evh = (event: GlobalEventHandlersEventMap[T]) => {
-        if (this.stopPropagation) {
+        if (this.stopPropagation && this.stopPropagationEvents.includes(eventname)) {
           event.stopPropagation();
         }
         this.#eventSubject.next({ eventname, event });

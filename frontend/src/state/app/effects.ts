@@ -4,6 +4,7 @@ import { select, Store } from "@ngrx/store";
 import * as selectors from "./selectors"
 import * as actions from "./actions"
 import { from, map, of, switchMap, withLatestFrom } from "rxjs";
+import { MatSnackBar } from "src/sharedModule"
 
 @Injectable()
 export class Effects {
@@ -41,5 +42,11 @@ export class Effects {
     })
   ))
 
-  constructor(private actions$: Actions, private store: Store){}
+  constructor(private actions$: Actions, private store: Store, private snackbar: MatSnackBar){
+    this.actions$.pipe(
+      ofType(actions.error)
+    ).subscribe(ac => {
+      this.snackbar.open(ac.message)
+    })
+  }
 }
