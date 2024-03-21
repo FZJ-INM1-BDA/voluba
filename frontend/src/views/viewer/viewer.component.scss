@@ -30,3 +30,47 @@ div.viewer-wrapper
         flex: 1 1 0;
     }
 }
+
+.landmark-layer-wrapper
+{
+    position: relative;
+
+    > *
+    {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 0;
+    }
+
+    > .four-quadrant
+    {
+        z-index: 1;
+        pointer-events: none;
+    }
+}
+
+.four-quadrant
+{
+    display: grid;
+    grid-template-rows: 1fr 1fr;
+    grid-template-columns: 1fr 1fr;
+
+    > :nth-child(1)
+    {
+        display: block;
+        background-color: rgba(255, 0, 0, 0.2);
+    }
+    > :nth-child(2)
+    {
+        display: block;
+        background-color: rgba(0, 255, 0, 0.2);
+    }
+    > :nth-child(3)
+    {
+        display: block;
+        background-color: rgba(0, 0, 255, 0.2);
+    }
+}

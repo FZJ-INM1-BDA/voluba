@@ -1,14 +1,35 @@
 <ng-template [ngIf]="view$ | async" let-view>
 
     <div class="viewer-wrapper">
+        <div class="landmark-layer-wrapper">
+            <voluba-nehuba-viewer-wrapper
+                (mousePosition)="onMousePosition($event)"
+                (mousedown)="onMouseDown($event.event)"
+                volubaMouseInteraction
+                [onlyElements]="nehuba.elementToSliceViewWeakMap"
+                [stopPropagation]="!(!view.isDefaultMode || view.incLocked)"
+                #nehuba="nehubaViewerWrapper">
+            </voluba-nehuba-viewer-wrapper>
 
-        <voluba-nehuba-viewer-wrapper
-            (mousePosition)="onMousePosition($event)"
-            (mousedown)="onMouseDown($event.event)"
-            volubaMouseInteraction
-            [stopPropagation]="!(incLocked$ | async)"
-            >
-        </voluba-nehuba-viewer-wrapper>
+            <div class="four-quadrant">
+                <ng-template [ngIf]="view.sliceViews[0]" let-sliceView>
+                    <voluba-overlay [overlay-landmarks]="view.primaryLandmarks"
+                        [overlay-sliceview]="sliceView">
+                    </voluba-overlay>
+                </ng-template>
+                <ng-template [ngIf]="view.sliceViews[1]" let-sliceView>
+                    <voluba-overlay [overlay-landmarks]="view.primaryLandmarks"
+                        [overlay-sliceview]="sliceView">
+                    </voluba-overlay>
+                </ng-template>
+                <ng-template [ngIf]="view.sliceViews[2]" let-sliceView>
+                    <voluba-overlay [overlay-landmarks]="view.primaryLandmarks"
+                        [overlay-sliceview]="sliceView">
+                    </voluba-overlay>
+                </ng-template>
+            </div>
+        </div>
+
     
         <div *ngIf="!view.isDefaultMode">
             <h1>
@@ -23,11 +44,14 @@
             <voluba-control-menu></voluba-control-menu>
         </div>
         <div topright>
-            <button mat-icon-button (click)="toggleMode()">
-                <mat-icon fontIcon="lock"></mat-icon>
+            <button mat-icon-button>
+                <mat-icon fontIcon="location_on"></mat-icon>
             </button>
-            <button mat-icon-button (click)="toggleIncLocked()">
-                <mat-icon [fontIcon]="view.incLocked ? 'lock' : 'lock_open'"></mat-icon>
+            <button mat-icon-button (click)="toggleMode()">
+                <mat-icon fontIcon="compare"></mat-icon>
+            </button>
+            <button mat-icon-button (click)="toggleIncLocked()" [disabled]="!view.isDefaultMode">
+                <mat-icon [fontIcon]="view.incLocked || (!view.isDefaultMode) ? 'lock' : 'lock_open'"></mat-icon>
             </button>
         </div>
         <div bottomleft>

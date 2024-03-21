@@ -9,4 +9,11 @@ html, body
     height: 100%;
     margin: 0;
     padding: 0;
+
+    overflow: hidden;
+}
+
+.position-icon
+{
+    filter: drop-shadow(0 0 .2em black)
 }

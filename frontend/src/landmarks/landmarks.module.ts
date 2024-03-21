@@ -1,27 +1,24 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ListviewComponent } from './listview/listview.component';
-import { MatTableModule } from '@angular/material/table';
-import { ToolbarComponent } from './toolbar/toolbar.component';
-import { MatIconModule } from '@angular/material/icon';
-import { MatButtonModule } from '@angular/material/button';
-import { MatDividerModule } from '@angular/material/divider';
 import { FormsModule } from '@angular/forms';
-import { MatInputModule } from '@angular/material/input';
-import { MatFormFieldModule } from '@angular/material/form-field';
+import { ListviewComponent } from './listview/listview.component';
+import { ToolbarComponent } from './toolbar/toolbar.component';
+import { SharedModule } from 'src/sharedModule/sharedModule';
+import { OverlayComponent } from './overlay/overlay.component';
+import { OverlayPositionPipe } from './overlay/overlayPosition.pipe';
 
 @NgModule({
-  declarations: [ListviewComponent, ToolbarComponent],
+  declarations: [
+    ListviewComponent,
+    ToolbarComponent,
+    OverlayComponent,
+    OverlayPositionPipe
+  ],
   imports: [
     CommonModule,
-    MatTableModule,
-    MatIconModule,
-    MatButtonModule,
-    MatDividerModule,
     FormsModule,
-    MatInputModule,
-    MatFormFieldModule,
+    SharedModule,
   ],
-  exports: [ListviewComponent, ToolbarComponent],
+  exports: [ListviewComponent, ToolbarComponent, OverlayComponent],
 })
 export class LandmarksModule {}

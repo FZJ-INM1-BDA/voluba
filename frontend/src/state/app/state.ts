@@ -37,5 +37,21 @@ export const reducer = createReducer(
     mode: (state.mode === MODE.DEFAULT)
     ? MODE.SIDE_BY_SIDE
     : MODE.DEFAULT
-  }))
+  })),
+  on(actions.updateLandmarkPair, (state, { id, value }) => {
+    const found = state.landmarkPairs.find(lmp => lmp.id === id)
+    if (!found) {
+      return { ...state }
+    }
+
+    const otherLmps = state.landmarkPairs.filter(lmp => lmp !== found)
+    const newLmp = {
+      ...found,
+      ...value
+    }
+    return {
+      ...state,
+      landmarkPairs: [...otherLmps, newLmp]
+    }
+  })
 );

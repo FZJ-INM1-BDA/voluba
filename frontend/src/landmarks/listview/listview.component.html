@@ -1,12 +1,4 @@
 <table mat-table [dataSource]="landmarkPair" [trackBy]="trackBy">
-    
-  <ng-container matColumnDef="color">
-    <th mat-header-cell *matHeaderCellDef> Color </th>
-    <td mat-cell *matCellDef="let element">
-      <input type="color"
-        [value]="element.color"
-        (input)="onUpdateColor(element, $event)"></td>
-  </ng-container>
   
   <ng-container matColumnDef="name">
     <th mat-header-cell *matHeaderCellDef> Name </th>
@@ -28,9 +20,9 @@
   <ng-container matColumnDef="toTmpl">
     <th mat-header-cell *matHeaderCellDef> To Template </th>
     <td mat-cell *matCellDef="let element">
-      <button mat-icon-button [style.color]="element.color"
+      <button mat-icon-button [style.color]="REF_LM_COLOR"
         (click)="onClickLocation(element.tmplLm)">
-        <mat-icon fontIcon="location_on"></mat-icon>
+        <mat-icon class="position-icon" fontIcon="location_on"></mat-icon>
       </button>
     </td>
   </ng-container>
@@ -38,9 +30,9 @@
   <ng-container matColumnDef="toInc">
     <th mat-header-cell *matHeaderCellDef> To Incoming </th>
     <td mat-cell *matCellDef="let element">
-      <button mat-icon-button [style.color]="element.color"
+      <button mat-icon-button [style.color]="INCOMING_LM_COLOR"
         (click)="onClickLocation(element.incLm)">
-        <mat-icon fontIcon="location_on"></mat-icon>
+        <mat-icon class="position-icon" fontIcon="location_on"></mat-icon>
       </button>
     </td>
   </ng-container>

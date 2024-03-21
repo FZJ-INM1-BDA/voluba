@@ -10,7 +10,6 @@ export const MODE = {
 } as const
 
 type Vec3 = [number, number, number];
-type Color = string;
 
 export type Landmark = {
   targetVolumeId: string;
@@ -20,7 +19,6 @@ export type Landmark = {
 export type LandmarkPair = {
   tmplLm: Landmark;
   incLm: Landmark;
-  color: Color;
   id: string;
   name: string;
 };
@@ -39,7 +37,18 @@ export const defaultState: LocalState = {
   mode: MODE.DEFAULT,
   addingLandmark: false,
   incLocked: false,
-  landmarkPairs: [],
+  landmarkPairs: [{
+    id: "foo-bar",
+    name: "hello my name is",
+    incLm: {
+      position: [0, 0, 0],
+      targetVolumeId: "waxholm"
+    },
+    tmplLm: {
+      position: [0, 0, 0],
+      targetVolumeId: "bigbrain"
+    }
+  }],
   purgatory: null,
 };
 

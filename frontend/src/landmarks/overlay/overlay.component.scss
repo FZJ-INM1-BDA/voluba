@@ -1,0 +1,26 @@
+:host
+{
+    pointer-events: none;
+    position: relative;
+
+    > *
+    {
+        position: absolute;
+    }
+}
+
+.landmark-container
+{
+    display: inline-flex;
+    justify-content: center;
+    align-items: flex-end;
+    overflow: visible;
+    width: 0;
+    height: 0;
+
+    > *
+    {
+        color: inherit;
+        flex: 0 0 auto;
+    }
+}

@@ -3,8 +3,12 @@ import { Actions, createEffect, ofType } from "@ngrx/effects";
 import { select, Store } from "@ngrx/store";
 import * as selectors from "./selectors"
 import * as actions from "./actions"
-import { from, map, of, switchMap, withLatestFrom } from "rxjs";
+import { from, of, switchMap, withLatestFrom } from "rxjs";
 import { MatSnackBar } from "src/sharedModule"
+import * as outputs from "src/state/outputs"
+import * as inputs from "src/state/inputs"
+import * as mainInput from "src/state/actions"
+import { Landmark } from "./consts";
 
 @Injectable()
 export class Effects {
@@ -12,16 +16,49 @@ export class Effects {
     ofType(actions.addLandmark),
     withLatestFrom(
       this.store.pipe(
+        select(inputs.selectors.selectedTemplate)
+      ),
+      this.store.pipe(
+        select(inputs.selectors.selectedIncoming)
+      ),
+      this.store.pipe(
         select(selectors.purgatory)
+      ),
+      this.store.pipe(
+        outputs.selectors.getIncXform()
       )
     ),
-    switchMap(([lm, purgatory]) => {
+    switchMap(([lm, refVol, incVol,  purgatory, xform]) => {
       if (!purgatory) {
+        if (refVol?.["@id"] !== lm.landmark.targetVolumeId) {
+          return of(
+            mainInput.error({
+              message: `First landmark must target reference volume ${refVol?.["@id"]}, but instead targets ${lm.landmark.targetVolumeId}`
+            })
+          )
+        }
         return of(
           actions.addToPurgatory({
             landmark: lm.landmark
           })
         )
+      }
+
+      if (incVol?.["@id"] !== lm.landmark.targetVolumeId) {
+        return of(
+          mainInput.error({
+            message: `Second landmark must target incoming volume ${incVol?.["@id"]}, but targets ${lm.landmark.targetVolumeId}`
+          })
+        )
+      }
+      const { mat4, vec3 } = export_nehuba
+      const lmPos = vec3.fromValues(...lm.landmark.position)
+      mat4.invert(xform, xform)
+      vec3.transformMat4(lmPos, lmPos, xform)
+
+      const incLandmark: Landmark = {
+        position: Array.from(lmPos) as [number, number, number],
+        targetVolumeId: lm.landmark.targetVolumeId
       }
       return from(
         [
@@ -31,10 +68,9 @@ export class Effects {
           : actions.addLandmarkPair({
               landmarkPair: {
                 tmplLm: purgatory,
-                incLm: lm.landmark,
+                incLm: incLandmark,
                 name: `Untitled`,
                 id: crypto.randomUUID(),
-                color: "#ff0000"
               }
             })
         ]

@@ -33,3 +33,25 @@ export function arrayEqual<T>(a: T[], b: T[], predicate: (a: T, b: T) => boolean
 export function isDefined<T>(v: T|null|undefined): v is T {
   return v !== null && typeof v !== 'undefined'
 } 
+
+export const DEBOUNCED_WINDOW_RESIZE = new InjectionToken<Observable<UIEvent>>("DEBOUNCED_WINDOW_RESIZE")
+
+export type SliceViewEvent = {
+  element: HTMLElement,
+  sliceview: export_nehuba.SliceView
+}
+
+export interface SliceViewProviderType {
+  observable: Observable<SliceViewEvent[]>
+  register: (ev: SliceViewEvent) => void
+}
+
+export const SLICEVIEWS_INJECTION_TOKEN = new InjectionToken<SliceViewProviderType>("SLICEVIEWS_INJECTION_TOKEN")
+
+export function sliceViewEvEql(a: SliceViewEvent, b: SliceViewEvent): boolean {
+  return a.element === b.element && a.sliceview === b.sliceview
+}
+
+export function sliceViewEvIncludes(ev: SliceViewEvent, list: SliceViewEvent[]): boolean {
+  return list.some(it => sliceViewEvEql(it, ev))
+}

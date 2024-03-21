@@ -59,3 +59,11 @@ export const setAddLandmarkMode = createAction(
 export const toggleMode = createAction(
   `[${nameSpace}] toggleMode`
 )
+
+export const updateLandmarkPair = createAction(
+  `[${nameSpace}] updatelandmarkpair`,
+  props<{
+    id: string
+    value: Partial<Omit<LandmarkPair, 'id'>>
+  }>()
+)

@@ -45,8 +45,14 @@ declare namespace export_nehuba {
   }
 
   interface SliceView {
+    width: number
+    height: number
+    viewMatrix: mat4
     invViewMatrix: mat4
     centerDataPosition: vec3
+    viewChanged: {
+      add(callback: () => void): () => void
+    }
     navigationState: {
       pose: {
         orientation: {
@@ -74,6 +80,7 @@ declare namespace export_nehuba {
 
   class ManagedLayer {
     get layer(): any
+    setVisible(flag: boolean): void
   }
 
   interface NehubaViewer {

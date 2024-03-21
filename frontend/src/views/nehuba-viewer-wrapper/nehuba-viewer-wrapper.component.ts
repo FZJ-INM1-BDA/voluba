@@ -4,14 +4,17 @@ import {
   Component,
   ElementRef,
   EventEmitter,
+  Inject,
   Input,
   OnInit,
   Output,
   inject,
 } from '@angular/core';
 import { distinctUntilChanged, fromEvent, map, merge, takeUntil } from 'rxjs';
-import { isHtmlElement, Mat4, PatchedSymbol } from 'src/const';
+import { isHtmlElement, Mat4, PatchedSymbol, SliceViewProviderType, SLICEVIEWS_INJECTION_TOKEN } from 'src/const';
 import { DestroyDirective } from 'src/util/destroy.directive';
+
+const NEHUBA_PATCHED = Symbol("NEHUBA_PATCHED")
 
 export type NehubaLayer = {
   id: string;
@@ -133,7 +136,8 @@ const darkmode = {
 const _config = darkmode
 
 type LayerProperties = {
-  transform: export_nehuba.mat4;
+  transform: export_nehuba.mat4
+  visible: boolean
 };
 
 @Component({
@@ -190,7 +194,10 @@ export class NehubaViewerWrapperComponent implements OnInit, AfterViewInit {
   >();
   #patchedSliceViewPanels = new WeakSet<export_nehuba.SliceViewPanel>();
 
-  constructor(private el: ElementRef) {}
+  constructor(
+    private el: ElementRef,
+    @Inject(SLICEVIEWS_INJECTION_TOKEN) private sliceViewProvider: SliceViewProviderType
+  ) {}
 
   ngOnInit() {
     if (!(export_nehuba as any)[PatchedSymbol]) {
@@ -258,11 +265,12 @@ export class NehubaViewerWrapperComponent implements OnInit, AfterViewInit {
       sliceViewPanel: export_nehuba.SliceViewPanel
     ) => {
       if (this.#patchedSliceViewPanels.has(sliceViewPanel)) return;
-      const { elementToSliceViewWeakMap } = this;
+      const { elementToSliceViewWeakMap, sliceViewProvider } = this;
       this.#patchedSliceViewPanels.add(sliceViewPanel);
       const originalDraw = sliceViewPanel.draw;
       sliceViewPanel.draw = function () {
         if (this.sliceView) {
+          sliceViewProvider.register({element: this.element, sliceview: this.sliceView})
           elementToSliceViewWeakMap.set(this.element, this.sliceView);
         }
 
@@ -275,23 +283,29 @@ export class NehubaViewerWrapperComponent implements OnInit, AfterViewInit {
     });
   }
 
-  setLayerProperty(id: string, property: LayerProperties) {
-    const { transform } = property;
+  setLayerProperty(id: string, property: Partial<LayerProperties>) {
+    const { transform, visible } = property;
     const layer = this.nehubaViewer?.ngviewer.layerManager.getLayerByName(id);
     if (!layer) throw new Error(`layer with id '${id}' not found`);
 
-    const dataSources = layer.layer.dataSources;
-    if (dataSources.length !== 1) {
-      throw new Error(
-        `managed layer needs to have exactly 1 data source, but has ${dataSources.length} instead`
-      );
+    if (typeof transform !== "undefined") {
+      const dataSources = layer.layer.dataSources;
+      if (dataSources.length !== 1) {
+        throw new Error(
+          `managed layer needs to have exactly 1 data source, but has ${dataSources.length} instead`
+        );
+      }
+      if (dataSources[0].loadState) {
+        const loadedStateXform = dataSources[0].loadState.transform;
+        loadedStateXform.value = {
+          ...loadedStateXform.value,
+          transform: transform,
+        };
+      }
     }
-    if (dataSources[0].loadState) {
-      const loadedStateXform = dataSources[0].loadState.transform;
-      loadedStateXform.value = {
-        ...loadedStateXform.value,
-        transform: transform,
-      };
+
+    if (typeof visible !== "undefined") {
+      layer.setVisible(visible)
     }
   }
 }

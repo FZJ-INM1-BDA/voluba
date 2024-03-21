@@ -1,0 +1,10 @@
+<ng-template [ngIf]="displayedLandmarks$ | async" let-displayedLandmarks>
+    <ng-template ngFor [ngForOf]="displayedLandmarks" let-displayedLandmark>
+        <div class="landmark-container"
+            [style.transform]="displayedLandmark.position | overlayPosition"
+            [style.color]="displayedLandmark.color">
+
+            <mat-icon class="position-icon" fontIcon="location_on"></mat-icon>
+        </div>
+    </ng-template>
+</ng-template>

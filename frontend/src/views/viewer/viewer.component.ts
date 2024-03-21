@@ -2,6 +2,7 @@ import {
   AfterViewInit,
   ChangeDetectionStrategy,
   Component,
+  Inject,
   Injectable,
   ViewChild,
   inject,
@@ -17,13 +18,19 @@ import {
   Subject,
   takeUntil,
   NEVER,
+  concat,
+  of,
 } from 'rxjs';
 import { MouseInteractionDirective } from 'src/mouse-interactions/mouse-interaction.directive';
 import * as app from 'src/state/app';
 import * as outputs from 'src/state/outputs';
 import { NehubaViewerWrapperComponent } from '../nehuba-viewer-wrapper/nehuba-viewer-wrapper.component';
-import { VOLUBA_NEHUBA_TOKEN } from 'src/const';
+import { SLICEVIEWS_INJECTION_TOKEN, SliceViewProviderType, VOLUBA_NEHUBA_TOKEN } from 'src/const';
 import { DestroyDirective } from 'src/util/destroy.directive';
+import { getIncXform } from 'src/state/outputs/selectors';
+import * as appState from "src/state/app"
+import { Landmark, INCOMING_LM_COLOR, REF_LM_COLOR } from 'src/landmarks/const';
+
 
 @Injectable()
 class NehubaSvc {
@@ -76,11 +83,102 @@ export class ViewerComponent implements AfterViewInit {
     this.incLocked$,
     this.store.pipe(
       select(app.selectors.isDefaultMode)
+    ),
+    this.store.pipe(getIncXform()),
+    this.store.pipe(
+      select(app.selectors.landmarks)
+    ),
+    concat(
+      of([]),
+      this.sliceViewProvider.observable
+    ).pipe(
+      map(sliceViewObjs => {
+        type T = export_nehuba.SliceView | null
+        const returnArray: [T, T, T] = [null, null, null]
+        for (const sliceViewObj of sliceViewObjs){
+          const { element, sliceview } = sliceViewObj
+          /**
+           * n.b.
+           * getBoundingClientRect is very slow
+           * it should not be called very frequently (e.g. only on layout change/resize)
+           */
+          const { top, left } = element.getBoundingClientRect()
+          if (top < 5 && left < 5) {
+            returnArray[0] = sliceview
+          }
+          if (top < 5 && left > 5) {
+            returnArray[1] = sliceview
+          }
+          if (top > 5 && left < 5) {
+            returnArray[2] = sliceview
+          }
+        }
+        return returnArray
+      })
+    ),
+    this.store.pipe(
+      select(appState.selectors.purgatory)
+    ),
+    this.store.pipe(
+      select(appState.selectors.addLmMode)
+    ),
+    concat(
+      of(null),
+      this.nehubaSvc.mouseover,
     )
   ]).pipe(
-    map(([incLocked, isDefaultMode]) => ({
-      incLocked, isDefaultMode
-    }))
+    map(([incLocked, isDefaultMode, xform, landmarks, sliceViews, purgatory, addLandmarkMode, mouseover]) => {
+      
+      const storedLandmarks = landmarks.map(lm => {
+        const incomingLandmarks: (Landmark & {color:string})[] = []
+        if (isDefaultMode) {
+          const { vec3 } = export_nehuba
+          
+
+          const newPos = vec3.fromValues(...lm.incLm.position)
+          vec3.transformMat4(newPos, newPos, xform)
+          
+          incomingLandmarks.push({
+            ...lm.incLm,
+            position: Array.from(newPos) as [number, number, number],
+            color: INCOMING_LM_COLOR,
+          })
+        }
+        return [
+          {
+            ...lm.tmplLm,
+            color: REF_LM_COLOR
+          },
+          ...incomingLandmarks
+        ]
+      })
+      const purgatoryLandmarks = []
+      if (purgatory) {
+        purgatoryLandmarks.push({
+          ...purgatory,
+          color: REF_LM_COLOR
+        })
+      }
+      if (addLandmarkMode && mouseover) {
+        purgatoryLandmarks.push({
+          targetVolumeId: 'purgatory',
+          position: Array.from(mouseover) as [number, number, number],
+          color: purgatory
+          ? INCOMING_LM_COLOR
+          : REF_LM_COLOR
+        })
+      }
+
+      return { 
+        incLocked,
+        isDefaultMode,
+        primaryLandmarks: [
+          ...storedLandmarks.flatMap(v => v),
+          ...purgatoryLandmarks
+        ],
+        sliceViews,
+      }
+    })
   );
 
   toggleIncLocked() {
@@ -91,7 +189,11 @@ export class ViewerComponent implements AfterViewInit {
     this.store.dispatch(app.actions.toggleMode())
   }
 
-  constructor(private store: Store, private nehubaSvc: NehubaSvc) {}
+  constructor(
+    private store: Store,
+    private nehubaSvc: NehubaSvc,
+    @Inject(SLICEVIEWS_INJECTION_TOKEN) private sliceViewProvider: SliceViewProviderType,
+  ) {}
 
   onMousePosition(pos: Float32Array){
     this.nehubaSvc.setMouseOver(pos)
@@ -122,13 +224,16 @@ export class ViewerComponent implements AfterViewInit {
         return combineLatest([
           this.incLocked$,
           this.store.pipe(
+            select(appState.selectors.isDefaultMode)
+          ),
+          this.store.pipe(
             select(app.selectors.addLmMode)
           ),
           this.mouseInteractive.volubaDrag,
           
         ]).pipe(
-          filter(([incLocked, isAddingLm, _]) => !incLocked && !isAddingLm),
-          map(([_, _2, { movementX, movementY }]) => ({
+          filter(([incLocked, isDefaultMode, isAddingLm, _]) => !incLocked && !isAddingLm && isDefaultMode),
+          map(([_, _2, _3, { movementX, movementY }]) => ({
             movementX,
             movementY,
             sliceView,
@@ -217,12 +322,22 @@ export class ViewerComponent implements AfterViewInit {
     });
 
 
-    const applyMatrixSub = this.store
-      .pipe(select(outputs.selectors.incMatrixMat4))
-      .subscribe((v) => {
-        this.viewerWrapper?.setLayerProperty('bla', {
-          transform: v,
-        });
-      });
+    this.store.pipe(
+      select(outputs.selectors.incMatrixMat4),
+      takeUntil(this.#destroyed$),
+    ).subscribe((v) => {
+      this.viewerWrapper?.setLayerProperty('bla', {
+        transform: v,
+      })
+    })
+
+    this.store.pipe(
+      select(appState.selectors.isDefaultMode),
+      takeUntil(this.#destroyed$)
+    ).subscribe(isDefaultMode => {
+      this.viewerWrapper?.setLayerProperty('bla', {
+        visible: isDefaultMode
+      })
+    })
   }
 }

@@ -4,7 +4,9 @@ import {
   Input,
   TrackByFunction,
 } from '@angular/core';
-import { LandmarkPair, Landmark } from '../const';
+import { LandmarkPair, Landmark, INCOMING_LM_COLOR, REF_LM_COLOR } from '../const';
+import { Store } from '@ngrx/store';
+import { actions } from 'src/state/app';
 
 @Component({
   selector: 'voluba-landmark-listview',
@@ -13,22 +15,34 @@ import { LandmarkPair, Landmark } from '../const';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ListviewComponent {
+
+  INCOMING_LM_COLOR = INCOMING_LM_COLOR
+  REF_LM_COLOR = REF_LM_COLOR
+
   @Input()
   landmarkPair: LandmarkPair[] = [];
 
-  displayedColumns: string[] = ['color', 'name', 'toTmpl', 'toInc'];
+  displayedColumns: string[] = ['name', 'toTmpl', 'toInc'];
 
   public trackBy: TrackByFunction<LandmarkPair> = (
     _idx: number,
     landmarkPair: LandmarkPair
   ) => landmarkPair.id;
 
-  onUpdateColor(landmarkPair: LandmarkPair, inputEvent: Event) {
-    console.log(landmarkPair, (inputEvent.target as HTMLInputElement).value);
+  constructor(private store: Store){
+
   }
 
   onUpdateName(landmarkPair: LandmarkPair, inputEvent: Event) {
-    console.log(landmarkPair, (inputEvent.target as HTMLInputElement).value);
+    const { id } = landmarkPair
+    this.store.dispatch(
+      actions.updateLandmarkPair({
+        id,
+        value: {
+          name: (inputEvent.target as HTMLInputElement).value || ''
+        }
+      })
+    )
   }
 
   onClickLocation(landmark: Landmark) {

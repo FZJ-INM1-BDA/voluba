@@ -24,6 +24,13 @@ type _Subject<T extends SupportedEvents> = Subject<{
   selector: '[volubaMouseInteraction]',
 })
 export class MouseInteractionDirective implements OnDestroy, AfterViewInit {
+
+  @Input()
+  ignoreElements: { has(el: HTMLElement): boolean } | null = null
+
+  @Input()
+  onlyElements: { has(el: HTMLElement): boolean } | null = null
+
   @Input()
   stopPropagation = false;
 
@@ -76,6 +83,16 @@ export class MouseInteractionDirective implements OnDestroy, AfterViewInit {
   #getEventStream<T extends SupportedEvents>(eventname: T) {
     if (!this.#eventsHandled.has(eventname)) {
       const evh = (event: GlobalEventHandlersEventMap[T]) => {
+        if (this.ignoreElements
+          && this.ignoreElements.has(event.target as HTMLElement)) {
+          return
+        }
+
+        if (this.onlyElements
+          && !this.onlyElements.has(event.target as HTMLElement)) {
+          return
+        }
+
         if (this.stopPropagation && this.stopPropagationEvents.includes(eventname)) {
           event.stopPropagation();
         }
