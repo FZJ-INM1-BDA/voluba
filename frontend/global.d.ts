@@ -1,16 +1,16 @@
 declare namespace export_nehuba {
   class vec3 extends Float32Array {
     static fromValues(...arr: number[]): vec3
-    static transformMat4(rec: vec3, src: vec3, mat: mat4): vec3
+    static transformMat4(rec: vec3|number[], src: vec3|number[], mat: mat4): vec3
     static transformQuat(rec: vec3, src: vec3, quat: quat): vec3
     static sub(rec: vec3, src: vec3, dst: vec3): vec3
     static create(): vec3
     static add(rec: vec3, src: vec3, dst: vec3): vec3
-    static mul(rec: vec3, src: vec3, m: vec3): vec3
+    static mul(rec: vec3|number[], src: vec3|number[], m: vec3|number[]): vec3|number[]
     static inverse(rec: vec3, src: vec3): vec3
     static scale(rec: vec3, src: vec3, s: number): vec3
     static divide(out: vec3, a: vec3, b: vec3): vec3
-    static div(out: vec3, a: vec3, b: vec3): vec3
+    static div(out: vec3|number[], a: vec3|number[], b: vec3|number[]): vec3|number[]
   }
 
   class quat extends Float32Array {
@@ -37,6 +37,7 @@ declare namespace export_nehuba {
     static invert(out: mat4, src: mat4): mat4
     static fromTranslation(out: mat4, transl: vec3): mat4
     static fromRotation(out: mat4, angle: number, axis: vec3 ): mat4
+    static transpose(out:  mat4, src: mat4): mat4
   }
 
   class UrlHashBinding {
@@ -83,6 +84,11 @@ declare namespace export_nehuba {
     setVisible(flag: boolean): void
   }
 
+  interface NgJsonable {
+    restoreState(state: any): void
+    toJSON(): any
+  }
+
   interface NehubaViewer {
     ngviewer: {
       layerManager: {
@@ -93,6 +99,12 @@ declare namespace export_nehuba {
         panels: SliceViewPanel[]
         changed: {
           add: (callback: () => void) => void
+        }
+      },
+      navigationState: {
+        pose: {
+          orientation: NgJsonable
+          position: NgJsonable
         }
       }
     }

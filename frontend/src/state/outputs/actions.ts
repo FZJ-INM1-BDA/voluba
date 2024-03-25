@@ -52,3 +52,10 @@ export const rotateIncBy = createAction(
 );
 
 export const dry = createAction(`[${nameSpace}] dry`);
+
+export const flipAxis = createAction(
+  `[${nameSpace}] flipAxis`,
+  props<{
+    axis: 'x' | 'y' | 'z'
+  }>()
+)

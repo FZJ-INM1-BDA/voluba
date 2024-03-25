@@ -6,8 +6,10 @@ import {
   Input,
   OnDestroy,
   Output,
+  inject,
 } from '@angular/core';
-import { filter, fromEvent, map, Subject, switchMap, takeUntil } from 'rxjs';
+import { filter, map, Subject, switchMap, takeUntil } from 'rxjs';
+import { DestroyDirective } from 'src/util/destroy.directive';
 
 type SupportedEvents =
   | 'mousedown'
@@ -22,8 +24,14 @@ type _Subject<T extends SupportedEvents> = Subject<{
 
 @Directive({
   selector: '[volubaMouseInteraction]',
+  hostDirectives: [
+    DestroyDirective
+  ],
+  standalone: true
 })
-export class MouseInteractionDirective implements OnDestroy, AfterViewInit {
+export class MouseInteractionDirective implements AfterViewInit {
+
+  destroyed$ = inject(DestroyDirective).destroyed$
 
   @Input()
   ignoreElements: { has(el: HTMLElement): boolean } | null = null
@@ -51,31 +59,31 @@ export class MouseInteractionDirective implements OnDestroy, AfterViewInit {
   @Output()
   mousedown = new EventEmitter<{ event: MouseEvent }>()
 
+  @Output()
+  mouseup = new EventEmitter<{ event: MouseEvent }>()
+
   ngAfterViewInit(): void {
-    this.#htmlEl = this.el.nativeElement as HTMLElement;
+    this.#htmlEl = this.el.nativeElement as HTMLElement
 
-    const subscriptions = [
-      this.#getEventStream('mousedown')
-        .pipe(
-          switchMap(() =>
-            this.#getEventStream('mousemove').pipe(
-              takeUntil(this.#getEventStream('mouseup'))
-            )
-          )
+    this.#getEventStream('mousedown').pipe(
+      switchMap(() =>
+        this.#getEventStream('mousemove').pipe(
+          takeUntil(this.#getEventStream('mouseup'))
         )
-        .subscribe((ev) => {
-          const { movementX, movementY } = ev;
-          this.volubaDrag.emit({ movementX, movementY });
-        }),
-      this.#getEventStream('mousedown').subscribe(event => this.mousedown.emit({ event }))
-    ]
+      ),
+      takeUntil(this.destroyed$),
+    )
+    .subscribe((ev) => {
+      const { movementX, movementY } = ev;
+      this.volubaDrag.emit({ movementX, movementY });
+    })
+    this.#getEventStream('mousedown').pipe(
+      takeUntil(this.destroyed$),
+    ).subscribe(event => this.mousedown.emit({ event }))
 
-    this.#onDestroyCb.push(() => subscriptions.forEach(sub => sub.unsubscribe()));
-  }
-
-  #onDestroyCb: (() => void)[] = [];
-  ngOnDestroy(): void {
-    while (this.#onDestroyCb.length) this.#onDestroyCb.pop()!();
+    this.#getEventStream("mouseup").pipe(
+      takeUntil(this.destroyed$),
+    ).subscribe(event => this.mouseup.emit({ event }))
   }
 
   #eventsHandled = new Set<SupportedEvents>();
@@ -97,16 +105,17 @@ export class MouseInteractionDirective implements OnDestroy, AfterViewInit {
           event.stopPropagation();
         }
         this.#eventSubject.next({ eventname, event });
-      };
+      }
       this.#htmlEl?.addEventListener(eventname, evh, {
         capture: true,
-      });
-      this.#onDestroyCb.push(() =>
+      })
+
+      this.destroyed$.subscribe(() => {
         this.#htmlEl?.removeEventListener(eventname, evh, {
           capture: true,
         })
-      );
-      this.#eventsHandled.add(eventname);
+      })
+      this.#eventsHandled.add(eventname)
     }
     return this.#eventSubject.pipe(
       filter((ev) => ev.eventname === eventname),

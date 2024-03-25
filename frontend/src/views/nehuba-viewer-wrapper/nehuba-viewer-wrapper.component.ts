@@ -4,26 +4,29 @@ import {
   Component,
   ElementRef,
   EventEmitter,
-  Inject,
   Input,
   OnInit,
   Output,
   inject,
 } from '@angular/core';
-import { distinctUntilChanged, fromEvent, map, merge, takeUntil } from 'rxjs';
-import { isHtmlElement, Mat4, PatchedSymbol, SliceViewProviderType, SLICEVIEWS_INJECTION_TOKEN } from 'src/const';
+import { ReplaySubject, Subject, distinctUntilChanged, fromEvent, map, merge, scan, shareReplay, takeUntil } from 'rxjs';
+import { FloatArrayEql, isHtmlElement, Mat4, PatchedSymbol } from 'src/const';
 import { DestroyDirective } from 'src/util/destroy.directive';
 
-const NEHUBA_PATCHED = Symbol("NEHUBA_PATCHED")
 
 export type NehubaLayer = {
-  id: string;
-  url: string;
-  transform: Mat4;
-};
+  id: string
+  url: string
+  transform: Mat4
+}
+
+export type NehubaNavigation = {
+  position: Float32Array
+  orientation: Float32Array
+  zoom: number
+}
 
 const lightmode = {
-  configName: 'BigBrain',
   globals: {
     hideNullImageValues: true,
     useNehubaLayout: {
@@ -40,38 +43,25 @@ const lightmode = {
   rotateAtViewCentre: true,
   enableMeshLoadingControl: true,
   zoomAtViewCentre: true,
-  restrictUserNavigation: true,
   disableSegmentSelection: true,
   dataset: {
     imageBackground: [1, 1, 1, 1],
     initialNgState: {
       showDefaultAnnotations: true,
       layers: {
-        ' grey value: ': {
-          annotationColor: '#cccccc',
-          visible: false,
-          type: 'image',
-          // "source": "precomputed://http://imedv02.ime.kfa-juelich.de:8287/precomputed/BigBrainRelease.2015/8bit",
-          source:
-            'precomputed://https://neuroglancer.humanbrainproject.org/precomputed/BigBrainRelease.2015/8bit',
-          transform: [
-            [1, 0, 0, -70677184],
-            [0, 1, 0, -70010000],
-            [0, 0, 1, -58788284],
-            [0, 0, 0, 1],
-          ],
-        },
-        default: {
-          // "source": `${sourceUrl}`
-        },
+        // populated by the component
       },
       perspectiveOrientation: [
-        0.3140767216682434, -0.7418519854545593, 0.4988985061645508,
-        -0.3195493221282959,
+        0.3140767216682434, -0.7418519854545593, 0.4988985061645508, -0.3195493221282959,
       ],
       perspectiveZoom: 1922235.5293810747,
       navigation: {
         zoomFactor: 350000,
+        pose: {
+          position: {
+            voxelCoordinates: [0, 0, 0]
+          },
+        }
       },
     },
   },
@@ -80,7 +70,7 @@ const lightmode = {
     planarSlicesBackground: [1, 1, 1, 0],
     useNehubaPerspective: {
       enableShiftDrag: false,
-      doNotRestrictUserNavigation: false,
+      doNotRestrictUserNavigation: true,
       perspectiveSlicesBackground: [1, 1, 1, 1],
       removePerspectiveSlicesBackground: {
         color: [1, 1, 1, 1],
@@ -113,10 +103,10 @@ const lightmode = {
       },
       hideImages: false,
       waitForMesh: false,
-      restrictZoomLevel: {
-        minZoom: 1200000 * 0.002,
-        maxZoom: 3500000 * 0.002,
-      },
+      // restrictZoomLevel: {
+      //   minZoom: 1200000 * 0.002,
+      //   maxZoom: 3500000 * 0.002,
+      // },
     },
   },
 };
@@ -154,32 +144,20 @@ export class NehubaViewerWrapperComponent implements OnInit, AfterViewInit {
 
   #destroyed$ = inject(DestroyDirective).destroyed$
 
-  @Input()
-  layers: NehubaLayer[] = [
-    {
-      id: 'big brain grey value',
-      url: 'precomputed://https://neuroglancer.humanbrainproject.org/precomputed/BigBrainRelease.2015/8bit' && 'precomputed://http://127.0.0.1:8080/sharded/BigBrainRelease.2015/8bit',
-      transform: [
-        [1, 0, 0, -70677184],
-        [0, 1, 0, -70010000],
-        [0, 0, 1, -58788284],
-        [0, 0, 0, 1],
-      ],
-    },
-    {
-      id: 'bla',
-      url: 'precomputed://https://neuroglancer.humanbrainproject.eu/precomputed/JuBrain/v2.2c/colin27_seg' && 'precomputed://http://127.0.0.1:8080/sharded/WHS_SD_rat/templates/v1.01/t2star_masked/',
-      transform: [
-        [1.0, 0.0, 0.0, -75500000.0],
-        [0.0, 1.0, 0.0, -111500000.0],
-        [0.0, 0.0, 1.0, -67500000.0],
-        [0.0, 0.0, 0.0, 1.0],
-      ],
-    },
-  ];
+  @Input('nehuba-viewer-alias')
+  nehubaAlias: string = 'nehubaViewer'
+
+  @Input('nehuba-viewer-layers')
+  layers: NehubaLayer[] = []
+
+  @Input('nehuba-viewer-init-navigation')
+  initNavigation: NehubaNavigation|null = null
 
   @Output()
   mousePosition = new EventEmitter<Float32Array>()
+
+  @Output()
+  navigation = new EventEmitter<NehubaNavigation>()
 
   @Output()
   mousedownSliceView = new EventEmitter<{
@@ -196,7 +174,6 @@ export class NehubaViewerWrapperComponent implements OnInit, AfterViewInit {
 
   constructor(
     private el: ElementRef,
-    @Inject(SLICEVIEWS_INJECTION_TOKEN) private sliceViewProvider: SliceViewProviderType
   ) {}
 
   ngOnInit() {
@@ -221,17 +198,51 @@ export class NehubaViewerWrapperComponent implements OnInit, AfterViewInit {
         transform: layer.transform,
       };
     }
-    this.nehubaViewer = export_nehuba.createNehubaViewer(config, console.error);
+    if (this.initNavigation) {
+      config.dataset.initialNgState.navigation.pose.position.voxelCoordinates = Array.from(this.initNavigation.position)
+      config.dataset.initialNgState.navigation.zoomFactor = this.initNavigation.zoom
+      config.dataset.initialNgState.navigation.pose.orientation = Array.from(this.initNavigation.orientation)
+    }
+    
+    this.nehubaViewer = export_nehuba.createNehubaViewer(config, console.error)
+
+    /**
+     * vacate id neuroglancer-container so other containers can be inst
+     */
+    const el: HTMLElement = this.el.nativeElement.querySelector('#neuroglancer-container')
+    el.id = this.nehubaAlias
 
     const subscription = this.nehubaViewer.mousePosition.inVoxels.subscribe(val => {
       this.mousePosition.emit(val)
     })
-    this.#destroyed$.subscribe(subscription.unsubscribe)
+
+    const posSubject = new Subject<NehubaNavigation>()
+    const navSub = this.nehubaViewer.navigationState.all.subscribe(val => {
+      posSubject.next({
+        position: val.position,
+        orientation: val.orientation,
+        zoom: val.zoom,
+      })
+    })
+    posSubject.pipe(
+      distinctUntilChanged((o, n) => (
+        FloatArrayEql(o.orientation, n.orientation)
+        && FloatArrayEql(o.position, n.position)
+        && o.zoom === n.zoom
+      )),
+      takeUntil(this.#destroyed$)
+    ).subscribe(nav => {
+      this.navigation.next(nav)
+    })
+
+    this.#destroyed$.subscribe(() => {
+      (window as any)[this.nehubaAlias] = null
+      subscription.unsubscribe()
+      navSub.unsubscribe()
+    })
     
     this.#patchNehuba();
-    (() => {
-      (window as any).nehubaViewer = this.nehubaViewer
-    })()
+    (window as any)[this.nehubaAlias] = this.nehubaViewer
   }
 
   ngAfterViewInit(): void {
@@ -258,29 +269,71 @@ export class NehubaViewerWrapperComponent implements OnInit, AfterViewInit {
 
   }
 
+  private sliceViewsSubject$ = new ReplaySubject<{
+    idx: number,
+    sliceView: export_nehuba.SliceView
+  }>(3)
+
+  sliceViews$ = this.sliceViewsSubject$.pipe(
+    scan((acc, curr) => {
+      const returnVal = [...acc]
+      returnVal[curr.idx] = curr.sliceView
+      return returnVal
+    }, [null, null, null] as (export_nehuba.SliceView | null)[]),
+    shareReplay(1),
+  )
+
   #patchNehuba() {
-    if (!this.nehubaViewer) return;
+    if (!this.nehubaViewer) return
+
+    /**
+     * n.b.
+     * There is a small chance that the reality may have drifted when
+     * boundingclientrect is called and when sliceview elements are measured
+     * 
+     */
+    const { top, left } = this.el.nativeElement.getBoundingClientRect()
+
+    const determineIdx = (el: HTMLElement) => {
+      const child = el.getBoundingClientRect()
+      const rLeft = child.left - left
+      const rTop = child.top - top
+      if (rLeft < 5 && rTop < 5) {
+        return 0
+      }
+      if (rLeft > 5 && rTop < 5) {
+        return 1
+      }
+      if (rLeft < 5 && rTop > 5) {
+        return 2
+      }
+      throw new Error(`rLeft ${rLeft} rTop ${rTop} is unexpected`)
+    }
 
     const patchSliceViewPanel = (
       sliceViewPanel: export_nehuba.SliceViewPanel
     ) => {
       if (this.#patchedSliceViewPanels.has(sliceViewPanel)) return;
-      const { elementToSliceViewWeakMap, sliceViewProvider } = this;
+      const { elementToSliceViewWeakMap, sliceViewsSubject$ } = this;
       this.#patchedSliceViewPanels.add(sliceViewPanel);
       const originalDraw = sliceViewPanel.draw;
       sliceViewPanel.draw = function () {
-        if (this.sliceView) {
-          sliceViewProvider.register({element: this.element, sliceview: this.sliceView})
-          elementToSliceViewWeakMap.set(this.element, this.sliceView);
+        if (this.sliceView && !elementToSliceViewWeakMap.has(this.element)) {
+          elementToSliceViewWeakMap.set(this.element, this.sliceView)
+          const idx = determineIdx(this.element)
+          sliceViewsSubject$.next({
+            idx,
+            sliceView: this.sliceView
+          })
         }
 
-        originalDraw.call(this);
+        originalDraw.call(this)
       };
     };
     this.nehubaViewer.ngviewer.display.changed.add(() => {
-      if (!this.nehubaViewer) return;
-      this.nehubaViewer.ngviewer.display.panels.forEach(patchSliceViewPanel);
-    });
+      if (!this.nehubaViewer) return
+      this.nehubaViewer.ngviewer.display.panels.forEach(patchSliceViewPanel)
+    })
   }
 
   setLayerProperty(id: string, property: Partial<LayerProperties>) {
@@ -307,5 +360,13 @@ export class NehubaViewerWrapperComponent implements OnInit, AfterViewInit {
     if (typeof visible !== "undefined") {
       layer.setVisible(visible)
     }
+  }
+
+  setPosition(position: number[]) {
+    this.nehubaViewer?.ngviewer.navigationState.pose.position.restoreState(position)
+  }
+
+  setOrientation(orientation: number[]) {
+    this.nehubaViewer?.ngviewer.navigationState.pose.orientation.restoreState( orientation )
   }
 }

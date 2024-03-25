@@ -1,5 +1,5 @@
 import { createReducer, on } from '@ngrx/store';
-import { defaultState, MODE } from './consts';
+import { defaultState, LandmarkPair, MODE } from './consts';
 import * as actions from './actions';
 
 export const reducer = createReducer(
@@ -39,19 +39,29 @@ export const reducer = createReducer(
     : MODE.DEFAULT
   })),
   on(actions.updateLandmarkPair, (state, { id, value }) => {
-    const found = state.landmarkPairs.find(lmp => lmp.id === id)
-    if (!found) {
-      return { ...state }
+    const updatedLmps: LandmarkPair[] = []
+
+    for (const lmp of state.landmarkPairs) {
+      if (lmp.id !== id) {
+        updatedLmps.push(lmp)
+        continue
+      }
+
+      updatedLmps.push({
+        ...lmp,
+        ...value        
+      })
     }
 
-    const otherLmps = state.landmarkPairs.filter(lmp => lmp !== found)
-    const newLmp = {
-      ...found,
-      ...value
-    }
     return {
       ...state,
-      landmarkPairs: [...otherLmps, newLmp]
+      landmarkPairs: updatedLmps,
+    }
+  }),
+  on(actions.hoverLandmark, (state, { landmark }) => {
+    return {
+      ...state,
+      hoveredLandmark: landmark
     }
   })
-);
+)

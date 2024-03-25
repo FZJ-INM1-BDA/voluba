@@ -1,26 +1,32 @@
-<button mat-fab
-    [color]="(addLmMode$ | async) ? 'primary' : 'default'"
-    (click)="toggleLandmarkMode()">
-    <mat-icon fontIcon="add_location"></mat-icon>
-</button>
+<ng-template [ngIf]="view$ | async" let-view>
 
-<button (click)="_tmp()" mat-buttoon>
-    bla
-</button>
+    <button mat-fab
+        [color]="(addLmMode$ | async) ? 'primary' : 'default'"
+        (click)="toggleLandmarkMode()">
+        <mat-icon fontIcon="add_location"></mat-icon>
+    </button>
 
-<mat-divider [vertical]="true"></mat-divider>
+    <mat-divider [vertical]="true"></mat-divider>
 
-<button mat-icon-button (click)="onSave()">
-    <mat-icon fontIcon="save"></mat-icon>
-</button>
+    <button matTooltip="Save landmarks" mat-icon-button 
+        voluba-save-to-file
+        [to-file-content]="view.landmarkContent"
+        [to-file-filename]="view.landmarkName">
+        <mat-icon fontIcon="save"></mat-icon>
+    </button>
 
-<button mat-icon-button (click)="onLoad()">
-    <!-- TODO folder_open doesn't seem to work here -->
-    <mat-icon fontIcon="folder_open"></mat-icon>
-</button>
+    <button matTooltip="Load landmarks"
+        voluba-load-from-file
+        (from-file-content)="handleLoadJson($event)"
+        mat-icon-button>
+        <!-- TODO folder_open doesn't seem to work here -->
+        <mat-icon fontIcon="folder_open"></mat-icon>
+    </button>
 
-<mat-divider vertical="true"></mat-divider>
+    <mat-divider vertical="true"></mat-divider>
 
-<button mat-icon-button color="primary" (click)="onCalculate()">
-    <mat-icon fontIcon="calculate"></mat-icon>
-</button>
+    <button mat-icon-button color="primary" (click)="onCalculate()">
+        <mat-icon fontIcon="calculate"></mat-icon>
+    </button>
+
+</ng-template>

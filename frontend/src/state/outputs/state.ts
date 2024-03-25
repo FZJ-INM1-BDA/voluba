@@ -1,6 +1,7 @@
 import { createReducer, on } from '@ngrx/store';
 import { defaultState } from './consts';
 import * as actions from './actions';
+import { isDefined } from 'src/const';
 
 export const reducer = createReducer(
   defaultState,
@@ -16,5 +17,21 @@ export const reducer = createReducer(
       ...state,
       transformStr: returnString,
     };
+  }),
+  on(actions.flipAxis, (state, { axis }) => {
+    const axesState = state.flippedState.split(",").map(v => Number(v))
+    let idx: number|undefined
+    if (axis === 'x') idx = 0
+    if (axis === 'y') idx = 1
+    if (axis === 'z') idx = 2
+    if (!isDefined(idx)) {
+      console.error(`Cannot figure out axis ${axis}.`)
+      return { ...state }
+    }
+    axesState[idx] *= -1
+    return {
+      ...state,
+      flippedState: axesState.join(",")
+    }
   })
 );

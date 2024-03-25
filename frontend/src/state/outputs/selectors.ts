@@ -27,9 +27,18 @@ export const incMatrixMat4 = createSelector(featureSelector, (state) => {
   );
 });
 
-export const flippedState = createSelector(featureSelector, (state) => {
-  const { vec3 } = export_nehuba;
-  return vec3.fromValues(
-    ...state.flippedState.split(',').map((v) => Number(v))
-  );
-});
+const flippedStateStr = createSelector(
+  featureSelector,
+  state => state.flippedState
+)
+
+export const getFlippedState = () => pipe (
+  select(flippedStateStr),
+  distinctUntilChanged(),
+  map(str => {
+    const { vec3 } = export_nehuba
+    return vec3.fromValues(
+      ...str.split(",").map(v => Number(v))
+    )
+  })
+)

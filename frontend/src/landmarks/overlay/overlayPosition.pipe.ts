@@ -10,7 +10,9 @@ export class OverlayPositionPipe implements PipeTransform{
   constructor(private sanitizer: DomSanitizer){}
   transform(position: number[]) {
     return this.sanitizer.sanitize(
-      SecurityContext.STYLE, `translate(${position[0]}px, ${position[1]}px)`
+      SecurityContext.STYLE, {
+        transform: `translate(${position[0]}px, ${position[1]}px)`,
+      }
     )
   }
 }

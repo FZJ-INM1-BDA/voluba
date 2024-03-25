@@ -6,18 +6,22 @@ import { ToolbarComponent } from './toolbar/toolbar.component';
 import { SharedModule } from 'src/sharedModule/sharedModule';
 import { OverlayComponent } from './overlay/overlay.component';
 import { OverlayPositionPipe } from './overlay/overlayPosition.pipe';
+import { OverlayStemStylePipe } from './overlay/overlayStemStyle.pipe';
+import { IOModule } from 'src/io/module';
 
 @NgModule({
   declarations: [
     ListviewComponent,
     ToolbarComponent,
     OverlayComponent,
-    OverlayPositionPipe
+    OverlayPositionPipe,
+    OverlayStemStylePipe,
   ],
   imports: [
     CommonModule,
     FormsModule,
     SharedModule,
+    IOModule,
   ],
   exports: [ListviewComponent, ToolbarComponent, OverlayComponent],
 })

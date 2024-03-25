@@ -3,38 +3,104 @@
     <div class="viewer-wrapper">
         <div class="landmark-layer-wrapper">
             <voluba-nehuba-viewer-wrapper
+                (navigation)="setPrimaryNav($event)"
                 (mousePosition)="onMousePosition($event)"
                 (mousedown)="onMouseDown($event.event)"
+                (mouseup)="onMouseUp($event.event)"
                 volubaMouseInteraction
                 [onlyElements]="nehuba.elementToSliceViewWeakMap"
                 [stopPropagation]="!(!view.isDefaultMode || view.incLocked)"
+                [nehuba-viewer-layers]="view.primaryLayers"
                 #nehuba="nehubaViewerWrapper">
             </voluba-nehuba-viewer-wrapper>
 
-            <div class="four-quadrant">
-                <ng-template [ngIf]="view.sliceViews[0]" let-sliceView>
-                    <voluba-overlay [overlay-landmarks]="view.primaryLandmarks"
-                        [overlay-sliceview]="sliceView">
-                    </voluba-overlay>
-                </ng-template>
-                <ng-template [ngIf]="view.sliceViews[1]" let-sliceView>
-                    <voluba-overlay [overlay-landmarks]="view.primaryLandmarks"
-                        [overlay-sliceview]="sliceView">
-                    </voluba-overlay>
-                </ng-template>
-                <ng-template [ngIf]="view.sliceViews[2]" let-sliceView>
-                    <voluba-overlay [overlay-landmarks]="view.primaryLandmarks"
-                        [overlay-sliceview]="sliceView">
-                    </voluba-overlay>
-                </ng-template>
-            </div>
+            <ng-template [ngIf]="nehuba.sliceViews$ | async" let-sliceViews>
+
+                <div class="four-quadrant"
+                    [ngClass]="{
+                        'disabled': view.isDraggingViewer || view.addLandmarkMode
+                    }">
+                    <ng-template [ngIf]="sliceViews[0]" let-sliceView>
+                        <voluba-overlay [overlay-landmarks]="view.primaryLandmarks"
+                            (overlay-hover-landmark)="handleHoverLandmark($event)"
+                            (overlay-mousedown-landmark)="handleMousedownLandmark($event)"
+                            [overlay-sliceview]="sliceView">
+                        </voluba-overlay>
+                    </ng-template>
+                    <ng-template [ngIf]="sliceViews[1]" let-sliceView>
+                        <voluba-overlay [overlay-landmarks]="view.primaryLandmarks"
+                            (overlay-hover-landmark)="handleHoverLandmark($event)"
+                            (overlay-mousedown-landmark)="handleMousedownLandmark($event)"
+                            [overlay-sliceview]="sliceView">
+                        </voluba-overlay>
+                    </ng-template>
+                    <ng-template [ngIf]="sliceViews[2]" let-sliceView>
+                        <voluba-overlay [overlay-landmarks]="view.primaryLandmarks"
+                            (overlay-hover-landmark)="handleHoverLandmark($event)"
+                            (overlay-mousedown-landmark)="handleMousedownLandmark($event)"
+                            [overlay-sliceview]="sliceView">
+                        </voluba-overlay>
+                    </ng-template>
+                </div>
+            </ng-template>
+
+            <ng-template [ngIf]="view.showAddingIncLmOverlay">
+                <div class="add-lm-overlay align-right">
+                    <span>Add landmark&nbsp;in incoming volume</span>
+                    <mat-icon fontIcon="keyboard_arrow_right"></mat-icon>
+                </div>
+            </ng-template>
         </div>
 
     
-        <div *ngIf="!view.isDefaultMode">
-            <h1>
-                HELLO WORLD
-            </h1>
+        <div *ngIf="!view.isDefaultMode" class="landmark-layer-wrapper">
+
+            <voluba-nehuba-viewer-wrapper
+                nehuba-viewer-alias="secondaryViewer"
+                (mousePosition)="onMousePosition($event)"
+                (mousedown)="onMouseDown($event.event)"
+                volubaMouseInteraction
+                [onlyElements]="secondaryNehuba.elementToSliceViewWeakMap"
+                [nehuba-viewer-init-navigation]="view.primaryNavigation"
+                [nehuba-viewer-layers]="view.secondaryLayers"
+                #secondaryNehuba="nehubaViewerWrapper">
+            </voluba-nehuba-viewer-wrapper>
+
+
+            <ng-template [ngIf]="secondaryNehuba.sliceViews$ | async" let-sliceViews>
+
+                <div class="four-quadrant">
+                    <ng-template [ngIf]="sliceViews[0]" let-sliceView>
+                        <voluba-overlay [overlay-landmarks]="view.secondaryLandmarks"
+                            (overlay-hover-landmark)="handleHoverLandmark($event)"
+                            (overlay-mousedown-landmark)="handleMousedownLandmark($event)"
+                            [overlay-sliceview]="sliceView">
+                        </voluba-overlay>
+                    </ng-template>
+                    <ng-template [ngIf]="sliceViews[1]" let-sliceView>
+                        <voluba-overlay [overlay-landmarks]="view.secondaryLandmarks"
+                            (overlay-hover-landmark)="handleHoverLandmark($event)"
+                            (overlay-mousedown-landmark)="handleMousedownLandmark($event)"
+                            [overlay-sliceview]="sliceView">
+                        </voluba-overlay>
+                    </ng-template>
+                    <ng-template [ngIf]="sliceViews[2]" let-sliceView>
+                        <voluba-overlay [overlay-landmarks]="view.secondaryLandmarks"
+                            (overlay-hover-landmark)="handleHoverLandmark($event)"
+                            (overlay-mousedown-landmark)="handleMousedownLandmark($event)"
+                            [overlay-sliceview]="sliceView">
+                        </voluba-overlay>
+                    </ng-template>
+                </div>
+            </ng-template>
+
+            <ng-template [ngIf]="view.showAddingRefLmOverlay">
+                <div class="add-lm-overlay align-left">
+                    <mat-icon fontIcon="keyboard_arrow_left"></mat-icon>
+                    <span>Add landmark&nbsp;in reference volume</span>
+                </div>
+            </ng-template>
+
         </div>
     </div>
     
@@ -55,15 +121,20 @@
             </button>
         </div>
         <div bottomleft>
-            <!-- <mat-card class="tmp">
+            <mat-card class="navigation-card">
                 <mat-card-content>
+                    <div>
+                        Navigation (mm): {{ view.primaryNavigation.position | displayNumArray }}
+                    </div>
+                    <div>
+                        <span>
+                            Reset Orientation:
+                        </span>
+                        <button (click)="resetOrientation('reference')" mat-button>To Reference</button>
+                        <button (click)="resetOrientation('incoming')" mat-button>To Incoming</button>
+                    </div>
                 </mat-card-content>
             </mat-card>
-            <mat-card class="tmp">
-                <mat-card-content>
-                    <voluba-history-listview></voluba-history-listview>
-                </mat-card-content>
-            </mat-card> -->
         </div>
         <div bottomright>
             <!-- bottomright -->

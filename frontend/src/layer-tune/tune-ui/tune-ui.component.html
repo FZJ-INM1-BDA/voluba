@@ -20,33 +20,45 @@
         </mat-form-field>
     </div>
 
-    <div class="section">
-        <mat-slide-toggle formControlName="isotropic">
-            Isotropic
-        </mat-slide-toggle>
-    </div>
-
-    <div class="section">
-        <mat-form-field class="input">
-            <mat-label>
-                Scale X
-            </mat-label>
-            <input [step]="0.1" formControlName="scaleX" type="number" matInput>
-        </mat-form-field>
-        <mat-form-field class="input">
-            <mat-label>
-                Scale Y
-            </mat-label>
-            <input [step]="0.1" formControlName="scaleY" type="number" matInput>
-        </mat-form-field>
-        <mat-form-field class="input">
-            <mat-label>
-                Scale Z
-            </mat-label>
-            <input [step]="0.1" formControlName="scaleZ" type="number" matInput>
-        </mat-form-field>
-    </div>
+    <mat-divider></mat-divider>
     
+    <mat-tab-group>
+        <mat-tab label="Scale">
+            <div class="section isotrope-header">
+                <mat-slide-toggle formControlName="isotropic">
+                    Isotropic
+                </mat-slide-toggle>
+            </div>
+        
+            <div class="section">
+                <mat-form-field class="input">
+                    <mat-label>
+                        Scale X
+                    </mat-label>
+                    <input [step]="0.1" formControlName="scaleX" type="number" matInput>
+                </mat-form-field>
+                <mat-form-field class="input">
+                    <mat-label>
+                        Scale Y
+                    </mat-label>
+                    <input [step]="0.1" formControlName="scaleY" type="number" matInput>
+                </mat-form-field>
+                <mat-form-field class="input">
+                    <mat-label>
+                        Scale Z
+                    </mat-label>
+                    <input [step]="0.1" formControlName="scaleZ" type="number" matInput>
+                </mat-form-field>
+            </div>
+        </mat-tab>
+
+        <mat-tab label="Voxel Size">
+            <ng-template [ngTemplateOutlet]="voxelSizeTmpl"></ng-template>
+        </mat-tab>
+    </mat-tab-group>
+
+    <mat-divider></mat-divider>
+
     <div class="section">
         <!-- <mat-slider [min]="-180" [max]="180">
             <input matSliderThumb formControlName="rotX" showTickMarks>
@@ -82,4 +94,63 @@
             Rotate 90 deg Z
         </button>
     </div>
+
+    <ng-template [ngIf]="view$ | async" let-view>
+
+        <div class="section">
+        
+            <button mat-flat-button [color]="view.xFlipped ? 'primary' : 'default'" (click)="flip('x')">
+                Flip X axis
+            </button>
+            <button mat-flat-button [color]="view.yFlipped ? 'primary' : 'default'" (click)="flip('y')">
+                Flip Y axis
+            </button>
+            <button mat-flat-button [color]="view.zFlipped ? 'primary' : 'default'" (click)="flip('z')">
+                Flip Z axis
+            </button>
+        </div>
+    </ng-template>
 </form>
+
+<ng-template #voxelSizeTmpl>
+
+    <form [formGroup]="voxelSpacingFormGroup">
+    
+        <div class="section isotrope-header">
+    
+            <mat-slide-toggle formControlName="isotropic">
+                Isotropic
+            </mat-slide-toggle>
+        
+            <mat-button-toggle-group name="unit" formControlName="unit">
+                <mat-button-toggle *ngFor="let unit of availableUnits" [value]="unit">
+                    {{ unit }}
+                </mat-button-toggle>
+            </mat-button-toggle-group>
+        </div>
+    
+        <div class="section">
+            
+            <mat-form-field class="input">
+                <mat-label>
+                    X Voxel Spacing
+                </mat-label>
+                <input [min]="0" [step]="0.1" formControlName="valueX" type="number" matInput>
+            </mat-form-field>
+            <mat-form-field class="input">
+                <mat-label>
+                    Y Voxel Spacing
+                </mat-label>
+                <input [min]="0" [step]="0.1" formControlName="valueY" type="number" matInput>
+            </mat-form-field>
+            <mat-form-field class="input">
+                <mat-label>
+                    Z Voxel Spacing
+                </mat-label>
+                <input [min]="0" [step]="0.1" formControlName="valueZ" type="number" matInput>
+            </mat-form-field>
+        </div>
+        
+    </form>
+    
+</ng-template>

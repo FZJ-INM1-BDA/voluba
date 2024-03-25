@@ -13,11 +13,14 @@ import { MatIconModule } from '@angular/material/icon';
 import { LandmarksModule } from 'src/landmarks/landmarks.module';
 import { HistoryModule } from 'src/history/history.module';
 import { NehubaViewerWrapperComponent } from './nehuba-viewer-wrapper/nehuba-viewer-wrapper.component';
-import { MouseInteractionsModule } from 'src/mouse-interactions/mouse-interactions.module';
 import { MatDialogModule } from '@angular/material/dialog';
 import { UtilModule } from 'src/util/util.module';
 import { DragDropModule } from '@angular/cdk/drag-drop';
 import { LayerTuneModule } from 'src/layer-tune/layer-tune.module';
+import { ShareExportComponent } from './shareExport/shareExport.component';
+import { SharedModule } from 'src/sharedModule/sharedModule';
+import { DisplayNumArrayPipe } from './viewer/displayNumArray.pipe';
+import { MouseInteractionDirective } from 'src/mouse-interactions/mouse-interaction.directive';
 
 @NgModule({
   declarations: [
@@ -26,6 +29,8 @@ import { LayerTuneModule } from 'src/layer-tune/layer-tune.module';
     ViewerComponent,
     ControlMenuComponent,
     NehubaViewerWrapperComponent,
+    ShareExportComponent,
+    DisplayNumArrayPipe,
   ],
   imports: [
     CommonModule,
@@ -37,11 +42,16 @@ import { LayerTuneModule } from 'src/layer-tune/layer-tune.module';
     MatIconModule,
     LandmarksModule,
     HistoryModule,
-    MouseInteractionsModule,
     MatDialogModule,
     UtilModule,
     DragDropModule,
     LayerTuneModule,
+    SharedModule,
+
+    /**
+     * standalone directives
+     */
+    MouseInteractionDirective,
   ],
   exports: [WelcomeCardComponent, ViewerComponent],
 })

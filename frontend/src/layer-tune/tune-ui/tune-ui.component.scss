@@ -7,3 +7,19 @@
 {
     width: 8rem;
 }
+
+.isotrope-header
+{
+    display: flex;
+    align-items: center;
+
+    > *
+    {
+        margin: 1rem;
+    }
+}
+
+mat-divider
+{
+    margin: 1rem 0;
+}

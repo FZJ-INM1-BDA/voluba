@@ -1,20 +1,28 @@
-<button mat-mini-fab color="default"
+<button mat-mini-fab
     volubaDialog
+    #tundialog="volubaDialog"
+    [color]="(tundialog.state$ | async) ? 'primary' : 'default'"
     [dialogTarget]="tunelayerTmpl">
     <mat-icon fontIcon="tune"></mat-icon>
 </button>
-<button mat-mini-fab color="default"
+<button mat-mini-fab
     volubaDialog
+    #lmdialog="volubaDialog"
+    [color]="(lmdialog.state$ | async) ? 'primary' : 'default'"
     [dialogTarget]="landmarkViewTmpl">
     <mat-icon fontIcon="edit_location"></mat-icon>
 </button>
-<button mat-mini-fab color="default"
+<button mat-mini-fab
     volubaDialog
+    #historydialog="volubaDialog"
+    [color]="(historydialog.state$ | async) ? 'primary' : 'default'"
     [dialogTarget]="historyTmpl">
     <mat-icon fontIcon="history"></mat-icon>
 </button>
-<button mat-mini-fab color="default"
+<button mat-mini-fab
     volubaDialog
+    #sharedialog="volubaDialog"
+    [color]="(sharedialog.state$ | async) ? 'primary' : 'default'"
     [dialogTarget]="shareResultTmpl">
     <mat-icon fontIcon="share"></mat-icon>
 </button>
@@ -40,6 +48,6 @@
 
 <ng-template #shareResultTmpl>
     <voluba-movable-portal title="Share/Export">
-        share result tmpl
+        <voluba-share-export></voluba-share-export>
     </voluba-movable-portal>
 </ng-template>

@@ -1,16 +1,13 @@
-import { ChangeDetectionStrategy, Component, Inject, Input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, EventEmitter, Inject, Input, Output } from '@angular/core';
 import { Landmark } from '../const';
-import { BehaviorSubject, Observable, Subject, combineLatest, concat, debounceTime, filter, map, merge, of, pipe, share, shareReplay, switchMap, tap, throttleTime } from 'rxjs';
-import { DEBOUNCED_WINDOW_RESIZE } from 'src/const';
+import { BehaviorSubject, Observable, Subject, combineLatest, concat, debounceTime, distinctUntilChanged, filter, map, merge, of, pipe, share, shareReplay, switchMap, tap, throttleTime } from 'rxjs';
+import { DEBOUNCED_WINDOW_RESIZE, OverlayLm, arrayEqual } from 'src/const';
 import { Store, select } from '@ngrx/store';
 import * as appState from "src/state/app"
 
 function isSliceView(input: export_nehuba.SliceView|null): input is export_nehuba.SliceView {
   return !!input
 }
-
-export type OverlayLm = Landmark & { color: string }
-
 
 /**
  * 
@@ -36,7 +33,13 @@ const pipeGetSliceViewChanged = () => {
           viewChanged$?.next(null)
         }
       )
-      return viewChanged$.asObservable()
+      return viewChanged$.pipe(
+        /**
+         * n.b.
+         * delay seems to be necessary. secondary viewer landmarks do not seem to update accurately otherwise
+         */
+        throttleTime(16)
+      )
     })
   )
 }
@@ -65,6 +68,13 @@ export class OverlayComponent {
     shareReplay(1)
   )
 
+  @Output('overlay-hover-landmark')
+  hoverLandmark = new EventEmitter<OverlayLm|null>()
+
+  
+  @Output('overlay-mousedown-landmark')
+  mousedownLandmark = new EventEmitter<OverlayLm>()
+
   @Input('overlay-landmarks')
   set landmarks(lms: OverlayLm[]) {
     this.#landmarks$.next(lms)
@@ -73,12 +83,7 @@ export class OverlayComponent {
   #sliceViewInfo$ = combineLatest([
     concat(
       of(null),
-      merge(
-        this.dbResize,
-        this.store.pipe(
-          select(appState.selectors.isDefaultMode),
-        )
-      )
+      this.dbResize,
     ).pipe(
       debounceTime(32)
     ),
@@ -132,16 +137,28 @@ export class OverlayComponent {
         )
       })
     }),
+    distinctUntilChanged((o, n) =>
+      arrayEqual(o, n, (a, b) => {
+        return (
+          a.highlighted === b.highlighted
+          && a.color === b.color
+          && arrayEqual(a.position, b.position)
+        )
+      })
+    ),
     shareReplay(1),
   )
   
   constructor(
     @Inject(DEBOUNCED_WINDOW_RESIZE)
     private dbResize: Observable<UIEvent>,
-    private store: Store,
-  ){
-    this.#sliceViewChanged$.subscribe(val => {
-      console.log("view changed", val)
-    })
+  ){}
+
+  handleHoverLandmark(lm: OverlayLm|null){
+    this.hoverLandmark.emit(lm)
+  }
+
+  handleMouseDown(lm: OverlayLm) {
+    this.mousedownLandmark.emit(lm)
   }
 }

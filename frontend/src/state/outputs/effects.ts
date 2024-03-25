@@ -58,7 +58,7 @@ export class Effects {
     ofType(actions.setIncScale),
     withLatestFrom(
       this.store.pipe(
-        select(selectors.incMatrixMat4)
+        selectors.getIncXform(),
       ),
       this.store.pipe(
         select(inputs.selectors.centerVoxel),
@@ -121,7 +121,33 @@ export class Effects {
         });
       })
     )
-  );
+  )
+
+  onAxisFlip = createEffect(() => this.actions$.pipe(
+    ofType(actions.flipAxis),
+    withLatestFrom(
+      this.store.pipe(
+        selectors.getIncXform()
+      )
+    ),
+    map(([ flipAxisAction, xform ]) => {
+      const { vec3, mat4 } = export_nehuba
+
+      const { axis } = flipAxisAction
+      const flipVec3 = vec3.fromValues(1, 1, 1)
+      
+      if (axis === 'x') flipVec3[0] = -1
+      if (axis === 'y') flipVec3[1] = -1
+      if (axis === 'z') flipVec3[2] = -1
+
+      const currScaling = mat4.getScaling(vec3.create(), xform)
+      vec3.mul(currScaling, currScaling, flipVec3)
+      return actions.setIncScale({
+        array: Array.from(currScaling)
+      })
+    })
+  ))
+
 
   constructor(private actions$: Actions, private store: Store) {}
 }

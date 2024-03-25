@@ -1,9 +1,9 @@
 import { Injectable } from "@angular/core";
 import { Actions, createEffect, ofType } from "@ngrx/effects";
-import { select, Store } from "@ngrx/store";
+import { Action, select, Store } from "@ngrx/store";
 import * as selectors from "./selectors"
 import * as actions from "./actions"
-import { from, of, switchMap, withLatestFrom } from "rxjs";
+import { filter, from, map, of, switchMap, withLatestFrom } from "rxjs";
 import { MatSnackBar } from "src/sharedModule"
 import * as outputs from "src/state/outputs"
 import * as inputs from "src/state/inputs"
@@ -12,6 +12,12 @@ import { Landmark } from "./consts";
 
 @Injectable()
 export class Effects {
+  onExitLmModeClearPurgatory = createEffect(() => this.actions$.pipe(
+    ofType(actions.setAddLandmarkMode),
+    filter(action => !action.mode),
+    map(() => actions.purgePurgatory())
+  ))
+
   onAddLandmarkRequest = createEffect(() => this.actions$.pipe(
     ofType(actions.addLandmark),
     withLatestFrom(
@@ -26,9 +32,12 @@ export class Effects {
       ),
       this.store.pipe(
         outputs.selectors.getIncXform()
+      ),
+      this.store.pipe(
+        select(selectors.isDefaultMode)
       )
     ),
-    switchMap(([lm, refVol, incVol,  purgatory, xform]) => {
+    switchMap(([lm, refVol, incVol,  purgatory, xform, isDefaultMode]) => {
       if (!purgatory) {
         if (refVol?.["@id"] !== lm.landmark.targetVolumeId) {
           return of(
@@ -53,28 +62,40 @@ export class Effects {
       }
       const { mat4, vec3 } = export_nehuba
       const lmPos = vec3.fromValues(...lm.landmark.position)
-      mat4.invert(xform, xform)
-      vec3.transformMat4(lmPos, lmPos, xform)
+      const inverted = mat4.invert(mat4.create(), xform)
+      vec3.transformMat4(lmPos, lmPos, inverted)
 
       const incLandmark: Landmark = {
         position: Array.from(lmPos) as [number, number, number],
         targetVolumeId: lm.landmark.targetVolumeId
       }
-      return from(
-        [
-          actions.purgePurgatory(),
-          lm.landmark.targetVolumeId === purgatory.targetVolumeId
-          ? actions.error({ message: `Attempting to add landmark pair to the same volume` })
-          : actions.addLandmarkPair({
-              landmarkPair: {
-                tmplLm: purgatory,
-                incLm: incLandmark,
-                name: `Untitled`,
-                id: crypto.randomUUID(),
-              }
-            })
-        ]
+
+      const invokeActions: Action[] = []
+
+      invokeActions.push(
+        actions.purgePurgatory()
       )
+
+      invokeActions.push(
+        actions.addLandmarkPair({
+          landmarkPair: {
+            tmplLm: purgatory,
+            incLm: incLandmark,
+            name: `Untitled`,
+            id: crypto.randomUUID(),
+          }
+        })
+      )
+      /**
+       * if in two pane mode, exit add landmark mode
+       */
+      if (!isDefaultMode) {
+        invokeActions.push(
+          actions.setAddLandmarkMode({ mode: false })
+        )
+      }
+
+      return from(invokeActions)
     })
   ))
 

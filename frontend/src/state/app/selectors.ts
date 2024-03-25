@@ -29,3 +29,16 @@ export const isDefaultMode = createSelector(
   featureSelector,
   state => state.mode === MODE.DEFAULT
 )
+
+export const hoveredLandmark = createSelector(
+  featureSelector,
+  state => state.hoveredLandmark
+)
+
+export const hoveredLandmarkPair = createSelector(
+  landmarks,
+  hoveredLandmark,
+  ( landmarks, hoveredLandmark ) => {
+    return landmarks.find(lm => lm.incLm === hoveredLandmark || lm.tmplLm === hoveredLandmark)
+  }
+)

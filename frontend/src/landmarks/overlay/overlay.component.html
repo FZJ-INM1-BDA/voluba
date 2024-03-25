@@ -1,10 +1,23 @@
 <ng-template [ngIf]="displayedLandmarks$ | async" let-displayedLandmarks>
     <ng-template ngFor [ngForOf]="displayedLandmarks" let-displayedLandmark>
         <div class="landmark-container"
-            [style.transform]="displayedLandmark.position | overlayPosition"
+            (mouseover)="handleHoverLandmark(displayedLandmark)"
+            (mouseout)="handleHoverLandmark(null)"
+            (mousedown)="handleMouseDown(displayedLandmark)"
+            [ngClass]="{
+                'above-plane': displayedLandmark.position[2] >= 0,
+                'below-plane': displayedLandmark.position[2] < 0
+            }"
+            [style]="displayedLandmark.position | overlayPosition"
             [style.color]="displayedLandmark.color">
 
-            <mat-icon class="position-icon" fontIcon="location_on"></mat-icon>
+            <mat-icon class="position-icon"
+                [ngClass]="{
+                    'highlighted': !!displayedLandmark.highlighted
+                }"
+                [fontIcon]="displayedLandmark.position[2] >= 0 ? 'location_on' : 'anchor'">
+            </mat-icon>
+            <div class="position-icon stem" [style]="displayedLandmark | overlayStemStyle"></div>
         </div>
     </ng-template>
 </ng-template>

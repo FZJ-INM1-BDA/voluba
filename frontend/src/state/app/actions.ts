@@ -67,3 +67,17 @@ export const updateLandmarkPair = createAction(
     value: Partial<Omit<LandmarkPair, 'id'>>
   }>()
 )
+
+export const navigateTo = createAction(
+  `[${nameSpace}] navigateTo`,
+  props<{
+    position: number[]
+  }>()
+)
+
+export const hoverLandmark = createAction(
+  `[${nameSpace}] hoverLandmark`,
+  props<{
+    landmark: Landmark|null
+  }>()
+)

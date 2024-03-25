@@ -1,16 +1,17 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { LayoutModule } from 'src/layout/layout.module';
+import { isDefaultMode } from "src/state/app/selectors"
 
 import { AppComponent } from './app.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ViewsModule } from 'src/views/views.module';
-import { StoreModule } from '@ngrx/store';
+import { Store, StoreModule, select } from '@ngrx/store';
 import { reducers, metaReducers, effects } from 'src/state';
 import { EffectsModule } from '@ngrx/effects';
 import { SharedModule } from 'src/sharedModule/sharedModule';
-import { DEBOUNCED_WINDOW_RESIZE, SLICEVIEWS_INJECTION_TOKEN, SliceViewEvent, SliceViewProviderType, arrayEqual, sliceViewEvEql, sliceViewEvIncludes } from 'src/const';
-import { Subject, debounceTime, distinctUntilChanged, map, scan, shareReplay, throttleTime } from 'rxjs';
+import { DEBOUNCED_WINDOW_RESIZE } from 'src/const';
+import { Subject, debounceTime, map, merge, shareReplay } from 'rxjs';
 
 @NgModule({
   declarations: [AppComponent],
@@ -28,39 +29,25 @@ import { Subject, debounceTime, distinctUntilChanged, map, scan, shareReplay, th
   providers: [
     {
       provide: DEBOUNCED_WINDOW_RESIZE,
-      useFactory: () => {
+      useFactory: (store: Store) => {
         const resizeSub = new Subject<UIEvent>()
         window.addEventListener("resize", ev => {
           resizeSub.next(ev)
         })
-        return resizeSub.pipe(
+
+        return merge(
+          store.pipe(
+            select(isDefaultMode),
+            map(flag => new UIEvent(`x-resize-default-mode-${flag ? 'on' : 'off'}`))
+          ),
+          resizeSub,
+        ).pipe(
           debounceTime(160),
           shareReplay(1),
         )
-      }
+      },
+      deps: [ Store ]
     },
-    {
-      provide: SLICEVIEWS_INJECTION_TOKEN,
-      useFactory: () => {
-        const obs = new Subject<SliceViewEvent>()
-        return {
-          register: obs.next.bind(obs),
-          observable: obs.pipe(
-            scan((acc, v) => {
-              if (sliceViewEvIncludes(v, acc)) {
-                return acc
-              }
-              return acc.concat(v)
-            }, [] as SliceViewEvent[]),
-            map(v => v.slice(0, 4)),
-            distinctUntilChanged(
-              (p, c) => arrayEqual(p, c, sliceViewEvEql)
-            ),
-            shareReplay(1),
-          )
-        } as SliceViewProviderType
-      }
-    }
   ],
   bootstrap: [AppComponent],
 })

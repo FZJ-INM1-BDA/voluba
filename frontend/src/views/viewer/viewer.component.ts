@@ -2,9 +2,10 @@ import {
   AfterViewInit,
   ChangeDetectionStrategy,
   Component,
-  Inject,
   Injectable,
+  QueryList,
   ViewChild,
+  ViewChildren,
   inject,
 } from '@angular/core';
 import { select, Store } from '@ngrx/store';
@@ -20,31 +21,119 @@ import {
   NEVER,
   concat,
   of,
+  BehaviorSubject,
+  firstValueFrom,
+  merge,
 } from 'rxjs';
 import { MouseInteractionDirective } from 'src/mouse-interactions/mouse-interaction.directive';
-import * as app from 'src/state/app';
 import * as outputs from 'src/state/outputs';
-import { NehubaViewerWrapperComponent } from '../nehuba-viewer-wrapper/nehuba-viewer-wrapper.component';
-import { SLICEVIEWS_INJECTION_TOKEN, SliceViewProviderType, VOLUBA_NEHUBA_TOKEN } from 'src/const';
-import { DestroyDirective } from 'src/util/destroy.directive';
-import { getIncXform } from 'src/state/outputs/selectors';
 import * as appState from "src/state/app"
-import { Landmark, INCOMING_LM_COLOR, REF_LM_COLOR } from 'src/landmarks/const';
+import * as inputs from 'src/state/inputs';
+import { NehubaNavigation, NehubaViewerWrapperComponent } from '../nehuba-viewer-wrapper/nehuba-viewer-wrapper.component';
+import { Mat4, OverlayLm, VOLUBA_NEHUBA_TOKEN } from 'src/const';
+import { INCOMING_LM_COLOR, Landmark, LandmarkPair, REF_LM_COLOR } from 'src/landmarks/const';
+import { Actions, ofType } from '@ngrx/effects';
+
+
+const REF_VOL_ID = 'reference-volume'
+const INC_VOL_ID = 'incoming-volume'
+
+const _BIGBRAIN_NEHUBA_LAYER = {
+  id: REF_VOL_ID,
+  url: 'precomputed://https://neuroglancer.humanbrainproject.org/precomputed/BigBrainRelease.2015/8bit' && 'precomputed://http://127.0.0.1:8080/sharded/BigBrainRelease.2015/8bit',
+  transform: [
+    [1, 0, 0, -70677184],
+    [0, 1, 0, -70010000],
+    [0, 0, 1, -58788284],
+    [0, 0, 0, 1],
+  ] as Mat4,
+}
+
+const _INC_LAYER = {
+  id: INC_VOL_ID,
+  url: 'precomputed://https://neuroglancer.humanbrainproject.eu/precomputed/JuBrain/v2.2c/colin27_seg' && 'precomputed://http://127.0.0.1:8080/sharded/WHS_SD_rat/templates/v1.01/t2star_masked/',
+  transform: [
+    [1.0, 0.0, 0.0, 0],
+    [0.0, 1.0, 0.0, 0],
+    [0.0, 0.0, 1.0, 0],
+    [0.0, 0.0, 0.0, 1.0],
+  ] as Mat4,
+}
 
 
 @Injectable()
 class NehubaSvc {
   #mouseover = new Subject<Float32Array>()
   #mousedown = new Subject<MouseEvent>()
+  #mouseup = new Subject<MouseEvent>()
 
   mouseover = this.#mouseover.asObservable()
   mousedown = this.#mousedown.asObservable()
+  mouseup = this.#mouseup.asObservable()
 
   setMouseOver(val: Float32Array){
     this.#mouseover.next(val)
   }
   setMouseDown(ev: MouseEvent) {
     this.#mousedown.next(ev)
+  }
+  setMouseUp(ev: MouseEvent) {
+    this.#mouseup.next(ev)
+  }
+}
+
+class LandmarkSvc {
+  static REF_LM_COLOR = "#ffffff"
+  static INCOMING_LM_COLOR = "#ffff00"
+
+  static GetXformToOverlay(xform: export_nehuba.mat4, hoveredLMP: LandmarkPair|undefined|null) {
+    const { vec3 } = export_nehuba
+    return {
+      getReference: function(landmark: LandmarkPair): OverlayLm {
+        return {
+          ...landmark.tmplLm,
+          color: LandmarkSvc.REF_LM_COLOR,
+          id: `${landmark.id}-ref`,
+          highlighted: hoveredLMP?.id === landmark.id,
+        }
+      },
+      getIncoming: function(landmark: LandmarkPair): OverlayLm {
+      
+        const newPos = vec3.fromValues(...landmark.incLm.position)
+        vec3.transformMat4(newPos, newPos, xform)
+        return {
+          ...landmark.incLm,
+          color: LandmarkSvc.INCOMING_LM_COLOR,
+          position: Array.from(newPos),
+          id: `${landmark.id}-inc`,
+          highlighted: hoveredLMP?.id === landmark.id,
+        }
+      }
+    }
+  }
+
+  static TranslateOverlayLmToLm(landmarks: LandmarkPair[], overlayLm: OverlayLm): {
+    landmarkPair: LandmarkPair
+    landmark: Landmark
+  } | null {
+    let searchId: string|null = null
+    let key: 'tmplLm'|'incLm'|undefined
+    if (overlayLm.id.endsWith("-inc")) {
+      searchId = overlayLm.id.replace(/-inc$/, '')
+      key = 'incLm'
+    }
+    if (overlayLm.id.endsWith("-ref")) {
+      searchId = overlayLm.id.replace(/-ref$/, '')
+      key = 'tmplLm'
+    }
+    const foundLmp = searchId && landmarks.find(lm => lm.id === searchId)
+    if (!foundLmp){
+      return null
+    }
+    return {
+      landmarkPair: foundLmp,
+      landmark: foundLmp[key!]
+    }
   }
 }
 
@@ -64,103 +153,108 @@ class NehubaSvc {
     }
   ],
   hostDirectives: [
-    DestroyDirective
+    MouseInteractionDirective,
   ]
 })
 export class ViewerComponent implements AfterViewInit {
 
-  #destroyed$ = inject(DestroyDirective).destroyed$
+  
+  selfMouseEv = inject(MouseInteractionDirective)
+  #destroyed$ = inject(MouseInteractionDirective).destroyed$
 
   @ViewChild(NehubaViewerWrapperComponent)
-  viewerWrapper: NehubaViewerWrapperComponent | undefined;
+  viewerWrapper: NehubaViewerWrapperComponent | undefined
+
+  @ViewChildren(NehubaViewerWrapperComponent)
+  viewerWrappers: QueryList<NehubaViewerWrapperComponent> | undefined
 
   @ViewChild(MouseInteractionDirective)
-  mouseInteractive: MouseInteractionDirective | undefined;
+  mouseInteractive: MouseInteractionDirective | undefined
 
-  public incLocked$ = this.store.pipe(select(app.selectors.incLocked));
+  public incLocked$ = this.store.pipe(select(appState.selectors.incLocked))
 
-  view$ = combineLatest([
-    this.incLocked$,
+  #primaryNehubaNav = new BehaviorSubject<NehubaNavigation>({
+    orientation: new Float32Array([0, 0, 0, 1]),
+    position: new Float32Array([0, 0, 0]),
+    zoom: 1e5,
+  })
+
+  setPrimaryNav(nav: NehubaNavigation){
+    this.#primaryNehubaNav.next(nav)
+  }
+
+  lmView$ = combineLatest([
     this.store.pipe(
-      select(app.selectors.isDefaultMode)
-    ),
-    this.store.pipe(getIncXform()),
-    this.store.pipe(
-      select(app.selectors.landmarks)
-    ),
-    concat(
-      of([]),
-      this.sliceViewProvider.observable
-    ).pipe(
-      map(sliceViewObjs => {
-        type T = export_nehuba.SliceView | null
-        const returnArray: [T, T, T] = [null, null, null]
-        for (const sliceViewObj of sliceViewObjs){
-          const { element, sliceview } = sliceViewObj
-          /**
-           * n.b.
-           * getBoundingClientRect is very slow
-           * it should not be called very frequently (e.g. only on layout change/resize)
-           */
-          const { top, left } = element.getBoundingClientRect()
-          if (top < 5 && left < 5) {
-            returnArray[0] = sliceview
-          }
-          if (top < 5 && left > 5) {
-            returnArray[1] = sliceview
-          }
-          if (top > 5 && left < 5) {
-            returnArray[2] = sliceview
-          }
-        }
-        return returnArray
-      })
-    ),
-    this.store.pipe(
-      select(appState.selectors.purgatory)
+      select(appState.selectors.landmarks)
     ),
     this.store.pipe(
       select(appState.selectors.addLmMode)
     ),
+    this.store.pipe(
+      select(appState.selectors.hoveredLandmarkPair),
+    ),
+    this.store.pipe(
+      select(appState.selectors.purgatory)
+    ),
+  ]).pipe(
+    map(([ landmarks, addLandmarkMode, hoveredLmp, purgatory ]) => {
+      return {
+        landmarks, addLandmarkMode, hoveredLmp, purgatory
+      }
+    })
+  )
+
+  view$ = combineLatest([
+    
+    this.lmView$,
+    this.incLocked$,
+    this.store.pipe(
+      select(appState.selectors.isDefaultMode)
+    ),
+    this.store.pipe(outputs.selectors.getIncXform()),
     concat(
       of(null),
       this.nehubaSvc.mouseover,
+    ),
+    this.#primaryNehubaNav,
+    concat(
+      of(false),
+      merge(
+        this.selfMouseEv.mousedown.pipe(
+          map(() => true)
+        ),
+        this.selfMouseEv.mouseup.pipe(
+          map(() => false)
+        )
+      )
     )
   ]).pipe(
-    map(([incLocked, isDefaultMode, xform, landmarks, sliceViews, purgatory, addLandmarkMode, mouseover]) => {
+    map(([ { landmarks, addLandmarkMode, hoveredLmp, purgatory }, incLocked, isDefaultMode, xform, mouseover, primaryNavigation, isDraggingViewer ]) => {
       
-      const storedLandmarks = landmarks.map(lm => {
-        const incomingLandmarks: (Landmark & {color:string})[] = []
-        if (isDefaultMode) {
-          const { vec3 } = export_nehuba
-          
+      const { mat4 } = export_nehuba
 
-          const newPos = vec3.fromValues(...lm.incLm.position)
-          vec3.transformMat4(newPos, newPos, xform)
-          
-          incomingLandmarks.push({
-            ...lm.incLm,
-            position: Array.from(newPos) as [number, number, number],
-            color: INCOMING_LM_COLOR,
-          })
+      const { getIncoming, getReference } = LandmarkSvc.GetXformToOverlay(xform, hoveredLmp)
+      const storedLandmarks = landmarks.map(lm => {
+        const incomingLandmarks: OverlayLm[] = []
+        if (isDefaultMode) {
+          incomingLandmarks.push(getIncoming(lm))
         }
         return [
-          {
-            ...lm.tmplLm,
-            color: REF_LM_COLOR
-          },
+          getReference(lm),
           ...incomingLandmarks
         ]
       })
-      const purgatoryLandmarks = []
+      const purgatoryLandmarks: OverlayLm[] = []
       if (purgatory) {
         purgatoryLandmarks.push({
           ...purgatory,
-          color: REF_LM_COLOR
+          color: REF_LM_COLOR,
+          id: 'purgatory'
         })
       }
       if (addLandmarkMode && mouseover) {
         purgatoryLandmarks.push({
+          id: 'purgatory',
           targetVolumeId: 'purgatory',
           position: Array.from(mouseover) as [number, number, number],
           color: purgatory
@@ -169,6 +263,29 @@ export class ViewerComponent implements AfterViewInit {
         })
       }
 
+      const secondaryLandmarks: OverlayLm[] = []
+
+      if (!isDefaultMode) {
+        secondaryLandmarks.push(
+          ...landmarks.map(lm => {
+            return getIncoming(lm)
+          })
+        )
+
+        if (addLandmarkMode && mouseover && purgatory) {
+          secondaryLandmarks.push({
+            id: 'purgatory',
+            targetVolumeId: 'purgatory',
+            position: Array.from(mouseover),
+            color: INCOMING_LM_COLOR
+          })
+        }
+      }
+      
+
+      const tXform = mat4.transpose(mat4.create(), xform)
+      const atXform = Array.from(tXform)
+
       return { 
         incLocked,
         isDefaultMode,
@@ -176,23 +293,38 @@ export class ViewerComponent implements AfterViewInit {
           ...storedLandmarks.flatMap(v => v),
           ...purgatoryLandmarks
         ],
-        sliceViews,
+        secondaryLandmarks,
+        showAddingRefLmOverlay: !isDefaultMode && addLandmarkMode && !purgatory,
+        showAddingIncLmOverlay: !isDefaultMode && addLandmarkMode && purgatory,
+        primaryLayers: [ _BIGBRAIN_NEHUBA_LAYER, _INC_LAYER ],
+        secondaryLayers: [ {
+          ..._INC_LAYER,
+          transform: [
+            atXform.slice(0, 4),
+            atXform.slice(4, 8),
+            atXform.slice(8, 12),
+            atXform.slice(12, 16),
+          ] as Mat4
+        }],
+        primaryNavigation,
+        isDraggingViewer,
+        addLandmarkMode,
       }
     })
   );
 
   toggleIncLocked() {
-    this.store.dispatch(app.actions.toggleIncLocked());
+    this.store.dispatch(appState.actions.toggleIncLocked());
   }
 
   toggleMode() {
-    this.store.dispatch(app.actions.toggleMode())
+    this.store.dispatch(appState.actions.toggleMode())
   }
 
   constructor(
     private store: Store,
     private nehubaSvc: NehubaSvc,
-    @Inject(SLICEVIEWS_INJECTION_TOKEN) private sliceViewProvider: SliceViewProviderType,
+    private actions$: Actions
   ) {}
 
   onMousePosition(pos: Float32Array){
@@ -201,6 +333,10 @@ export class ViewerComponent implements AfterViewInit {
 
   onMouseDown(ev: MouseEvent) {
     this.nehubaSvc.setMouseDown(ev)
+  }
+
+  onMouseUp(ev: MouseEvent) {
+    this.nehubaSvc.setMouseUp(ev)
   }
 
   ngAfterViewInit(): void {
@@ -227,7 +363,7 @@ export class ViewerComponent implements AfterViewInit {
             select(appState.selectors.isDefaultMode)
           ),
           this.store.pipe(
-            select(app.selectors.addLmMode)
+            select(appState.selectors.addLmMode)
           ),
           this.mouseInteractive.volubaDrag,
           
@@ -241,7 +377,7 @@ export class ViewerComponent implements AfterViewInit {
           }))
         )
       })
-    );
+    )
 
     dragOnIncVol$.pipe(
       filter((v) => !!v && !v.mouseDownEvent.shiftKey),
@@ -268,8 +404,8 @@ export class ViewerComponent implements AfterViewInit {
         outputs.actions.setIncTranslation({
           array: Array.from(pos),
         })
-      );
-    });
+      )
+    })
 
     dragOnIncVol$.pipe(
       filter((v) => !!v && v.mouseDownEvent.shiftKey),
@@ -319,14 +455,14 @@ export class ViewerComponent implements AfterViewInit {
           array: Array.from(finalRotation),
         })
       );
-    });
+    })
 
 
     this.store.pipe(
-      select(outputs.selectors.incMatrixMat4),
+      outputs.selectors.getIncXform(),
       takeUntil(this.#destroyed$),
     ).subscribe((v) => {
-      this.viewerWrapper?.setLayerProperty('bla', {
+      this.viewerWrapper?.setLayerProperty(INC_VOL_ID, {
         transform: v,
       })
     })
@@ -335,9 +471,156 @@ export class ViewerComponent implements AfterViewInit {
       select(appState.selectors.isDefaultMode),
       takeUntil(this.#destroyed$)
     ).subscribe(isDefaultMode => {
-      this.viewerWrapper?.setLayerProperty('bla', {
+      this.viewerWrapper?.setLayerProperty(INC_VOL_ID, {
         visible: isDefaultMode
       })
     })
+
+    this.actions$.pipe(
+      ofType(appState.actions.navigateTo),
+      takeUntil(this.#destroyed$),
+    ).subscribe(({ position }) => {
+      if (!this.viewerWrappers) {
+        return
+      }
+      this.viewerWrappers.forEach(vw => {
+        vw.setPosition(position)
+      })
+    })
+
+    this.#mousedownLm.pipe(
+      takeUntil(this.#destroyed$),
+      withLatestFrom(
+        this.store.pipe(
+          select(appState.selectors.hoveredLandmark),
+        ),
+        this.store.pipe(
+          select(appState.selectors.hoveredLandmarkPair),
+        ),
+        this.store.pipe(
+          select(inputs.selectors.selectedTemplate),
+        ),
+        this.store.pipe(
+          select(inputs.selectors.selectedIncoming),
+        ),
+        this.store.pipe(
+          outputs.selectors.getIncXform()
+        )
+      ),
+      filter(([ _, hoveredLandmark ]) => {
+        return !!hoveredLandmark
+      }),
+      switchMap(([
+        _,
+        hoveredLandmark,
+        hoveredLandmarkPair,
+        selectedTemplate,
+        selectedIncoming,
+        xform,
+      ]) => this.nehubaSvc.mouseover.pipe(
+        filter(v => !!v),
+        takeUntil(this.nehubaSvc.mouseup),
+        map(position => {
+          return {
+            hoveredLandmark,
+            hoveredLandmarkPair,
+            selectedTemplate,
+            selectedIncoming,
+            position,
+            xform,
+          }
+        }),
+      ))
+    ).subscribe(({  hoveredLandmark, hoveredLandmarkPair, selectedTemplate, selectedIncoming, position, xform }) => {
+      let lmkey: 'incLm' | 'tmplLm' | null = null
+      if (!hoveredLandmark?.targetVolumeId  || !hoveredLandmarkPair?.id) {
+        console.error(`hoveredLandmark.targetVolumeId must be defined!`)
+        return
+      }
+
+      let pos: export_nehuba.vec3
+      if (hoveredLandmark?.targetVolumeId === selectedTemplate?.['@id']) {
+        lmkey = 'tmplLm'
+        pos = position
+      }
+      if (hoveredLandmark?.targetVolumeId === selectedIncoming?.['@id']) {
+        lmkey = 'incLm'
+        const { vec3, mat4 } = export_nehuba
+        const invert = mat4.invert(mat4.create(), xform)
+        pos = vec3.transformMat4(vec3.create(), position, invert)
+      }
+
+      if (!lmkey) {
+        // cannot find if the hovered lm is targeting inc or ref, maybe it's targetting purgatory?
+        return
+      }
+
+      this.store.dispatch(
+        appState.actions.updateLandmarkPair({
+          id: hoveredLandmarkPair.id,
+          value: {
+            [lmkey]: {
+              targetVolumeId: hoveredLandmark?.targetVolumeId,
+              position: Array.from(pos!)
+            }
+          }
+        })
+      )
+    })
+
+  }
+
+  async resetOrientation(target: 'reference'|'incoming'){
+    if (!this.viewerWrappers) {
+      return
+    }
+    if (target === "reference") {
+      this.viewerWrappers.forEach(wrapper => {
+        wrapper.setOrientation([0, 0, 0, 1])
+      })
+    }
+    if (target === "incoming") {
+      const xform = await firstValueFrom(
+        this.store.pipe(
+          outputs.selectors.getIncXform(),
+        )
+      )
+      const { mat4, quat } = export_nehuba
+      const orientation = mat4.getRotation(quat.create(), xform)
+      const orientationArray = Array.from(orientation)
+      this.viewerWrappers.forEach(wrapper => {
+        wrapper.setOrientation(orientationArray)
+      })
+    }
+  }
+
+  #mousedownLm = new Subject<OverlayLm>()
+  handleMousedownLandmark(overlayLm: OverlayLm) {
+    this.#mousedownLm.next(overlayLm)
+  }
+
+  async handleHoverLandmark(overlayLm: OverlayLm|null){
+    if (!overlayLm) {
+      this.store.dispatch(
+        appState.actions.hoverLandmark({
+          landmark: null
+        })
+      )
+      return
+    }
+
+    const landmarks = await firstValueFrom(
+      this.store.pipe(
+        select(appState.selectors.landmarks)
+      )
+    )
+
+    const foundLm = LandmarkSvc.TranslateOverlayLmToLm(landmarks, overlayLm)
+
+    this.store.dispatch(
+      appState.actions.hoverLandmark({
+        landmark: foundLm && foundLm.landmark
+      })
+    )
   }
 }
