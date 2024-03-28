@@ -65,3 +65,82 @@ export function sliceViewEvIncludes(ev: SliceViewEvent, list: SliceViewEvent[]):
 export const EXPORT_LANDMARKS_TYPE = 'https://voluba.apps.hbp.eu/@types/landmarks'
 
 export type OverlayLm = Landmark & { color: string, id: string, highlighted?: boolean }
+
+export type GetNehuba = {
+  getNehubaInstance(): export_nehuba.NehubaViewer|null|undefined
+  provideNehubaInstance(callback: () => export_nehuba.NehubaViewer|null|undefined): void
+}
+
+export const GET_NEHUBA_INJ = new InjectionToken('GET_NEHUBA_INJ')
+
+export const XFORM_FILE_TYPE = "https://voluba.apps.hbp.eu/@types/transform"
+
+type CoordSpace = Record<'x'|'y'|'z', export_nehuba.Dimension>
+
+export const cvtToNm = {
+  pm: (v: number) => v * 1e-3,
+  nm: (v: number) => v,
+  μm: (v: number) => v * 1e3,
+  mm: (v: number) => v * 1e6,
+  cm: (v: number) => v * 1e7,
+  m: (v: number) => v * 1e9,
+  km: (v: number) => v * 1e12,
+} as const
+
+export type VoxelUnit = keyof typeof cvtToNm
+
+export const cvtNmTo: Record<VoxelUnit, (nm: number) => number> = {
+  pm: v => v * 1e3,
+  nm: v => v,
+  μm: v => v * 1e-3,
+  mm: v => v * 1e-6,
+  cm: v => v * 1e-7,
+  m: v => v * 1e-9,
+  km: v => v * 1e-12,
+}
+
+export function canBeConverted(a: string): a is VoxelUnit{
+  return a in cvtToNm
+}
+
+function coordSpaceToNmScale(coordSpace: CoordSpace): export_nehuba.vec3 {
+  const { vec3 } = export_nehuba
+  const returnValues: number[] = []
+  const keys: (keyof CoordSpace)[] = ['x', 'y', 'z']
+  for (const key of keys){
+    const [ value, unit ] = coordSpace[key]
+    if (!canBeConverted(unit)){
+      throw new Error(`${unit} cannot be convertd`)
+    }
+    returnValues.push(
+      cvtToNm[unit](value)
+    )
+  }
+  return vec3.fromValues(...returnValues)
+}
+
+export function transCoordSpcScaling(src: CoordSpace, dst: CoordSpace): export_nehuba.vec3 {
+  const { vec3 } = export_nehuba
+  const srcScale = coordSpaceToNmScale(src)
+  const dstScale = coordSpaceToNmScale(dst)
+  
+  return vec3.div(vec3.create(), dstScale, srcScale) as export_nehuba.vec3
+}
+
+export type VolubaAppConfig = {
+  linearBackend: string
+}
+
+export const VOLUBA_APP_CONFIG = new InjectionToken<VolubaAppConfig>("VOLUBA_APP_CONFIG")
+
+export type LinearXformResult = {
+  RMSE: number
+  inverse_matrix: number[][]
+  transformation_matrix: number[][]
+  landmark_pairs: {
+    active: boolean
+    mismatch: number
+    source_point: number[]
+    target_point: number[]
+  }[]
+}

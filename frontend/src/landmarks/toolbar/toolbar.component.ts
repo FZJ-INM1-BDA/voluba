@@ -1,12 +1,13 @@
 import { ChangeDetectionStrategy, Component, Inject, Optional, inject } from '@angular/core';
 import { select, Store } from '@ngrx/store';
-import { NEVER, combineLatest, filter, finalize, firstValueFrom, lastValueFrom, map, of, switchMap, takeUntil, withLatestFrom } from 'rxjs';
-import { EXPORT_LANDMARKS_TYPE, VOLUBA_NEHUBA_TOKEN, VolubeNehuba, isVec3 } from 'src/const';
+import { NEVER, Subject, combineLatest, concat, filter, firstValueFrom, map, merge, of, shareReplay, switchMap, takeUntil, withLatestFrom } from 'rxjs';
+import { EXPORT_LANDMARKS_TYPE, LinearXformResult, VOLUBA_APP_CONFIG, VOLUBA_NEHUBA_TOKEN, VolubaAppConfig, VolubeNehuba, isVec3 } from 'src/const';
 import * as app from "src/state/app"
 import * as inputs from "src/state/inputs"
 import * as outputs from "src/state/outputs"
 import * as generalActions from "src/state/actions"
 import { DestroyDirective } from 'src/util/destroy.directive';
+import { HttpClient } from '@angular/common/http';
 
 type L = {
   id: string
@@ -59,6 +60,28 @@ export class ToolbarComponent {
       )
       : of(null))
   )
+  
+  #calcTriggered$ = new Subject<string>()
+  #newXformFromCalc$ = this.#calcTriggered$.pipe(
+    withLatestFrom(
+      this.store.pipe(
+        select(app.selectors.landmarks)
+      )
+    ),
+    switchMap(([ xformType, landmarks ]) => this.http.post<LinearXformResult>(
+      `${this.appConfig.linearBackend}/api/least-squares`,
+      {
+        transformation_type: xformType,
+        landmark_pairs: landmarks.map(({ incLm, tmplLm }) => {
+          return {
+            source_point: tmplLm.position,
+            target_point: incLm.position
+          }
+        })
+      }
+    )),
+    shareReplay(1),
+  )
 
   view$ = combineLatest([
     this.store.pipe(
@@ -75,9 +98,20 @@ export class ToolbarComponent {
     ),
     this.store.pipe(
       outputs.selectors.getIncXform()
+    ),
+    concat(
+      of(false),
+      merge(
+        this.#calcTriggered$.pipe(
+          map(() => true)
+        ),
+        this.#newXformFromCalc$.pipe(
+          map(() => false)
+        )
+      )
     )
   ]).pipe(
-    map(([ landmarks, inputFilesName, ref, inc, xform ]) => {
+    map(([ landmarks, inputFilesName, ref, inc, xform, calcXformBusy ]) => {
 
       const { mat4, vec3 } = export_nehuba
 
@@ -122,14 +156,27 @@ export class ToolbarComponent {
       }
 
       return {
+        calcXformBusy,
+        transformationTypes: this.transformationTypes,
+        landmarkLength: landmarks.length,
         landmarkContent: JSON.stringify(landmarkContent, null, 2),
         landmarkName: `${inputFilesName}-landmarks.json`,
       }
     })
   )
 
+  transformationTypes = [
+    { text: 'Rigid', value: 'rigid' },
+    { text: 'Rigid (allow reflection)', value: 'rigid+reflection' },
+    { text: 'Similarity', value: 'similarity' },
+    { text: 'Similarity (allow reflection)', value: 'similarity+reflection' },
+    { text: 'Affine', value: 'affine' }
+  ]
+
   constructor(
     private store: Store,
+    private http: HttpClient,
+    @Inject(VOLUBA_APP_CONFIG) private appConfig: VolubaAppConfig,
     @Optional() @Inject(VOLUBA_NEHUBA_TOKEN) private vn: VolubeNehuba
   ){
     this.addLmMode$.pipe(
@@ -187,6 +234,21 @@ export class ToolbarComponent {
         })
       )
     })
+
+    this.#newXformFromCalc$.pipe(
+      takeUntil(this.#destroyed$)
+    ).subscribe(result => {
+      const { mat4 } = export_nehuba
+      
+      const newXform = mat4.fromValues(...result.inverse_matrix.flatMap(v => v))
+      mat4.transpose(newXform, newXform)
+
+      this.store.dispatch(
+        outputs.actions.setIncMatrix({
+          text: Array.from(newXform).join(",")
+        })
+      )
+    })
   }
 
   toggleLandmarkMode() {
@@ -238,7 +300,7 @@ export class ToolbarComponent {
         info.push(`Landmark with id ${id}, invalid ref or inc reference.`)
         continue
       }
-      console.log(inc.coord, ref.coord)
+      
       this.store.dispatch(
         app.actions.addLandmarkPair({
           landmarkPair: {
@@ -271,7 +333,7 @@ export class ToolbarComponent {
     }
   }
 
-  onCalculate() {
-    console.log('onCalculate');
+  onCalculate(xformTypeValue: string) {
+    this.#calcTriggered$.next(xformTypeValue)
   }
 }

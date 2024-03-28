@@ -10,6 +10,10 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatTooltipModule } from "@angular/material/tooltip"
 import { MatButtonToggleModule } from '@angular/material/button-toggle'
 import { MatTabsModule } from "@angular/material/tabs"
+import { MatBottomSheetModule } from "@angular/material/bottom-sheet"
+import { MatMenuModule } from "@angular/material/menu"
+import { MatProgressSpinnerModule } from "@angular/material/progress-spinner"
+
 
 @NgModule({
   imports: [
@@ -24,6 +28,9 @@ import { MatTabsModule } from "@angular/material/tabs"
     MatTooltipModule,
     MatButtonToggleModule,
     MatTabsModule,
+    MatBottomSheetModule,
+    MatMenuModule,
+    MatProgressSpinnerModule,
   ],
   exports: [
     MatSnackBarModule,
@@ -37,6 +44,9 @@ import { MatTabsModule } from "@angular/material/tabs"
     MatTooltipModule,
     MatButtonToggleModule,
     MatTabsModule,
+    MatBottomSheetModule,
+    MatMenuModule,
+    MatProgressSpinnerModule,
   ]
 })
 

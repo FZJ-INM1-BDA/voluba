@@ -21,6 +21,9 @@ import { ShareExportComponent } from './shareExport/shareExport.component';
 import { SharedModule } from 'src/sharedModule/sharedModule';
 import { DisplayNumArrayPipe } from './viewer/displayNumArray.pipe';
 import { MouseInteractionDirective } from 'src/mouse-interactions/mouse-interaction.directive';
+import { IOModule } from 'src/io/module';
+import { NgLayerShaderTune } from 'src/ng-layer-shader-tune/ng-layer-shader-tune.component';
+import { VolubaKeyboardShortcutDirective } from 'src/util/kbShortcut.directive';
 
 @NgModule({
   declarations: [
@@ -47,11 +50,14 @@ import { MouseInteractionDirective } from 'src/mouse-interactions/mouse-interact
     DragDropModule,
     LayerTuneModule,
     SharedModule,
+    IOModule,
 
     /**
      * standalone directives
      */
     MouseInteractionDirective,
+    NgLayerShaderTune,
+    VolubaKeyboardShortcutDirective,
   ],
   exports: [WelcomeCardComponent, ViewerComponent],
 })

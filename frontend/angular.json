@@ -52,6 +52,10 @@
                 "input": "export-nehuba/dist/min/async_computation.bundle.js",
                 "inject": false,
                 "bundleName": "async_computation.bundle"
+              },{
+                "input": "export-nehuba/dist/min/blosc.bundle.js",
+                "inject": false,
+                "bundleName": "blosc.bundle"
               }]
           },
           "configurations": {

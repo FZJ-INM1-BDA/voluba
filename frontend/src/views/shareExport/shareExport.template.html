@@ -1,32 +1,43 @@
-<h3>
-    Load
-</h3>
+<ng-template [ngIf]="view$ | async" let-view>
 
-<button mat-icon-button matTooltip="Load JSON Transformation">
-    <mat-icon>folder_open</mat-icon>
-</button>
-
-<h3>
-    Save
-</h3>
-
-<button mat-icon-button="Export volume with the current transform.">
-    <mat-icon>cloud_download</mat-icon>
-</button>
-
-<button mat-icon-button matTooltip="Save transformation as JSON">
-    <mat-icon>download</mat-icon>
-</button>
-
-<button mat-icon-button matTooltip="View the volume with the current transform in siibra-explorer">
-    <mat-icon>preview</mat-icon>
-</button>
-
-
-<h3>
-    Share
-</h3>
-
-<button mat-icon-button matTooltip="Publish the transformation metadata to ebrains">
-    <mat-icon>share</mat-icon>
-</button>
+    <h3>
+        Load
+    </h3>
+    
+    <button mat-icon-button
+        matTooltip="Load JSON Transformation"
+        voluba-load-from-file
+        (from-file-content)="handleLoadedXform($event)"
+        >
+        <mat-icon>folder_open</mat-icon>
+    </button>
+    
+    <h3>
+        Save
+    </h3>
+    
+    <button mat-icon-button matTooltip="Export volume with the current transform." disabled>
+        <mat-icon>cloud_download</mat-icon>
+    </button>
+    
+    <button mat-icon-button
+        matTooltip="Save transformation as JSON"
+        voluba-save-to-file
+        [to-file-content]="view.content"
+        [to-file-filename]="view.filename">
+        <mat-icon>download</mat-icon>
+    </button>
+    
+    <button mat-icon-button matTooltip="View the volume with the current transform in siibra-explorer">
+        <mat-icon>preview</mat-icon>
+    </button>
+    
+    
+    <h3>
+        Share
+    </h3>
+    
+    <button mat-icon-button matTooltip="Publish the transformation metadata to ebrains">
+        <mat-icon>share</mat-icon>
+    </button>
+</ng-template>

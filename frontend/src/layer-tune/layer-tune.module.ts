@@ -6,9 +6,10 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { ScrollableInput } from './scrollableInput.directive';
 import { SharedModule } from 'src/sharedModule/sharedModule';
+import { RotationWidgetCmp } from './rotation-widget/rotation-widget.components';
 
 @NgModule({
-  declarations: [TuneUiComponent, ScrollableInput],
+  declarations: [TuneUiComponent, ScrollableInput, RotationWidgetCmp],
   imports: [
     CommonModule,
     ReactiveFormsModule,
@@ -16,6 +17,6 @@ import { SharedModule } from 'src/sharedModule/sharedModule';
     MatSlideToggleModule,
     SharedModule,
   ],
-  exports: [TuneUiComponent],
+  exports: [TuneUiComponent, RotationWidgetCmp],
 })
 export class LayerTuneModule {}

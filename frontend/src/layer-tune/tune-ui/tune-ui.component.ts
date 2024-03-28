@@ -1,8 +1,8 @@
 import { ChangeDetectionStrategy, Component, OnDestroy, inject } from '@angular/core';
 import { AbstractControl, FormControl, FormGroup, ValidationErrors, ValidatorFn } from '@angular/forms';
 import { select, Store } from '@ngrx/store';
-import { combineLatest, concat, distinctUntilChanged, filter, map, of, takeUntil, withLatestFrom } from 'rxjs';
-import { Vec3, arrayEqual, isDefined } from 'src/const';
+import { combineLatest, concat, debounceTime, distinctUntilChanged, filter, map, of, takeUntil, withLatestFrom } from 'rxjs';
+import { Vec3, VoxelUnit, arrayEqual, cvtNmTo, cvtToNm, isDefined } from 'src/const';
 import * as outputs from 'src/state/outputs';
 import * as inputs from 'src/state/inputs';
 import { DestroyDirective } from 'src/util/destroy.directive';
@@ -60,22 +60,6 @@ function getInputValidator(args?: Partial<FormValidatorParam>): ValidatorFn {
     }
     return null
   }
-}
-
-const cvtToNm = {
-  nm: (v: number) => v,
-  μm: (v: number) => v * 1e3,
-  mm: (v: number) => v * 1e6,
-  cm: (v: number) => v * 1e9,
-} as const
-
-type VoxelUnit = keyof typeof cvtToNm
-
-const cvtNmTo: Record<VoxelUnit, (nm: number) => number> = {
-  nm: v => v,
-  μm: v => v / 1e3,
-  mm: v => v / 1e6,
-  cm: v => v / 1e9,
 }
 
 @Component({
@@ -191,6 +175,7 @@ export class TuneUiComponent {
       this.#currScale = scale as Vec3
       this.#currXlate = translate as Vec3
 
+      // TODO use https://stackoverflow.com/a/78165070/6059235
       const rotX = (() => {
 
         let v = RAD_TO_DEG * Math.atan2(
@@ -252,8 +237,13 @@ export class TuneUiComponent {
       inputs.selectors.getIncVoxelSize()
     )
     combineLatest([
-      this.store.pipe(
-        outputs.selectors.getIncXform()
+      concat(
+        of(this.tuneInput.value),
+        this.tuneInput.valueChanges,
+      ).pipe(
+        map(({ scaleX, scaleY, scaleZ }) => {
+          return { scaleX, scaleY, scaleZ }
+        })
       ),
       incVoxelSize,
       concat(
@@ -264,7 +254,7 @@ export class TuneUiComponent {
       ),
     ]).pipe(
       takeUntil(this.#destroyed$),
-    ).subscribe(([ xform, voxelsize, unit ]) => {
+    ).subscribe(([ { scaleX, scaleY, scaleZ }, voxelsize, unit ]) => {
       if (!voxelsize) {
         console.error(`voxelsize cannot be found`)
         return
@@ -273,10 +263,14 @@ export class TuneUiComponent {
         console.error(`unit must be defined, but was not`)
         return
       }
+      if (!scaleX || !scaleY || !scaleZ){
+        console.error(`scale{X,Y,Z} must be defined!`)
+        return
+      }
       const { vec3, mat4 } = export_nehuba
       const cvtFn = cvtNmTo[unit]
 
-      const scaling = mat4.getScaling(vec3.create(), xform)
+      const scaling = vec3.fromValues(scaleX, scaleY, scaleZ)
       vec3.mul(scaling, scaling, voxelsize)
 
       this.#currVoxelSize = [
@@ -326,16 +320,16 @@ export class TuneUiComponent {
     const {
       isotropic, unit, valueX, valueY, valueZ
     } = this.voxelSpacingFormGroup.controls
-    combineLatest([
-      concat(
-        of(isotropic.value),
-        isotropic.valueChanges
-      ),
-      valueX.valueChanges,
-      valueY.valueChanges,
-      valueZ.valueChanges,
-    ]).pipe(
+    concat(
+      of(this.voxelSpacingFormGroup.value),
+      this.voxelSpacingFormGroup.valueChanges,
+    ).pipe(
       takeUntil(this.#destroyed$),
+      map(({ isotropic, valueX, valueY, valueZ }) => {
+        return [isotropic, valueX, valueY, valueZ]
+      }),
+      distinctUntilChanged(arrayEqual),
+      debounceTime(16),
       withLatestFrom(incVoxelSize),
     ).subscribe(([ [ _isotropic, _valueX, _valueY, _valueZ ], incVoxelSize ]) => {
 
@@ -376,7 +370,7 @@ export class TuneUiComponent {
       const cvtFn = cvtToNm[unit.value]
       
       const scale = v.map(cvtFn)
-      this.setTranslScaleRot({
+      this.tuneInput.patchValue({
         scaleX: scale[0],
         scaleY: scale[1],
         scaleZ: scale[2],

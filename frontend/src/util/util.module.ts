@@ -7,9 +7,14 @@ import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { DragDropModule } from '@angular/cdk/drag-drop';
+import { BottomSheetDirective } from './bottomSheet.directive';
 
 @NgModule({
-  declarations: [DialogDirective, MovablePortalComponent],
+  declarations: [
+    DialogDirective,
+    MovablePortalComponent,
+    BottomSheetDirective,
+  ],
   imports: [
     CommonModule,
     MatDialogModule,
@@ -18,6 +23,10 @@ import { DragDropModule } from '@angular/cdk/drag-drop';
     MatButtonModule,
     DragDropModule,
   ],
-  exports: [DialogDirective, MovablePortalComponent],
+  exports: [
+    DialogDirective,
+    MovablePortalComponent,
+    BottomSheetDirective,
+  ],
 })
 export class UtilModule {}

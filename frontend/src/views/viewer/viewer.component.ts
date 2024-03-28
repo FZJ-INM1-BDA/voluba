@@ -2,6 +2,7 @@ import {
   AfterViewInit,
   ChangeDetectionStrategy,
   Component,
+  Inject,
   Injectable,
   QueryList,
   ViewChild,
@@ -30,7 +31,7 @@ import * as outputs from 'src/state/outputs';
 import * as appState from "src/state/app"
 import * as inputs from 'src/state/inputs';
 import { NehubaNavigation, NehubaViewerWrapperComponent } from '../nehuba-viewer-wrapper/nehuba-viewer-wrapper.component';
-import { Mat4, OverlayLm, VOLUBA_NEHUBA_TOKEN } from 'src/const';
+import { GET_NEHUBA_INJ, GetNehuba, Mat4, OverlayLm, VOLUBA_NEHUBA_TOKEN } from 'src/const';
 import { INCOMING_LM_COLOR, Landmark, LandmarkPair, REF_LM_COLOR } from 'src/landmarks/const';
 import { Actions, ofType } from '@ngrx/effects';
 
@@ -324,8 +325,11 @@ export class ViewerComponent implements AfterViewInit {
   constructor(
     private store: Store,
     private nehubaSvc: NehubaSvc,
-    private actions$: Actions
-  ) {}
+    private actions$: Actions,
+    @Inject(GET_NEHUBA_INJ) getNehuba: GetNehuba,
+  ) {
+    getNehuba.provideNehubaInstance(() => this.viewerWrapper?.nehubaViewer)
+  }
 
   onMousePosition(pos: Float32Array){
     this.nehubaSvc.setMouseOver(pos)
@@ -381,7 +385,7 @@ export class ViewerComponent implements AfterViewInit {
 
     dragOnIncVol$.pipe(
       filter((v) => !!v && !v.mouseDownEvent.shiftKey),
-      withLatestFrom(this.store.pipe(select(outputs.selectors.incMatrixMat4))),
+      withLatestFrom(this.store.pipe(outputs.selectors.getIncXform())),
       takeUntil(this.#destroyed$),
     ).subscribe(([val, xformMat]) => {
       if (!val) return;

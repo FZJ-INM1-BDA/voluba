@@ -5,16 +5,22 @@ import * as consts from './consts';
 import * as selectors from './selectors';
 import * as inputs from '../inputs';
 import { select, Store } from '@ngrx/store';
-import { filter, map, withLatestFrom } from 'rxjs';
+import { filter, map, shareReplay, withLatestFrom } from 'rxjs';
 
 @Injectable()
 export class Effects {
+
+  #incMatrixMat4$ = this.store.pipe(
+    selectors.getIncXform(),
+    shareReplay(1),
+  )
+
   rotationEffect = createEffect(() =>
     this.actions$.pipe(
       ofType(actions.rotateIncBy),
       withLatestFrom(
         this.store.pipe(select(inputs.selectors.selectedIncoming)),
-        this.store.pipe(select(selectors.incMatrixMat4)),
+        this.#incMatrixMat4$,
         this.store.pipe(
           select(inputs.selectors.centerVoxel)
         )
@@ -24,9 +30,10 @@ export class Effects {
         const { mat4, vec3, quat } = export_nehuba;
         const { processQuatInput } = consts;
 
-        const rotQuat = processQuatInput(input);
+        const rotQuat = processQuatInput(input)
 
-        const angle = quat.getAxisAngle(vec3.create(), rotQuat);
+        const axis = vec3.fromValues(1, 0, 0)
+        const angle = quat.getAxisAngle(axis, rotQuat);
         const rotMat = mat4.fromRotation(mat4.create(), angle, rotQuat);
         if (!angle) return actions.dry();
         if (!centerVoxel) return actions.dry()
@@ -66,7 +73,7 @@ export class Effects {
     ),
     map(([vec3Input, cXform, centerVoxel]) => {
       
-      const { mat4, vec3 } = export_nehuba;
+      const { mat4, vec3 } = export_nehuba
       
       const oldScale = mat4.getScaling(vec3.create(), cXform)
       const newScale = consts.processVec3Input(vec3Input)
@@ -93,7 +100,7 @@ export class Effects {
   setTranslateEffect = createEffect(() =>
     this.actions$.pipe(
       ofType(actions.setIncTranslation),
-      withLatestFrom(this.store.pipe(select(selectors.incMatrixMat4))),
+      withLatestFrom(this.#incMatrixMat4$),
       map(([vec3Input, incXM]) => {
         const { mat4, vec3, quat } = export_nehuba;
 

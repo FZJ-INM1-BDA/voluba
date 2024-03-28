@@ -8,6 +8,7 @@ import { OverlayComponent } from './overlay/overlay.component';
 import { OverlayPositionPipe } from './overlay/overlayPosition.pipe';
 import { OverlayStemStylePipe } from './overlay/overlayStemStyle.pipe';
 import { IOModule } from 'src/io/module';
+import { HttpClientModule } from '@angular/common/http';
 
 @NgModule({
   declarations: [
@@ -22,6 +23,7 @@ import { IOModule } from 'src/io/module';
     FormsModule,
     SharedModule,
     IOModule,
+    HttpClientModule,
   ],
   exports: [ListviewComponent, ToolbarComponent, OverlayComponent],
 })

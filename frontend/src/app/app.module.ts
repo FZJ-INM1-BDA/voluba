@@ -10,7 +10,7 @@ import { Store, StoreModule, select } from '@ngrx/store';
 import { reducers, metaReducers, effects } from 'src/state';
 import { EffectsModule } from '@ngrx/effects';
 import { SharedModule } from 'src/sharedModule/sharedModule';
-import { DEBOUNCED_WINDOW_RESIZE } from 'src/const';
+import { DEBOUNCED_WINDOW_RESIZE, GET_NEHUBA_INJ, GetNehuba, VOLUBA_APP_CONFIG, VolubaAppConfig } from 'src/const';
 import { Subject, debounceTime, map, merge, shareReplay } from 'rxjs';
 
 @NgModule({
@@ -48,6 +48,29 @@ import { Subject, debounceTime, map, merge, shareReplay } from 'rxjs';
       },
       deps: [ Store ]
     },
+    {
+      provide: GET_NEHUBA_INJ,
+      useFactory: () => {
+        let _callback: () => export_nehuba.NehubaViewer|null|undefined
+        return {
+          provideNehubaInstance(callback) {
+            _callback = callback
+          },
+          getNehubaInstance() {
+              if (!_callback) {
+                throw new Error(`No providers for nehuba was provided`)
+              }
+              return _callback()
+          },
+        } as GetNehuba
+      }
+    },
+    {
+      provide: VOLUBA_APP_CONFIG,
+      useValue: {
+        linearBackend: "https://voluba-backend.apps.tc.humanbrainproject.eu"
+      } as VolubaAppConfig
+    }
   ],
   bootstrap: [AppComponent],
 })

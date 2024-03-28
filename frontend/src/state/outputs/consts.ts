@@ -84,5 +84,20 @@ export function getMirrorMat(
   return {
     applyMirror,
     undoMirror: mat4.invert(mat4.create(), applyMirror),
-  };
+  }
+}
+
+
+export type ExportJson = {
+  incomingVolume: string
+  contentHash: string
+  referenceVolume: string
+  version: string|number
+  '@type': 'https://voluba.apps.hbp.eu/@types/transform'
+  transform: number[]
+  coordinateSpace?: {
+    x: export_nehuba.Dimension
+    y: export_nehuba.Dimension
+    z: export_nehuba.Dimension
+  } | null
 }

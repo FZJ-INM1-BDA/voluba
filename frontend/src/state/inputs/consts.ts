@@ -23,12 +23,12 @@ const waxholm: TVolume = {
       '@type': 'siibra/volume/v0.0.1',
       providers: {
         'neuroglancer/precomputed':
-          'https://neuroglancer.humanbrainproject.eu/precomputed/WHS_SD_rat/templates/v1.01/t2star_masked',
+          'https://neuroglancer.humanbrainproject.eu/precomputed/WHS_SD_rat/templates/v1.01/t2star_masked' && 'http://127.0.0.1:8080/sharded/WHS_SD_rat/templates/v1.01/t2star_masked',
       },
     },
   ],
   dim: [512, 1024, 512].map(v => v * 39062.5),
-};
+}
 
 const colin: TVolume = {
   '@id': 'colin27',
@@ -46,25 +46,27 @@ const colin: TVolume = {
 };
 
 type Volume = {
-  '@type': 'siibra/volume/v0.0.1';
+  '@type': 'siibra/volume/v0.0.1'
   providers: {
-    'neuroglancer/precomputed': string;
-    'neuroglancer/precomputed/surface'?: string;
-  };
-};
+    'neuroglancer/precomputed'?: string
+    'neuroglancer/precomputed/surface'?: string
+    'neuroglancer/n5'?: string
+  }
+}
 
 export type TVolume = {
-  '@id': string;
-  name: string;
-  volumes: Volume[];
-  dim: number[];
-};
-export const nameSpace = `[inputs]`;
+  '@id': string
+  name: string
+  volumes: Volume[]
+  dim: number[]
+  contentHash?: string
+}
+export const nameSpace = `[inputs]`
 export type LocalState = {
-  templateVolumes: TVolume[];
-  incomingVolumes: TVolume[];
-  selectedTemplate: TVolume | null;
-  selectedIncoming: TVolume | null;
+  templateVolumes: TVolume[]
+  incomingVolumes: TVolume[]
+  selectedTemplate: TVolume | null
+  selectedIncoming: TVolume | null
 };
 
 export const defaultState: LocalState = {

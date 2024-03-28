@@ -110,13 +110,24 @@
             <voluba-control-menu></voluba-control-menu>
         </div>
         <div topright>
-            <button mat-icon-button>
-                <mat-icon fontIcon="location_on"></mat-icon>
+            <button mat-icon-button
+                matTooltip="Tune incoming volume shader"
+                volubaBottomSheet
+                [bottom-sheet-template]="ngLayerShaderTune">
+                <mat-icon fontIcon="tune"></mat-icon>
             </button>
-            <button mat-icon-button (click)="toggleMode()">
+            <button mat-icon-button
+                matTooltip="Toggle side-by-side and overlay mode"
+                (click)="toggleMode()">
                 <mat-icon fontIcon="compare"></mat-icon>
             </button>
-            <button mat-icon-button (click)="toggleIncLocked()" [disabled]="!view.isDefaultMode">
+            <button mat-icon-button
+                matTooltip="Lock incoming volume [k]"
+                voluba-kb-shortcut
+                kb-shortcut-keys="keyk"
+                (kb-shortcut-triggered)="toggleIncLocked()"
+                (click)="toggleIncLocked()"
+                [disabled]="!view.isDefaultMode">
                 <mat-icon [fontIcon]="view.incLocked || (!view.isDefaultMode) ? 'lock' : 'lock_open'"></mat-icon>
             </button>
         </div>
@@ -141,4 +152,9 @@
         </div>
     </voluba-four-corners>
         
+</ng-template>
+
+<ng-template #ngLayerShaderTune>
+    <h3>Tune incoming volume shader</h3>
+    <ng-layer-shader-tune></ng-layer-shader-tune>
 </ng-template>
