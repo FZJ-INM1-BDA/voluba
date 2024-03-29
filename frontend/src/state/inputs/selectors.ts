@@ -45,7 +45,7 @@ export const inputFilesName = createSelector(
 
 export const getIncVoxelSize = () => pipe(
   select(selectedIncoming),
-  distinctUntilChanged((o, n) => o?.["@id"] === n?.["@id"]),
+  distinctUntilChanged((o, n) => o?.id === n?.id),
   switchMap(incoming => {
     if (!incoming) {
       return of(null)

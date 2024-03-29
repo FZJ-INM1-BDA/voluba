@@ -178,6 +178,7 @@ export class ViewerComponent implements AfterViewInit {
     orientation: new Float32Array([0, 0, 0, 1]),
     position: new Float32Array([0, 0, 0]),
     zoom: 1e5,
+    perspectiveOrientation: new Float32Array([0, 0, 0, 1]),
   })
 
   setPrimaryNav(nav: NehubaNavigation){
@@ -232,7 +233,7 @@ export class ViewerComponent implements AfterViewInit {
   ]).pipe(
     map(([ { landmarks, addLandmarkMode, hoveredLmp, purgatory }, incLocked, isDefaultMode, xform, mouseover, primaryNavigation, isDraggingViewer ]) => {
       
-      const { mat4 } = export_nehuba
+      const { mat4, quat } = export_nehuba
 
       const { getIncoming, getReference } = LandmarkSvc.GetXformToOverlay(xform, hoveredLmp)
       const storedLandmarks = landmarks.map(lm => {
@@ -287,6 +288,12 @@ export class ViewerComponent implements AfterViewInit {
       const tXform = mat4.transpose(mat4.create(), xform)
       const atXform = Array.from(tXform)
 
+      const rotationWidgetQuat = mat4.getRotation(quat.create(), xform)
+      quat.invert(rotationWidgetQuat, rotationWidgetQuat)
+      quat.mul(rotationWidgetQuat, rotationWidgetQuat, primaryNavigation.perspectiveOrientation)
+      quat.normalize(rotationWidgetQuat, rotationWidgetQuat)
+      quat.invert(rotationWidgetQuat, rotationWidgetQuat)
+
       return { 
         incLocked,
         isDefaultMode,
@@ -310,6 +317,7 @@ export class ViewerComponent implements AfterViewInit {
         primaryNavigation,
         isDraggingViewer,
         addLandmarkMode,
+        rotationWidgetQuat,
       }
     })
   );
@@ -543,11 +551,11 @@ export class ViewerComponent implements AfterViewInit {
       }
 
       let pos: export_nehuba.vec3
-      if (hoveredLandmark?.targetVolumeId === selectedTemplate?.['@id']) {
+      if (hoveredLandmark?.targetVolumeId === selectedTemplate?.id) {
         lmkey = 'tmplLm'
         pos = position
       }
-      if (hoveredLandmark?.targetVolumeId === selectedIncoming?.['@id']) {
+      if (hoveredLandmark?.targetVolumeId === selectedIncoming?.id) {
         lmkey = 'incLm'
         const { vec3, mat4 } = export_nehuba
         const invert = mat4.invert(mat4.create(), xform)

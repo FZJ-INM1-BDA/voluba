@@ -12,7 +12,7 @@ export const MODE = {
 export type Landmark = {
   targetVolumeId: string
   position: number[]
-};
+}
 
 export type LandmarkPair = {
   tmplLm: Landmark
@@ -21,7 +21,13 @@ export type LandmarkPair = {
   name: string
 }
 
+export type User = {
+  fullname: string
+  authtoken: string
+}
+
 export type LocalState = {
+  user: User|null
   stage: keyof typeof STAGE
   mode: keyof typeof MODE
   incLocked: boolean
@@ -32,24 +38,14 @@ export type LocalState = {
 }
 
 export const defaultState: LocalState = {
-  stage: STAGE.ALIGNMENT, // STAGE.SELECTION,
+  user: null,
+  stage: STAGE.SELECTION,
   mode: MODE.DEFAULT,
   addingLandmark: false,
   incLocked: false,
-  landmarkPairs: [{
-    id: "foo-bar",
-    name: "hello my name is",
-    incLm: {
-      position: [0, 0, 0],
-      targetVolumeId: "waxholm"
-    },
-    tmplLm: {
-      position: [0, 0, 0],
-      targetVolumeId: "bigbrain"
-    }
-  }],
+  landmarkPairs: [],
   purgatory: null,
   hoveredLandmark: null,
-};
+}
 
-export const nameSpace = `app`;
+export const nameSpace = `app`

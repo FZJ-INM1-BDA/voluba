@@ -1,13 +1,17 @@
-<mat-card>
-    <mat-card-content>
-        <voluba-input-volumes></voluba-input-volumes>
-    </mat-card-content>
-    <mat-card-actions>
-        <button [disabled]="!(allowStart$ | async)"
-            mat-raised-button
-            color="primary"
-            (click)="start()">
-            Start
-        </button>
-    </mat-card-actions>
-</mat-card>
+<ng-template [ngIf]="view$ | async" let-view>
+
+    <mat-card>
+        <mat-card-content>
+            <voluba-input-volumes></voluba-input-volumes>
+        </mat-card-content>
+        <mat-card-actions>
+            <button [disabled]="!view.allowStart"
+                mat-raised-button
+                color="primary"
+                (click)="start()">
+                Start
+            </button>
+        </mat-card-actions>
+    </mat-card>
+    
+</ng-template>

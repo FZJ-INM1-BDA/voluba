@@ -65,7 +65,7 @@ export class ListviewComponent {
     )
     const position = [...landmark.position]
     const { vec3 } = export_nehuba
-    if (landmark.targetVolumeId === inc?.['@id']) {
+    if (landmark.targetVolumeId === inc?.id) {
       vec3.transformMat4(position, position, xform)
     }
 

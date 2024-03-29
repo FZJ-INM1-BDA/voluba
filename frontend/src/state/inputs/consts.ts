@@ -1,5 +1,5 @@
 const bigbrain: TVolume = {
-  '@id': 'bigbrain',
+  id: 'bigbrain',
   name: 'Big Brain (2015 Release)',
   volumes: [
     {
@@ -16,7 +16,7 @@ const bigbrain: TVolume = {
 };
 
 const waxholm: TVolume = {
-  '@id': 'waxholm',
+  id: 'waxholm',
   name: 'Waxholm Rat',
   volumes: [
     {
@@ -31,7 +31,7 @@ const waxholm: TVolume = {
 }
 
 const colin: TVolume = {
-  '@id': 'colin27',
+  id: 'colin27',
   name: 'Colin 27',
   volumes: [
     {
@@ -55,11 +55,12 @@ type Volume = {
 }
 
 export type TVolume = {
-  '@id': string
+  id: string
   name: string
   volumes: Volume[]
   dim: number[]
   contentHash?: string
+  visibility?: 'public' | 'private'
 }
 export const nameSpace = `[inputs]`
 export type LocalState = {

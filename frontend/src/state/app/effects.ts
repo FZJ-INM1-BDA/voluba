@@ -39,10 +39,10 @@ export class Effects {
     ),
     switchMap(([lm, refVol, incVol,  purgatory, xform, isDefaultMode]) => {
       if (!purgatory) {
-        if (refVol?.["@id"] !== lm.landmark.targetVolumeId) {
+        if (refVol?.id !== lm.landmark.targetVolumeId) {
           return of(
             mainInput.error({
-              message: `First landmark must target reference volume ${refVol?.["@id"]}, but instead targets ${lm.landmark.targetVolumeId}`
+              message: `First landmark must target reference volume ${refVol?.id}, but instead targets ${lm.landmark.targetVolumeId}`
             })
           )
         }
@@ -53,10 +53,10 @@ export class Effects {
         )
       }
 
-      if (incVol?.["@id"] !== lm.landmark.targetVolumeId) {
+      if (incVol?.id !== lm.landmark.targetVolumeId) {
         return of(
           mainInput.error({
-            message: `Second landmark must target incoming volume ${incVol?.["@id"]}, but targets ${lm.landmark.targetVolumeId}`
+            message: `Second landmark must target incoming volume ${incVol?.id}, but targets ${lm.landmark.targetVolumeId}`
           })
         )
       }

@@ -1,27 +1,132 @@
-<form [formGroup]="inputCtrl">
-    <mat-form-field>
-        <mat-label>
-            Select template
-        </mat-label>
-        <mat-select formControlName="selectedTemplate">
-            <mat-option
-                *ngFor="let volume of (availableTemplates$ | async)"
-                [value]="volume['@id']">
-                {{ volume.name }}
-            </mat-option>
-        </mat-select>
-    </mat-form-field>
-    <p></p>
-    <mat-form-field>
-        <mat-label>
-            Select volume to be aligned
-        </mat-label>
-        <mat-select formControlName="selectedIncoming">
-            <mat-option
-                *ngFor="let volume of availableIncomings$ | async"
-                [value]="volume['@id']">
-                {{ volume.name }}
-            </mat-option>
-        </mat-select>
-    </mat-form-field>
-</form>
+<ng-template [ngIf]="view$ | async" let-view>
+
+    <form [formGroup]="inputCtrl">
+        <mat-form-field>
+            <mat-label>
+                Select reference volume
+            </mat-label>
+            <mat-select formControlName="selectedTemplate">
+                <mat-option
+                    *ngFor="let volume of view.availableTemplates"
+                    [value]="volume.id">
+                    {{ volume.name }}
+                </mat-option>
+            </mat-select>
+        </mat-form-field>
+        <p></p>
+        <mat-form-field>
+            <mat-label>
+                Select incoming volume
+            </mat-label>
+            <ng-template [ngIf]="view.availableIncomings | categoriseVolume" let-categorised>
+                <mat-select formControlName="selectedIncoming" #selectedInc="matSelect">
+                    <mat-optgroup *ngFor="let item of categorised | keyvalue"
+                        [label]="item.key">
+                        <mat-option *ngFor="let option of item.value" [value]="option.id">
+                            {{ option.name }}
+                        </mat-option>
+                    </mat-optgroup>
+                </mat-select>
+            </ng-template>
+        </mat-form-field>
+        <button mat-icon-button matTooltip="Refresh the list">
+            <mat-icon>refresh</mat-icon>
+        </button>
+        
+        <button mat-icon-button
+            (click)="deleteVolume(view.selectedIncoming?.id)"
+            color="warn"
+            matTooltip="Delete this volume"
+            [disabled]="view.selectedIncoming?.visibility !== 'private'">
+            <mat-icon>delete</mat-icon>
+        </button>
+    </form>
+
+    <mat-divider></mat-divider>
+
+    <div class="signin">
+
+        <ng-template [ngIf]="view.user">
+            <div>
+                Hello {{ view.user.fullname }}
+            </div>
+            <a mat-button color="warn" href="logout">
+                <mat-icon>logout</mat-icon>
+                <span>logout</span>
+            </a>
+            <div class="drag-drop-file"
+                (drag-drop-file)="handleDragDropFile($event)"
+                [drag-drop-file-opacity]="0.5"
+                (click)="input.click()">
+                <input type="file" #input
+                    (change)="handleDragDropFile(input.files)"
+                    accept=".nii,.nii.gz">
+
+                <div>
+                    <div *ngIf="!view.filename">
+                        Drag and Drop your NIFTI file, or click to select a file
+                    </div>
+                    <div *ngIf="view.filename">
+                        {{ view.filename }}
+                    </div>
+                    <ng-template [ngIf]="view.extraTexts" let-extraTexts>
+                        <div *ngFor="let extraText of extraTexts">
+                            {{ extraText }}
+                        </div>
+                    </ng-template>
+                </div>
+            </div>
+            <mat-progress-bar *ngIf="view.preflight || view.upload"
+                mode="indeterminate">
+            </mat-progress-bar>
+
+
+            <div class="segmentation-wrapper">
+                <mat-checkbox
+                    [(ngModel)]="isSegmentation"
+                    [disabled]="!view.filename || view.preflight || view.upload">
+                    <span>
+                        segmentation
+                    </span>
+                </mat-checkbox>
+                <mat-icon [matTooltip]="view.segmentationCheckboxExplainer">help</mat-icon>
+            </div>
+
+            <div>
+                <button mat-button
+                    (click)="upload()"
+                    color="primary"
+                    [disabled]="!view.filename || view.preflight || view.upload">
+                    <mat-icon>upload</mat-icon>
+                    <span>Upload</span>
+                </button>
+        
+                <button mat-button
+                    (click)="clearUpload()"
+                    [disabled]="!view.filename || view.preflight || view.upload">
+                    <span>Clear</span>
+                </button>
+            </div>
+    
+            
+        </ng-template>
+        
+        <ng-template [ngIf]="!view.user">
+            <div>
+                You must login before you can upload volumes.
+            </div>
+            <a *ngFor="let login of view.loginMethods"
+                mat-button
+                [href]="login.href">
+
+                <mat-icon>login</mat-icon>
+                <span>
+                    {{ login.name }}
+                </span>
+            </a>
+        </ng-template>
+        
+    </div>
+
+    <mat-divider></mat-divider>
+</ng-template>

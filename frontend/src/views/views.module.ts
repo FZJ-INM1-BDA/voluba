@@ -24,6 +24,8 @@ import { MouseInteractionDirective } from 'src/mouse-interactions/mouse-interact
 import { IOModule } from 'src/io/module';
 import { NgLayerShaderTune } from 'src/ng-layer-shader-tune/ng-layer-shader-tune.component';
 import { VolubaKeyboardShortcutDirective } from 'src/util/kbShortcut.directive';
+import { RotationWidgetModule } from 'src/layer-tune/rotation-widget/module';
+import { CategoriseVolumePipe } from './input-volumes/categoriseVolume.pipe';
 
 @NgModule({
   declarations: [
@@ -34,6 +36,7 @@ import { VolubaKeyboardShortcutDirective } from 'src/util/kbShortcut.directive';
     NehubaViewerWrapperComponent,
     ShareExportComponent,
     DisplayNumArrayPipe,
+    CategoriseVolumePipe,
   ],
   imports: [
     CommonModule,
@@ -51,6 +54,7 @@ import { VolubaKeyboardShortcutDirective } from 'src/util/kbShortcut.directive';
     LayerTuneModule,
     SharedModule,
     IOModule,
+    RotationWidgetModule,
 
     /**
      * standalone directives

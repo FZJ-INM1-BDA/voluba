@@ -13,6 +13,9 @@ import { MatTabsModule } from "@angular/material/tabs"
 import { MatBottomSheetModule } from "@angular/material/bottom-sheet"
 import { MatMenuModule } from "@angular/material/menu"
 import { MatProgressSpinnerModule } from "@angular/material/progress-spinner"
+import { MatProgressBarModule } from "@angular/material/progress-bar"
+import { MatCheckboxModule } from "@angular/material/checkbox"
+import { FormsModule } from "@angular/forms";
 
 
 @NgModule({
@@ -31,6 +34,9 @@ import { MatProgressSpinnerModule } from "@angular/material/progress-spinner"
     MatBottomSheetModule,
     MatMenuModule,
     MatProgressSpinnerModule,
+    MatProgressBarModule,
+    MatCheckboxModule,
+    FormsModule,
   ],
   exports: [
     MatSnackBarModule,
@@ -47,6 +53,9 @@ import { MatProgressSpinnerModule } from "@angular/material/progress-spinner"
     MatBottomSheetModule,
     MatMenuModule,
     MatProgressSpinnerModule,
+    MatProgressBarModule,
+    MatCheckboxModule,
+    FormsModule,
   ]
 })
 

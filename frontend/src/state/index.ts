@@ -3,6 +3,7 @@ import { ActionReducer, ActionReducerMap, MetaReducer } from '@ngrx/store';
 import * as inputs from './inputs';
 import * as app from './app';
 import * as outputs from './outputs';
+import { GeneralEffects } from "./effects"
 
 export type State = {
   [inputs.consts.nameSpace]: inputs.consts.LocalState;
@@ -16,7 +17,7 @@ export const reducers: ActionReducerMap<State> = {
   [outputs.consts.nameSpace]: outputs.state.reducer,
 };
 
-function debug(reducer: ActionReducer<State>): ActionReducer<State> {
+function debugFn(reducer: ActionReducer<State>): ActionReducer<State> {
   return function (state, action) {
     console.log('state', state);
     console.log('action', action);
@@ -25,10 +26,10 @@ function debug(reducer: ActionReducer<State>): ActionReducer<State> {
   };
 }
 
-export const effects = [outputs.effects.Effects, app.effects.Effects];
+export const effects = [outputs.effects.Effects, app.effects.Effects, GeneralEffects];
 
 export const metaReducers: MetaReducer<State>[] = isDevMode()
   ? [
-      // debug
+      // debugFn
     ]
   : [];

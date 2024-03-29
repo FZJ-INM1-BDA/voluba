@@ -1,0 +1,39 @@
+.signin
+{
+    margin: 2rem;
+}
+
+.drag-drop-file
+{
+    border-radius: 1rem;
+    border: dashed rgba(128,128,128,0.5);
+
+    display: flex;
+    height: 5rem;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.5;
+
+    &:hover
+    {
+        cursor: pointer;
+        opacity: 1.0!important;
+    }
+
+}
+
+input[type=file]
+{
+    display: none;
+}
+
+.segmentation-wrapper
+{
+    display: flex;
+    align-items: center;
+
+    > *
+    {
+        margin: 0.5rem 0.2rem;
+    }
+}

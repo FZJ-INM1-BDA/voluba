@@ -11,15 +11,18 @@ import * as app from 'src/state/app';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class WelcomeCardComponent {
-  allowStart$ = combineLatest([
+
+  view$ = combineLatest([
     this.store.pipe(select(inputs.selectors.selectedIncoming)),
     this.store.pipe(select(inputs.selectors.selectedTemplate)),
   ]).pipe(
     map(([incoming, template]) => {
-      console.log({ incoming, template });
-      return !!incoming && !!template;
+
+      return {
+        allowStart: !!incoming && !!template,
+      }
     })
-  );
+  )
 
   start() {
     this.store.dispatch(

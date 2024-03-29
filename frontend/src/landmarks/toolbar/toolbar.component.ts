@@ -222,8 +222,8 @@ export class ToolbarComponent {
         return
       }
       const volId = !!purgatory
-      ? incomingVol['@id']
-      : referenceVol['@id']
+      ? incomingVol.id
+      : referenceVol.id
       
       this.store.dispatch(
         app.actions.addLandmark({
@@ -307,11 +307,11 @@ export class ToolbarComponent {
             id,
             incLm: {
               position: inc.coord.map(v => v*1e6) as [number, number, number],
-              targetVolumeId: selectedIncomingVolume['@id']
+              targetVolumeId: selectedIncomingVolume.id
             },
             tmplLm: {
               position: ref.coord.map(v => v*1e6) as [number, number, number],
-              targetVolumeId: selectedRefenceVolume['@id']
+              targetVolumeId: selectedRefenceVolume.id
             },
             name
           }

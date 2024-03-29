@@ -24,6 +24,7 @@ export type NehubaNavigation = {
   position: Float32Array
   orientation: Float32Array
   zoom: number
+  perspectiveOrientation: Float32Array
 }
 
 const lightmode = {
@@ -222,12 +223,14 @@ export class NehubaViewerWrapperComponent implements OnInit, AfterViewInit {
         position: val.position,
         orientation: val.orientation,
         zoom: val.zoom,
+        perspectiveOrientation: val.perspectiveOrientation,
       })
     })
     posSubject.pipe(
       distinctUntilChanged((o, n) => (
         FloatArrayEql(o.orientation, n.orientation)
         && FloatArrayEql(o.position, n.position)
+        && FloatArrayEql(o.perspectiveOrientation, n.perspectiveOrientation)
         && o.zoom === n.zoom
       )),
       takeUntil(this.#destroyed$)

@@ -42,3 +42,8 @@ export const hoveredLandmarkPair = createSelector(
     return landmarks.find(lm => lm.incLm === hoveredLandmark || lm.tmplLm === hoveredLandmark)
   }
 )
+
+export const user = createSelector(
+  featureSelector,
+  state => state.user
+)

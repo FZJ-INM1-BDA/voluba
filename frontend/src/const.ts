@@ -128,6 +128,7 @@ export function transCoordSpcScaling(src: CoordSpace, dst: CoordSpace): export_n
 }
 
 export type VolubaAppConfig = {
+  uploadUrl: string
   linearBackend: string
 }
 
@@ -143,4 +144,69 @@ export type LinearXformResult = {
     source_point: number[]
     target_point: number[]
   }[]
+}
+
+export const LOGIN_METHODS = [{
+  name: 'ebrains keycloak',
+  href: '/hbp-oidc-v2/auth'
+}]
+
+type ChumniNg = {
+  data_type: string
+  resolution: number[]
+  size: number[]
+  transform: number[][]
+  type: string // "image" | "segmentation"
+}
+
+type ChumniNifti = {
+  affineMatrix: number[][]
+  niftiVersion: string // "Nifti1" | "Nifti2"
+  byteOrder: string // "LITTLE_ENDIAN" | "BIG_ENDIAN"
+  size: number[]
+  voxelSize: number[]
+  spatialUnits: string
+  temporalUnits: string
+  dataType: string // float etc
+  coordinateSystem: string // SCANNER_ANAT etc
+}
+
+export type ChumniPreflightResp = {
+  fileName: string
+  neuroglancer: ChumniNg
+  nifti: ChumniNifti
+  warnings: string[]
+}
+
+export type ChumniVolume = {
+  visibility: 'public' | 'private'
+  name: string
+  extra: {
+    data: {
+      minValue: 0
+      maxValue: 0
+    }
+    fileName: string
+    fileSize: number
+    fileSizeUncompressed: number
+    neuroglancer: ChumniNg
+    nifti: ChumniNifti
+    uploaded: string
+    warnings: string[]
+  }
+  links: {
+    /**
+     * Absolute path (i.e. starts with /)
+     */
+    normalized: string
+  }
+}
+
+export const SEGMENTATION_EXPLAINER_TEXT = "A segmentation nii file can be ingested differently to an image nii file"
+
+export function trimFilename(filename: string): string {
+  if (filename.length < 10) {
+    return filename
+  }
+  return `${filename.slice(0, 10)}...`
 }
