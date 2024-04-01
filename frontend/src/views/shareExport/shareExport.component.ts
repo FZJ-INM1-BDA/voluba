@@ -303,8 +303,10 @@ export class ShareExportComponent {
       const res = await fetch(`ebrains`, {
         method: "POST",
         body: JSON.stringify({
-          ...JSON.parse(content),
-          description
+          body: {
+            ...JSON.parse(content),
+            description
+          }
         }),
         headers: {
           "content-type": "applicaton/json"
@@ -319,6 +321,11 @@ export class ShareExportComponent {
         id: job_id
       })
     } catch (e: any) {
+      this.store.dispatch(
+        generalActions.error({
+          message: e.toString()
+        })
+      )
       this.#publishProgress$.next({
         error: e.toString()
       })
