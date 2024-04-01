@@ -1,5 +1,6 @@
 import { createAction, props } from '@ngrx/store';
 import { nameSpace, STAGE, LandmarkPair, Landmark } from './consts';
+import { User } from 'src/const';
 
 export const goToStage = createAction(
   `[${nameSpace}] goToStage`,
@@ -42,12 +43,6 @@ export const purgePurgatory = createAction(
   `[${nameSpace}] purgePurgatory`
 )
 
-export const error = createAction(
-  `[${nameSpace}] error`,
-  props<{
-    message: string
-  }>()
-)
 
 export const setAddLandmarkMode = createAction(
   `[${nameSpace}] setAddLandmarkMode`,
@@ -79,5 +74,12 @@ export const hoverLandmark = createAction(
   `[${nameSpace}] hoverLandmark`,
   props<{
     landmark: Landmark|null
+  }>()
+)
+
+export const setUser = createAction(
+  `[${nameSpace}] setUser`,
+  props<{
+    user: User
   }>()
 )

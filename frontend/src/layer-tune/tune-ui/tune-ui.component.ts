@@ -1,11 +1,12 @@
 import { ChangeDetectionStrategy, Component, OnDestroy, inject } from '@angular/core';
 import { AbstractControl, FormControl, FormGroup, ValidationErrors, ValidatorFn } from '@angular/forms';
-import { select, Store } from '@ngrx/store';
+import { Store } from '@ngrx/store';
 import { combineLatest, concat, debounceTime, distinctUntilChanged, filter, map, of, takeUntil, withLatestFrom } from 'rxjs';
 import { Vec3, VoxelUnit, arrayEqual, cvtNmTo, cvtToNm, isDefined } from 'src/const';
 import * as outputs from 'src/state/outputs';
 import * as inputs from 'src/state/inputs';
 import { DestroyDirective } from 'src/util/destroy.directive';
+import { UndoService } from 'src/history/const';
 
 const RAD_TO_DEG = 180 / Math.PI
 const DEG_TO_RAD = Math.PI / 180
@@ -142,7 +143,7 @@ export class TuneUiComponent {
     })
   )
 
-  constructor(private store: Store) {
+  constructor(private store: Store, private undoSvc: UndoService,) {
 
     this.store.pipe(
       outputs.selectors.getIncXform(),
@@ -234,7 +235,7 @@ export class TuneUiComponent {
     })
 
     const incVoxelSize = this.store.pipe(
-      inputs.selectors.getIncVoxelSize()
+      inputs.selectors.incVoxelSize
     )
     combineLatest([
       concat(
@@ -379,10 +380,13 @@ export class TuneUiComponent {
   }
 
   setTranslScaleRot(matState: NullablePartial<MatState>){
+
+    let dispatchFlag = false
     const { translateX, translateY, translateZ, scaleX, scaleY, scaleZ, rotX, rotY, rotZ, isotropic } = matState
     if (this.#currXlate && isDefined(translateX) && isDefined(translateY) && isDefined(translateZ)) {
       const newXlate: Vec3 = [translateX, translateY, translateZ]
       if (!arrayEqual(newXlate, this.#currXlate)) {
+        dispatchFlag = true
         this.store.dispatch(
           outputs.actions.setIncTranslation({
             array: newXlate
@@ -393,6 +397,7 @@ export class TuneUiComponent {
     if (this.#currScale && !isotropic && isDefined(scaleX) && isDefined(scaleY) && isDefined(scaleZ)) {
       const newScale = [scaleX, scaleY, scaleZ]
       if (!arrayEqual(newScale, this.#currScale)) {
+        dispatchFlag = true
         this.store.dispatch(
           outputs.actions.setIncScale({
             array: newScale
@@ -404,6 +409,7 @@ export class TuneUiComponent {
     if (this.#currScale && !!isotropic && isDefined(scaleX)) {
       const newScale = [scaleX, scaleX, scaleX]
       if (!arrayEqual(newScale, this.#currScale)) {
+        dispatchFlag = true
         this.store.dispatch(
           outputs.actions.setIncScale({
             array: newScale
@@ -415,7 +421,7 @@ export class TuneUiComponent {
     if (this.#currentRot && isDefined(rotX) && isDefined(rotY) && isDefined(rotZ) ) {
       const newRot = [rotX, rotY, rotZ]
       if (!arrayEqual(this.#currentRot, newRot)) {
-
+        dispatchFlag = true
         const { quat } = export_nehuba
         const diffArray = this.#currentRot.map((v, idx) => (newRot[idx] - v)) as Vec3
         
@@ -427,8 +433,10 @@ export class TuneUiComponent {
           })
         )
       }
-    } 
-
+    }
+    if (dispatchFlag) {
+      this.undoSvc.pushUndo(`Set transformation from tuner panel`)
+    }
   }
 
   rotate90(axis: 'x' | 'y' | 'z'){
@@ -439,6 +447,7 @@ export class TuneUiComponent {
       axis === 'y' ? 90 : 0, 
       axis === 'z' ? 90 : 0)
 
+    this.undoSvc.pushUndo(`Rotate ${axis} axis by 90deg`, true)
     this.store.dispatch(
       outputs.actions.rotateIncBy({
         array: Array.from(quaternion)
@@ -447,6 +456,7 @@ export class TuneUiComponent {
   }
 
   flip(axis: 'x' | 'y' | 'z') {
+    this.undoSvc.pushUndo(`Flip ${axis} axis`, true)
     this.store.dispatch(
       outputs.actions.flipAxis({ axis })
     )

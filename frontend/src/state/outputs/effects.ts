@@ -6,6 +6,7 @@ import * as selectors from './selectors';
 import * as inputs from '../inputs';
 import { select, Store } from '@ngrx/store';
 import { filter, map, shareReplay, withLatestFrom } from 'rxjs';
+import { centerVoxelPipe } from '../inputs/selectors';
 
 @Injectable()
 export class Effects {
@@ -22,7 +23,7 @@ export class Effects {
         this.store.pipe(select(inputs.selectors.selectedIncoming)),
         this.#incMatrixMat4$,
         this.store.pipe(
-          select(inputs.selectors.centerVoxel)
+          centerVoxelPipe
         )
       ),
       filter(([_0, incoming, _1, _2]) => !!incoming),
@@ -68,7 +69,7 @@ export class Effects {
         selectors.getIncXform(),
       ),
       this.store.pipe(
-        select(inputs.selectors.centerVoxel),
+        centerVoxelPipe,
       )
     ),
     map(([vec3Input, cXform, centerVoxel]) => {

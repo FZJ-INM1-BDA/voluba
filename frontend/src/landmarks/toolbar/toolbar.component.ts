@@ -8,6 +8,7 @@ import * as outputs from "src/state/outputs"
 import * as generalActions from "src/state/actions"
 import { DestroyDirective } from 'src/util/destroy.directive';
 import { HttpClient } from '@angular/common/http';
+import { UndoService } from 'src/history/const';
 
 type L = {
   id: string
@@ -176,6 +177,7 @@ export class ToolbarComponent {
   constructor(
     private store: Store,
     private http: HttpClient,
+    private undoSvc: UndoService,
     @Inject(VOLUBA_APP_CONFIG) private appConfig: VolubaAppConfig,
     @Optional() @Inject(VOLUBA_NEHUBA_TOKEN) private vn: VolubeNehuba
   ){
@@ -206,7 +208,7 @@ export class ToolbarComponent {
       
       if (!referenceVol) {
         this.store.dispatch(
-          app.actions.error({
+          generalActions.error({
             message: `Attempting to add landmark without defining reference vol`
           })
         )
@@ -215,7 +217,7 @@ export class ToolbarComponent {
       if (!incomingVol) {
         
         this.store.dispatch(
-          app.actions.error({
+          generalActions.error({
             message: `Attempting to add landmark without defining incoming vol`
           })
         )
@@ -242,7 +244,7 @@ export class ToolbarComponent {
       
       const newXform = mat4.fromValues(...result.inverse_matrix.flatMap(v => v))
       mat4.transpose(newXform, newXform)
-
+      this.undoSvc.pushUndo(`Apply transform via landmark alignment.`)
       this.store.dispatch(
         outputs.actions.setIncMatrix({
           text: Array.from(newXform).join(",")

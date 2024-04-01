@@ -92,17 +92,14 @@ div.viewer-wrapper
     > :nth-child(1)
     {
         display: block;
-        background-color: rgba(255, 0, 0, 0.2);
     }
     > :nth-child(2)
     {
         display: block;
-        background-color: rgba(0, 255, 0, 0.2);
     }
     > :nth-child(3)
     {
         display: block;
-        background-color: rgba(0, 0, 255, 0.2);
     }
 }
 
@@ -116,4 +113,10 @@ rotation-widget
     width: 4rem;
     height: 4rem;
     margin: 1rem;
+}
+
+.invisible
+{
+    width: 0;
+    height: 0;
 }

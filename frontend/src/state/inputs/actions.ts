@@ -17,3 +17,11 @@ export const setIncoming = createAction(
     incomingVolumes: TVolume[]
   }>()
 )
+
+export const appendUserVolume = createAction(
+  `[${nameSpace}] appendUserVolume`,
+  props<{
+    incomingVolumes: TVolume[]
+    referenceVolumes: TVolume[]
+  }>()
+)

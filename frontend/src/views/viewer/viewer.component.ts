@@ -31,35 +31,10 @@ import * as outputs from 'src/state/outputs';
 import * as appState from "src/state/app"
 import * as inputs from 'src/state/inputs';
 import { NehubaNavigation, NehubaViewerWrapperComponent } from '../nehuba-viewer-wrapper/nehuba-viewer-wrapper.component';
-import { GET_NEHUBA_INJ, GetNehuba, Mat4, OverlayLm, VOLUBA_NEHUBA_TOKEN } from 'src/const';
+import { GET_NEHUBA_INJ, GetNehuba, INC_VOL_ID, Mat4, OverlayLm, REFERENCE_ID_TO_DARK_MODE, VOLUBA_NEHUBA_TOKEN, getIncLayer, getRefLayer, isDefined } from 'src/const';
 import { INCOMING_LM_COLOR, Landmark, LandmarkPair, REF_LM_COLOR } from 'src/landmarks/const';
 import { Actions, ofType } from '@ngrx/effects';
-
-
-const REF_VOL_ID = 'reference-volume'
-const INC_VOL_ID = 'incoming-volume'
-
-const _BIGBRAIN_NEHUBA_LAYER = {
-  id: REF_VOL_ID,
-  url: 'precomputed://https://neuroglancer.humanbrainproject.org/precomputed/BigBrainRelease.2015/8bit' && 'precomputed://http://127.0.0.1:8080/sharded/BigBrainRelease.2015/8bit',
-  transform: [
-    [1, 0, 0, -70677184],
-    [0, 1, 0, -70010000],
-    [0, 0, 1, -58788284],
-    [0, 0, 0, 1],
-  ] as Mat4,
-}
-
-const _INC_LAYER = {
-  id: INC_VOL_ID,
-  url: 'precomputed://https://neuroglancer.humanbrainproject.eu/precomputed/JuBrain/v2.2c/colin27_seg' && 'precomputed://http://127.0.0.1:8080/sharded/WHS_SD_rat/templates/v1.01/t2star_masked/',
-  transform: [
-    [1.0, 0.0, 0.0, 0],
-    [0.0, 1.0, 0.0, 0],
-    [0.0, 0.0, 1.0, 0],
-    [0.0, 0.0, 0.0, 1.0],
-  ] as Mat4,
-}
+import { UndoService } from 'src/history/const';
 
 
 @Injectable()
@@ -206,9 +181,25 @@ export class ViewerComponent implements AfterViewInit {
     })
   )
 
+  inputsView$ = combineLatest([
+    this.store.pipe(
+      select(inputs.selectors.selectedTemplate),
+      filter(isDefined),
+    ),
+    this.store.pipe(
+      select(inputs.selectors.selectedIncoming),
+      filter(isDefined),
+    )
+  ]).pipe(
+    map(([ selectedTemplate, selectedIncoming ]) => ({
+      selectedTemplate, selectedIncoming, darkmode: REFERENCE_ID_TO_DARK_MODE[selectedTemplate.id]
+    }))
+  )
+
   view$ = combineLatest([
     
     this.lmView$,
+    this.inputsView$,
     this.incLocked$,
     this.store.pipe(
       select(appState.selectors.isDefaultMode)
@@ -231,7 +222,7 @@ export class ViewerComponent implements AfterViewInit {
       )
     )
   ]).pipe(
-    map(([ { landmarks, addLandmarkMode, hoveredLmp, purgatory }, incLocked, isDefaultMode, xform, mouseover, primaryNavigation, isDraggingViewer ]) => {
+    map(([ { landmarks, addLandmarkMode, hoveredLmp, purgatory }, { selectedIncoming, selectedTemplate, darkmode }, incLocked, isDefaultMode, xform, mouseover, primaryNavigation, isDraggingViewer ]) => {
       
       const { mat4, quat } = export_nehuba
 
@@ -294,6 +285,9 @@ export class ViewerComponent implements AfterViewInit {
       quat.normalize(rotationWidgetQuat, rotationWidgetQuat)
       quat.invert(rotationWidgetQuat, rotationWidgetQuat)
 
+      const refLayer = getRefLayer(selectedTemplate)
+      const incLayer = getIncLayer(selectedIncoming)
+
       return { 
         incLocked,
         isDefaultMode,
@@ -304,9 +298,9 @@ export class ViewerComponent implements AfterViewInit {
         secondaryLandmarks,
         showAddingRefLmOverlay: !isDefaultMode && addLandmarkMode && !purgatory,
         showAddingIncLmOverlay: !isDefaultMode && addLandmarkMode && purgatory,
-        primaryLayers: [ _BIGBRAIN_NEHUBA_LAYER, _INC_LAYER ],
+        primaryLayers: [ refLayer, incLayer ],
         secondaryLayers: [ {
-          ..._INC_LAYER,
+          ...incLayer,
           transform: [
             atXform.slice(0, 4),
             atXform.slice(4, 8),
@@ -318,6 +312,7 @@ export class ViewerComponent implements AfterViewInit {
         isDraggingViewer,
         addLandmarkMode,
         rotationWidgetQuat,
+        darkmode,
       }
     })
   );
@@ -334,6 +329,7 @@ export class ViewerComponent implements AfterViewInit {
     private store: Store,
     private nehubaSvc: NehubaSvc,
     private actions$: Actions,
+    private undoSvc: UndoService,
     @Inject(GET_NEHUBA_INJ) getNehuba: GetNehuba,
   ) {
     getNehuba.provideNehubaInstance(() => this.viewerWrapper?.nehubaViewer)
@@ -396,7 +392,8 @@ export class ViewerComponent implements AfterViewInit {
       withLatestFrom(this.store.pipe(outputs.selectors.getIncXform())),
       takeUntil(this.#destroyed$),
     ).subscribe(([val, xformMat]) => {
-      if (!val) return;
+      if (!val) return
+      this.undoSvc.pushUndo(`Translate via viewer drag & drop`)
       const { movementX, movementY, sliceView } = val;
 
       const { vec3, mat4 } = export_nehuba;
@@ -460,8 +457,8 @@ export class ViewerComponent implements AfterViewInit {
         finalRotation,
         quat.setAxisAngle(quat.create(), axes0, (-movementX * Math.PI) / 180),
         quat.setAxisAngle(quat.create(), axes1, (movementY * Math.PI) / 180)
-      );
-
+      )
+      this.undoSvc.pushUndo(`Rotate via viewer drag & drop`)
       this.store.dispatch(
         outputs.actions.rotateIncBy({
           array: Array.from(finalRotation),
@@ -566,7 +563,7 @@ export class ViewerComponent implements AfterViewInit {
         // cannot find if the hovered lm is targeting inc or ref, maybe it's targetting purgatory?
         return
       }
-
+      this.undoSvc.pushUndo(`Update landmark ${hoveredLandmarkPair.id}.${lmkey} by drag and drop`)
       this.store.dispatch(
         appState.actions.updateLandmarkPair({
           id: hoveredLandmarkPair.id,
@@ -579,7 +576,6 @@ export class ViewerComponent implements AfterViewInit {
         })
       )
     })
-
   }
 
   async resetOrientation(target: 'reference'|'incoming'){

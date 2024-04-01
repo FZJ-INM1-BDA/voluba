@@ -8,7 +8,7 @@ declare namespace export_nehuba {
     static add(rec: vec3|number[], src: vec3|number[], dst: vec3|number[]): vec3|number[]
     static mul(rec: vec3|number[], src: vec3|number[], m: vec3|number[]): vec3|number[]
     static inverse(rec: vec3, src: vec3): vec3
-    static scale(rec: vec3, src: vec3, s: number): vec3
+    static scale(rec: vec3|number[], src: vec3|number[], s: number): vec3|number[]
     static divide(out: vec3, a: vec3, b: vec3): vec3
     static div(out: vec3|number[], a: vec3|number[], b: vec3|number[]): vec3|number[]
   }

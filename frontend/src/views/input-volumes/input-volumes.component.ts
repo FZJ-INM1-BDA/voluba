@@ -1,12 +1,12 @@
-import { ChangeDetectionStrategy, Component, Inject, inject } from '@angular/core';
-import { FormControl, FormGroup } from '@angular/forms';
+import { ChangeDetectionStrategy, Component, ElementRef, Inject, ViewChild, inject } from '@angular/core';
+import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { select, Store } from '@ngrx/store';
 import { Observable, Subject, combineLatest, concat, distinctUntilChanged, filter, firstValueFrom, from, map, of, scan, switchMap, takeUntil, withLatestFrom } from 'rxjs';
 import * as inputs from 'src/state/inputs';
 import * as appState from 'src/state/app'
 import * as generalActions from "src/state/actions"
 import { DestroyDirective } from 'src/util/destroy.directive';
-import { ChumniPreflightResp, ChumniVolume, LOGIN_METHODS, SEGMENTATION_EXPLAINER_TEXT, VOLUBA_APP_CONFIG, VolubaAppConfig, isDefined, trimFilename } from 'src/const';
+import { ChumniPreflightResp, ChumniVolume, CustomSrc, LOGIN_METHODS, SEGMENTATION_EXPLAINER_TEXT, VOLUBA_APP_CONFIG, VolubaAppConfig, extractProtocolUrl, isDefined, trimFilename } from 'src/const';
 import { TVolume } from 'src/state/inputs/consts';
 
 function arrayBufferToBase64String(arraybuffer: ArrayBuffer) {
@@ -23,6 +23,7 @@ type UploadStatus = {
   extraTexts?: string[]|null
   preflight: boolean
   upload: boolean
+  error?: string
 }
 
 @Component({
@@ -35,6 +36,9 @@ type UploadStatus = {
   ]
 })
 export class InputVolumesComponent {
+
+  @ViewChild('fileInput', { read: ElementRef })
+  fileInputElRef: ElementRef|undefined
 
   destroyed$ = inject(DestroyDirective).destroyed$
 
@@ -58,6 +62,29 @@ export class InputVolumesComponent {
     selectedIncoming: new FormControl<string | null>(null),
   })
 
+  newVolumeCtrl = new FormGroup({
+    name: new FormControl<string>('', [
+      Validators.required
+    ]),
+    url: new FormControl<string>('', [
+      Validators.required,
+    ], [
+      async ctl => {
+        try {
+          const vol = extractProtocolUrl(ctl.value)
+          if (Object.keys(vol.providers).length === 0) {
+            throw new Error(`No provider found for ${ctl.value}`)
+          }
+          return null
+        } catch (e) {
+          return {
+            validationError: (e as any).toString()
+          }
+        }
+      }
+    ]),
+  })
+
   view$ = combineLatest([
     this.store$.pipe(
       select(inputs.selectors.templateVolumes)
@@ -73,7 +100,7 @@ export class InputVolumesComponent {
     ),
     this.#uploadStatus$
   ]).pipe(
-    map(([ availableTemplates, availableIncomings, user, selectedIncoming, { preflight, upload, filename, extraTexts } ]) => {
+    map(([ availableTemplates, availableIncomings, user, selectedIncoming, { preflight, upload, filename, extraTexts, error } ]) => {
       return {
         availableTemplates,
         availableIncomings,
@@ -85,6 +112,7 @@ export class InputVolumesComponent {
         filename,
         extraTexts,
         segmentationCheckboxExplainer: SEGMENTATION_EXPLAINER_TEXT,
+        error,
       }
     })
   )
@@ -121,32 +149,61 @@ export class InputVolumesComponent {
         const authHeader: { Authorization?: string } = !!user
         ? { 'Authorization': `Bearer ${user.authtoken}` }
         : {}
-        return fetch(`${this.appCfg.uploadUrl}/list`, {
-          headers: {
-            ...authHeader
-          }
-        }).then(res => res.json())
-      })
-    ).subscribe((chumniVolumes: ChumniVolume[]) => {
-      const incomingVolumes = chumniVolumes.map(vol => {
-        const { name, extra: { neuroglancer: { resolution, size } }, links: { normalized }, visibility } = vol
-        const dim = resolution.map((res, idx) => res * size[idx])
-        return {
-          id: name,
-          name: name,
-          volumes: [
-            {
-              "@type": "siibra/volume/v0.0.1",
-              providers: {
-                "neuroglancer/precomputed": `${this.appCfg.uploadUrl}${normalized}`
+        return combineLatest([
+          /**
+           * getting volumes from chumni
+           */
+          from(
+            fetch(`${this.appCfg.uploadUrl}/list`, {
+              headers: {
+                ...authHeader
               }
-            }
-          ],
-          dim,
-          visibility
-        } as TVolume
+            }).then(res => res.json())
+          ).pipe(
+            map((chumniVolumes: ChumniVolume[]) => {
+              return chumniVolumes.map(vol => {
+                const { name, extra: { neuroglancer: { resolution, size } }, links: { normalized }, visibility } = vol
+                return {
+                  id: name,
+                  name: name,
+                  volumes: [
+                    {
+                      "@type": "siibra/volume/v0.0.1",
+                      providers: {
+                        "neuroglancer/precomputed": `${this.appCfg.uploadUrl}${normalized}`
+                      }
+                    }
+                  ],
+                  visibility
+                } as TVolume
+              })
+            })
+          ),
+          /**
+           * getting volumes from customSrc
+           */
+          from(
+            fetch("user/customSrc").then(res => res.json())
+          ).pipe(
+            map((resp: CustomSrc) => {
+              const { customSrc } = resp
+              const returnArr: TVolume[] = []
+              for (const { id, imageSource, name } of customSrc){
+                returnArr.push({
+                  id,
+                  name,
+                  visibility: 'custom',
+                  volumes: [ extractProtocolUrl(imageSource) ]
+                })
+              }
+              return returnArr
+            })
+          )
+        ]).pipe(
+          map(([ chumniVols, customSrcVols ]) => [...chumniVols, ...customSrcVols])
+        )
       })
-
+    ).subscribe((incomingVolumes: TVolume[]) => {
       this.store$.dispatch(
         inputs.actions.setIncoming({
           incomingVolumes
@@ -192,17 +249,33 @@ export class InputVolumesComponent {
     this.#setUploadStatus$.next({
       preflight: true,
       filename: file.name,
-      extraTexts: [ filesize ]
+      extraTexts: [ filesize ],
+      error: undefined
     })
-    const result = await this.#preflight(file)
-    this.#setUploadStatus$.next({
-      preflight: false,
-      extraTexts: [
-        filesize,
-        ...result.warnings.map(v => `Warning: ${v}`)
-      ]
-    })
+    try {
+      
+      const result = await this.#preflight(file)
+      this.#setUploadStatus$.next({
+        extraTexts: [
+          filesize,
+          ...result.warnings.map(v => `Warning: ${v}`)
+        ]
+      })
 
+    } catch (e) {
+      this.store$.dispatch(
+        generalActions.error({
+          message: (e as any).toString()
+        })
+      )
+      this.#setUploadStatus$.next({
+        error: (e as any).toString()
+      })
+    } finally {
+      this.#setUploadStatus$.next({
+        preflight: false
+      })
+    }
   }
 
   async #preflight(file: File){
@@ -257,7 +330,12 @@ export class InputVolumesComponent {
           },
           body: formData
         })
-        .then(res => res.json())
+        .then(async res => {
+          if (!res.ok) {
+            throw new Error(await res.text() || res.statusText || res.status.toString() )
+          }
+          return await res.json()
+        })
         .then((jsonResp: ChumniPreflightResp) => rs(jsonResp))
         .catch(rj)
       }
@@ -332,8 +410,13 @@ export class InputVolumesComponent {
     this.#setUploadStatus$.next({
       filename: null,
       extraTexts: null,
+      error: undefined
     })
     this.#file = undefined
+    const inputEl: HTMLInputElement = this.fileInputElRef?.nativeElement
+    if (inputEl) {
+      inputEl.value = ''
+    }
   }
 
   async upload(){
@@ -405,5 +488,41 @@ export class InputVolumesComponent {
       this.#setUploadStatus$.next({ upload: false })
     }
     
+  }
+
+  refresh(){
+    this.#refreshList$.next(null)
+  }
+
+  async addVolume(){
+    const { name, url } = this.newVolumeCtrl.value
+    if (!name || !url) {
+      return
+    }
+    const textEncoder = new TextEncoder()
+    const buffer = textEncoder.encode(url)
+    const shaBuffer = await crypto.subtle.digest('SHA-256', buffer)
+    const hashArray = Array.from(new Uint8Array(shaBuffer))
+    const hasedId = hashArray.map(v => v.toString(16).padStart(2, "0")).join("")
+
+    const vol = extractProtocolUrl(url)
+    const volume: TVolume = {
+      id: hasedId,
+      name,
+      volumes: [ vol ],
+      visibility: "useradded"
+    }
+    this.store$.dispatch(
+      inputs.actions.appendUserVolume({
+        incomingVolumes: [ volume ],
+        referenceVolumes: [ volume ], 
+      })
+    )
+    this.store$.dispatch(
+      generalActions.info({
+        message: `Volume ${name} added.`
+      })
+    )
+    this.newVolumeCtrl.reset()
   }
 }

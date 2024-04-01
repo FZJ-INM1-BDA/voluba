@@ -5,63 +5,83 @@ const bigbrain: TVolume = {
     {
       '@type': 'siibra/volume/v0.0.1',
       providers: {
-        'neuroglancer/precomputed':
-          'http://127.0.0.1:8080/sharded/BigBrainRelease.2015/8bit',
-        'neuroglancer/precomputed/surface':
-          'https://neuroglancer.humanbrainproject.eu/precomputed/BigBrainRelease.2015/classif_mesh 100',
+        'neuroglancer/precomputed': 'https://data-proxy.ebrains.eu/api/v1/buckets/reference-atlas-data/sharded/BigBrainRelease.2015/8bit',
+        'neuroglancer/precomputed/surface': 'https://neuroglancer.humanbrainproject.eu/precomputed/BigBrainRelease.2015/classif_mesh 100',
       },
     },
   ],
-  dim: [6572, 7404, 5711],
-};
+}
+const bVols: TVolume[] = [
+  {
+    id: 'whole-brain-dataset',
+    name: 'Whole brain dataset',
+    volumes: [
+      {
+        '@type': 'siibra/volume/v0.0.1',
+        providers: {
+          'neuroglancer/precomputed': 'https://neuroglancer.humanbrainproject.org/precomputed/JuBrain/v2.2c/colin27_seg',
+        },
+      },
+    ],
+    visibility: 'bundled'
+  },
+  {
+    id: 'nucleus-subthalamicus',
+    name: 'Nucleus subthalamicus (B20)',
+    volumes: [
+      {
+        '@type': 'siibra/volume/v0.0.1',
+        providers: {
+          'neuroglancer/precomputed': 'https://data-proxy.ebrains.eu/api/v1/buckets/reference-atlas-data/precomputed/landmark-reg/B20_stn_l/v10',
+        },
+      },
+    ],
+    visibility: 'bundled'
+  },
+  {
+    id: 'inc-2',
+    name: 'Hippocampus unmasked',
+    volumes: [
+      {
+        '@type': 'siibra/volume/v0.0.1',
+        providers: {
+          'neuroglancer/precomputed': 'https://data-proxy.ebrains.eu/api/v1/buckets/reference-atlas-data/precomputed/landmark-reg/hippocampus-unmasked',
+        },
+      },
+    ],
+    visibility: 'bundled'
+  },
+]
 
-const waxholm: TVolume = {
+export const waxholm: TVolume = {
   id: 'waxholm',
-  name: 'Waxholm Rat',
+  name: 'Waxholm Space of the Sprague Dawley v1.01',
   volumes: [
     {
       '@type': 'siibra/volume/v0.0.1',
       providers: {
-        'neuroglancer/precomputed':
-          'https://neuroglancer.humanbrainproject.eu/precomputed/WHS_SD_rat/templates/v1.01/t2star_masked' && 'http://127.0.0.1:8080/sharded/WHS_SD_rat/templates/v1.01/t2star_masked',
+        'neuroglancer/precomputed': 'https://neuroglancer.humanbrainproject.eu/precomputed/WHS_SD_rat/templates/v1.01/t2star_masked',
       },
     },
   ],
-  dim: [512, 1024, 512].map(v => v * 39062.5),
 }
 
-const colin: TVolume = {
-  id: 'colin27',
-  name: 'Colin 27',
+const allen: TVolume = {
+  id: 'allen',
+  name: 'Allen Mouse Common Coordinate Framework v3',
   volumes: [
     {
       '@type': 'siibra/volume/v0.0.1',
       providers: {
-        'neuroglancer/precomputed':
-          'https://neuroglancer.humanbrainproject.eu/precomputed/JuBrain/v2.2c/colin27_seg',
+        'neuroglancer/precomputed': 'https://neuroglancer.humanbrainproject.eu/precomputed/AMBA/templates/v3/stpt',
       },
     },
   ],
-  dim: [151, 188, 154].map(v => v * 1e6),
 };
 
-type Volume = {
-  '@type': 'siibra/volume/v0.0.1'
-  providers: {
-    'neuroglancer/precomputed'?: string
-    'neuroglancer/precomputed/surface'?: string
-    'neuroglancer/n5'?: string
-  }
-}
+import { TVolume } from "src/const"
+export { TVolume }
 
-export type TVolume = {
-  id: string
-  name: string
-  volumes: Volume[]
-  dim: number[]
-  contentHash?: string
-  visibility?: 'public' | 'private'
-}
 export const nameSpace = `[inputs]`
 export type LocalState = {
   templateVolumes: TVolume[]
@@ -71,8 +91,8 @@ export type LocalState = {
 };
 
 export const defaultState: LocalState = {
-  templateVolumes: [bigbrain, waxholm],
-  incomingVolumes: [waxholm],
-  selectedTemplate: bigbrain, //null,
-  selectedIncoming: waxholm, //null
-};
+  templateVolumes: [bigbrain, waxholm, allen],
+  incomingVolumes: bVols,
+  selectedTemplate: bigbrain,
+  selectedIncoming: null
+}

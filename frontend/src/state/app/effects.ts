@@ -99,11 +99,5 @@ export class Effects {
     })
   ))
 
-  constructor(private actions$: Actions, private store: Store, private snackbar: MatSnackBar){
-    this.actions$.pipe(
-      ofType(actions.error)
-    ).subscribe(ac => {
-      this.snackbar.open(ac.message)
-    })
-  }
+  constructor(private actions$: Actions, private store: Store){}
 }

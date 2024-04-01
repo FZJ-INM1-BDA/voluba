@@ -154,6 +154,9 @@ export class NehubaViewerWrapperComponent implements OnInit, AfterViewInit {
   @Input('nehuba-viewer-init-navigation')
   initNavigation: NehubaNavigation|null = null
 
+  @Input()
+  darkmode = false
+
   @Output()
   mousePosition = new EventEmitter<Float32Array>()
 
@@ -185,13 +188,13 @@ export class NehubaViewerWrapperComponent implements OnInit, AfterViewInit {
       UrlHashBinding.prototype.setUrlHash = () => {
         // console.log('seturl hash')
         // console.log('setting url hash')
-      };
+      }
       UrlHashBinding.prototype.updateFromUrlHash = () => {
         // console.log('update hash binding')
-      };
+      }
     }
 
-    const config = JSON.parse(JSON.stringify(_config));
+    const config = JSON.parse(JSON.stringify(this.darkmode ? darkmode : lightmode));
     config.dataset.initialNgState.layers = {};
     for (const layer of this.layers) {
       config.dataset.initialNgState.layers[layer.id] = {

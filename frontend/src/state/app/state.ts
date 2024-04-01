@@ -63,5 +63,12 @@ export const reducer = createReducer(
       ...state,
       hoveredLandmark: landmark
     }
-  })
+  }),
+  on(actions.setUser, (state, { user }) => ({
+    ...state,
+    user: {
+      fullname: user.name,
+      authtoken: user.accessToken,
+    }
+  }))
 )

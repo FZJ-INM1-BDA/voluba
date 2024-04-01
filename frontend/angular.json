@@ -56,16 +56,15 @@
                 "input": "export-nehuba/dist/min/blosc.bundle.js",
                 "inject": false,
                 "bundleName": "blosc.bundle"
+              },{
+                "input": "thirdparty/matomo.js",
+                "inject": false,
+                "bundleName": "matomo"
               }]
           },
           "configurations": {
             "production": {
               "budgets": [
-                {
-                  "type": "initial",
-                  "maximumWarning": "500kb",
-                  "maximumError": "1mb"
-                },
                 {
                   "type": "anyComponentStyle",
                   "maximumWarning": "2kb",

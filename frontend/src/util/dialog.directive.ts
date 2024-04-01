@@ -1,6 +1,6 @@
 import { Directive, HostListener, Input, TemplateRef } from '@angular/core';
-import { MatDialog, MatDialogRef } from '@angular/material/dialog';
-import { BehaviorSubject, Subject } from 'rxjs';
+import { MatDialog, MatDialogRef, MatDialogConfig } from '@angular/material/dialog';
+import { BehaviorSubject } from 'rxjs';
 import { isHtmlElement } from 'src/const';
 
 @Directive({
@@ -18,18 +18,24 @@ export class DialogDirective {
   @Input()
   dialogTarget: TemplateRef<unknown> | null = null;
 
+  @Input()
+  dialogCentered = false
+
+  @Input()
+  dialogBackdrop = false
+
   #matDialogRef: MatDialogRef<unknown> | null = null;
+
+  
 
   @HostListener('click', ['$event'])
   click(event: MouseEvent) {
-
     if (this.clickToToggle) {
       this.toggle(event)
       return
     }
 
     this.open(event)
-
   }
 
   toggle(event: MouseEvent) {
@@ -41,21 +47,24 @@ export class DialogDirective {
   }
 
   open(event: MouseEvent) {
-    if (!this.dialogTarget) return;
-    const { target } = event;
-    let top, left;
-    if (isHtmlElement(target)) {
-      const rect = target.getBoundingClientRect();
-      top = rect.top;
-      left = rect.right + 20;
+    if (!this.dialogTarget) return
+
+    const cfg: Partial<MatDialogConfig> = {}
+    cfg.hasBackdrop = this.dialogBackdrop
+    if (!this.dialogCentered) {
+      const { target } = event;
+      let top, left;
+      if (isHtmlElement(target)) {
+        const rect = target.getBoundingClientRect();
+        top = rect.top;
+        left = rect.right + 20;
+        cfg.position = {
+          left: `${left}px`,
+          top: `${top}px`,
+        }
+      }
     }
-    this.#matDialogRef = this.dialog.open(this.dialogTarget, {
-      hasBackdrop: false,
-      position: {
-        left: `${left}px`,
-        top: `${top}px`,
-      },
-    });
+    this.#matDialogRef = this.dialog.open(this.dialogTarget, cfg)
     this.#matDialogRef.afterClosed().subscribe(() => {
       this.#state$.next(false)
       this.#matDialogRef = null

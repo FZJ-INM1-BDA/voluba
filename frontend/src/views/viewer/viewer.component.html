@@ -1,8 +1,21 @@
 <ng-template [ngIf]="view$ | async" let-view>
 
-    <div class="viewer-wrapper">
+    <div class="invisible"
+        voluba-kb-shortcut
+        kb-shortcut-keys="ctrl+keyz"
+        (kb-shortcut-triggered)="histroyCtl.rewind()"></div>
+    <div class="invisible"
+        voluba-kb-shortcut
+        kb-shortcut-keys="ctrl+keyy"
+        (kb-shortcut-triggered)="histroyCtl.forward()"></div>
+
+    <div class="viewer-wrapper"
+        voluba-history-controller
+        #histroyCtl="historyController">
+
         <div class="landmark-layer-wrapper">
             <voluba-nehuba-viewer-wrapper
+                [darkmode]="view.darkmode"
                 (navigation)="setPrimaryNav($event)"
                 (mousePosition)="onMousePosition($event)"
                 (mousedown)="onMouseDown($event.event)"

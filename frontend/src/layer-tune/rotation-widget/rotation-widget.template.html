@@ -1,11 +1,25 @@
 <ng-template [ngIf]="view$ | async" let-view>
-    <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+    <svg viewBox="0 0 120 120"
+        xmlns="http://www.w3.org/2000/svg">
+
 
         <path *ngFor="let widget of view.widgets"
+            (mousedown)="handleMouseDown($event, widget)"
             [attr.d]="widget.d"
             [attr.stroke-width]="10"
-            [attr.fill]="'none'"
+            [attr.fill]="widget.fill"
             [attr.stroke]="'url(#' + widget.color + ')'">
+        </path>
+
+        <clipPath id="clipPathId">
+            <path fill="none" [attr.d]="view.clipPathD"></path>
+        </clipPath>
+
+        <path *ngIf="view.guidingLineD" clip-path="url(#clipPathId)"
+            stroke-width="7"
+            stroke="white"
+            class="guilding-line"
+            [attr.d]="view.guidingLineD">
         </path>
 
         <defs>            

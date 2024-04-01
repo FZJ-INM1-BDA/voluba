@@ -1,6 +1,6 @@
-import { defaultState } from './consts';
-import { createReducer, on } from '@ngrx/store';
-import * as actions from './actions';
+import { defaultState } from './consts'
+import { createReducer, on } from '@ngrx/store'
+import * as actions from './actions'
 
 export const reducer = createReducer(
   defaultState,
@@ -16,6 +16,16 @@ export const reducer = createReducer(
   })),
   on(actions.setIncoming, (state, { incomingVolumes }) => ({
     ...state,
-    incomingVolumes
+    incomingVolumes: [
+      // do not filter out user added volume
+      ...state.incomingVolumes.filter(v => v.visibility === "useradded"),
+      ...state.incomingVolumes.filter(v => v.visibility === "bundled"),
+      ...incomingVolumes
+    ]
+  })),
+  on(actions.appendUserVolume, (state, { incomingVolumes, referenceVolumes }) => ({
+    ...state,
+    incomingVolumes: [ ...state.incomingVolumes, ...incomingVolumes ],
+    templateVolumes: [ ...state.templateVolumes, ...referenceVolumes ],
   }))
 )

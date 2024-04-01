@@ -1,23 +1,6 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
-import { HistoryStack } from '../const';
-
-const _tmpHistory: HistoryStack = {
-  id: 'baz',
-  name: 'foo-stuff',
-  state: {
-    '[inputs]': {
-      incomingVolumes: [],
-      selectedIncoming: null,
-      selectedTemplate: null,
-      templateVolumes: [],
-    },
-  },
-};
-const _tmpHistory2: HistoryStack = {
-  id: 'foo',
-  name: 'foo-stuff-2',
-  state: {},
-};
+import { HistoryStack, UndoService } from '../const';
+import { combineLatest, concat, map, of } from 'rxjs';
 
 @Component({
   selector: 'voluba-history-listview',
@@ -26,13 +9,27 @@ const _tmpHistory2: HistoryStack = {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class HistoryListviewComponent {
-  @Input()
-  history: HistoryStack[] = [_tmpHistory, _tmpHistory2];
 
-  @Input()
-  activeHistory: HistoryStack | null = _tmpHistory;
+  view$ = combineLatest([
+    concat(
+      of([]),
+      this.svc.undoStack$,
+    )
+  ]).pipe(
+    map(([ history ]) => {
+      const clonedHistory = structuredClone(history)
+      clonedHistory.reverse()
+      return {
+        history: clonedHistory
+      }
+    })
+  )
 
   revert(history: HistoryStack) {
-    console.log('reverting history', history);
+    this.svc.resetTo(history.id)
+  }
+
+  constructor(private svc: UndoService){
+
   }
 }

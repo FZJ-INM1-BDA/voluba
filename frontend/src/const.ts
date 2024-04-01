@@ -130,6 +130,7 @@ export function transCoordSpcScaling(src: CoordSpace, dst: CoordSpace): export_n
 export type VolubaAppConfig = {
   uploadUrl: string
   linearBackend: string
+  sxplrhost: string
 }
 
 export const VOLUBA_APP_CONFIG = new InjectionToken<VolubaAppConfig>("VOLUBA_APP_CONFIG")
@@ -209,4 +210,202 @@ export function trimFilename(filename: string): string {
     return filename
   }
   return `${filename.slice(0, 10)}...`
+}
+
+type CustomVolubaSrc = {
+  id: string
+  dim: number[]
+  imageSource: string
+  name: string
+}
+
+export type CustomSrc = {
+  customSrc: CustomVolubaSrc[]
+}
+
+type Volume = {
+  '@type': 'siibra/volume/v0.0.1'
+  providers: {
+    'neuroglancer/precomputed'?: string
+    'neuroglancer/precomputed/surface'?: string
+    'neuroglancer/n5'?: string
+  }
+}
+
+export type TVolume = {
+  id: string
+  name: string
+  volumes: Volume[]
+  contentHash?: string
+  visibility?: 'public' | 'private' | 'custom' | 'useradded' | 'bundled'
+}
+
+export function expandUrl(url: string): string {
+  if (/^https?:\/\//.test(url)) {
+    return url
+  }
+  if (/^gs:\/\//.test(url)) {
+    return url.replace(/^gs:\/\//, 'https://storage.googleapis.com/')
+  }
+  throw new Error(`${url} cannot be parsed correctly`)
+}
+
+const protocol: Record<string, keyof Volume['providers']> = {
+  "precomputed://": "neuroglancer/precomputed",
+  "n5://": "neuroglancer/n5",
+}
+
+export function extractProtocolUrl(ngUrl: string): Volume {
+  const returnVal: Volume = {
+    "@type": "siibra/volume/v0.0.1",
+    providers: {}
+  }
+
+  for (const ptlSignature in protocol){
+    if (ngUrl.startsWith(ptlSignature)) {
+      const protocolKey = protocol[ptlSignature]
+      returnVal.providers[protocolKey] = expandUrl(ngUrl.replace(ptlSignature, ""))
+    }
+  }
+
+  return returnVal
+}
+
+export function getNgUrl(volume: Volume) {
+  for (const sig in protocol) {
+    const protocolKey = protocol[sig]
+    if (!!volume.providers[protocolKey]) {
+      return `${sig}${volume.providers[protocolKey]}`
+    }
+  }
+  throw new Error(`Cannot decipher volume ${volume}`)
+}
+
+export const REFERENCE_ID_TO_DATA: Record<string, { transform: Mat4 }> = {
+  bigbrain: {
+    transform: [
+      [1, 0, 0, -70677184],
+      [0, 1, 0, -70010000],
+      [0, 0, 1, -58788284],
+      [0, 0, 0, 1],
+    ],
+  },
+  waxholm: {
+    transform: [
+      [1,0,0,-9550781],
+      [0,1,0,-24355468],
+      [0,0,1,-9707031],
+      [0,0,0,1]
+    ]
+  },
+  allen: {
+    transform: [[1,0,0,-5737500],[0,1,0,-6637500],[0,0,1,-4037500],[0,0,0,1]]
+  }
+}
+
+export const REFERENCE_ID_TO_SXPLR_ROOT: Record<string, string> = {
+  bigbrain: "/a:juelich:iav:atlas:v1.0.0:1/t:minds:core:referencespace:v1.0.0:a1655b99-82f1-420f-a3c2-fe80fd4c8588/p:juelich:iav:atlas:v1.0.0:4/",
+  waxholm: "/a:minds:core:parcellationatlas:v1.0.0:522b368e-49a3-49fa-88d3-0870a307974a/t:minds:core:referencespace:v1.0.0:d5717c4a-0fa1-46e6-918c-b8003069ade8/p:minds:core:parcellationatlas:v1.0.0:ebb923ba-b4d5-4b82-8088-fa9215c2e1fe-v4/",
+  allen: "/a:juelich:iav:atlas:v1.0.0:2/t:minds:core:referencespace:v1.0.0:265d32a0-3d84-40a5-926f-bf89f68212b9/p:minds:core:parcellationatlas:v1.0.0:05655b58-3b6f-49db-b285-64b5a0276f83/",
+  mebrains: "/a:juelich:iav:atlas:v1.0.0:monkey/t:minds:core:referencespace:v1.0.0:MEBRAINS/p:minds:core:parcellationatlas:v1.0.0:e3235c039c6f54c3ba151568c829f117/"
+}
+export const REFERENCE_ID_TO_DARK_MODE: Record<string, boolean> = {
+  bigbrain: false,
+  waxholm: true,
+  allen: true,
+  mebrains: true,
+}
+
+export const REF_VOL_ID = 'reference-volume'
+export const INC_VOL_ID = 'incoming-volume'
+
+export function getNgLayer(volume: TVolume){
+  for (const vol of volume.volumes){
+    try {
+      const url = getNgUrl(vol)
+      return url
+    } catch (e) {
+      console.warn(`getIncLayer failed: ${(e as any).toString()}`)
+    }
+  }
+  throw new Error(`getIncLayer failed: cannot find url`)
+}
+
+export function getRefLayer(volume: TVolume){
+  const { id, volumes, visibility } = volume
+  const url = getNgLayer(volume)
+
+  if (visibility === "useradded") {
+    return {
+      id: REF_VOL_ID,
+      url,
+      transform: [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [0, 0, 0, 1],
+      ] as Mat4
+    }
+  }
+  if (!(id in REFERENCE_ID_TO_DATA)) {
+    throw new Error(`Cannot find ${id} in REFERENCE_ID_TO_DATA`)
+  }
+
+  return {
+    ...REFERENCE_ID_TO_DATA[id],
+    id: REF_VOL_ID,
+    url,
+  }
+}
+
+export function getIncLayer(volume: TVolume){
+  const url = getNgLayer(volume)
+  return {
+    id: INC_VOL_ID,
+    url,
+    transform: [
+      [1.0, 0.0, 0.0, 0],
+      [0.0, 1.0, 0.0, 0],
+      [0.0, 0.0, 1.0, 0],
+      [0.0, 0.0, 0.0, 1.0],
+    ] as Mat4,
+  }
+}
+
+export type EbrainsWorkflowPayload = {
+  incomingVolume: string
+  contentHash?: string
+  referenceVolume: string
+  version: number|string
+  '@type': string
+  transformMatrixInNm: number[][]
+  description?: string
+}
+
+export type EbrainsWorkflowResponse = {
+  job_id: string
+}
+
+export type EbrainsPublishResult = {
+  name: string
+  status: "PENDING" | "RUNNING" | "COMPLETED" | "ERROR" 
+  detail: string
+}
+
+export type User = {
+  id: string
+  name: string
+  given_name: string
+  family_name: string
+  type: string
+  accessToken: string
+  idToken: string
+}
+
+export type EbrainsWorkflowPollResponse = {
+  id: string
+  param: EbrainsWorkflowPayload
+  output_hash: string
+  progresses: EbrainsPublishResult[]
+  user: User
 }

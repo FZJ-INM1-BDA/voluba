@@ -69,9 +69,10 @@ import { Subject, debounceTime, map, merge, shareReplay } from 'rxjs';
       provide: VOLUBA_APP_CONFIG,
       useValue: {
         uploadUrl: "https://zam10143.zam.kfa-juelich.de/chumni",
-        linearBackend: "https://voluba-backend.apps.tc.humanbrainproject.eu"
+        linearBackend: "https://voluba-backend.apps.tc.humanbrainproject.eu",
+        sxplrhost: "https://atlases.ebrains.eu/viewer"
       } as VolubaAppConfig
-    }
+    },
   ],
   bootstrap: [AppComponent],
 })
