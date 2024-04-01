@@ -29,7 +29,7 @@ COPY ./backend/voluba_backend /voluba
 RUN chown -R nobody /voluba
 WORKDIR /voluba
 
-COPY --from=compressor /app/frontend/dist /voluba/public
+COPY --from=compressor /app/frontend/dist/frontend /voluba/public
 ENV PATH_TO_STATIC=/voluba/public
 
 USER nobody
