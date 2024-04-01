@@ -309,8 +309,8 @@ export class ShareExportComponent {
           description
         }),
         headers: {
-          "content-type": "applicaton/json"
-        }
+          "content-type": "application/json"
+        },
       })
       if (!res.ok) {
         const text = await res.text()
