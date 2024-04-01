@@ -183,7 +183,12 @@ export class InputVolumesComponent {
            * getting volumes from customSrc
            */
           from(
-            fetch("user/customSrc").then(res => res.json())
+            fetch("user/customSrc").then(res => {
+              if (!res.ok) {
+                return { customSrc: [] }
+              }  
+              return res.json()
+            })
           ).pipe(
             map((resp: CustomSrc) => {
               const { customSrc } = resp
