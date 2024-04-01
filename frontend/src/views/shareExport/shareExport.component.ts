@@ -7,6 +7,7 @@ import * as outputs from "src/state/outputs"
 import * as appState from "src/state/app"
 import * as generalActions from "src/state/actions"
 import { DestroyDirective } from "src/util/destroy.directive";
+import { ExportJson } from "src/state/outputs/consts";
 
 const flattenMat = (arr: number[][]) => arr.reduce((acc, curr) => acc.concat(curr), [])
 
@@ -300,13 +301,12 @@ export class ShareExportComponent {
       sending: true
     })
     try{
+      const { coordinateSpace, ...rest } = JSON.parse(content) as ExportJson
       const res = await fetch(`ebrains`, {
         method: "POST",
         body: JSON.stringify({
-          body: {
-            ...JSON.parse(content),
-            description
-          }
+          ...rest,
+          description
         }),
         headers: {
           "content-type": "applicaton/json"
