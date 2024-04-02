@@ -84,6 +84,15 @@ export class ShareExportComponent {
     stages: []
   })
 
+  publishProgress$ = this.#publishProgress$.pipe(
+    scan((acc, curr) => {
+      return {
+        ...acc,
+        ...curr
+      }
+    })
+  )
+
   view$ = combineLatest([
     this.store.pipe(
       select(inputs.selectors.selectedTemplate)
@@ -97,14 +106,7 @@ export class ShareExportComponent {
     this.store.pipe(
       select(appState.selectors.user)
     ),
-    this.#publishProgress$.pipe(
-      scan((acc, curr) => {
-        return {
-          ...acc,
-          ...curr,
-        }
-      })
-    )
+    this.publishProgress$
   ]).pipe(
     map(([
       selectedTemplate,
@@ -352,7 +354,7 @@ export class ShareExportComponent {
     @Inject(VOLUBA_APP_CONFIG)
     private appCfg: VolubaAppConfig
   ){
-    this.#publishProgress$.pipe(
+    this.publishProgress$.pipe(
       takeUntil(this.destroyed$),
       map(({ id }) => id),
       distinctUntilChanged(),
