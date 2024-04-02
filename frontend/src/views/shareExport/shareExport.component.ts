@@ -352,13 +352,12 @@ export class ShareExportComponent {
     @Inject(VOLUBA_APP_CONFIG)
     private appCfg: VolubaAppConfig
   ){
-    let flag = true
     this.#publishProgress$.pipe(
       takeUntil(this.destroyed$),
       map(({ id }) => id),
       distinctUntilChanged(),
       switchMap(id => {
-        if (!id || flag) {
+        if (!id) {
           return EMPTY
         }
         return interval(1000).pipe(
