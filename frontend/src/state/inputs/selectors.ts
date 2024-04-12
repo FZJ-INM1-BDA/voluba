@@ -107,7 +107,7 @@ export const incVoxelSize = pipe(
         return [1, 1, 1]
       }
       return units.map((unit, idx) => {
-        if (resolution[idx]) {
+        if (!resolution[idx]) {
           console.warn(`n5 parsing warning: resolution indexed at ${idx} not found!`)
           return 1
         }

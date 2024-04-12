@@ -143,6 +143,13 @@
                 [disabled]="!view.isDefaultMode">
                 <mat-icon [fontIcon]="view.incLocked || (!view.isDefaultMode) ? 'lock' : 'lock_open'"></mat-icon>
             </button>
+            <a mat-icon-button
+                matTooltip="Logout and discard all progress"
+                color="warn"
+                href="logout"
+                [disabled]="!view.user">
+                <mat-icon>logout</mat-icon>
+            </a>
         </div>
         <div bottomleft>
             <mat-card class="navigation-card">

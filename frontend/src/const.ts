@@ -81,6 +81,7 @@ export const cvtToNm = {
   pm: (v: number) => v * 1e-3,
   nm: (v: number) => v,
   μm: (v: number) => v * 1e3,
+  um: (v: number) => v * 1e3,
   mm: (v: number) => v * 1e6,
   cm: (v: number) => v * 1e7,
   m: (v: number) => v * 1e9,
@@ -93,6 +94,7 @@ export const cvtNmTo: Record<VoxelUnit, (nm: number) => number> = {
   pm: v => v * 1e3,
   nm: v => v,
   μm: v => v * 1e-3,
+  um: v => v * 1e-3,
   mm: v => v * 1e-6,
   cm: v => v * 1e-7,
   m: v => v * 1e-9,
@@ -264,7 +266,7 @@ export function extractProtocolUrl(ngUrl: string): Volume {
   for (const ptlSignature in protocol){
     if (ngUrl.startsWith(ptlSignature)) {
       const protocolKey = protocol[ptlSignature]
-      returnVal.providers[protocolKey] = expandUrl(ngUrl.replace(ptlSignature, ""))
+      returnVal.providers[protocolKey] = ngUrl.replace(ptlSignature, "")
     }
   }
 

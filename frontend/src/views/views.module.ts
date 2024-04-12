@@ -26,6 +26,7 @@ import { NgLayerShaderTune } from 'src/ng-layer-shader-tune/ng-layer-shader-tune
 import { VolubaKeyboardShortcutDirective } from 'src/util/kbShortcut.directive';
 import { RotationWidgetModule } from 'src/layer-tune/rotation-widget/module';
 import { CategoriseVolumePipe } from './input-volumes/categoriseVolume.pipe';
+import { TOSCmpt } from './tos/tos.component';
 
 @NgModule({
   declarations: [
@@ -62,6 +63,7 @@ import { CategoriseVolumePipe } from './input-volumes/categoriseVolume.pipe';
     MouseInteractionDirective,
     NgLayerShaderTune,
     VolubaKeyboardShortcutDirective,
+    TOSCmpt,
   ],
   exports: [WelcomeCardComponent, ViewerComponent],
 })

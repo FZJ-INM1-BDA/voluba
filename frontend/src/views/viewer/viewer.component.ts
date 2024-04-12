@@ -220,9 +220,12 @@ export class ViewerComponent implements AfterViewInit {
           map(() => false)
         )
       )
+    ),
+    this.store.pipe(
+      select(appState.selectors.user)
     )
   ]).pipe(
-    map(([ { landmarks, addLandmarkMode, hoveredLmp, purgatory }, { selectedIncoming, selectedTemplate, darkmode }, incLocked, isDefaultMode, xform, mouseover, primaryNavigation, isDraggingViewer ]) => {
+    map(([ { landmarks, addLandmarkMode, hoveredLmp, purgatory }, { selectedIncoming, selectedTemplate, darkmode }, incLocked, isDefaultMode, xform, mouseover, primaryNavigation, isDraggingViewer, user ]) => {
       
       const { mat4, quat } = export_nehuba
 
@@ -313,6 +316,7 @@ export class ViewerComponent implements AfterViewInit {
         addLandmarkMode,
         rotationWidgetQuat,
         darkmode,
+        user,
       }
     })
   );

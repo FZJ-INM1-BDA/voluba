@@ -1,0 +1,65 @@
+<p>
+    voluba uses 'cookies' (text files placed on your computer) to verify login details, remember user choices and preferences, and in some instances determine site permissions. Cookies also provide, in anonymous form, the number of visitors accessing the HBP Public Website, features users access during website visits, and the general location of the user based on IP address.
+</p>
+<p>
+    voluba uses at least the following cookies:
+</p>
+<p><strong>connect.sid</strong><span>verify login details</span></p>
+
+<p>
+    To find out more about cookies, including how to determine the cookies that have been set on your computer and how to manage or delete them, visit <a href="www.aboutcookies.org">www.aboutcookies.org</a> .
+</p>
+
+<p>
+    Human Brain Project has a dedicated Data Protection Officer, where you can direct your queries: <a href="mailto:data.protection@humanbrainproject.eu">data.protection&#64;humanbrainproject.eu</a>
+</p>
+
+<button mat-button
+    class="showmore-btn"
+    (click)="showmore = !showmore">
+    {{ showmore ? 'show less' : 'show more' }}
+</button>
+
+<ng-template [ngIf]="showmore">
+    <p>
+        <strong>Data controller(s)</strong>: voluba is the data controller for your login information.
+    </p>
+    <p>
+        <strong>List of partners responsible</strong>:
+        FZJ-INM1-BDA <a href="mailto:support@ebrains.eu">support&#64;ebrains.eu</a>
+    </p>
+    <p>
+        <strong>HBP Data Protection Officer (HBP DPO)</strong>: You can find out about HBP Data Protection policies here:
+        <a href="https://www.humanbrainproject.eu/en/social-ethical-reflective/ethics-support/data-protection/">https://www.humanbrainproject.eu/en/social-ethical-reflective/ethics-support/data-protection/</a>
+        and you can contact HBP Data Protection Officer at <a href="mailto:data.protection@humanbrainproject.eu">data.protection&#64;humanbrainproject.eu</a>
+    </p>
+    <p>
+        <strong>Legal basis for data processing</strong>:
+        consent
+    </p>
+    <p>
+        <strong>Data shared within the HBP Consortium</strong>:
+        JWT ID Token is shared with ChunMa (Chunk Master), enabling upload and retrieval of user uploaded data.  
+    </p>
+    <p>
+        <strong>Data Shared with Third Parties</strong>: none
+    </p>
+    <p>
+        <strong>Transfer of any personal data to third countries</strong>: Data are stored in HBP infrastructure, and will not be transferred to Third countries.
+    </p>
+    <p>
+        <strong>Retention periods</strong>: JWT ID/Access token: 24 hours. User uploaded volume: until user deletes them.
+    </p>
+    <div>
+        <strong>Lodging a complaint</strong>:
+        The HBP DPO and HBP partners will make every reasonable effort to address your data protection concerns. However, you have a right to lodge a complaint with a data protection authority. Contact information for the European Data Protection Board and EU DPAs are available here:
+        <ul>
+            <li>
+                <a href="http://ec.europa.eu/newsroom/article29/item-detail.cfm?item_id=612080">http://ec.europa.eu/newsroom/article29/item-detail.cfm?item_id=612080</a>
+            </li>
+            <li>
+                <a href="https://edpb.europa.eu/about-edpb/board/members_en">https://edpb.europa.eu/about-edpb/board/members_en</a>
+            </li>
+        </ul>
+    </div>
+</ng-template>
