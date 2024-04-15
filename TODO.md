@@ -1,0 +1,17 @@
+- implement incoming volume tune
+    - rotation two way binding
+    - allow input of voxel spacing
+    - flip x, y, z
+- implement landmark preview/view
+- implement side by side view
+    - hide incoming volume in primary viewer
+    - hide incoming landmarks in primary viewer
+    - show incoming volume in secondary viewer
+    - show incoming landmarks in secondary viewer
+        - with identity affine
+        - fix existing landmarks
+    - fix add landmark overlay
+- implement history
+- implement export/import of matrices
+- fix
+    - on viewer drag drop rotation is still stuffed

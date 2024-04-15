@@ -1,0 +1,22 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: voluba-angular-ingress
+  labels:
+    name: voluba-angular-ingress
+spec:
+  rules:
+  - host: voluba-angular.apps.tc.humanbrainproject.eu
+    http:
+      paths:
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name: voluba-angular-voluba-prod
+            port: 
+              number: 8080
+  tls:
+  - secretName: voluba-angular-ebrains-secret
+    hosts:
+    - voluba-angular.apps.tc.humanbrainproject.eu

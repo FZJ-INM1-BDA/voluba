@@ -21,7 +21,7 @@ ORCID_DISCOVERY_URL = "https://orcid.org"
 ORCID_REDIRECT_URL = f"{HOSTNAME}/orcid-oidc/cb"
 ORCID_SCOPE = 'openid'
 
-PATH_TO_STATIC = os.getenv("PATH_TO_STATIC", "../../app/dist")
+PATH_TO_STATIC = os.getenv("PATH_TO_STATIC", "../../frontend/dist/frontend/")
 
 LOG_DIR = os.getenv("LOG_DIR")
 

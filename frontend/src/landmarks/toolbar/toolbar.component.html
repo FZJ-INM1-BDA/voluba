@@ -1,0 +1,59 @@
+<ng-template [ngIf]="view$ | async" let-view>
+
+    <button mat-fab
+        [color]="(addLmMode$ | async) ? 'primary' : 'default'"
+        matTooltip="Toggle add landmark mode"
+        (click)="toggleLandmarkMode()">
+        <mat-icon fontIcon="add_location"></mat-icon>
+    </button>
+
+    <mat-divider [vertical]="true"></mat-divider>
+
+    <button matTooltip="Save landmarks" mat-icon-button 
+        voluba-save-to-file
+        [to-file-content]="view.landmarkContent"
+        [to-file-filename]="view.landmarkName">
+        <mat-icon fontIcon="save"></mat-icon>
+    </button>
+
+    <button matTooltip="Load landmarks"
+        voluba-load-from-file
+        (from-file-content)="handleLoadJson($event)"
+        mat-icon-button>
+        <!-- TODO folder_open doesn't seem to work here -->
+        <mat-icon fontIcon="folder_open"></mat-icon>
+    </button>
+
+    <mat-divider vertical="true"></mat-divider>
+
+    <ng-template [ngIf]="view.calcXformBusy">
+        <mat-progress-spinner mode="indeterminate">
+        </mat-progress-spinner>
+    </ng-template>
+    <ng-template [ngIf]="!view.calcXformBusy">
+        <button mat-icon-button color="primary"
+            matTooltip="Compute linear transform from landmarks"
+            [matMenuTriggerFor]="calculationMenu">
+            <mat-icon fontIcon="calculate"></mat-icon>
+        </button>
+    </ng-template>
+
+    <mat-menu #calculationMenu="matMenu">
+        <ng-template [ngIf]="view.landmarkLength < 3">
+            <span class="warning">
+                <mat-icon>warning</mat-icon>
+                <span>
+                    need at least 3 landmark pairs
+                </span>
+            </span>
+        </ng-template>
+        <ng-template [ngIf]="view.landmarkLength >= 3">
+
+            <ng-template ngFor [ngForOf]="view.transformationTypes" let-transformType>
+                <button mat-menu-item (click)="onCalculate(transformType.value)">
+                    {{ transformType.text }}
+                </button>
+            </ng-template>
+        </ng-template>
+    </mat-menu>
+</ng-template>

@@ -5,6 +5,7 @@ on:
     branches:
       - master
       - staging
+      - rf_rewriteFrontend
 
     # do not rebuild if...
     paths-ignore:
@@ -30,6 +31,10 @@ jobs:
         if [[ $GITHUB_REF == 'refs/heads/staging' ]]; then
             echo "DOCKERIMG=voluba:staging" >> "$GITHUB_ENV"
         fi
+        
+        if [[ $GITHUB_REF == 'refs/heads/rf_rewriteFrontend' ]]; then
+            echo "DOCKERIMG=voluba:rf_rewriteFrontend" >> "$GITHUB_ENV"
+        fi
     - name: 'Setup tags'
       run: |
         if [[ -z "$DOCKERIMG" ]]
@@ -40,34 +45,11 @@ jobs:
         DOCKER_IMGSTREAM=${{ secrets.EBRAINS_DOCKER_REG_VOLUBA_NSP }}/${DOCKERIMG}
         echo "Setting docker image stream to $DOCKER_IMGSTREAM"
         echo "DOCKER_IMGSTREAM=$DOCKER_IMGSTREAM" >> $GITHUB_ENV
-    - name: 'Set matomo env var'
-      run: |
-        echo "MATOMO_URL=${{ secrets.MATOMO_URL_PROD }}" >> $GITHUB_ENV
-        echo "MATOMO_ID=${{ secrets.MATOMO_ID_PROD }}" >> $GITHUB_ENV
-
-    - name: 'Set version variable & expmt feature flag'
-      id: 'setting-vars'
-      run: |
-        GIT_HASH=$(git rev-parse --short HEAD)
-        echo "Setting GIT_HASH: $GIT_HASH"
-        echo "GIT_HASH=$GIT_HASH" >> $GITHUB_OUTPUT
-
-        VERSION=$(jq -r '.version' app/package.json)
-        echo "Setting VERSION: $VERSION"
-        echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
-        echo "VERSION=$VERSION" >> $GITHUB_ENV
-
-        # VUE_APP_ENABLE_EXPERIMENTAL_FEATURES="{}"
 
     - name: 'Build docker image'
       run: |
-        
         echo "Building $DOCKER_IMGSTREAM"
         docker build \
-          --build-arg MATOMO_URL=$MATOMO_URL \
-          --build-arg MATOMO_ID=$MATOMO_ID \
-          --build-arg VUE_APP_BACKEND_URL=${{ secrets.VUE_APP_BACKEND_URL }} \
-          --build-arg VUE_APP_UPLOAD_URL=${{ secrets.VUE_APP_UPLOAD_URL }} \
           -t $DOCKER_IMGSTREAM \
           .
         echo "Successfully built $DOCKER_IMGSTREAM"

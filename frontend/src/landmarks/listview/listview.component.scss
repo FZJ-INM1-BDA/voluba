@@ -1,0 +1,20 @@
+.fallback-text
+{
+    display: flex;
+    justify-content: center;
+    margin: 2rem;
+    color: rgba(0, 0, 0, 0.5);
+}
+
+table:has(.hovered)
+{
+    tr:not(.hovered, [mat-header-row])
+    {
+        background-color: rgba(128, 128, 128, 0.2);
+    }
+}
+
+tr
+{
+    transition: background-color 160ms ease-in-out;
+}
