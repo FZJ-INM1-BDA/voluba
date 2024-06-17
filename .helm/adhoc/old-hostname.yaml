@@ -1,0 +1,90 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: voluba-old-hostname-certificate
+spec:
+  secretName: voluba-old-hostname-secret
+  renewBefore: 120h 
+  commonName: voluba.apps.hbp.eu
+  isCA: false
+  privateKey:
+    algorithm: RSA
+    encoding: PKCS1
+    size: 2048
+  usages:
+  - server auth
+  dnsNames:
+  # (CHANGE ME! same as `commonName`)
+  - voluba.apps.hbp.eu
+  issuerRef:
+    name: letsencrypt-production-issuer-1
+    kind: ClusterIssuer
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: voluba-old-hostname-ingress
+  labels:
+    name: voluba-old-hostname-ingress
+spec:
+  rules:
+  - host: voluba.apps.hbp.eu
+    http:
+      paths:
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name: voluba-prod
+            port: 
+              number: 8080
+  tls:
+  - secretName: voluba-old-hostname-secret
+    hosts:
+    - voluba.apps.hbp.eu
+---
+
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: voluba-lbe-old-hostname-certificate
+spec:
+  secretName: voluba-lbe-old-hostname-secret
+  renewBefore: 120h 
+  commonName: voluba-linear-backend.apps.hbp.eu
+  isCA: false
+  privateKey:
+    algorithm: RSA
+    encoding: PKCS1
+    size: 2048
+  usages:
+  - server auth
+  dnsNames:
+  # (CHANGE ME! same as `commonName`)
+  - voluba-linear-backend.apps.hbp.eu
+  issuerRef:
+    name: letsencrypt-production-issuer-1
+    kind: ClusterIssuer
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: voluba-old-lbe-hostname-ingress
+  labels:
+    name: voluba-old-lbe-hostname-ingress
+spec:
+  rules:
+  - host: voluba-linear-backend.apps.hbp.eu
+    http:
+      paths:
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name: voluba-backend
+            port: 
+              number: 8080
+  tls:
+  - secretName: voluba-lbe-old-hostname-secret
+    hosts:
+    - voluba-linear-backend.apps.hbp.eu

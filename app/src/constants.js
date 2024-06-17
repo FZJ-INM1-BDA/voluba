@@ -38,7 +38,7 @@ export const DEFAULT_BUNDLED_INCOMING_VOLUMES_0 = [
   {
     id: 'colin-1',
     name: 'Colin 27',
-    imageSource: 'precomputed://https://neuroglancer.humanbrainproject.org/precomputed/JuBrain/v2.2c/colin27_seg',
+    imageSource: 'precomputed://https://neuroglancer.humanbrainproject.eu/precomputed/JuBrain/v2.2c/colin27_seg',
     dim: [76, 94, 77].map(v => v * 2e6),
     extra: {
       neuroglancer: {
@@ -57,7 +57,7 @@ export const DEFAULT_BUNDLED_INCOMING_VOLUMES_1 = [
   {
     id: 'whole-brain-dataset',
     name: 'whole_brain_dataset',
-    imageSource: 'precomputed://https://neuroglancer.humanbrainproject.org/precomputed/JuBrain/v2.2c/colin27_seg',
+    imageSource: 'precomputed://https://neuroglancer.humanbrainproject.eu/precomputed/JuBrain/v2.2c/colin27_seg',
     dim: [76, 94, 77].map(v => v * 2e6),
     extra: {
       neuroglancer: {
@@ -199,7 +199,7 @@ export const getDefaultNehubaConfigLight = (sourceUrl) => {
             "annotationColor": "#cccccc",
             "visible":false,
             "type": "image",
-            "source": "precomputed://https://neuroglancer.humanbrainproject.org/precomputed/BigBrainRelease.2015/8bit",
+            "source": "precomputed://https://neuroglancer.humanbrainproject.eu/precomputed/BigBrainRelease.2015/8bit",
             "transform": [
               [
                 1,
@@ -358,7 +358,7 @@ export const viewerConfigs = [
           " grey value: ": {
             "annotationColor": "#cccccc",
             "type": "image",
-            "source": "precomputed://https://neuroglancer.humanbrainproject.org/precomputed/BigBrainRelease.2015/8bit",
+            "source": "precomputed://https://neuroglancer.humanbrainproject.eu/precomputed/BigBrainRelease.2015/8bit",
             "transform": [
               [
                 1,
@@ -389,7 +389,7 @@ export const viewerConfigs = [
           " tissue type: ": {
             "annotationColor": "#cccccc",
             "type": "segmentation",
-            "source": "precomputed://https://neuroglancer.humanbrainproject.org/precomputed/BigBrainRelease.2015/classif",
+            "source": "precomputed://https://neuroglancer.humanbrainproject.eu/precomputed/BigBrainRelease.2015/classif",
             "segments": [
               "0"
             ],

@@ -18,7 +18,7 @@ const dataSelectionStore = {
       {
         id: BIGBRAIN_ID,
         name: 'BigBrain (2015)',
-        imageSource: 'precomputed://https://neuroglancer.humanbrainproject.org/precomputed/BigBrainRelease.2015/8bit',
+        imageSource: 'precomputed://https://neuroglancer.humanbrainproject.eu/precomputed/BigBrainRelease.2015/8bit',
         siibra_explorer_url: '/a:juelich:iav:atlas:v1.0.0:1/t:minds:core:referencespace:v1.0.0:a1655b99-82f1-420f-a3c2-fe80fd4c8588/p:juelich:iav:atlas:v1.0.0:4/'
 
       }, {
