@@ -12,8 +12,6 @@ on:
       # use_docs (use_docs are built on readthedocs any way)
       - 'use_docs/*'
 
-env:
-  OKD_URL: https://okd.hbp.eu:443
 jobs:
   build-docker-img:
     runs-on: ubuntu-latest
@@ -99,28 +97,12 @@ jobs:
     secrets:
       KUBECONFIG: ${{ secrets.KUBECONFIG }}
 
-  deploy-on-okd:
+  deploy-rewrite-on-rancher:
     needs: [ build-docker-img ]
-    if: success()
-    runs-on: ubuntu-latest
-    steps:
-    - name: "Configure image stream"
-      run: |
-        if [[ "$GITHUB_REF" == "refs/heads/master" ]]
-        then
-          echo "IMAGE_STREAM_TAG=docker-registry.default.svc:5000/voluba/voluba-img-deploy:latest" >> $GITHUB_ENV
-        fi
-        if [[ "$GITHUB_REF" == "refs/heads/staging" ]]
-        then
-          echo "IMAGE_STREAM_TAG=docker-registry.default.svc:5000/voluba/voluba-stg-img-deploy:staging" >> $GITHUB_ENV
-        fi
-    - name: "Login via cli"
-      run: |
-        if [[ ! -z "$IMAGE_STREAM_TAG" ]]
-        then
-          oc login ${{ env.OKD_URL }} --token=${{ secrets.OKD_SECRET }}
-          oc project voluba
-          oc import-image $IMAGE_STREAM_TAG
-        else
-          echo "Empty IMAGE_STREAM_TAG, skipping"
-        fi
+    if: ${{ github.ref == 'refs/heads/rf_rewriteFrontend' && success() }}
+    uses: ./.github/workflows/deploy-helm.yml
+    with:
+      DEPLOYMENT_NAME: voluba-angular
+      IMAGE_TAG: rf_rewriteFrontend
+    secrets:
+      KUBECONFIG: ${{ secrets.KUBECONFIG }}
