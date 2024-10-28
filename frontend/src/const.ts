@@ -242,14 +242,20 @@ export type TVolume = {
   visibility?: 'public' | 'private' | 'custom' | 'useradded' | 'bundled'
 }
 
-export function expandUrl(url: string): string {
-  if (/^https?:\/\//.test(url)) {
-    return url
+export function parseGSUrl(url: string): string {
+  const urlProtocolPattern = /^([^:\/]+):\/\/([^\/]+)((?:\/.*)?)$/
+  const match = url.match(urlProtocolPattern)
+  if (!match) {
+    throw new Error(`url does not follow the pattern {protocol}://{host}/{path}`)
   }
-  if (/^gs:\/\//.test(url)) {
-    return url.replace(/^gs:\/\//, 'https://storage.googleapis.com/')
+  const u = {protocol: match[1], host: match[2], path: match[3]};
+  
+  if (u.protocol !== "gs") {
+    throw new Error(`GS URL must start with gs://, but ${url} does not`)
   }
-  throw new Error(`${url} cannot be parsed correctly`)
+  const path = encodeURIComponent(u.path.substring(1))
+  return `https://www.googleapis.com/storage/v1/b/${u.host}/o/${path}?alt=media`;
+
 }
 
 const protocol: Record<string, keyof Volume['providers']> = {

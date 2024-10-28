@@ -27,6 +27,8 @@ jobs:
     - uses: actions/checkout@v4
     - name: 'Deploy'
       run: |
+        echo "Does not yet work. need to reconfigure TLS, hostname etc"
+        exit 1
         kubecfg_path=${{ runner.temp }}/.kube_config
         echo "${{ secrets.KUBECONFIG }}" > $kubecfg_path
 

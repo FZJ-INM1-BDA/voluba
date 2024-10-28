@@ -1,7 +1,7 @@
 import { createSelector, select } from '@ngrx/store';
 import { nameSpace, LocalState } from './consts';
 import { Observable, combineLatest, distinctUntilChanged, forkJoin, from, map, of, pipe, switchMap, throwError } from 'rxjs';
-import { arrayEqual, canBeConverted, cvtToNm, expandUrl, TVolume } from 'src/const';
+import { arrayEqual, canBeConverted, cvtToNm, TVolume, parseGSUrl } from 'src/const';
 
 
 const featureSelector = (state: any) => state[nameSpace] as LocalState;
@@ -67,13 +67,12 @@ const incInfoPipe = pipe(
       )
     }
     if (!!n5Url) {
-      const correctedN5Url = expandUrl(n5Url)
       return forkJoin([
         fetch(
-          `${correctedN5Url}/attributes.json`
+          parseGSUrl(`${n5Url}/attributes.json`)
         ).then(res => res.json() as Promise<{ resolution: number[], units: string[] }>),
         fetch(
-          `${correctedN5Url}/s0/attributes.json`
+          parseGSUrl(`${n5Url}/s0/attributes.json`)
         ).then(res => res.json() as Promise<{ blockSize: number[], dimensions: number[] }>),
       ]).pipe(
         map(([root, s0]) => {
