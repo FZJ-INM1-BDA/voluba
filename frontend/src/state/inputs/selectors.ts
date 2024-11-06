@@ -1,7 +1,7 @@
 import { createSelector, select } from '@ngrx/store';
 import { nameSpace, LocalState } from './consts';
 import { Observable, combineLatest, distinctUntilChanged, forkJoin, from, map, of, pipe, switchMap, throwError } from 'rxjs';
-import { arrayEqual, canBeConverted, cvtToNm, TVolume, parseGSUrl } from 'src/const';
+import { arrayEqual, canBeConverted, cvtToNm, TVolume, parseGSUrl, ZarrAttrs, ZarrArray } from 'src/const';
 
 
 const featureSelector = (state: any) => state[nameSpace] as LocalState;
@@ -55,6 +55,7 @@ const incInfoPipe = pipe(
     const volume = incoming.volumes[0]
     const precomputedUrl = volume.providers["neuroglancer/precomputed"]
     const n5Url = volume.providers["neuroglancer/n5"]
+    const zarrUrl = volume.providers["neuroglancer/zarr"]
     if (!!precomputedUrl) {
       return from(
         fetch(`${precomputedUrl}/info`).then(res => res.json() as Promise<{ scales: { size: number[], resolution: number[] }[] }>)
@@ -79,6 +80,58 @@ const incInfoPipe = pipe(
           return {
             "neuroglancer/n5": { root, s0 }
           } as IncInfo
+        })
+      )
+    }
+    if (!!zarrUrl) {
+      
+      return from(
+        fetch(parseGSUrl(`${zarrUrl}/.zattrs`)).then(res => res.json() as Promise<ZarrAttrs>)
+      ).pipe(
+        switchMap(zarrattr => {
+          const { multiscales } = zarrattr
+          if (multiscales.length !== 1) {
+            return throwError(() => new Error(`Can only deal with one dataset, but got ${multiscales.length}`)) 
+          }
+          const scale = multiscales[0]
+          const { axes, datasets } = scale
+          if (axes.length !== 3) {
+            return throwError(() => new Error(`Can only deal with axes with length 3`))
+          }
+          for (const { type, units } of axes){
+            if (type !== "space") {
+              return throwError(() => new Error(`Can only deal with space axes`))
+            }
+          }
+          if (datasets.length === 0) {
+            return throwError(() => new Error(`must have at least one dataset`)) 
+          }
+          const dataset = datasets[0]
+          const { coordinateTransformations, path } = dataset
+          if (coordinateTransformations.length !== 1) {
+            return throwError(() => new Error(`Can only deal with one coordate transforms, but got ${coordinateTransformations.length}`)) 
+          }
+          const coordinateTransformation = coordinateTransformations[0]
+          const { scale: _scale } = coordinateTransformation
+
+          return from(
+            fetch(parseGSUrl(`${zarrUrl}/${path}/.zarray`)).then(res => res.json() as Promise<ZarrArray>)
+          ).pipe(
+            map(({ shape }) => {
+              return {
+                "neuroglancer/zarr": {
+                  axes,
+                  datasets: [
+                    {
+                      scale: _scale,
+                      shape
+                    }
+                  ]
+                }
+              } as IncInfo
+            })
+          )
+
         })
       )
     }
@@ -117,6 +170,20 @@ export const incVoxelSize = pipe(
         return cvtToNm[unit](resolution[idx])
       })
     }
+    if (!!v["neuroglancer/zarr"]) {
+      const { datasets, axes } = v["neuroglancer/zarr"]
+      const dataset = datasets[0]
+      const { scale, shape } = dataset
+      return (scale as number[]).map((v, idx: number) => {
+        const unit = axes[idx].units
+        if (!(unit in cvtToNm)) {
+          console.warn(`${unit} cannot be converted. Using 1 as default`)
+          return 1
+        }
+        return cvtToNm[unit as keyof typeof cvtToNm](v)
+      })
+
+    }
     console.warn(`v voxel size cannot be found: ${v}`)
     return null
   })
@@ -139,7 +206,12 @@ export const incVoxelExtents = pipe(
       const { dimensions } = s0 as { blockSize: number[], dimensions: number[] }
       return dimensions
     }
-    console.warn(`v voxel size cannot be found: ${v}`)
+    if (!!v["neuroglancer/zarr"]) {
+      const { datasets } = v["neuroglancer/zarr"]
+      const dataset = datasets[0]
+      return dataset.shape as number[]
+    }
+    console.warn(`voxel extent cannot be found: ${v}`)
     return null
   })
 )

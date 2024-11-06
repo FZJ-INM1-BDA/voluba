@@ -78,6 +78,7 @@ export const XFORM_FILE_TYPE = "https://voluba.apps.hbp.eu/@types/transform"
 type CoordSpace = Record<'x'|'y'|'z', export_nehuba.Dimension>
 
 export const cvtToNm = {
+  micrometer: (v: number) => v * 1e3,
   pm: (v: number) => v * 1e-3,
   nm: (v: number) => v,
   μm: (v: number) => v * 1e3,
@@ -91,6 +92,7 @@ export const cvtToNm = {
 export type VoxelUnit = keyof typeof cvtToNm
 
 export const cvtNmTo: Record<VoxelUnit, (nm: number) => number> = {
+  micrometer: (v: number) => v * 1e-3,
   pm: v => v * 1e3,
   nm: v => v,
   μm: v => v * 1e-3,
@@ -231,6 +233,7 @@ type Volume = {
     'neuroglancer/precomputed'?: string
     'neuroglancer/precomputed/surface'?: string
     'neuroglancer/n5'?: string
+    'neuroglancer/zarr'?: string
   }
 }
 
@@ -261,6 +264,7 @@ export function parseGSUrl(url: string): string {
 const protocol: Record<string, keyof Volume['providers']> = {
   "precomputed://": "neuroglancer/precomputed",
   "n5://": "neuroglancer/n5",
+  "zarr://": "neuroglancer/zarr",
 }
 
 export function extractProtocolUrl(ngUrl: string): Volume {
@@ -416,4 +420,48 @@ export type EbrainsWorkflowPollResponse = {
   output_hash: string
   progresses: EbrainsPublishResult[]
   user: User
+}
+
+export type ZarrAttrs = {
+  multiscales: {
+    name: string
+    version: string
+    axes: {
+      name: "x" | "y" | "z" | string
+      type: "space" | string
+      units: "micrometer" | string
+    }[]
+    datasets: {
+      coordinateTransformations: {
+        scale: number[]
+        type: "scale" | string
+      }[]
+      path: string
+    }[]
+  }[]
+}
+
+export type BloscCompressor = {
+  blocksize: 0 | number
+  clevel: number
+  cname: "zstd" | string
+  id: "blosc"
+  shuffle: 1 | number
+}
+
+export type CompressorType = BloscCompressor
+
+export type ZarrArray = {
+  chunks: number[]
+  dimension_separator: string
+  
+  dtype: "<u2" | string
+  
+  order: "C" | "F"
+  shape: number[]
+  zarr_format: number
+
+  compressor: CompressorType
+  fill_value: 0
+  filters: unknown
 }

@@ -171,10 +171,10 @@
                     </mat-label>
                     <input type="text" formControlName="url" matInput>
                     <mat-hint>
-                        Neuroglancer URL, must start with precomputed:// or n5://
+                        Neuroglancer URL, must start with precomputed://, zarr:// or n5://
                     </mat-hint>
                     <mat-error *ngIf="newVolumeCtrl.controls.url.errors">
-                        Malformed URL. Must start with <code>precomputed://</code> or <code>n5://</code>
+                        Malformed URL. Must start with <code>precomputed://</code>, <code>zarr://</code> or <code>n5://</code>
                     </mat-error>
                 </mat-form-field>
             </form>
