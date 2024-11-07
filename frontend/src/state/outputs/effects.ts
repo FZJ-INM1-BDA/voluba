@@ -31,6 +31,8 @@ export class Effects {
         const { mat4, vec3, quat } = export_nehuba;
         const { processQuatInput } = consts;
 
+        
+
         const rotQuat = processQuatInput(input)
 
         const axis = vec3.fromValues(1, 0, 0)
@@ -43,7 +45,7 @@ export class Effects {
         
         const centralizeMatrix = mat4.fromTranslation(mat4.create(), centerVoxel.map(v => v * -1))
         const decentralizeMatrix = mat4.fromTranslation(mat4.create(), centerVoxel)
-
+        console.log(centerVoxel, centralizeMatrix, decentralizeMatrix)
         mat4.mul(xformMat, centralizeMatrix, xformMat)
 
         mat4.mul(

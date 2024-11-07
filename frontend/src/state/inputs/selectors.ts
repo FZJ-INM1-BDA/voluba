@@ -98,7 +98,7 @@ const incInfoPipe = pipe(
           if (axes.length !== 3) {
             return throwError(() => new Error(`Can only deal with axes with length 3`))
           }
-          for (const { type, units } of axes){
+          for (const { type } of axes){
             if (type !== "space") {
               return throwError(() => new Error(`Can only deal with space axes`))
             }
@@ -175,7 +175,7 @@ export const incVoxelSize = pipe(
       const dataset = datasets[0]
       const { scale, shape } = dataset
       return (scale as number[]).map((v, idx: number) => {
-        const unit = axes[idx].units
+        const unit = axes[idx].unit
         if (!(unit in cvtToNm)) {
           console.warn(`${unit} cannot be converted. Using 1 as default`)
           return 1

@@ -429,7 +429,7 @@ export type ZarrAttrs = {
     axes: {
       name: "x" | "y" | "z" | string
       type: "space" | string
-      units: "micrometer" | string
+      unit: "micrometer" | string
     }[]
     datasets: {
       coordinateTransformations: {
