@@ -39,6 +39,7 @@ jobs:
           upgrade \
           --reuse-values \
           --set image.tag=${{ inputs.IMAGE_TAG }} \
+          --history-max=3 \
           ${{ inputs.DEPLOYMENT_NAME }} ${{ env.path_to_helm }}
 
         rm $kubecfg_path
