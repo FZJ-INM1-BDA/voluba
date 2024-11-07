@@ -276,7 +276,7 @@ export function extractProtocolUrl(ngUrl: string): Volume {
   for (const ptlSignature in protocol){
     if (ngUrl.startsWith(ptlSignature)) {
       const protocolKey = protocol[ptlSignature]
-      returnVal.providers[protocolKey] = ngUrl.replace(ptlSignature, "")
+      returnVal.providers[protocolKey] = ngUrl.replace(ptlSignature, "").replace(/\/$/, "")
     }
   }
 

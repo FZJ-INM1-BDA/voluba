@@ -27,8 +27,11 @@ jobs:
     - uses: actions/checkout@v4
     - name: 'Deploy'
       run: |
-        echo "Does not yet work. need to reconfigure TLS, hostname etc"
-        exit 1
+        if [[ ! ${{ inputs.IMAGE_TAG }} -eq "rf_rewriteFrontend" ]]
+        then
+          echo "IMAGE_TAG is ${{ inputs.IMAGE_TAG }}, currently only works for rf_rewriteFrontend"
+          exit 1
+        fi
         kubecfg_path=${{ runner.temp }}/.kube_config
         echo "${{ secrets.KUBECONFIG }}" > $kubecfg_path
 
