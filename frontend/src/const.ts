@@ -428,7 +428,7 @@ export type ZarrAttrs = {
     version: string
     axes: {
       name: "x" | "y" | "z" | string
-      type: "space" | string
+      type: "space" | "channel" | string
       unit: "micrometer" | string
     }[]
     datasets: {
