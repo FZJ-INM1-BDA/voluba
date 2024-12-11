@@ -1,0 +1,21 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: voluba-angular-ebrains-certificate
+spec:
+  secretName: voluba-angular-ebrains-secret
+  renewBefore: 120h 
+  commonName: voluba-angular.apps.tc.humanbrainproject.eu
+  isCA: false
+  privateKey:
+    algorithm: RSA
+    encoding: PKCS1
+    size: 2048
+  usages:
+  - server auth
+  dnsNames:
+  # (CHANGE ME! same as `commonName`)
+  - voluba-angular.apps.tc.humanbrainproject.eu
+  issuerRef:
+    name: letsencrypt-production-issuer-1
+    kind: ClusterIssuer

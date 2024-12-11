@@ -1,0 +1,25 @@
+:host
+{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+}
+
+.warning
+{
+    margin: 2rem 1rem;
+    padding: 0.2rem;
+    display: flex;
+    align-items: center;
+    
+    > *
+    {
+        margin: 0.4rem;
+    }
+}
+
+mat-progress-spinner
+{
+    max-width: 3rem;
+    max-height: 3rem;
+}

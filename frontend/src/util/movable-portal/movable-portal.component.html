@@ -1,0 +1,15 @@
+<mat-card>
+    <mat-card-content>
+        <div class="title-bar">
+            <mat-icon fontIcon="drag_indicator" cdkDrag cdkDragHandle cdkDragRootElement=".cdk-overlay-pane"></mat-icon>
+            <span *ngIf="title">
+                {{ title }}
+            </span>
+            <button mat-icon-button mat-dialog-close>
+                <mat-icon fontIcon="close"></mat-icon>
+            </button>
+            
+        </div>
+        <ng-content></ng-content>
+    </mat-card-content>
+</mat-card>

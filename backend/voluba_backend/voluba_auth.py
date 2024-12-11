@@ -62,7 +62,10 @@ async def login_via_ebrains(request: Request, state: str = None):
     kwargs = {}
     if state:
         kwargs["state"] = state
-    return await oauth.ebrains.authorize_redirect(request, redirect_uri=voluba_config.EBRAINS_IAM_REDIRECT_URL, **kwargs)
+    
+    base_url = str(request.base_url).replace("http://", "https://", 1)
+    redirect_uri = base_url.rstrip("/") + "/hbp-oidc-v2/cb"
+    return await oauth.ebrains.authorize_redirect(request, redirect_uri=voluba_config.EBRAINS_IAM_REDIRECT_URL or redirect_uri, **kwargs)
 
 @router.get("/hbp-oidc-v2/cb")
 async def ebrains_callback(request: Request):

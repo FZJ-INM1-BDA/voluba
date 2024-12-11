@@ -5,14 +5,13 @@ on:
     branches:
       - master
       - staging
+      - rf_rewriteFrontend
 
     # do not rebuild if...
     paths-ignore:
       # use_docs (use_docs are built on readthedocs any way)
       - 'use_docs/*'
 
-env:
-  OKD_URL: https://okd.hbp.eu:443
 jobs:
   build-docker-img:
     runs-on: ubuntu-latest
@@ -30,6 +29,10 @@ jobs:
         if [[ $GITHUB_REF == 'refs/heads/staging' ]]; then
             echo "DOCKERIMG=voluba:staging" >> "$GITHUB_ENV"
         fi
+        
+        if [[ $GITHUB_REF == 'refs/heads/rf_rewriteFrontend' ]]; then
+            echo "DOCKERIMG=voluba:rf_rewriteFrontend" >> "$GITHUB_ENV"
+        fi
     - name: 'Setup tags'
       run: |
         if [[ -z "$DOCKERIMG" ]]
@@ -40,34 +43,11 @@ jobs:
         DOCKER_IMGSTREAM=${{ secrets.EBRAINS_DOCKER_REG_VOLUBA_NSP }}/${DOCKERIMG}
         echo "Setting docker image stream to $DOCKER_IMGSTREAM"
         echo "DOCKER_IMGSTREAM=$DOCKER_IMGSTREAM" >> $GITHUB_ENV
-    - name: 'Set matomo env var'
-      run: |
-        echo "MATOMO_URL=${{ secrets.MATOMO_URL_PROD }}" >> $GITHUB_ENV
-        echo "MATOMO_ID=${{ secrets.MATOMO_ID_PROD }}" >> $GITHUB_ENV
-
-    - name: 'Set version variable & expmt feature flag'
-      id: 'setting-vars'
-      run: |
-        GIT_HASH=$(git rev-parse --short HEAD)
-        echo "Setting GIT_HASH: $GIT_HASH"
-        echo "GIT_HASH=$GIT_HASH" >> $GITHUB_OUTPUT
-
-        VERSION=$(jq -r '.version' app/package.json)
-        echo "Setting VERSION: $VERSION"
-        echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
-        echo "VERSION=$VERSION" >> $GITHUB_ENV
-
-        # VUE_APP_ENABLE_EXPERIMENTAL_FEATURES="{}"
 
     - name: 'Build docker image'
       run: |
-        
         echo "Building $DOCKER_IMGSTREAM"
         docker build \
-          --build-arg MATOMO_URL=$MATOMO_URL \
-          --build-arg MATOMO_ID=$MATOMO_ID \
-          --build-arg VUE_APP_BACKEND_URL=${{ secrets.VUE_APP_BACKEND_URL }} \
-          --build-arg VUE_APP_UPLOAD_URL=${{ secrets.VUE_APP_UPLOAD_URL }} \
           -t $DOCKER_IMGSTREAM \
           .
         echo "Successfully built $DOCKER_IMGSTREAM"
@@ -117,28 +97,12 @@ jobs:
     secrets:
       KUBECONFIG: ${{ secrets.KUBECONFIG }}
 
-  deploy-on-okd:
+  deploy-rewrite-on-rancher:
     needs: [ build-docker-img ]
-    if: success()
-    runs-on: ubuntu-latest
-    steps:
-    - name: "Configure image stream"
-      run: |
-        if [[ "$GITHUB_REF" == "refs/heads/master" ]]
-        then
-          echo "IMAGE_STREAM_TAG=docker-registry.default.svc:5000/voluba/voluba-img-deploy:latest" >> $GITHUB_ENV
-        fi
-        if [[ "$GITHUB_REF" == "refs/heads/staging" ]]
-        then
-          echo "IMAGE_STREAM_TAG=docker-registry.default.svc:5000/voluba/voluba-stg-img-deploy:staging" >> $GITHUB_ENV
-        fi
-    - name: "Login via cli"
-      run: |
-        if [[ ! -z "$IMAGE_STREAM_TAG" ]]
-        then
-          oc login ${{ env.OKD_URL }} --token=${{ secrets.OKD_SECRET }}
-          oc project voluba
-          oc import-image $IMAGE_STREAM_TAG
-        else
-          echo "Empty IMAGE_STREAM_TAG, skipping"
-        fi
+    if: ${{ github.ref == 'refs/heads/rf_rewriteFrontend' && success() }}
+    uses: ./.github/workflows/deploy-helm.yml
+    with:
+      DEPLOYMENT_NAME: voluba-angular
+      IMAGE_TAG: rf_rewriteFrontend
+    secrets:
+      KUBECONFIG: ${{ secrets.KUBECONFIG }}

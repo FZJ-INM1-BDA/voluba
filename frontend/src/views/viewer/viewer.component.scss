@@ -1,0 +1,122 @@
+voluba-control-menu
+{
+    padding: 1.5rem;
+}
+
+voluba-four-corners
+{
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 10;
+    pointer-events: none;
+}
+
+voluba-four-corners div
+{
+    pointer-events: all;
+}
+
+div.viewer-wrapper
+{
+    display: flex;
+    flex-direction: row;
+    height: 100%;
+
+    > *
+    {
+        flex: 1 1 0;
+    }
+}
+
+.landmark-layer-wrapper
+{
+    position: relative;
+
+    > *
+    {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 0;
+    }
+
+    > .four-quadrant
+    {
+        z-index: 1;
+        pointer-events: none;
+    }
+
+    > .add-lm-overlay
+    {
+        z-index: 2;
+        pointer-events: all;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(128, 128, 128, 0.8);
+
+        display: flex;
+        align-items: center;
+        
+        &.align-right
+        {
+            justify-content: flex-end;
+            text-align: right;
+        }
+
+        &.align-left
+        {
+            justify-content: flex-start;
+            text-align: left;
+        }
+
+        > *
+        {
+            flex: 0 0 2rem;
+            font-size: xx-large;
+            line-height: 1;
+        }
+    }
+}
+
+.four-quadrant
+{
+    display: grid;
+    grid-template-rows: 1fr 1fr;
+    grid-template-columns: 1fr 1fr;
+
+    > :nth-child(1)
+    {
+        display: block;
+    }
+    > :nth-child(2)
+    {
+        display: block;
+    }
+    > :nth-child(3)
+    {
+        display: block;
+    }
+}
+
+.navigation-card
+{
+    margin: 1rem;
+}
+
+rotation-widget
+{
+    width: 4rem;
+    height: 4rem;
+    margin: 1rem;
+}
+
+.invisible
+{
+    width: 0;
+    height: 0;
+}

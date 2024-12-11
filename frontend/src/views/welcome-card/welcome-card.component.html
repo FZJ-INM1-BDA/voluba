@@ -1,0 +1,70 @@
+<ng-template [ngIf]="view$ | async" let-view>
+
+    <mat-card>
+        <mat-card-header>
+            <mat-card-title>
+                Voluba
+            </mat-card-title>
+            <mat-card-subtitle>
+                <span>
+                    Volumetric Brain Anchoring
+                </span>
+                
+                <button mat-button
+                    volubaDialog
+                    [dialogTarget]="termsOfUseTmpl"
+                    [dialogBackdrop]="true">
+                    Terms of Use
+                </button>
+
+                <a href="https://github.com/fzj-inm1-bda/voluba"
+                    mat-button
+                    target="_blank">
+                    <mat-icon>open_in_new</mat-icon>
+                    <span>source code</span>
+                </a>
+
+                <a href="https://voluba.readthedocs.io/en/latest/"
+                    mat-button
+                    target="_blank">
+                    <mat-icon>open_in_new</mat-icon>
+                    <span>User Documentation</span>
+                </a>
+                
+            </mat-card-subtitle>
+            <mat-card-subtitle>
+                <mat-divider></mat-divider>
+            </mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+            <voluba-input-volumes></voluba-input-volumes>
+        </mat-card-content>
+        <mat-card-actions>
+            <button [disabled]="!view.allowStart"
+                mat-raised-button
+                color="primary"
+                (click)="start()">
+                Start
+            </button>
+        </mat-card-actions>
+    </mat-card>
+    
+</ng-template>
+
+<ng-template #termsOfUseTmpl>
+    <mat-card>
+        <mat-card-header>
+            <mat-card-title>
+                Voluba Terms of Use
+            </mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+            <voluba-tos></voluba-tos>
+        </mat-card-content>
+        <mat-card-actions align="end">
+            <button mat-button mat-dialog-close>
+                close
+            </button>
+        </mat-card-actions>
+    </mat-card>
+</ng-template>

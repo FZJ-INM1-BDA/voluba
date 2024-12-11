@@ -1,0 +1,53 @@
+<button mat-mini-fab
+    volubaDialog
+    #tundialog="volubaDialog"
+    [color]="(tundialog.state$ | async) ? 'primary' : 'default'"
+    [dialogTarget]="tunelayerTmpl">
+    <mat-icon fontIcon="tune"></mat-icon>
+</button>
+<button mat-mini-fab
+    volubaDialog
+    #lmdialog="volubaDialog"
+    [color]="(lmdialog.state$ | async) ? 'primary' : 'default'"
+    [dialogTarget]="landmarkViewTmpl">
+    <mat-icon fontIcon="edit_location"></mat-icon>
+</button>
+<button mat-mini-fab
+    volubaDialog
+    #historydialog="volubaDialog"
+    [color]="(historydialog.state$ | async) ? 'primary' : 'default'"
+    [dialogTarget]="historyTmpl">
+    <mat-icon fontIcon="history"></mat-icon>
+</button>
+<button mat-mini-fab
+    volubaDialog
+    #sharedialog="volubaDialog"
+    [color]="(sharedialog.state$ | async) ? 'primary' : 'default'"
+    [dialogTarget]="shareResultTmpl">
+    <mat-icon fontIcon="share"></mat-icon>
+</button>
+
+<ng-template #tunelayerTmpl>
+    <voluba-movable-portal title="Layer Tuning">
+        <voluba-tune-ui></voluba-tune-ui>
+    </voluba-movable-portal>
+</ng-template>
+
+<ng-template #landmarkViewTmpl>
+    <voluba-movable-portal title="Landmarks">
+        <voluba-landmark-listview [landmarkPair]="(landmarks$ | async )|| []"></voluba-landmark-listview>
+        <voluba-landmark-toolbar></voluba-landmark-toolbar>
+    </voluba-movable-portal>
+</ng-template>
+
+<ng-template #historyTmpl>
+    <voluba-movable-portal title="History">
+        <voluba-history-listview></voluba-history-listview>
+    </voluba-movable-portal>
+</ng-template>
+
+<ng-template #shareResultTmpl>
+    <voluba-movable-portal title="Share/Export">
+        <voluba-share-export></voluba-share-export>
+    </voluba-movable-portal>
+</ng-template>

@@ -1,0 +1,69 @@
+<ng-template [ngIf]="view$ | async" let-view>
+
+
+    <ng-template [ngIf]="view.history | extractActiveHistory" let-history>
+
+        <div class="button-container"
+            voluba-history-controller
+            #historyCtl="historyController">
+            <button mat-icon-button
+                [disabled]="history.ancientCount <= 0"
+                (click)="historyCtl.rewind()"
+                matTooltip="Undo [ctrl + z]">
+                <mat-icon>chevron_left</mat-icon>
+            </button>
+            <button mat-icon-button
+                [disabled]="history.recentCount <= 0"
+                (click)="historyCtl.forward()"
+                matTooltip="Redo [ctrl + y]">
+                <mat-icon>chevron_right</mat-icon>
+            </button>
+        </div>
+    
+        <mat-list role="list">
+
+            <!-- placeholder when history is empty -->
+            <mat-list-item *ngIf="history.histories.length === 0">
+                <mat-icon matListItemIcon></mat-icon>
+                <div matListItemTitle class="placeholder">
+                    Histories will appear here ...
+                </div>
+            </mat-list-item>
+            
+            <!-- hidden recent items -->
+            <mat-list-item *ngIf="history.hiddenRecentHistories.length > 0">
+                <mat-icon matListItemIcon></mat-icon>
+                <div matListItemTitle class="placeholder">
+                    {{ history.hiddenRecentHistories.length }} more items hidden
+                </div>
+            </mat-list-item>
+
+            <!-- visible items -->
+            <mat-list-item
+                *ngFor="let element of history.visibleHistories"
+                role="list-item"
+                (click)="revert(element)"
+                matRipple>
+        
+                <mat-icon
+                    matListItemIcon
+                    [fontIcon]="element?.active ? 'chevron_right' : ''" >
+                </mat-icon>
+                
+                <div matListItemTitle>
+                    {{ element.name }}
+                </div>
+            </mat-list-item>
+
+            <!-- hidden ancient items -->
+            <mat-list-item *ngIf="history.hiddenAncientHistories.length > 0">
+                <mat-icon matListItemIcon></mat-icon>
+                <div matListItemTitle class="placeholder">
+                    {{ history.hiddenAncientHistories.length }} more items hidden
+                </div>
+            </mat-list-item>
+        </mat-list>
+        
+    </ng-template>
+
+</ng-template>
