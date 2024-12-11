@@ -1,6 +1,7 @@
 ebrains-drive
+pydantic<2.0
 fastapi
-git+https://github.com/HumanBrainProject/fairgraph.git # need fairgraph-0.10.0 onwards
+fairgraph>=0.10.0
 authlib
 uvicorn[standard] # required as a asgi
 itsdangerous # required for starlette session middleware
