@@ -506,13 +506,19 @@ export class InputVolumesComponent {
     }
     const textEncoder = new TextEncoder()
     const buffer = textEncoder.encode(url)
-    const shaBuffer = (await crypto?.subtle?.digest('SHA-256', buffer)) || 'non-secure-id'
-    const hashArray = Array.from(new Uint8Array(shaBuffer))
-    const hasedId = hashArray.map(v => v.toString(16).padStart(2, "0")).join("")
+    let hashedId: string
+    try {
+      const shaBuffer = await crypto.subtle.digest('SHA-256', buffer)
+      const hashArray = Array.from(new Uint8Array(shaBuffer))
+      hashedId = hashArray.map(v => v.toString(16).padStart(2, "0")).join("")
+    } catch (e) {
+      hashedId = `non-secure-id`
+      console.warn(`error generating hash of url. using backup hashid: ${hashedId}`)
+    }
 
     const vol = extractProtocolUrl(url)
     const volume: TVolume = {
-      id: hasedId,
+      id: hashedId,
       name,
       volumes: [ vol ],
       visibility: "useradded"
