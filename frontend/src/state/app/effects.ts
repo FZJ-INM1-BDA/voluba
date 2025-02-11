@@ -82,7 +82,8 @@ export class Effects {
             tmplLm: purgatory,
             incLm: incLandmark,
             name: `Untitled`,
-            id: crypto.randomUUID(),
+            // if crypto is undefined (non-secure environment)
+            id: crypto?.randomUUID() || Date.now().toString(),
           }
         })
       )

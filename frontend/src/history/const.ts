@@ -57,7 +57,8 @@ export class UndoService {
           return acc
         }
         const newVal = {
-          id: crypto.randomUUID(),
+          // if crypto is undefined (non-secure environment)
+          id: crypto?.randomUUID() || Date.now().toString(),
           name,
           state: state as State,
           active: true

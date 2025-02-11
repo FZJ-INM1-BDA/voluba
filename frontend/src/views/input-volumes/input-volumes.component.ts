@@ -506,7 +506,7 @@ export class InputVolumesComponent {
     }
     const textEncoder = new TextEncoder()
     const buffer = textEncoder.encode(url)
-    const shaBuffer = await crypto.subtle.digest('SHA-256', buffer)
+    const shaBuffer = (await crypto?.subtle?.digest('SHA-256', buffer)) || 'non-secure-id'
     const hashArray = Array.from(new Uint8Array(shaBuffer))
     const hasedId = hashArray.map(v => v.toString(16).padStart(2, "0")).join("")
 
