@@ -1,3 +1,6 @@
+image:
+  tag: rf_rewriteFrontend
+
 ingress:
   enabled: true
   hosts:
@@ -18,15 +21,15 @@ ingress:
     - path: "/"
       pathType: Prefix
   tls:
-  - secretname: voluba-prod-ebrains-cert-secret
+  - secretName: voluba-prod-ebrains-cert-secret
     hosts:
     - voluba.apps.ebrains.eu
-  - secretname: voluba-angular-ebrains-secret
+  - secretName: voluba-angular-ebrains-secret
     hosts:
     - voluba-angular.apps.tc.humanbrainproject.eu
-  - secretname: voluba-prod-secret
+  - secretName: voluba-prod-secret
     hosts:
     - voluba.apps.tc.humanbrainproject.eu
-  - secretname: voluba-old-hostname-certificate
+  - secretName: voluba-old-hostname-secret
     hosts:
     - voluba.apps.hbp.eu
