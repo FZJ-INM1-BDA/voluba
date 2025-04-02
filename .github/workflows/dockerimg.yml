@@ -77,32 +77,32 @@ jobs:
         
         docker push $VERSIONED_DOCKER_IMGSTREAM
 
-  deploy-prod-on-rancher:
-    needs: [ build-docker-img ]
-    if: ${{ github.ref == 'refs/heads/master' && success() }}
-    uses: ./.github/workflows/deploy-helm.yml
-    with:
-      DEPLOYMENT_NAME: voluba-prod
-      IMAGE_TAG: ${{ needs.build-docker-img.outputs.VERSION }}
-    secrets:
-      KUBECONFIG: ${{ secrets.KUBECONFIG }}
+  # deploy-prod-on-rancher:
+  #   needs: [ build-docker-img ]
+  #   if: ${{ github.ref == 'refs/heads/master' && success() }}
+  #   uses: ./.github/workflows/deploy-helm.yml
+  #   with:
+  #     DEPLOYMENT_NAME: voluba-prod
+  #     IMAGE_TAG: ${{ needs.build-docker-img.outputs.VERSION }}
+  #   secrets:
+  #     KUBECONFIG: ${{ secrets.KUBECONFIG }}
 
-  deploy-rc-on-rancher:
-    needs: [ build-docker-img ]
-    if: ${{ github.ref == 'refs/heads/staging' && success() }}
-    uses: ./.github/workflows/deploy-helm.yml
-    with:
-      DEPLOYMENT_NAME: voluba-rc
-      IMAGE_TAG: staging
-    secrets:
-      KUBECONFIG: ${{ secrets.KUBECONFIG }}
+  # deploy-rc-on-rancher:
+  #   needs: [ build-docker-img ]
+  #   if: ${{ github.ref == 'refs/heads/staging' && success() }}
+  #   uses: ./.github/workflows/deploy-helm.yml
+  #   with:
+  #     DEPLOYMENT_NAME: voluba-rc
+  #     IMAGE_TAG: staging
+  #   secrets:
+  #     KUBECONFIG: ${{ secrets.KUBECONFIG }}
 
-  deploy-rewrite-on-rancher:
-    needs: [ build-docker-img ]
-    if: ${{ github.ref == 'refs/heads/rf_rewriteFrontend' && success() }}
-    uses: ./.github/workflows/deploy-helm.yml
-    with:
-      DEPLOYMENT_NAME: voluba-angular
-      IMAGE_TAG: rf_rewriteFrontend
-    secrets:
-      KUBECONFIG: ${{ secrets.KUBECONFIG }}
+  # deploy-rewrite-on-rancher:
+  #   needs: [ build-docker-img ]
+  #   if: ${{ github.ref == 'refs/heads/rf_rewriteFrontend' && success() }}
+  #   uses: ./.github/workflows/deploy-helm.yml
+  #   with:
+  #     DEPLOYMENT_NAME: voluba-angular
+  #     IMAGE_TAG: rf_rewriteFrontend
+  #   secrets:
+  #     KUBECONFIG: ${{ secrets.KUBECONFIG }}

@@ -1,0 +1,32 @@
+ingress:
+  enabled: true
+  hosts:
+  - host: voluba.apps.ebrains.eu
+    paths:
+    - path: "/"
+      pathType: Prefix
+  - host: voluba-angular.apps.tc.humanbrainproject.eu
+    paths:
+    - path: "/"
+      pathType: Prefix
+  - host: voluba.apps.tc.humanbrainproject.eu
+    paths:
+    - path: "/"
+      pathType: Prefix
+  - host: voluba.apps.hbp.eu
+    paths:
+    - path: "/"
+      pathType: Prefix
+  tls:
+  - secretname: voluba-prod-ebrains-cert-secret
+    hosts:
+    - voluba.apps.ebrains.eu
+  - secretname: voluba-angular-ebrains-secret
+    hosts:
+    - voluba-angular.apps.tc.humanbrainproject.eu
+  - secretname: voluba-prod-secret
+    hosts:
+    - voluba.apps.tc.humanbrainproject.eu
+  - secretname: voluba-old-hostname-certificate
+    hosts:
+    - voluba.apps.hbp.eu
