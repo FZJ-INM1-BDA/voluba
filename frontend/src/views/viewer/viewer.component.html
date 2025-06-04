@@ -72,6 +72,7 @@
                 nehuba-viewer-alias="secondaryViewer"
                 (mousePosition)="onMousePosition($event)"
                 (mousedown)="onMouseDown($event.event)"
+                (mouseup)="onMouseUp($event.event)"
                 volubaMouseInteraction
                 [onlyElements]="secondaryNehuba.elementToSliceViewWeakMap"
                 [nehuba-viewer-init-navigation]="view.primaryNavigation"
@@ -82,7 +83,10 @@
 
             <ng-template [ngIf]="secondaryNehuba.sliceViews$ | async" let-sliceViews>
 
-                <div class="four-quadrant">
+                <div class="four-quadrant"
+                    [ngClass]="{
+                        'disabled': view.isDraggingViewer || view.addLandmarkMode
+                    }">
                     <ng-template [ngIf]="sliceViews[0]" let-sliceView>
                         <voluba-overlay [overlay-landmarks]="view.secondaryLandmarks"
                             (overlay-hover-landmark)="handleHoverLandmark($event)"
