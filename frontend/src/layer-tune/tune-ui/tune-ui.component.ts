@@ -457,18 +457,18 @@ export class TuneUiComponent {
       axis === 'y' ? 90 : 0, 
       axis === 'z' ? 90 : 0)
 
-    this.undoSvc.pushUndo(`Rotate ${axis} axis by 90deg`, true)
     this.store.dispatch(
       outputs.actions.rotateIncBy({
         array: Array.from(quaternion)
       })
     )
+    this.undoSvc.pushUndo(`Rotate ${axis} axis by 90deg`, true)
   }
 
   flip(axis: 'x' | 'y' | 'z') {
-    this.undoSvc.pushUndo(`Flip ${axis} axis`, true)
     this.store.dispatch(
       outputs.actions.flipAxis({ axis })
     )
+    this.undoSvc.pushUndo(`Flip ${axis} axis`, true)
   }
 }

@@ -174,12 +174,12 @@ export class ToolbarComponent {
       
       const newXform = mat4.fromValues(...result.inverse_matrix.flatMap(v => v))
       mat4.transpose(newXform, newXform)
-      this.undoSvc.pushUndo(`Apply transform via landmark alignment.`)
       this.store.dispatch(
         outputs.actions.setIncMatrix({
           text: Array.from(newXform).join(",")
         })
       )
+      this.undoSvc.pushUndo(`Apply transform via landmark alignment.`)
     })
   }
 

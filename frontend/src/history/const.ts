@@ -132,6 +132,11 @@ export class UndoService {
     this.resetTo(needId)
   }
 
+  /**
+   * @description Call *after* action dispatched
+   * @param name 
+   * @param standalone 
+   */
   pushUndo(name: string, standalone:boolean=false) {
     this.#pushUndo$.next({ name, standalone })
   }

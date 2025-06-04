@@ -465,7 +465,6 @@ export class ViewerComponent implements AfterViewInit {
       takeUntil(this.#destroyed$),
     ).subscribe(([val, xformMat]) => {
       if (!val) return
-      this.undoSvc.pushUndo(`Translate via viewer drag & drop`)
       const { movementX, movementY, sliceView } = val;
 
       const { vec3, mat4 } = export_nehuba;
@@ -486,6 +485,7 @@ export class ViewerComponent implements AfterViewInit {
           array: Array.from(pos),
         })
       )
+      this.undoSvc.pushUndo(`Translate via viewer drag & drop`)
     })
 
     dragOnIncVol$.pipe(
@@ -530,12 +530,12 @@ export class ViewerComponent implements AfterViewInit {
         quat.setAxisAngle(quat.create(), axes0, (-movementX * Math.PI) / 180),
         quat.setAxisAngle(quat.create(), axes1, (movementY * Math.PI) / 180)
       )
-      this.undoSvc.pushUndo(`Rotate via viewer drag & drop`)
       this.store.dispatch(
         outputs.actions.rotateIncBy({
           array: Array.from(finalRotation),
         })
-      );
+      )
+      this.undoSvc.pushUndo(`Rotate via viewer drag & drop`)
     })
 
 
@@ -635,7 +635,6 @@ export class ViewerComponent implements AfterViewInit {
         // cannot find if the hovered lm is targeting inc or ref, maybe it's targetting purgatory?
         return
       }
-      this.undoSvc.pushUndo(`Update landmark ${hoveredLandmarkPair.id}.${lmkey} by drag and drop`)
       this.store.dispatch(
         appState.actions.updateLandmarkPair({
           id: hoveredLandmarkPair.id,
@@ -647,6 +646,7 @@ export class ViewerComponent implements AfterViewInit {
           }
         })
       )
+      this.undoSvc.pushUndo(`Update landmark ${hoveredLandmarkPair.id}.${lmkey} by drag and drop`)
     })
   }
 

@@ -2,8 +2,9 @@ import { DOCUMENT } from '@angular/common';
 import { ChangeDetectionStrategy, Component, Inject, inject } from '@angular/core';
 import { TextOnlySnackBar } from '@angular/material/snack-bar';
 import { select, Store } from '@ngrx/store';
-import { distinctUntilChanged, takeUntil } from 'rxjs';
+import { distinctUntilChanged, filter, take, takeUntil } from 'rxjs';
 import { User } from 'src/const';
+import { UndoService } from 'src/history/const';
 import { MatSnackBar, MatSnackBarRef } from 'src/sharedModule';
 import * as app from 'src/state/app';
 import { DestroyDirective } from 'src/util/destroy.directive';
@@ -27,11 +28,23 @@ export class AppComponent {
 
   #lmSnackBarRef: MatSnackBarRef<TextOnlySnackBar>|null = null
 
-  constructor(private store$: Store, private snackbar: MatSnackBar, @Inject(DOCUMENT) document: Document) {
+  constructor(
+    private store$: Store,
+    private snackbar: MatSnackBar,
+    @Inject(DOCUMENT) document: Document,
+    undoSvc: UndoService,
+  ) {
 
     document.addEventListener('copy', ev => {
       ev.stopPropagation()
     }, { capture: true })
+
+    this.currentStage$.pipe(
+      filter(stage => stage === this.STAGE.ALIGNMENT),
+      take(1)
+    ).subscribe(() => {
+      undoSvc.pushUndo(`Initial state`)
+    })
 
     this.#fetchUser()
 

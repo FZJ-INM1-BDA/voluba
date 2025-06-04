@@ -8,6 +8,7 @@ import * as appState from "src/state/app"
 import * as generalActions from "src/state/actions"
 import { DestroyDirective } from "src/util/destroy.directive";
 import { ExportJson } from "src/state/outputs/consts";
+import { UndoService } from "src/history/const";
 
 const flattenMat = (arr: number[][]) => arr.reduce((acc, curr) => acc.concat(curr), [])
 
@@ -294,6 +295,7 @@ export class ShareExportComponent {
         text: matrix.join(",")
       })
     )
+    this.undoSvc.pushUndo(`Loaded transform from JSON file`, true)
   }
 
   async publish(){
@@ -349,6 +351,7 @@ export class ShareExportComponent {
 
   constructor(
     private store: Store,
+    private undoSvc: UndoService,
     @Inject(GET_NEHUBA_INJ)
     private getNehuba: GetNehuba,
     @Inject(VOLUBA_APP_CONFIG)

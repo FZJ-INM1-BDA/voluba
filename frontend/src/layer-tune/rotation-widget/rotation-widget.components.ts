@@ -298,13 +298,12 @@ export class RotationWidgetCmp {
         n.target.color === 'blue' ? rot : 0,
       )
       
-      this.undoSvc.pushUndo(`Rotate via rotation widget ${n.target.color}`)
-      
       this.store.dispatch(
         outputs.actions.rotateIncBy({
           text: Array.from(q).join(",")
         })
       )
+      this.undoSvc.pushUndo(`Rotate via rotation widget ${n.target.color}`)
     })
   }
 }
