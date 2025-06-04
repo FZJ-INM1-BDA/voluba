@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, ElementRef, Inject, ViewChild, inject } from "@angular/core";
 import { Store, select } from "@ngrx/store";
 import { BehaviorSubject, EMPTY, combineLatest, distinctUntilChanged, finalize, firstValueFrom, from, interval, map, scan, switchMap, takeUntil, takeWhile } from "rxjs";
-import { EbrainsPublishResult, EbrainsWorkflowPollResponse, GET_NEHUBA_INJ, GetNehuba, REFERENCE_ID_TO_SXPLR_ROOT, VOLUBA_APP_CONFIG, VolubaAppConfig, XFORM_FILE_TYPE, getNgLayer, getNgUrl, transCoordSpcScaling } from "src/const";
+import { EbrainsPublishResult, EbrainsWorkflowPollResponse, GET_NEHUBA_INJ, GetNehuba, REFERENCE_ID_TO_SXPLR_ROOT, VOLUBA_APP_CONFIG, VolubaAppConfig, XFORM_FILE_TYPE, _XFORM_FILE_TYPE, getNgLayer, transCoordSpcScaling } from "src/const";
 import * as inputs from "src/state/inputs"
 import * as outputs from "src/state/outputs"
 import * as appState from "src/state/app"
@@ -213,8 +213,9 @@ export class ShareExportComponent {
   )
 
   #validateXform(input: any){
-    if (input['@type'] !== XFORM_FILE_TYPE) {
-      throw new Error(`Expected @type property to be ${XFORM_FILE_TYPE}, but was ${input['@type']} instead`)
+    
+    if ( ![XFORM_FILE_TYPE, _XFORM_FILE_TYPE].includes(input['@type']) ) {
+      throw new Error(`Expected @type property to be ${XFORM_FILE_TYPE} or ${_XFORM_FILE_TYPE}, but was ${input['@type']} instead`)
     }
     const nehuba = this.getNehuba.getNehubaInstance()
     const coordinateSpace = nehuba?.ngviewer.coordinateSpace.toJSON()

@@ -74,6 +74,7 @@ export type GetNehuba = {
 export const GET_NEHUBA_INJ = new InjectionToken('GET_NEHUBA_INJ')
 
 export const XFORM_FILE_TYPE = "https://voluba.apps.hbp.eu/@types/transform"
+export const _XFORM_FILE_TYPE = "https://voluba.apps.hbp.eu/@types/tranform"
 
 type CoordSpace = Record<'x'|'y'|'z', export_nehuba.Dimension>
 
