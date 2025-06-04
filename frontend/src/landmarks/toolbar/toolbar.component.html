@@ -1,7 +1,7 @@
 <ng-template [ngIf]="view$ | async" let-view>
 
     <button mat-fab
-        [color]="(addLmMode$ | async) ? 'primary' : 'default'"
+        [color]="view.addLmMode ? 'primary' : 'default'"
         matTooltip="Toggle add landmark mode"
         (click)="toggleLandmarkMode()">
         <mat-icon fontIcon="add_location"></mat-icon>

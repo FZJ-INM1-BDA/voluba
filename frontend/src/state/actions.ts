@@ -13,7 +13,7 @@ export const info = createAction(
   props<{ message: string }>()
 )
 
-export const appplyState = createAction(
+export const applyState = createAction(
   `[${nameSpace}] applyState`,
   props<{ state: State }>()
 )

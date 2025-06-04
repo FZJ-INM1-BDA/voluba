@@ -29,7 +29,7 @@ function debugFn(reducer: ActionReducer<State>): ActionReducer<State> {
 
 function generalActionApplyState(reducer: ActionReducer<State>): ActionReducer<State> {
   return function (state, action) {
-    if (action.type === generalActions.appplyState.type) {
+    if (action.type === generalActions.applyState.type) {
       return (action as any).state
     }
 

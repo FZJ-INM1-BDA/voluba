@@ -25,13 +25,15 @@ import {
   BehaviorSubject,
   firstValueFrom,
   merge,
+  EMPTY,
 } from 'rxjs';
 import { MouseInteractionDirective } from 'src/mouse-interactions/mouse-interaction.directive';
 import * as outputs from 'src/state/outputs';
 import * as appState from "src/state/app"
 import * as inputs from 'src/state/inputs';
+import * as generalActions from "src/state/actions"
 import { NehubaNavigation, NehubaViewerWrapperComponent } from '../nehuba-viewer-wrapper/nehuba-viewer-wrapper.component';
-import { GET_NEHUBA_INJ, GetNehuba, INC_VOL_ID, Mat4, OverlayLm, REFERENCE_ID_TO_DARK_MODE, VOLUBA_NEHUBA_TOKEN, getIncLayer, getRefLayer, isDefined } from 'src/const';
+import { GET_NEHUBA_INJ, GetNehuba, INC_VOL_ID, Mat4, OverlayLm, REFERENCE_ID_TO_DARK_MODE, VOLUBA_NEHUBA_TOKEN, getIncLayer, getRefLayer, isDefined, isVec3 } from 'src/const';
 import { INCOMING_LM_COLOR, Landmark, LandmarkPair, REF_LM_COLOR } from 'src/landmarks/const';
 import { Actions, ofType } from '@ngrx/effects';
 import { UndoService } from 'src/history/const';
@@ -337,6 +339,68 @@ export class ViewerComponent implements AfterViewInit {
     @Inject(GET_NEHUBA_INJ) getNehuba: GetNehuba,
   ) {
     getNehuba.provideNehubaInstance(() => this.viewerWrapper?.nehubaViewer)
+
+    this.store.pipe(
+      takeUntil(this.#destroyed$),
+      select(appState.selectors.addLmMode),
+      switchMap(flag => {
+        if (!flag) {
+          return EMPTY
+        }
+        return this.nehubaSvc.mousedown.pipe(
+          withLatestFrom(
+            this.nehubaSvc.mouseover,
+            this.store.pipe(
+              select(inputs.selectors.selectedTemplate)
+            ),
+            this.store.pipe(
+              select(inputs.selectors.selectedIncoming)
+            ),
+            this.store.pipe(
+              select(appState.selectors.purgatory)
+            ),
+          ),
+        )
+      }),
+    ).subscribe(([ _, v, referenceVol, incomingVol, purgatory ]) => {
+      if (!v) {
+        return
+      }
+      const lm = Array.from(v)
+      if (!isVec3(lm)) {
+        return
+      }
+      
+      if (!referenceVol) {
+        this.store.dispatch(
+          generalActions.error({
+            message: `Attempting to add landmark without defining reference vol`
+          })
+        )
+        return
+      }
+      if (!incomingVol) {
+        
+        this.store.dispatch(
+          generalActions.error({
+            message: `Attempting to add landmark without defining incoming vol`
+          })
+        )
+        return
+      }
+      const volId = !!purgatory
+      ? incomingVol.id
+      : referenceVol.id
+      
+      this.store.dispatch(
+        appState.actions.addLandmark({
+          landmark: {
+            position: lm,
+            targetVolumeId: volId
+          }
+        })
+      )
+    })
   }
 
   onMousePosition(pos: Float32Array){

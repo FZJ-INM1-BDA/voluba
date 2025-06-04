@@ -100,7 +100,7 @@ export class UndoService {
       return
     }
     this.store.dispatch(
-      generalAction.appplyState({
+      generalAction.applyState({
         state: { ...activeLayer.state }
       })
     )

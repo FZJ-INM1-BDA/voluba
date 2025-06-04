@@ -20,6 +20,10 @@ export const reducer = createReducer(
     ...state,
     landmarkPairs: state.landmarkPairs.filter(({ id }) => id !== landmarkId)
   })),
+  on(actions.toggleLandmarkMode, state => ({
+    ...state,
+    addingLandmark: !state.addingLandmark
+  })),
   on(actions.setAddLandmarkMode, (state, { mode }) => ({
     ...state,
     addingLandmark: mode

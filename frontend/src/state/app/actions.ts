@@ -43,6 +43,9 @@ export const purgePurgatory = createAction(
   `[${nameSpace}] purgePurgatory`
 )
 
+export const toggleLandmarkMode = createAction(
+  `[${nameSpace}] toggleLandmarkMode`,
+)
 
 export const setAddLandmarkMode = createAction(
   `[${nameSpace}] setAddLandmarkMode`,

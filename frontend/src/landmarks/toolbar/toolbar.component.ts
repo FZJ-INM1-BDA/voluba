@@ -47,20 +47,6 @@ type LMJson = {
 export class ToolbarComponent {
 
   #destroyed$ = inject(DestroyDirective).destroyed$
-
-  #addLmMode: boolean = false
-  addLmMode$ = this.store.pipe(
-    select(app.selectors.addLmMode)
-  )
-
-  lmToAdd$ = this.addLmMode$.pipe(
-    switchMap(flag => flag
-      ? this.vn.mouseover.pipe(
-        map(v => v && Array.from(v)),
-        filter(isVec3)
-      )
-      : of(null))
-  )
   
   #calcTriggered$ = new Subject<string>()
   #newXformFromCalc$ = this.#calcTriggered$.pipe(
@@ -110,11 +96,14 @@ export class ToolbarComponent {
           map(() => false)
         )
       )
+    ),
+    this.store.pipe(
+      select(app.selectors.addLmMode)
     )
   ]).pipe(
-    map(([ landmarks, inputFilesName, ref, inc, xform, calcXformBusy ]) => {
+    map(([ landmarks, inputFilesName, ref, inc, xform, calcXformBusy, addLmMode ]) => {
 
-      const { mat4, vec3 } = export_nehuba
+      const { vec3 } = export_nehuba
 
       const refLm: L[] = landmarks.map(lm => {
         return {
@@ -157,6 +146,7 @@ export class ToolbarComponent {
       }
 
       return {
+        addLmMode,
         calcXformBusy,
         transformationTypes: this.transformationTypes,
         landmarkLength: landmarks.length,
@@ -181,62 +171,6 @@ export class ToolbarComponent {
     @Inject(VOLUBA_APP_CONFIG) private appConfig: VolubaAppConfig,
     @Optional() @Inject(VOLUBA_NEHUBA_TOKEN) private vn: VolubeNehuba
   ){
-    this.addLmMode$.pipe(
-      takeUntil(this.#destroyed$)
-    ).subscribe(flag => {
-      this.#addLmMode = flag
-    })
-
-    this.lmToAdd$.pipe(
-      switchMap(lm => !!lm
-        ? this.vn.mousedown.pipe(map(() => lm))
-        : NEVER
-      ),
-      withLatestFrom(
-        this.store.pipe(
-          select(inputs.selectors.selectedTemplate)
-        ),
-        this.store.pipe(
-          select(inputs.selectors.selectedIncoming)
-        ),
-        this.store.pipe(
-          select(app.selectors.purgatory)
-        ),
-      ),
-      takeUntil(this.#destroyed$)
-    ).subscribe(([lm, referenceVol, incomingVol, purgatory]) => {
-      
-      if (!referenceVol) {
-        this.store.dispatch(
-          generalActions.error({
-            message: `Attempting to add landmark without defining reference vol`
-          })
-        )
-        return
-      }
-      if (!incomingVol) {
-        
-        this.store.dispatch(
-          generalActions.error({
-            message: `Attempting to add landmark without defining incoming vol`
-          })
-        )
-        return
-      }
-      const volId = !!purgatory
-      ? incomingVol.id
-      : referenceVol.id
-      
-      this.store.dispatch(
-        app.actions.addLandmark({
-          landmark: {
-            position: lm,
-            targetVolumeId: volId
-          }
-        })
-      )
-    })
-
     this.#newXformFromCalc$.pipe(
       takeUntil(this.#destroyed$)
     ).subscribe(result => {
@@ -255,9 +189,7 @@ export class ToolbarComponent {
 
   toggleLandmarkMode() {
     this.store.dispatch(
-      app.actions.setAddLandmarkMode({
-        mode: !this.#addLmMode
-      })
+      app.actions.toggleLandmarkMode()
     )
   }
   async handleLoadJson(jsonTxt: string){
