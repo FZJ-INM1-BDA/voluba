@@ -95,6 +95,7 @@ declare namespace export_nehuba {
 
   interface NehubaViewer {
     ngviewer: {
+      dispose: () => void
       layerManager: {
         getLayerByName(layername: string): ManagedLayer|undefined
         managedLayers: ManagedLayer[]

@@ -115,14 +115,10 @@ export class ToolbarComponent {
       })
       
       const incLm: L[] = landmarks.map(lm => {
-        const posInIncSpace = vec3.transformMat4(
-          vec3.create(),
-          vec3.fromValues(...lm.incLm.position),
-          xform)
         return {
           id: `${lm.id}-inc`,
           active: true,
-          coord: Array.from(posInIncSpace).map(v => v * 1e6),
+          coord: lm.incLm.position.map(v => v/1e6),
           name: `${lm.name}-inc`,
         }
       })

@@ -208,6 +208,17 @@ export class NehubaViewerWrapperComponent implements OnInit, AfterViewInit {
       config.dataset.initialNgState.navigation.pose.orientation = Array.from(this.initNavigation.orientation)
     }
     
+    if (!!(window as any)['viewer']) {
+      const w = window as any
+      w['_viewer'] = w['viewer']
+      this.#destroyed$.subscribe(() => {
+        
+        w['viewer'] = w['_viewer']
+        w['_viewer'] = null
+        this.nehubaViewer?.ngviewer.dispose()
+      })
+    }
+
     this.nehubaViewer = export_nehuba.createNehubaViewer(config, console.error)
 
     /**

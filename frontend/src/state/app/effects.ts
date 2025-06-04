@@ -3,12 +3,13 @@ import { Actions, createEffect, ofType } from "@ngrx/effects";
 import { Action, select, Store } from "@ngrx/store";
 import * as selectors from "./selectors"
 import * as actions from "./actions"
-import { filter, from, map, of, switchMap, withLatestFrom } from "rxjs";
+import { filter, from, map, of, switchMap, tap, withLatestFrom } from "rxjs";
 import { MatSnackBar } from "src/sharedModule"
 import * as outputs from "src/state/outputs"
 import * as inputs from "src/state/inputs"
 import * as mainInput from "src/state/actions"
 import { Landmark } from "./consts";
+import { UndoService } from "src/history/const";
 
 @Injectable()
 export class Effects {
@@ -100,5 +101,12 @@ export class Effects {
     })
   ))
 
-  constructor(private actions$: Actions, private store: Store){}
+  onAddLandmarkPair = createEffect(() => this.actions$.pipe(
+    ofType(actions.addLandmarkPair),
+    tap(() => {
+      this.undoSvc.pushUndo(`Added landmark pair`, true)
+    })
+  ), { dispatch: false })
+
+  constructor(private actions$: Actions, private store: Store, private undoSvc: UndoService){}
 }

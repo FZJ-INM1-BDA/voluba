@@ -331,6 +331,10 @@ export class ViewerComponent implements AfterViewInit {
     this.store.dispatch(appState.actions.toggleMode())
   }
 
+  toggleLandmarkMode() {
+    this.store.dispatch(appState.actions.toggleLandmarkMode())
+  }
+
   constructor(
     private store: Store,
     private nehubaSvc: NehubaSvc,

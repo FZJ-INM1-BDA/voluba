@@ -32,7 +32,7 @@ function parseKeyType(input: string): {mod?: Modifier, key: Key}|undefined|null 
   if (input.length !== 4) {
     return null
   }
-  if (!/[a-z]/.test(input[3])) {
+  if (!/[a-z\/]/.test(input[3])) {
     return null
   }
   return {
@@ -73,6 +73,9 @@ export class VolubaKeyboardShortcutDirective {
 
   @HostListener("window:keydown", ["$event"])
   onKeyDown(event: KeyboardEvent){
+    if ( event.target instanceof HTMLInputElement) {
+      return
+    }
     
     for (const modkey of this.#modKeys){
       const mod: ModifierKey|undefined = modkey.mod && `${modkey.mod}Key`

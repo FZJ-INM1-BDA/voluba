@@ -8,6 +8,16 @@
         voluba-kb-shortcut
         kb-shortcut-keys="ctrl+keyy"
         (kb-shortcut-triggered)="histroyCtl.forward()"></div>
+        
+    <div class="invisible"
+        voluba-kb-shortcut
+        kb-shortcut-keys="ctrl+key/"
+        (kb-shortcut-triggered)="toggleMode()"></div>
+
+    <div class="invisible"
+        voluba-kb-shortcut
+        kb-shortcut-keys="alt+keya"
+        (kb-shortcut-triggered)="toggleLandmarkMode()"></div>
 
     <div class="viewer-wrapper"
         voluba-history-controller
