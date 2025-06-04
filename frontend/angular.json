@@ -29,7 +29,12 @@
             "inlineStyleLanguage": "scss",
             "assets": [
               "src/favicon.ico",
-              "src/assets"
+              "src/assets",
+              {
+                "input": "node_modules/ng-layer-tune",
+                "glob": "**/*",
+                "output": "lib/ng-layer-tune"
+              }
             ],
             "styles": [
               "@angular/material/prebuilt-themes/indigo-pink.css",

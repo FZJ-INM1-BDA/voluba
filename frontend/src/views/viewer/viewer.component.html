@@ -120,36 +120,43 @@
     
     <voluba-four-corners>
         <div topleft>
-            <voluba-control-menu></voluba-control-menu>
+            <mat-card>
+                <voluba-control-menu></voluba-control-menu>
+            </mat-card>
         </div>
         <div topright>
-            <button mat-icon-button
-                matTooltip="Tune incoming volume shader"
-                volubaBottomSheet
-                [bottom-sheet-template]="ngLayerShaderTune">
-                <mat-icon fontIcon="tune"></mat-icon>
-            </button>
-            <button mat-icon-button
-                matTooltip="Toggle side-by-side and overlay mode"
-                (click)="toggleMode()">
-                <mat-icon fontIcon="compare"></mat-icon>
-            </button>
-            <button mat-icon-button
-                matTooltip="Lock incoming volume [k]"
-                voluba-kb-shortcut
-                kb-shortcut-keys="keyk"
-                (kb-shortcut-triggered)="toggleIncLocked()"
-                (click)="toggleIncLocked()"
-                [disabled]="!view.isDefaultMode">
-                <mat-icon [fontIcon]="view.incLocked || (!view.isDefaultMode) ? 'lock' : 'lock_open'"></mat-icon>
-            </button>
-            <a mat-icon-button
-                matTooltip="Logout and discard all progress"
-                color="warn"
-                href="logout"
-                [disabled]="!view.user">
-                <mat-icon>logout</mat-icon>
-            </a>
+            <mat-card>
+                <div class="inc-layer-ctl-container">
+
+                    <button mat-icon-button
+                        matTooltip="Tune incoming volume shader"
+                        volubaBottomSheet
+                        [bottom-sheet-template]="ngLayerShaderTune">
+                        <mat-icon fontIcon="tune"></mat-icon>
+                    </button>
+                    <button mat-icon-button
+                        matTooltip="Toggle side-by-side and overlay mode"
+                        (click)="toggleMode()">
+                        <mat-icon fontIcon="compare"></mat-icon>
+                    </button>
+                    <button mat-icon-button
+                        matTooltip="Lock incoming volume [k]"
+                        voluba-kb-shortcut
+                        kb-shortcut-keys="keyk"
+                        (kb-shortcut-triggered)="toggleIncLocked()"
+                        (click)="toggleIncLocked()"
+                        [disabled]="!view.isDefaultMode">
+                        <mat-icon [fontIcon]="view.incLocked || (!view.isDefaultMode) ? 'lock' : 'lock_open'"></mat-icon>
+                    </button>
+                    <a mat-icon-button
+                        matTooltip="Logout and discard all progress"
+                        color="warn"
+                        href="logout"
+                        [disabled]="!view.user">
+                        <mat-icon>logout</mat-icon>
+                    </a>
+                </div>
+            </mat-card>
         </div>
         <div bottomleft>
             <mat-card class="navigation-card">
