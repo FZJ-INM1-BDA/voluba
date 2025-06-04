@@ -24,36 +24,65 @@ export class Effects {
         this.#incMatrixMat4$,
         this.store.pipe(
           centerVoxelPipe
+        ),
+        this.store.pipe(
+          selectors.getFlippedState()
         )
       ),
-      filter(([_0, incoming, _1, _2]) => !!incoming),
-      map(([input, incoming, cXformMat, centerVoxel]) => {
+      filter(([_0, incoming, _1, _2, _3]) => !!incoming),
+      map(([input, incoming, cXformMat, centerVoxel, flippedState]) => {
         const { mat4, vec3, quat } = export_nehuba;
         const { processQuatInput } = consts;
 
-        
+
 
         const rotQuat = processQuatInput(input)
+        if (Array.from(rotQuat).some(v => isNaN(v))) {
+          return actions.dry()
+        }
 
-        const axis = vec3.fromValues(1, 0, 0)
-        const angle = quat.getAxisAngle(axis, rotQuat);
-        const rotMat = mat4.fromRotation(mat4.create(), angle, rotQuat);
-        if (!angle) return actions.dry();
-        if (!centerVoxel) return actions.dry()
+        const axis = vec3.create()
+        const angle = quat.getAxisAngle(axis, rotQuat)
+        if (!angle) return actions.dry()
         
-        const xformMat = mat4.create();
-        
-        const centralizeMatrix = mat4.fromTranslation(mat4.create(), centerVoxel.map(v => v * -1))
-        const decentralizeMatrix = mat4.fromTranslation(mat4.create(), centerVoxel)
-        console.log(centerVoxel, centralizeMatrix, decentralizeMatrix)
-        mat4.mul(xformMat, centralizeMatrix, xformMat)
+        const rotMat = mat4.fromRotation(mat4.create(), angle, axis)
+        // from voluba v0. certainly a mistake, no?
+        // const rotMat = mat4.fromRotation(mat4.create(), angle, rotQuat)
 
-        mat4.mul(
-          xformMat,
-          rotMat,
-          xformMat)
+        const xformMat = mat4.create()
+
+        const dim = vec3.fromValues(...centerVoxel.map(v => v * 2))
+        const mirror = consts.getMirrorMat(flippedState, dim)
+        const { undoMirror } = mirror
         
-        mat4.mul(xformMat, decentralizeMatrix, xformMat)
+        const cScaling = mat4.getScaling(vec3.create(), cXformMat)
+        const ivCScaling = vec3.inverse(vec3.create(), cScaling)
+        const cScalingMat = mat4.fromScaling(mat4.create(), ivCScaling)
+        mat4.mul(xformMat, undoMirror, cScalingMat)
+        
+        /**
+         * apply translation correction
+         */
+
+        const incTransl = vec3.mul(dim, dim, cScaling)
+        vec3.scale(incTransl, incTransl, 0.5)
+        const incTranslMat = mat4.fromTranslation(mat4.create(), incTransl)
+        mat4.mul(xformMat, xformMat, incTranslMat)
+
+        /**
+         * save invert
+         */
+        const invert = mat4.invert(mat4.create(), xformMat)
+
+        /**
+         * apply rotation
+         */
+        mat4.mul(xformMat, xformMat, rotMat)
+
+        /**
+         * apply invert
+         */
+        mat4.mul(xformMat, xformMat, invert)
         
         mat4.mul(xformMat, cXformMat, xformMat)
 

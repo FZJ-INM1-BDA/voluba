@@ -200,6 +200,7 @@ export class TuneUiComponent {
         // 180          0       180
         let v = RAD_TO_DEG * Math.asin(-2.0*(rot[1]*rot[3] - rot[0]*rot[2]))
         v *= -1
+        if (isNaN(v)) return 90
         return v
       })()
       
@@ -230,6 +231,9 @@ export class TuneUiComponent {
         rotX,
         rotY,
         rotZ,
+      }, {
+        emitEvent: false,
+        onlySelf: true
       })
 
     })
@@ -237,6 +241,8 @@ export class TuneUiComponent {
     const incVoxelSize = this.store.pipe(
       inputs.selectors.incVoxelSize
     )
+
+    // on update voxel / physical unit
     combineLatest([
       concat(
         of(this.tuneInput.value),
@@ -265,7 +271,7 @@ export class TuneUiComponent {
         return
       }
       if (!scaleX || !scaleY || !scaleZ){
-        console.error(`scale{X,Y,Z} must be defined!`)
+        console.error(`scale{X,Y,Z} must be defined! ${scaleX}, ${scaleY}, ${scaleZ}`)
         return
       }
       const { vec3, mat4 } = export_nehuba
@@ -287,6 +293,7 @@ export class TuneUiComponent {
       
     })
 
+    // on change transl, scale, rotation
     this.tuneInput.valueChanges.pipe(
       takeUntil(this.#destroyed$),
       filter(() => !this.tuneInput.errors),
@@ -375,6 +382,9 @@ export class TuneUiComponent {
         scaleX: scale[0],
         scaleY: scale[1],
         scaleZ: scale[2],
+      }, {
+        emitEvent: false,
+        onlySelf: true
       })
     })
   }

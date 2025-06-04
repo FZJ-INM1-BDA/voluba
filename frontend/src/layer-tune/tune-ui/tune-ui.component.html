@@ -60,26 +60,23 @@
     <mat-divider></mat-divider>
 
     <div class="section">
-        <!-- <mat-slider [min]="-180" [max]="180">
-            <input matSliderThumb formControlName="rotX" showTickMarks>
-        </mat-slider> -->
         <mat-form-field class="input">
             <mat-label>
                 Rotation X
             </mat-label>
-            <input [step]="1" formControlName="rotX" type="number" matInput>
+            <input [step]="0.1" [min]="-180" [max]="180" formControlName="rotX" type="number" matInput>
         </mat-form-field>
         <mat-form-field class="input">
             <mat-label>
                 Rotation Y
             </mat-label>
-            <input [step]="1" formControlName="rotY" type="number" matInput>
+            <input [step]="0.1" [min]="-90" [max]="90" formControlName="rotY" type="number" matInput>
         </mat-form-field>
         <mat-form-field class="input">
             <mat-label>
                 Rotation Z
             </mat-label>
-            <input [step]="1" formControlName="rotZ" type="number" matInput>
+            <input [step]="0.1" [min]="-180" [max]="180" formControlName="rotZ" type="number" matInput>
         </mat-form-field>
     </div>
 

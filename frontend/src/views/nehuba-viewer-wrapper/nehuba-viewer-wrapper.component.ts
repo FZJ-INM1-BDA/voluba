@@ -46,7 +46,7 @@ const lightmode = {
   zoomAtViewCentre: true,
   disableSegmentSelection: true,
   dataset: {
-    imageBackground: [1, 1, 1, 1],
+    imageBackground: [0.9, 0.9, 0.9, 1],
     initialNgState: {
       showDefaultAnnotations: true,
       layers: {
