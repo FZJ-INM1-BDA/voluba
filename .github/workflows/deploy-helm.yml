@@ -16,9 +16,6 @@ on:
 
 env:
   path_to_helm: .helm/voluba-prod
-  INGRESS_HOST: '[{ "host": "voluba-staging.apps.tc.humanbrainproject.eu", "paths": [{ "path": "/", "pathType": "Prefix" }] }]'
-  TLS: '[{ "secretName": "voluba-rc-tc-secret", "hosts": ["voluba-staging.apps.tc.humanbrainproject.eu"] }]'
-  ENV_HOSTNAME: 'https://voluba-staging.apps.tc.humanbrainproject.eu'
 
 jobs:
   trigger-deploy:

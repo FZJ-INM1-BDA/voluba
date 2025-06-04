@@ -1,5 +1,6 @@
 <button mat-mini-fab
     volubaDialog
+    matTooltip="Tuning incoming layer affine"
     #tundialog="volubaDialog"
     [color]="(tundialog.state$ | async) ? 'primary' : 'default'"
     [dialogTarget]="tunelayerTmpl">
@@ -7,6 +8,7 @@
 </button>
 <button mat-mini-fab
     volubaDialog
+    matTooltip="Add landmarks and estimate an affine with least squares."
     #lmdialog="volubaDialog"
     [color]="(lmdialog.state$ | async) ? 'primary' : 'default'"
     [dialogTarget]="landmarkViewTmpl">
@@ -14,6 +16,7 @@
 </button>
 <button mat-mini-fab
     volubaDialog
+    matTooltip="Action history"
     #historydialog="volubaDialog"
     [color]="(historydialog.state$ | async) ? 'primary' : 'default'"
     [dialogTarget]="historyTmpl">
@@ -21,6 +24,7 @@
 </button>
 <button mat-mini-fab
     volubaDialog
+    matTooltip="Export/Share result"
     #sharedialog="volubaDialog"
     [color]="(sharedialog.state$ | async) ? 'primary' : 'default'"
     [dialogTarget]="shareResultTmpl">
