@@ -1,0 +1,41 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: voluba-ingress
+  labels:
+    name: voluba-ingress
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: voluba.apps.ebrains.eu
+    http:
+      paths:
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name: voluba-prod-ebrains
+            port: 
+              number: 8080
+  - host: voluba.apps.hbp.eu
+    http:
+      paths:
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name: voluba-prod-ebrains
+            port: 
+              number: 8080
+  tls:
+  - secretName: voluba-prod-ebrains-cert-secret
+    hosts:
+    - voluba.apps.ebrains.eu
+  - secretName: voluba-old-hostname-secret
+    hosts:
+    - voluba.apps.hbp.eu
+
+  # TODO delete cert & secret
+  # - secretName: voluba-prod-secret
+  #   hosts:
+  #   - voluba.apps.tc.humanbrainproject.eu
