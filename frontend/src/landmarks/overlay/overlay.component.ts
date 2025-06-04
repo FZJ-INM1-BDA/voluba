@@ -52,6 +52,8 @@ const pipeGetSliceViewChanged = () => {
 })
 export class OverlayComponent {
 
+  public threshold = -0.1; // to avoid "flickering"
+
   #sliceView$ = new BehaviorSubject<export_nehuba.SliceView|null>(null)
   #sliceViewObs$: Observable<export_nehuba.SliceView> = this.#sliceView$.pipe(
     filter(isSliceView),

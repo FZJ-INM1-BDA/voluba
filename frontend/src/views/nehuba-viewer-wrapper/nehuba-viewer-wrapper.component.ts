@@ -343,7 +343,7 @@ export class NehubaViewerWrapperComponent implements OnInit, AfterViewInit {
   }
 
   setLayerProperty(id: string, property: Partial<LayerProperties>) {
-    const { transform, visible } = property;
+    let { transform, visible } = property;
     const layer = this.nehubaViewer?.ngviewer.layerManager.getLayerByName(id);
     if (!layer) throw new Error(`layer with id '${id}' not found`);
 
@@ -356,6 +356,25 @@ export class NehubaViewerWrapperComponent implements OnInit, AfterViewInit {
       }
       if (dataSources[0].loadState) {
         const loadedStateXform = dataSources[0].loadState.transform;
+        const rank =loadedStateXform.defaultTransform.rank;
+        if (rank !== 3) {
+          if (rank !== 4) {
+            console.error(`Incoming default transform rank !== 4`)
+            return;
+          }
+          const oldxform = Array.from(transform);
+          // [1, 0, 0, x, 0, 1, 0, y, 0, 0, 1, z, 0, 0, 0, 1]
+          //         ^           ^           ^  ^        ^ 
+          //         0           0           0  0,0,0,1,0 0
+          oldxform.splice(15, 0, /* */ 0);
+          oldxform.splice(12, 0, /* */ 0, 0, 0, 1, 0);
+          oldxform.splice(11, 0, /* */ 0);
+          oldxform.splice( 7, 0, /* */ 0);
+          oldxform.splice( 3, 0, /* */ 0);
+
+          transform = new Float32Array(oldxform);
+        }
+        
         loadedStateXform.value = {
           ...loadedStateXform.value,
           transform: transform,

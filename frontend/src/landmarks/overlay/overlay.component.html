@@ -5,8 +5,8 @@
             (mouseout)="handleHoverLandmark(null)"
             (mousedown)="handleMouseDown(displayedLandmark)"
             [ngClass]="{
-                'above-plane': displayedLandmark.position[2] >= 0,
-                'below-plane': displayedLandmark.position[2] < 0
+                'above-plane': displayedLandmark.position[2] >= threshold,
+                'below-plane': displayedLandmark.position[2] < threshold
             }"
             [style]="displayedLandmark.position | overlayPosition"
             [style.color]="displayedLandmark.color">
