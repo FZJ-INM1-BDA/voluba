@@ -170,6 +170,7 @@ export class NehubaViewerWrapperComponent implements OnInit, AfterViewInit {
   }>();
 
   nehubaViewer: export_nehuba.NehubaViewer | null = null;
+  sliceviewToElementWeakMap = new WeakMap<export_nehuba.SliceView, HTMLElement>()
   elementToSliceViewWeakMap = new WeakMap<
     HTMLElement,
     export_nehuba.SliceView
@@ -294,6 +295,21 @@ export class NehubaViewerWrapperComponent implements OnInit, AfterViewInit {
   sliceViews$ = this.sliceViewsSubject$.pipe(
     scan((acc, curr) => {
       const returnVal = [...acc]
+
+      // check for collision
+      // unset to resolve the collision
+      
+      const sv = returnVal[curr.idx]
+      
+      if (!!sv) {
+        const el = this.sliceviewToElementWeakMap.get(sv)
+        if (!!el) {
+          this.elementToSliceViewWeakMap.delete(el)
+        }
+        returnVal[curr.idx] = null
+        return returnVal
+      }
+      
       returnVal[curr.idx] = curr.sliceView
       return returnVal
     }, [null, null, null] as (export_nehuba.SliceView | null)[]),
@@ -309,9 +325,10 @@ export class NehubaViewerWrapperComponent implements OnInit, AfterViewInit {
      * boundingclientrect is called and when sliceview elements are measured
      * 
      */
-    const { top, left } = this.el.nativeElement.getBoundingClientRect()
 
     const determineIdx = (el: HTMLElement) => {
+      
+      const { top, left } = this.el.nativeElement.getBoundingClientRect()
       const child = el.getBoundingClientRect()
       const rLeft = child.left - left
       const rTop = child.top - top
@@ -331,16 +348,22 @@ export class NehubaViewerWrapperComponent implements OnInit, AfterViewInit {
       sliceViewPanel: export_nehuba.SliceViewPanel
     ) => {
       if (this.#patchedSliceViewPanels.has(sliceViewPanel)) return;
-      const { elementToSliceViewWeakMap, sliceViewsSubject$ } = this;
+      const { sliceviewToElementWeakMap, elementToSliceViewWeakMap, sliceViewsSubject$ } = this;
       this.#patchedSliceViewPanels.add(sliceViewPanel);
       const originalDraw = sliceViewPanel.draw;
       sliceViewPanel.draw = function () {
-        if (this.sliceView && !elementToSliceViewWeakMap.has(this.element)) {
+        if (!this.sliceView) {
+          originalDraw.call(this)
+          return
+        }
+        
+        if (!sliceviewToElementWeakMap.has(this.sliceView)) {
           elementToSliceViewWeakMap.set(this.element, this.sliceView)
+          sliceviewToElementWeakMap.set(this.sliceView, this.element)
           const idx = determineIdx(this.element)
           sliceViewsSubject$.next({
             idx,
-            sliceView: this.sliceView
+            sliceView: this.sliceView,
           })
         }
 

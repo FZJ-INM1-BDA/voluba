@@ -30,6 +30,4 @@ app.include_router(sxplr_plugin_router, prefix="/viewerPlugin", include_in_schem
 
 path_to_static = voluba_config.PATH_TO_STATIC
 
-print(path_to_static)
-
 app.mount("/", StaticFiles(directory=path_to_static, html=True))

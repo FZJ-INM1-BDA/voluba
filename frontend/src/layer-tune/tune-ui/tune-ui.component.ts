@@ -183,6 +183,8 @@ export class TuneUiComponent {
           2.0*(rot[1]*rot[2] + rot[0]*rot[3]),
           rot[0]*rot[0] + rot[1]*rot[1] - rot[2]*rot[2] - rot[3]*rot[3]
         )
+        v += 180
+        v *= -1
         while (v < -180) {
           v += 360
         }

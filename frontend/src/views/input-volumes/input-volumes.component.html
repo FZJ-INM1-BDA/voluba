@@ -50,6 +50,12 @@
             [disabled]="view.selectedIncoming?.visibility !== 'private'">
             <mat-icon>delete</mat-icon>
         </button>
+
+        <div class="loading-progress-container">
+            <ng-template [ngIf]="view.busyflag">
+                <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+            </ng-template>
+        </div>
     </form>
 
     <mat-divider></mat-divider>

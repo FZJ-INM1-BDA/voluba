@@ -1,13 +1,15 @@
 import { ChangeDetectionStrategy, Component, ElementRef, Inject, ViewChild, inject } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { select, Store } from '@ngrx/store';
-import { Observable, Subject, combineLatest, concat, distinctUntilChanged, filter, firstValueFrom, from, map, of, scan, switchMap, takeUntil, withLatestFrom } from 'rxjs';
+import { Observable, Subject, combineLatest, concat, distinctUntilChanged, filter, firstValueFrom, forkJoin, from, lastValueFrom, map, of, scan, shareReplay, switchMap, take, takeUntil, withLatestFrom } from 'rxjs';
 import * as inputs from 'src/state/inputs';
 import * as appState from 'src/state/app'
 import * as generalActions from "src/state/actions"
 import { DestroyDirective } from 'src/util/destroy.directive';
 import { ChumniPreflightResp, ChumniVolume, CustomSrc, LOGIN_METHODS, SEGMENTATION_EXPLAINER_TEXT, VOLUBA_APP_CONFIG, VolubaAppConfig, extractProtocolUrl, isDefined, trimFilename } from 'src/const';
 import { TVolume } from 'src/state/inputs/consts';
+
+const fetchVolKey = "fetchVolKey"
 
 function arrayBufferToBase64String(arraybuffer: ArrayBuffer) {
   const bytes = new Uint8Array( arraybuffer )
@@ -85,6 +87,26 @@ export class InputVolumesComponent {
     ]),
   })
 
+  #busyRefCount$ = new Subject<Record<string, boolean>>()
+  #busy$ = this.#busyRefCount$.pipe(
+    scan((acc, curr) => {
+      for (const key in curr){
+        acc[key] = curr[key]
+      }
+      return acc
+    }, {} as Record<string, boolean>),
+    map(records => {
+      const busyKeys = []
+      for (const key in records){
+        if (records[key]) {
+          busyKeys.push(key)
+        }
+      }
+      return busyKeys.length > 0
+    }),
+    shareReplay(1),
+  )
+
   view$ = combineLatest([
     this.store$.pipe(
       select(inputs.selectors.templateVolumes)
@@ -98,9 +120,10 @@ export class InputVolumesComponent {
     this.store$.pipe(
       select(inputs.selectors.selectedIncoming)
     ),
-    this.#uploadStatus$
+    this.#uploadStatus$,
+    this.#busy$,
   ]).pipe(
-    map(([ availableTemplates, availableIncomings, user, selectedIncoming, { preflight, upload, filename, extraTexts, error } ]) => {
+    map(([ availableTemplates, availableIncomings, user, selectedIncoming, { preflight, upload, filename, extraTexts, error }, busyflag ]) => {
       return {
         availableTemplates,
         availableIncomings,
@@ -113,9 +136,82 @@ export class InputVolumesComponent {
         extraTexts,
         segmentationCheckboxExplainer: SEGMENTATION_EXPLAINER_TEXT,
         error,
+        busyflag,
       }
     })
   )
+
+  async #getHeaders(): Promise<Record<string, string>>{
+    const user = await firstValueFrom(
+      this.store$.pipe(
+        select(appState.selectors.user),
+      )
+    )
+    if (!user?.authtoken){
+      return {}
+    }
+    return {
+      'Authorization': `Bearer ${user.authtoken}`
+    }
+  }
+
+  async #getList(): Promise<TVolume[]>{
+    try {
+      const headers = await this.#getHeaders()
+      const resp = await fetch(
+        `${this.appCfg.uploadUrl}/list`,
+        {
+          headers: { ...headers }
+        }
+      )
+      if (!resp.ok) {
+        throw new Error(`Resp not ok: ${resp.status} ${await resp.text()}`)
+      }
+      
+      const chumniVolumes: ChumniVolume[] = await resp.json()
+      return chumniVolumes.map(vol => {
+        const { name, extra: { neuroglancer: { resolution, size } }, links: { normalized }, visibility } = vol
+        return {
+          id: name,
+          name: name,
+          volumes: [
+            {
+              "@type": "siibra/volume/v0.0.1",
+              providers: {
+                "neuroglancer/precomputed": `${this.appCfg.uploadUrl}${normalized}`
+              }
+            }
+          ],
+          visibility
+        }
+      })
+    } catch (e) {
+      console.error("getList Error:", e)
+      return []
+    }
+  }
+
+  async #getCustomSrc(): Promise<TVolume[]>{
+    try {
+      const resp = await fetch("user/customSrc")
+      if (!resp.ok) {
+        throw new Error(`Resp not ok: ${resp.status} ${await resp.text()}`)
+      }
+      const v: CustomSrc = await resp.json()
+      const { customSrc } = v
+      return customSrc.map(({ id, imageSource, name }) => {
+        return {
+          id,
+          name,
+          visibility: 'custom',
+          volumes: [ extractProtocolUrl(imageSource) ]
+        }
+      })
+    } catch (e) {
+      console.error("getCustomSrc Error:", e)
+      return []
+    }
+  }
 
   constructor(private store$: Store, @Inject(VOLUBA_APP_CONFIG) private appCfg: VolubaAppConfig) {
     
@@ -145,67 +241,22 @@ export class InputVolumesComponent {
           select(appState.selectors.user),
         )
       ),
-      switchMap(([_, user]) => {
-        const authHeader: { Authorization?: string } = !!user
-        ? { 'Authorization': `Bearer ${user.authtoken}` }
-        : {}
-        return combineLatest([
+      switchMap(([_, _user]) => {
+        this.#busyRefCount$.next({ [fetchVolKey]: true })
+        return forkJoin([
           /**
            * getting volumes from chumni
            */
-          from(
-            fetch(`${this.appCfg.uploadUrl}/list`, {
-              headers: {
-                ...authHeader
-              }
-            }).then(res => res.json())
-          ).pipe(
-            map((chumniVolumes: ChumniVolume[]) => {
-              return chumniVolumes.map(vol => {
-                const { name, extra: { neuroglancer: { resolution, size } }, links: { normalized }, visibility } = vol
-                return {
-                  id: name,
-                  name: name,
-                  volumes: [
-                    {
-                      "@type": "siibra/volume/v0.0.1",
-                      providers: {
-                        "neuroglancer/precomputed": `${this.appCfg.uploadUrl}${normalized}`
-                      }
-                    }
-                  ],
-                  visibility
-                } as TVolume
-              })
-            })
-          ),
+          from(this.#getList()),
           /**
            * getting volumes from customSrc
            */
-          from(
-            fetch("user/customSrc").then(res => {
-              if (!res.ok) {
-                return { customSrc: [] }
-              }  
-              return res.json()
-            })
-          ).pipe(
-            map((resp: CustomSrc) => {
-              const { customSrc } = resp
-              const returnArr: TVolume[] = []
-              for (const { id, imageSource, name } of customSrc){
-                returnArr.push({
-                  id,
-                  name,
-                  visibility: 'custom',
-                  volumes: [ extractProtocolUrl(imageSource) ]
-                })
-              }
-              return returnArr
-            })
-          )
+          from(this.#getCustomSrc())
         ]).pipe(
-          map(([ chumniVols, customSrcVols ]) => [...chumniVols, ...customSrcVols])
+          map(([ chumniVols, customSrcVols ]) => {
+            this.#busyRefCount$.next({ [fetchVolKey]: false })
+            return [...chumniVols, ...customSrcVols]
+          })
         )
       })
     ).subscribe((incomingVolumes: TVolume[]) => {

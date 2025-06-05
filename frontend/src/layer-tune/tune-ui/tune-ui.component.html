@@ -59,25 +59,32 @@
 
     <mat-divider></mat-divider>
 
-    <div class="section">
-        <mat-form-field class="input">
-            <mat-label>
-                Rotation X
-            </mat-label>
-            <input [step]="0.1" [min]="-180" [max]="180" formControlName="rotX" type="number" matInput>
-        </mat-form-field>
-        <mat-form-field class="input">
-            <mat-label>
-                Rotation Y
-            </mat-label>
-            <input [step]="0.1" [min]="-90" [max]="90" formControlName="rotY" type="number" matInput>
-        </mat-form-field>
-        <mat-form-field class="input">
-            <mat-label>
-                Rotation Z
-            </mat-label>
-            <input [step]="0.1" [min]="-180" [max]="180" formControlName="rotZ" type="number" matInput>
-        </mat-form-field>
+    <div class="section rotation-container">
+        <h4>
+            Rotation (degrees)
+        </h4>
+        
+        <div class="rotation-control-container">
+
+            <div class="rotation-control-label">X</div>
+            
+            <mat-slider [min]="-180" [max]="180" [step]="1">
+                <input matSliderThumb formControlName="rotX" #xRotSliderTh="matSliderThumb">
+            </mat-slider>
+            <div class="rotation-control-value">{{ xRotSliderTh.value }}</div>
+
+            <div class="rotation-control-label">Y</div>
+            <mat-slider  [min]="-90" [max]="90" [step]="1" >
+                <input matSliderThumb formControlName="rotY" #yRotSliderTh="matSliderThumb">
+            </mat-slider>
+            <div class="rotation-control-value">{{ yRotSliderTh.value }}</div>
+
+            <div class="rotation-control-label">Z</div>
+            <mat-slider  [min]="-180" [max]="180" [step]="1" >
+                <input matSliderThumb formControlName="rotZ" #zRotSliderTh="matSliderThumb">
+            </mat-slider>
+            <div class="rotation-control-value">{{ zRotSliderTh.value }}</div>
+        </div>
     </div>
 
     <div class="section">
