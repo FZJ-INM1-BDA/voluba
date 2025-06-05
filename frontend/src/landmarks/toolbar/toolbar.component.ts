@@ -1,14 +1,15 @@
 import { ChangeDetectionStrategy, Component, Inject, Optional, inject } from '@angular/core';
 import { select, Store } from '@ngrx/store';
-import { NEVER, Subject, combineLatest, concat, filter, firstValueFrom, map, merge, of, shareReplay, switchMap, takeUntil, withLatestFrom } from 'rxjs';
+import { Observable, Subject, catchError, combineLatest, concat, firstValueFrom, map, merge, of, shareReplay, switchMap, takeUntil, withLatestFrom } from 'rxjs';
 import { EXPORT_LANDMARKS_TYPE, LinearXformResult, VOLUBA_APP_CONFIG, VOLUBA_NEHUBA_TOKEN, VolubaAppConfig, VolubeNehuba, isVec3 } from 'src/const';
 import * as app from "src/state/app"
 import * as inputs from "src/state/inputs"
 import * as outputs from "src/state/outputs"
 import * as generalActions from "src/state/actions"
 import { DestroyDirective } from 'src/util/destroy.directive';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { UndoService } from 'src/history/const';
+import { MatSnackBar } from 'src/sharedModule';
 
 type L = {
   id: string
@@ -49,24 +50,29 @@ export class ToolbarComponent {
   #destroyed$ = inject(DestroyDirective).destroyed$
   
   #calcTriggered$ = new Subject<string>()
-  #newXformFromCalc$ = this.#calcTriggered$.pipe(
+  #newXformFromCalc$: Observable<{ err: Error, result: null }|{ result: LinearXformResult, err: null }> = this.#calcTriggered$.pipe(
     withLatestFrom(
       this.store.pipe(
         select(app.selectors.landmarks)
       )
     ),
-    switchMap(([ xformType, landmarks ]) => this.http.post<LinearXformResult>(
-      `${this.appConfig.linearBackend}/api/least-squares`,
-      {
-        transformation_type: xformType,
-        landmark_pairs: landmarks.map(({ incLm, tmplLm }) => {
-          return {
-            source_point: tmplLm.position,
-            target_point: incLm.position
-          }
-        })
-      }
-    )),
+    switchMap(([ xformType, landmarks ]) =>
+      this.http.post<LinearXformResult>(
+        `${this.appConfig.linearBackend}/api/least-squares`,
+        {
+          transformation_type: xformType,
+          landmark_pairs: landmarks.map(({ incLm, tmplLm }) => {
+            return {
+              source_point: tmplLm.position,
+              target_point: incLm.position
+            }
+          })
+        }
+      ).pipe(
+        map(result => ({ result, err: null })),
+        catchError((err: Error) => of({ err, result: null }))
+      )
+    ),
     shareReplay(1),
   )
 
@@ -102,8 +108,6 @@ export class ToolbarComponent {
     )
   ]).pipe(
     map(([ landmarks, inputFilesName, ref, inc, xform, calcXformBusy, addLmMode ]) => {
-
-      const { vec3 } = export_nehuba
 
       const refLm: L[] = landmarks.map(lm => {
         return {
@@ -164,22 +168,41 @@ export class ToolbarComponent {
     private store: Store,
     private http: HttpClient,
     private undoSvc: UndoService,
+    private snackbar: MatSnackBar,
     @Inject(VOLUBA_APP_CONFIG) private appConfig: VolubaAppConfig,
     @Optional() @Inject(VOLUBA_NEHUBA_TOKEN) private vn: VolubeNehuba
   ){
     this.#newXformFromCalc$.pipe(
       takeUntil(this.#destroyed$)
-    ).subscribe(result => {
-      const { mat4 } = export_nehuba
+    ).subscribe(({ result, err }) => {
+
+      if (result) {
+        
+        const { mat4 } = export_nehuba
+        
+        const newXform = mat4.fromValues(...result.inverse_matrix.flatMap(v => v))
+        mat4.transpose(newXform, newXform)
+        this.store.dispatch(
+          outputs.actions.setIncMatrix({
+            text: Array.from(newXform).join(",")
+          })
+        )
+        this.undoSvc.pushUndo(`Apply transform via landmark alignment.`)
+      }
       
-      const newXform = mat4.fromValues(...result.inverse_matrix.flatMap(v => v))
-      mat4.transpose(newXform, newXform)
-      this.store.dispatch(
-        outputs.actions.setIncMatrix({
-          text: Array.from(newXform).join(",")
-        })
-      )
-      this.undoSvc.pushUndo(`Apply transform via landmark alignment.`)
+      if (err) {
+
+        if (err instanceof HttpErrorResponse) {
+          const errMsg = err.error?.message || err.statusText || err.status.toString()
+          this.snackbar.open(`Calculating transform error: ${errMsg}`, "Dismiss", {
+            duration: 5000
+          })
+          return
+        }
+        this.snackbar.open(`Calculating transform error: ${err.toString()}`)
+        console.error("error!", err)
+      }
+      
     })
   }
 
