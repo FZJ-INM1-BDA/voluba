@@ -162,13 +162,15 @@ export class ViewerComponent implements AfterViewInit {
     this.#primaryNehubaNav.next(nav)
   }
 
+  #isAddingLm$ = this.store.pipe(
+    select(appState.selectors.addLmMode)
+  )
+
   lmView$ = combineLatest([
     this.store.pipe(
       select(appState.selectors.landmarks)
     ),
-    this.store.pipe(
-      select(appState.selectors.addLmMode)
-    ),
+    this.#isAddingLm$,
     this.store.pipe(
       select(appState.selectors.hoveredLandmarkPair),
     ),
@@ -344,9 +346,8 @@ export class ViewerComponent implements AfterViewInit {
   ) {
     getNehuba.provideNehubaInstance(() => this.viewerWrapper?.nehubaViewer)
 
-    this.store.pipe(
+    this.#isAddingLm$.pipe(
       takeUntil(this.#destroyed$),
-      select(appState.selectors.addLmMode),
       switchMap(flag => {
         if (!flag) {
           return EMPTY
@@ -433,23 +434,13 @@ export class ViewerComponent implements AfterViewInit {
       sliceView: export_nehuba.SliceView;
       mouseDownEvent: MouseEvent;
     } | null> = this.viewerWrapper.mousedownSliceView.pipe(
-      switchMap(({ sliceView, event }) => {
-        if (!sliceView || !this.mouseInteractive) {
+      withLatestFrom(this.incLocked$, this.#isAddingLm$),
+      switchMap(([{ sliceView, event }, incLocked, isAddingLm]) => {
+        if (!sliceView || !this.mouseInteractive || incLocked || isAddingLm) {
           return NEVER
         }
-        return combineLatest([
-          this.incLocked$,
-          this.store.pipe(
-            select(appState.selectors.isDefaultMode)
-          ),
-          this.store.pipe(
-            select(appState.selectors.addLmMode)
-          ),
-          this.mouseInteractive.volubaDrag,
-          
-        ]).pipe(
-          filter(([incLocked, isDefaultMode, isAddingLm, _]) => !incLocked && !isAddingLm && isDefaultMode),
-          map(([_, _2, _3, { movementX, movementY }]) => ({
+        return this.mouseInteractive.volubaDrag.pipe(
+          map(({ movementX, movementY }) => ({
             movementX,
             movementY,
             sliceView,

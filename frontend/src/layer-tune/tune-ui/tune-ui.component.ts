@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnDestroy, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { AbstractControl, FormControl, FormGroup, ValidationErrors, ValidatorFn } from '@angular/forms';
 import { Store } from '@ngrx/store';
 import { combineLatest, concat, debounceTime, distinctUntilChanged, filter, map, of, takeUntil, withLatestFrom } from 'rxjs';
@@ -103,24 +103,27 @@ export class TuneUiComponent {
     rotY: new FormControl<number>(1, [ getInputValidator({ min: -90, max: 90 }) ]),
     rotZ: new FormControl<number>(1, [ getInputValidator({ min: -180, max: 180 }) ]),
 
-  }, [
-    ctl => {
-      if (!(ctl instanceof FormGroup)) {
-        return null
-      }
-
-      const childErrors: Record<string, any> = {}
-      for (const child in ctl.controls){
-        if (!!ctl.controls[child].errors) {
-          childErrors[child] = ctl.controls[child].errors
+  },
+  {
+    validators: [
+      ctl => {
+        if (!(ctl instanceof FormGroup)) {
+          return null
         }
+
+        const childErrors: Record<string, any> = {}
+        for (const child in ctl.controls){
+          if (!!ctl.controls[child].errors) {
+            childErrors[child] = ctl.controls[child].errors
+          }
+        }
+        if (Object.keys(childErrors).length === 0) {
+          return null
+        }
+        return childErrors
       }
-      if (Object.keys(childErrors).length === 0) {
-        return null
-      }
-      return childErrors
-    }
-  ])
+    ]
+  })
 
   #currVoxelSize: Vec3 | null = null
 
@@ -226,9 +229,9 @@ export class TuneUiComponent {
         translateY: translate[1],
         translateZ: translate[2],
 
-        scaleX: scale[0],
-        scaleY: scale[1],
-        scaleZ: scale[2],
+        scaleX: Math.round(scale[0] * 1000) / 1000,
+        scaleY: Math.round(scale[1] * 1000) / 1000,
+        scaleZ: Math.round(scale[2] * 1000) / 1000,
 
         rotX,
         rotY,
