@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, ElementRef, Inject, ViewChild, inject } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { select, Store } from '@ngrx/store';
-import { Observable, Subject, combineLatest, concat, distinctUntilChanged, filter, firstValueFrom, forkJoin, from, lastValueFrom, map, of, scan, shareReplay, switchMap, take, takeUntil, withLatestFrom } from 'rxjs';
+import { Observable, Subject, combineLatest, concat, distinctUntilChanged, filter, firstValueFrom, forkJoin, from, lastValueFrom, map, merge, of, pairwise, scan, shareReplay, switchMap, take, takeUntil, tap, withLatestFrom } from 'rxjs';
 import * as inputs from 'src/state/inputs';
 import * as appState from 'src/state/app'
 import * as generalActions from "src/state/actions"
@@ -9,7 +9,8 @@ import { DestroyDirective } from 'src/util/destroy.directive';
 import { ChumniPreflightResp, ChumniVolume, CustomSrc, LOGIN_METHODS, SEGMENTATION_EXPLAINER_TEXT, VOLUBA_APP_CONFIG, VolubaAppConfig, extractProtocolUrl, isDefined, trimFilename } from 'src/const';
 import { TVolume } from 'src/state/inputs/consts';
 
-const fetchVolKey = "fetchVolKey"
+const fetchCustomSrcKey = "fetchCustomSrcKey"
+const fetchListKey = "fetchListKey"
 
 function arrayBufferToBase64String(arraybuffer: ArrayBuffer) {
   const bytes = new Uint8Array( arraybuffer )
@@ -236,29 +237,22 @@ export class InputVolumesComponent {
       this.#refreshList$,
     ).pipe(
       takeUntil(this.destroyed$),
-      withLatestFrom(
-        this.store$.pipe(
-          select(appState.selectors.user),
+      switchMap(() => {
+        this.#busyRefCount$.next({ [fetchCustomSrcKey]: true })
+        this.#busyRefCount$.next({ [fetchListKey]: true })
+
+        return merge(
+          of([] as TVolume[]),
+          from(this.#getList()).pipe(
+            tap(() => this.#busyRefCount$.next({ [fetchListKey]: false }))
+          ),
+          from(this.#getCustomSrc()).pipe(
+            tap(() => this.#busyRefCount$.next({ [fetchCustomSrcKey]: false }))
+          )
+        ).pipe(
+          scan((acc, curr) => acc.concat(...curr)),
         )
-      ),
-      switchMap(([_, _user]) => {
-        this.#busyRefCount$.next({ [fetchVolKey]: true })
-        return forkJoin([
-          /**
-           * getting volumes from chumni
-           */
-          from(this.#getList()),
-          /**
-           * getting volumes from customSrc
-           */
-          from(this.#getCustomSrc())
-        ]).pipe(
-          map(([ chumniVols, customSrcVols ]) => {
-            this.#busyRefCount$.next({ [fetchVolKey]: false })
-            return [...chumniVols, ...customSrcVols]
-          })
-        )
-      })
+      }),
     ).subscribe((incomingVolumes: TVolume[]) => {
       this.store$.dispatch(
         inputs.actions.setIncoming({
