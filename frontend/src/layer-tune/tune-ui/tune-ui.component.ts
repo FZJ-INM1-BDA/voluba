@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { AbstractControl, FormControl, FormGroup, ValidationErrors, ValidatorFn } from '@angular/forms';
 import { Store } from '@ngrx/store';
-import { combineLatest, concat, debounceTime, distinctUntilChanged, filter, map, of, takeUntil, withLatestFrom } from 'rxjs';
+import { combineLatest, concat, debounceTime, distinctUntilChanged, filter, map, merge, of, takeUntil, withLatestFrom } from 'rxjs';
 import { Vec3, VoxelUnit, arrayEqual, cvtNmTo, cvtToNm, isDefined } from 'src/const';
 import * as outputs from 'src/state/outputs';
 import * as inputs from 'src/state/inputs';
@@ -325,11 +325,41 @@ export class TuneUiComponent {
           })
         }
       }
-
       this.setTranslScaleRot(values)
       
     })
 
+
+    merge(
+      this.tuneInput.controls.scaleX.valueChanges.pipe(
+        map(scaleX => ({ scaleX, scaleY: null, scaleZ: null })),
+      ),
+      this.tuneInput.controls.scaleY.valueChanges.pipe(
+        map(scaleY => ({ scaleY, scaleX: null, scaleZ: null  })),
+      ),
+      this.tuneInput.controls.scaleZ.valueChanges.pipe(
+        map(scaleZ => ({ scaleZ, scaleX: null, scaleY: null  })),
+      ),
+    ).pipe(
+      takeUntil(this.#destroyed$)
+    ).subscribe(value => {
+      const isotropicFlag = this.tuneInput.controls.isotropic.value || false
+      const { scaleX: nScaleX, scaleY: nScaleY, scaleZ: nScaleZ } = value
+      const [scaleX, scaleY, scaleZ] = this.#currScale || [1, 1, 1]
+      const newScale = [ 
+        nScaleX || scaleX ,
+        isotropicFlag ? (nScaleX || scaleX ) : (nScaleY || scaleY ),
+        isotropicFlag ? (nScaleX || scaleX ) : (nScaleZ || scaleZ ),
+      ]
+      
+      this.store.dispatch(
+        outputs.actions.setIncScale({
+          array: newScale
+        })
+      )
+      this.undoSvc.pushUndo(`Set scaling from tuner panel`)
+    })
+    
     const {
       isotropic, unit, valueX, valueY, valueZ
     } = this.voxelSpacingFormGroup.controls
@@ -409,29 +439,10 @@ export class TuneUiComponent {
         )
       }
     }
-    if (this.#currScale && !isotropic && isDefined(scaleX) && isDefined(scaleY) && isDefined(scaleZ)) {
-      const newScale = [scaleX, scaleY, scaleZ]
-      if (!arrayEqual(newScale, this.#currScale)) {
-        dispatchFlag = true
-        this.store.dispatch(
-          outputs.actions.setIncScale({
-            array: newScale
-          })
-        )
-      }
-    }
-
-    if (this.#currScale && !!isotropic && isDefined(scaleX)) {
-      const newScale = [scaleX, scaleX, scaleX]
-      if (!arrayEqual(newScale, this.#currScale)) {
-        dispatchFlag = true
-        this.store.dispatch(
-          outputs.actions.setIncScale({
-            array: newScale
-          })
-        )
-      }
-    }
+    
+    // scale is done separately 
+    // TODO move translation and rot to be monitored separately
+    // see scale for inspiration
 
     if (this.#currentRot && isDefined(rotX) && isDefined(rotY) && isDefined(rotZ) ) {
       const newRot = [rotX, rotY, rotZ]
