@@ -200,14 +200,23 @@ export class ViewerComponent implements AfterViewInit {
     }))
   )
 
+  #appState$ = combineLatest([
+    this.store.pipe(
+      select(appState.selectors.isDefaultMode)
+    ),
+    this.store.pipe(
+      select(appState.selectors.zenmode)
+    )
+  ]).pipe(
+    map(([ isDefaultMode, zenmode ]) => ({ isDefaultMode, zenmode }))
+  )
+
   view$ = combineLatest([
     
     this.lmView$,
     this.inputsView$,
     this.incLocked$,
-    this.store.pipe(
-      select(appState.selectors.isDefaultMode)
-    ),
+    this.#appState$,
     this.store.pipe(outputs.selectors.getIncXform()),
     concat(
       of(null),
@@ -229,7 +238,7 @@ export class ViewerComponent implements AfterViewInit {
       select(appState.selectors.user)
     )
   ]).pipe(
-    map(([ { landmarks, addLandmarkMode, hoveredLmp, purgatory }, { selectedIncoming, selectedTemplate, darkmode }, incLocked, isDefaultMode, xform, mouseover, primaryNavigation, isDraggingViewer, user ]) => {
+    map(([ { landmarks, addLandmarkMode, hoveredLmp, purgatory }, { selectedIncoming, selectedTemplate, darkmode }, incLocked, { isDefaultMode, zenmode }, xform, mouseover, primaryNavigation, isDraggingViewer, user ]) => {
       
       const { mat4, quat } = export_nehuba
 
@@ -321,6 +330,7 @@ export class ViewerComponent implements AfterViewInit {
         rotationWidgetQuat,
         darkmode,
         user,
+        zenmode,
       }
     })
   );
@@ -692,6 +702,12 @@ export class ViewerComponent implements AfterViewInit {
       appState.actions.hoverLandmark({
         landmark: foundLm && foundLm.landmark
       })
+    )
+  }
+
+  toggleZenMode(){
+    this.store.dispatch(
+      appState.actions.toggleZenMode()
     )
   }
 }

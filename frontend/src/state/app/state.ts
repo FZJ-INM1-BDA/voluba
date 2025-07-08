@@ -74,5 +74,9 @@ export const reducer = createReducer(
       fullname: user.name,
       authtoken: user.accessToken,
     }
+  })),
+  on(actions.toggleZenMode, state => ({
+    ...state,
+    zenMode: !state.zenMode
   }))
 )

@@ -1,8 +1,3 @@
-voluba-control-menu
-{
-    padding: 1.5rem;
-}
-
 voluba-four-corners
 {
     width: 100%;
@@ -124,4 +119,11 @@ rotation-widget
 .inc-layer-ctl-container
 {
     display: inline-flex;
+}
+
+[bottomright]
+{
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
 }

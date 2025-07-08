@@ -134,12 +134,12 @@
     
     <voluba-four-corners>
         <div topleft>
-            <mat-card>
+            <mat-card *ngIf="!view.zenmode">
                 <voluba-control-menu></voluba-control-menu>
             </mat-card>
         </div>
         <div topright>
-            <mat-card>
+            <mat-card *ngIf="!view.zenmode">
                 <div class="inc-layer-ctl-container">
 
                     <button mat-icon-button
@@ -173,7 +173,7 @@
             </mat-card>
         </div>
         <div bottomleft>
-            <mat-card class="navigation-card">
+            <mat-card *ngIf="!view.zenmode" class="navigation-card">
                 <mat-card-content>
                     <div>
                         Navigation (mm): {{ view.primaryNavigation.position | displayNumArray }}
@@ -189,6 +189,15 @@
             </mat-card>
         </div>
         <div bottomright>
+            <button mat-icon-button
+                (click)="toggleZenMode()"
+                matTooltip="toggle zenmode [q]"
+                voluba-kb-shortcut
+                kb-shortcut-keys="keyq"
+                (kb-shortcut-triggered)="toggleZenMode()"
+                [color]="view.zenmode ? 'accent' : 'default'">
+                <mat-icon>self_improvement</mat-icon>
+            </button>
             <!-- bottomright -->
             <rotation-widget [rotation-widget-rot-quat]="view.rotationWidgetQuat"></rotation-widget>
         </div>

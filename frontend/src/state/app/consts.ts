@@ -35,6 +35,7 @@ export type LocalState = {
   landmarkPairs: LandmarkPair[]
   purgatory: Landmark|null
   hoveredLandmark: Landmark|null
+  zenMode: boolean
 }
 
 export const defaultState: LocalState = {
@@ -46,6 +47,7 @@ export const defaultState: LocalState = {
   landmarkPairs: [],
   purgatory: null,
   hoveredLandmark: null,
+  zenMode: false,
 }
 
 export const nameSpace = `app`

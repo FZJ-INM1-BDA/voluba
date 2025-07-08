@@ -86,3 +86,5 @@ export const setUser = createAction(
     user: User
   }>()
 )
+
+export const toggleZenMode = createAction(`[${nameSpace}] toggleZenMode`)

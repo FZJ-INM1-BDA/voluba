@@ -47,3 +47,8 @@ export const user = createSelector(
   featureSelector,
   state => state.user
 )
+
+export const zenmode = createSelector(
+  featureSelector,
+  state => state.zenMode
+)
