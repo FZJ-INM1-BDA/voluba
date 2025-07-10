@@ -62,14 +62,22 @@ export class ToolbarComponent {
         {
           transformation_type: xformType,
           landmark_pairs: landmarks.map(({ incLm, tmplLm }) => {
+            // linear backend expects points in mm
             return {
-              source_point: tmplLm.position,
-              target_point: incLm.position
+              source_point: tmplLm.position.map(v => v/1e6),
+              target_point: incLm.position.map(v => v/1e6),
             }
           })
         }
       ).pipe(
-        map(result => ({ result, err: null })),
+        map(result => {
+          // revert from mm -> nm
+          for (const ridx of [0, 1, 2]){
+            result.inverse_matrix[ridx][3] *= 1e6
+            result.transformation_matrix[ridx][3] *= 1e6
+          }
+          return { result, err: null }
+        }),
         catchError((err: Error) => of({ err, result: null }))
       )
     ),
