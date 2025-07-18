@@ -54,6 +54,9 @@ jobs:
 
     - name: 'Push to docker registry'
       run: |
+        # Good luck charm?
+        curl -v https://docker-registry.ebrains.eu/v2/
+
         echo "Login to docker registry"
         docker login \
           -u '${{ secrets.EBRAINS_DOCKER_REG_USER }}' \
