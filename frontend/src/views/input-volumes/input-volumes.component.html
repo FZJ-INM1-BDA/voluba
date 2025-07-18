@@ -189,7 +189,7 @@
             <button mat-raised-button
                 color="primary"
                 (click)="addVolume()"
-                [disabled]="!!newVolumeCtrl.errors">
+                [disabled]="!newVolumeCtrl.valid">
                 Add
             </button>
             <button mat-button mat-dialog-close>

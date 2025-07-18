@@ -1,5 +1,5 @@
 image:
-  tag: latest
+  tag: staging
 
 env:
   HOSTNAME: https://voluba-staging.apps.tc.humanbrainproject.eu
