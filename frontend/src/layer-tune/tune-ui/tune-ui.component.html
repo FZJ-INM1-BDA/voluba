@@ -71,29 +71,44 @@
 
     <div class="section rotation-container">
         <h4>
-            Rotation (degrees)
+            <span>
+                Rotation (degrees)
+            </span>
+            
+            <mat-icon [matTooltip]="WIDGET_HELP">question_mark</mat-icon>
         </h4>
         
         <div class="rotation-control-container">
 
             <div class="rotation-control-label">X</div>
+            <div class="rotation-control-value">{{ (tuneInput.controls.rotX.value || 0).toFixed(2) }}</div>
+            <div>
+                <dial-cmp
+                    (dial-cmp-onwheel)="rotByDelta('x', ($event.altKey ? 0.002 : 0.02) * $event.deltaY)"
+                    (dial-cmp-ondial)="rotByDelta('x', $event)"></dial-cmp>
+            </div>
             
-            <mat-slider [min]="-180" [max]="180" [step]="1">
-                <input matSliderThumb formControlName="rotX" #xRotSliderTh="matSliderThumb">
-            </mat-slider>
-            <div class="rotation-control-value">{{ xRotSliderTh.value }}</div>
+            
 
             <div class="rotation-control-label">Y</div>
-            <mat-slider  [min]="-90" [max]="90" [step]="1" >
-                <input matSliderThumb formControlName="rotY" #yRotSliderTh="matSliderThumb">
-            </mat-slider>
-            <div class="rotation-control-value">{{ yRotSliderTh.value }}</div>
+            <div class="rotation-control-value">{{ (tuneInput.controls.rotY.value || 0).toFixed(2) }}</div>
+            
+            <div>
+                <dial-cmp
+                    (dial-cmp-onwheel)="rotByDelta('y', ($event.altKey ? 0.002 : 0.02) * $event.deltaY)"
+                    (dial-cmp-ondial)="rotByDelta('y', $event)"></dial-cmp>
+            </div>
+            
 
             <div class="rotation-control-label">Z</div>
-            <mat-slider  [min]="-180" [max]="180" [step]="1" >
-                <input matSliderThumb formControlName="rotZ" #zRotSliderTh="matSliderThumb">
-            </mat-slider>
-            <div class="rotation-control-value">{{ zRotSliderTh.value }}</div>
+            <div class="rotation-control-value">{{ (tuneInput.controls.rotZ.value || 0).toFixed(2) }}</div>
+            
+            <div>
+                <dial-cmp
+                    (dial-cmp-onwheel)="rotByDelta('z', ($event.altKey ? 0.002 : 0.02) * $event.deltaY)"
+                    (dial-cmp-ondial)="rotByDelta('z', $event)"></dial-cmp>
+            </div>
+            
         </div>
     </div>
 

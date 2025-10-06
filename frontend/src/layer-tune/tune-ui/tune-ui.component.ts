@@ -74,6 +74,8 @@ function getInputValidator(args?: Partial<FormValidatorParam>): ValidatorFn {
 })
 export class TuneUiComponent {
 
+  WIDGET_HELP = "Drag and turn (anti-)clockwise to increment/decrement. (Alt) + Wheel to increment/decrement."
+
   #destroyed$ = inject(DestroyDirective).destroyed$
 
   #translationValidator = getInputValidator()
@@ -463,6 +465,23 @@ export class TuneUiComponent {
     if (dispatchFlag) {
       this.undoSvc.pushUndo(`Set transformation from tuner panel`)
     }
+  }
+
+  rotByDelta(axis: 'x' | 'y' | 'z', deg: number){
+
+    const { quat } = export_nehuba
+    
+    const quaternion = quat.fromEuler(quat.create(), 
+      axis === 'x' ? deg : 0,
+      axis === 'y' ? deg : 0, 
+      axis === 'z' ? deg : 0)
+
+    this.store.dispatch(
+      outputs.actions.rotateIncBy({
+        array: Array.from(quaternion)
+      })
+    )
+    this.undoSvc.pushUndo(`Rotate ${axis} axis via rotation widget`)
   }
 
   rotate90(axis: 'x' | 'y' | 'z'){

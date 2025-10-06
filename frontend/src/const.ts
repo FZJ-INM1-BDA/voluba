@@ -31,7 +31,7 @@ export function arrayEqual<T>(a: T[], b: T[], predicate: (a: T, b: T) => boolean
   return a.length === b.length && a.every((v, idx) => predicate(v, b[idx]))
 }
 
-export function FloatArrayEql(a: Float32Array, b: Float32Array): boolean {
+export function FloatArrayEql(a: export_nehuba.quat, b: export_nehuba.quat): boolean {
   if (a.length !== b.length) {
     return false
   }

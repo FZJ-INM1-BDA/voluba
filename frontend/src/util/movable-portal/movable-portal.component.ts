@@ -7,6 +7,6 @@ import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MovablePortalComponent {
-  @Input()
+  @Input('portal-title')
   title: string | null = null;
 }

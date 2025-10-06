@@ -174,13 +174,13 @@ export class RotationWidgetCmp {
 
   view$ = combineLatest([
     this.#quat.pipe(
-      distinctUntilChanged(FloatArrayEql)
+      distinctUntilChanged(FloatArrayEql),
     ),
     concat(
       of(null),
       this.widgetFillAndDial$,
     ).pipe(
-      distinctUntilChanged()
+      distinctUntilChanged(),
     )
   ]).pipe(
     map(([quat, widget]) => {
