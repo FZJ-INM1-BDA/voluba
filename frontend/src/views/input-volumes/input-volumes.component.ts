@@ -217,6 +217,14 @@ export class InputVolumesComponent {
   constructor(private store$: Store, @Inject(VOLUBA_APP_CONFIG) private appCfg: VolubaAppConfig) {
     
     this.store$.pipe(
+      select(appState.selectors.user),
+      distinctUntilChanged((o, n) => o?.authtoken === n?.authtoken),
+      takeUntil(this.destroyed$),
+    ).subscribe(() => {
+      this.refresh()
+    })
+
+    this.store$.pipe(
       select(inputs.selectors.selectedTemplate),
       distinctUntilChanged((o, n) => o?.id === n?.id),
       takeUntil(this.destroyed$),
@@ -504,6 +512,9 @@ export class InputVolumesComponent {
         body: formData
       })
       if (!resp.ok) {
+        if (resp.status === 413) {
+          throw new Error(`Error: File size too large. We have configured the server to allow up to 8GB upload. If you have not yet gzipped your file, you might want to gzip your file.`)  
+        }
         throw new Error(`Error: ${resp.status}`)
       }
 
