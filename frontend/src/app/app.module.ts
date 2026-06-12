@@ -68,8 +68,8 @@ import { Subject, debounceTime, map, merge, shareReplay } from 'rxjs';
     {
       provide: VOLUBA_APP_CONFIG,
       useValue: {
-        uploadUrl: "https://zam12230.jsc.fz-juelich.de/bespoke-volis",
-        linearBackend: "https://voluba-linear-backend.apps.ebrains.eu",
+        uploadUrl: "https://zam12104.jsc.fz-juelich.de/bespoke-volis",
+        linearBackend: "https://voluba-linear-backend.apps.prod-jsccloud.ebrains.eu",
         sxplrhost: "https://atlases.ebrains.eu/viewer"
       } as VolubaAppConfig
     },
