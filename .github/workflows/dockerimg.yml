@@ -106,7 +106,7 @@ jobs:
             '[{"filename": $filename, "delta": $delta}]')
 
           curl -fL -X POST \
-            --form "token=${{ secrets.GITLAB_TRIGGER_TOKEN }}" \
+            --form "token=${{ secrets.GITLAB_GITOPS_TRIGGER_TOKEN }}" \
             --form "ref=main" \
             --form "variables[UPDATE_FILES]=$UPDATE_FILES" \
             "${{ secrets.GITLAB_GITOPS_URL }}/api/v4/projects/${{ secrets.GITLAB_GITOPS_PROJECT_ID }}/trigger/pipeline"
