@@ -80,32 +80,40 @@ jobs:
         
         docker push $VERSIONED_DOCKER_IMGSTREAM
 
-  # deploy-prod-on-rancher:
-  #   needs: [ build-docker-img ]
-  #   if: ${{ github.ref == 'refs/heads/master' && success() }}
-  #   uses: ./.github/workflows/deploy-helm.yml
-  #   with:
-  #     DEPLOYMENT_NAME: voluba-prod
-  #     IMAGE_TAG: ${{ needs.build-docker-img.outputs.VERSION }}
-  #   secrets:
-  #     KUBECONFIG: ${{ secrets.KUBECONFIG }}
+  trigger-gitops:
+    needs: [ build-docker-img ]
+    runs-on: ubuntu-latest
+    if: ${{ github.ref == 'refs/heads/rf_rewriteFrontend' && success() }}
+    steps:
+      - name: 'Set deployment variables'
+        id: deploy-vars
+        run: |
+          echo "DEPLOY_FILE=voluba/frontend/values/jsccloud-prod.yaml" >> "$GITHUB_OUTPUT"
 
-  # deploy-rc-on-rancher:
-  #   needs: [ build-docker-img ]
-  #   if: ${{ github.ref == 'refs/heads/staging' && success() }}
-  #   uses: ./.github/workflows/deploy-helm.yml
-  #   with:
-  #     DEPLOYMENT_NAME: voluba-rc
-  #     IMAGE_TAG: staging
-  #   secrets:
-  #     KUBECONFIG: ${{ secrets.KUBECONFIG }}
+          cat > /tmp/delta.yaml << EOF
+          image:
+            tag: rf_rewriteFrontend
+          podLabel:
+            commithash: ${{ github.sha }}
+          EOF
+          echo "DELTA_B64=$(base64 -w 0 /tmp/delta.yaml)" >> "$GITHUB_OUTPUT"
 
-  # deploy-rewrite-on-rancher:
-  #   needs: [ build-docker-img ]
-  #   if: ${{ github.ref == 'refs/heads/rf_rewriteFrontend' && success() }}
-  #   uses: ./.github/workflows/deploy-helm.yml
-  #   with:
-  #     DEPLOYMENT_NAME: voluba-angular
-  #     IMAGE_TAG: rf_rewriteFrontend
-  #   secrets:
-  #     KUBECONFIG: ${{ secrets.KUBECONFIG }}
+      - name: 'Trigger GitLab GitOps pipeline'
+        run: |
+          UPDATE_FILES=$(jq -cn \
+            --arg filename "${{ steps.deploy-vars.outputs.DEPLOY_FILE }}" \
+            --arg delta "${{ steps.deploy-vars.outputs.DELTA_B64 }}" \
+            '[{"filename": $filename, "delta": $delta}]')
+
+          curl -f -X POST \
+            --form "token=${{ secrets.GITLAB_TRIGGER_TOKEN }}" \
+            --form "ref=main" \
+            --form "variables[UPDATE_FILES]=$UPDATE_FILES" \
+            "${{ secrets.GITLAB_GITOPS_URL }}/api/v4/projects/${{ secrets.GITLAB_GITOPS_PROJECT_ID }}/trigger/pipeline"
+
+# DO NOT EDIT BELOW
+# 
+# TODO
+# GITLAB_TRIGGER_TOKEN
+# GITLAB_GITOPS_URL
+# GITLAB_GITOPS_PROJECT_ID
