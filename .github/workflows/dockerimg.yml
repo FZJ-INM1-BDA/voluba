@@ -98,17 +98,23 @@ jobs:
           EOF
           echo "DELTA_B64=$(base64 -w 0 /tmp/delta.yaml)" >> "$GITHUB_OUTPUT"
 
+          # optional MR_TITLE
+          echo "MR_TITLE='voluba rf_rewriteFrontend update'" >> "$GITHUB_OUTPUT"
+
       - name: 'Trigger GitLab GitOps pipeline'
         run: |
           UPDATE_FILES=$(jq -cn \
             --arg filename "${{ steps.deploy-vars.outputs.DEPLOY_FILE }}" \
             --arg delta "${{ steps.deploy-vars.outputs.DELTA_B64 }}" \
             '[{"filename": $filename, "delta": $delta}]')
+          
+          MR_TITLE="${{ steps.deploy-vars.outputs.MR_TITLE }}"
 
           curl -fL -X POST \
             --form "token=${{ secrets.GITLAB_GITOPS_TRIGGER_TOKEN }}" \
             --form "ref=main" \
             --form "variables[UPDATE_FILES]=$UPDATE_FILES" \
+            --form "variables[MR_TITLE]=$MR_TITLE" \
             "${{ secrets.GITLAB_GITOPS_URL }}/api/v4/projects/${{ secrets.GITLAB_GITOPS_PROJECT_ID }}/trigger/pipeline"
 
 # DO NOT EDIT BELOW
