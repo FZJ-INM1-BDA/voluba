@@ -5,14 +5,13 @@ on:
     branches:
       - master
       - staging
+      - rf_rewriteFrontend
 
     # do not rebuild if...
     paths-ignore:
       # use_docs (use_docs are built on readthedocs any way)
       - 'use_docs/*'
 
-env:
-  OKD_URL: https://okd.hbp.eu:443
 jobs:
   build-docker-img:
     runs-on: ubuntu-latest
@@ -30,6 +29,10 @@ jobs:
         if [[ $GITHUB_REF == 'refs/heads/staging' ]]; then
             echo "DOCKERIMG=voluba:staging" >> "$GITHUB_ENV"
         fi
+        
+        if [[ $GITHUB_REF == 'refs/heads/rf_rewriteFrontend' ]]; then
+            echo "DOCKERIMG=voluba:rf_rewriteFrontend" >> "$GITHUB_ENV"
+        fi
     - name: 'Setup tags'
       run: |
         if [[ -z "$DOCKERIMG" ]]
@@ -40,40 +43,20 @@ jobs:
         DOCKER_IMGSTREAM=${{ secrets.EBRAINS_DOCKER_REG_VOLUBA_NSP }}/${DOCKERIMG}
         echo "Setting docker image stream to $DOCKER_IMGSTREAM"
         echo "DOCKER_IMGSTREAM=$DOCKER_IMGSTREAM" >> $GITHUB_ENV
-    - name: 'Set matomo env var'
-      run: |
-        echo "MATOMO_URL=${{ secrets.MATOMO_URL_PROD }}" >> $GITHUB_ENV
-        echo "MATOMO_ID=${{ secrets.MATOMO_ID_PROD }}" >> $GITHUB_ENV
-
-    - name: 'Set version variable & expmt feature flag'
-      id: 'setting-vars'
-      run: |
-        GIT_HASH=$(git rev-parse --short HEAD)
-        echo "Setting GIT_HASH: $GIT_HASH"
-        echo "GIT_HASH=$GIT_HASH" >> $GITHUB_OUTPUT
-
-        VERSION=$(jq -r '.version' app/package.json)
-        echo "Setting VERSION: $VERSION"
-        echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
-        echo "VERSION=$VERSION" >> $GITHUB_ENV
-
-        # VUE_APP_ENABLE_EXPERIMENTAL_FEATURES="{}"
 
     - name: 'Build docker image'
       run: |
-        
         echo "Building $DOCKER_IMGSTREAM"
         docker build \
-          --build-arg MATOMO_URL=$MATOMO_URL \
-          --build-arg MATOMO_ID=$MATOMO_ID \
-          --build-arg VUE_APP_BACKEND_URL=${{ secrets.VUE_APP_BACKEND_URL }} \
-          --build-arg VUE_APP_UPLOAD_URL=${{ secrets.VUE_APP_UPLOAD_URL }} \
           -t $DOCKER_IMGSTREAM \
           .
         echo "Successfully built $DOCKER_IMGSTREAM"
 
     - name: 'Push to docker registry'
       run: |
+        # Good luck charm?
+        curl -v https://docker-registry.ebrains.eu/v2/
+
         echo "Login to docker registry"
         docker login \
           -u '${{ secrets.EBRAINS_DOCKER_REG_USER }}' \
@@ -97,48 +80,46 @@ jobs:
         
         docker push $VERSIONED_DOCKER_IMGSTREAM
 
-  deploy-prod-on-rancher:
+  trigger-gitops:
     needs: [ build-docker-img ]
-    if: ${{ github.ref == 'refs/heads/master' && success() }}
-    uses: ./.github/workflows/deploy-helm.yml
-    with:
-      DEPLOYMENT_NAME: voluba-prod
-      IMAGE_TAG: ${{ needs.build-docker-img.outputs.VERSION }}
-    secrets:
-      KUBECONFIG: ${{ secrets.KUBECONFIG }}
-
-  deploy-rc-on-rancher:
-    needs: [ build-docker-img ]
-    if: ${{ github.ref == 'refs/heads/staging' && success() }}
-    uses: ./.github/workflows/deploy-helm.yml
-    with:
-      DEPLOYMENT_NAME: voluba-rc
-      IMAGE_TAG: staging
-    secrets:
-      KUBECONFIG: ${{ secrets.KUBECONFIG }}
-
-  deploy-on-okd:
-    needs: [ build-docker-img ]
-    if: success()
     runs-on: ubuntu-latest
+    if: ${{ github.ref == 'refs/heads/rf_rewriteFrontend' && success() }}
     steps:
-    - name: "Configure image stream"
-      run: |
-        if [[ "$GITHUB_REF" == "refs/heads/master" ]]
-        then
-          echo "IMAGE_STREAM_TAG=docker-registry.default.svc:5000/voluba/voluba-img-deploy:latest" >> $GITHUB_ENV
-        fi
-        if [[ "$GITHUB_REF" == "refs/heads/staging" ]]
-        then
-          echo "IMAGE_STREAM_TAG=docker-registry.default.svc:5000/voluba/voluba-stg-img-deploy:staging" >> $GITHUB_ENV
-        fi
-    - name: "Login via cli"
-      run: |
-        if [[ ! -z "$IMAGE_STREAM_TAG" ]]
-        then
-          oc login ${{ env.OKD_URL }} --token=${{ secrets.OKD_SECRET }}
-          oc project voluba
-          oc import-image $IMAGE_STREAM_TAG
-        else
-          echo "Empty IMAGE_STREAM_TAG, skipping"
-        fi
+      - name: 'Set deployment variables'
+        id: deploy-vars
+        run: |
+          echo "DEPLOY_FILE=voluba/frontend/values/jsccloud-prod.yaml" >> "$GITHUB_OUTPUT"
+
+          cat > /tmp/delta.yaml << EOF
+          image:
+            tag: rf_rewriteFrontend
+          podLabel:
+            commithash: ${{ github.sha }}
+          EOF
+          echo "DELTA_B64=$(base64 -w 0 /tmp/delta.yaml)" >> "$GITHUB_OUTPUT"
+
+          # optional MR_TITLE
+          echo "MR_TITLE='voluba rf_rewriteFrontend update'" >> "$GITHUB_OUTPUT"
+
+      - name: 'Trigger GitLab GitOps pipeline'
+        run: |
+          UPDATE_FILES=$(jq -cn \
+            --arg filename "${{ steps.deploy-vars.outputs.DEPLOY_FILE }}" \
+            --arg delta "${{ steps.deploy-vars.outputs.DELTA_B64 }}" \
+            '[{"filename": $filename, "delta": $delta}]')
+          
+          MR_TITLE="${{ steps.deploy-vars.outputs.MR_TITLE }}"
+
+          curl -fL -X POST \
+            --form "token=${{ secrets.GITLAB_GITOPS_TRIGGER_TOKEN }}" \
+            --form "ref=main" \
+            --form "variables[UPDATE_FILES]=$UPDATE_FILES" \
+            --form "variables[MR_TITLE]=$MR_TITLE" \
+            "${{ secrets.GITLAB_GITOPS_URL }}/api/v4/projects/${{ secrets.GITLAB_GITOPS_PROJECT_ID }}/trigger/pipeline"
+
+# DO NOT EDIT BELOW
+# 
+# TODO
+# GITLAB_TRIGGER_TOKEN
+# GITLAB_GITOPS_URL
+# GITLAB_GITOPS_PROJECT_ID

@@ -1,0 +1,18 @@
+image:
+  tag: staging
+
+env:
+  HOSTNAME: https://voluba-staging.apps.tc.humanbrainproject.eu
+
+ingress:
+  enabled: true
+  className: "nginx"
+  hosts:
+  - host: voluba-staging.apps.tc.humanbrainproject.eu
+    paths:
+    - path: "/"
+      pathType: Prefix
+  tls:
+  - secretName: voluba-rc-tc-secret
+    hosts:
+    - voluba-staging.apps.tc.humanbrainproject.eu

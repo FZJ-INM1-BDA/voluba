@@ -1,0 +1,49 @@
+.section
+{
+    display: flex;
+}
+
+.input
+{
+    width: 8rem;
+}
+
+.isotrope-header
+{
+    display: flex;
+    align-items: center;
+
+    > *
+    {
+        margin: 1rem;
+    }
+}
+
+mat-divider
+{
+    margin: 1rem 0;
+}
+
+.rotation-container
+{
+    display: flex;
+    flex-direction: column;
+
+    .rotation-control-container
+    {
+        display: grid;
+        grid-template-columns: 5em 5em 5em;
+
+        .rotation-control-label
+        {
+            justify-self: center;
+            align-self: center;
+        }
+        .rotation-control-value
+        {
+            justify-self: end;
+            align-self: center;
+            margin-right: 1rem;
+        }
+    }
+}

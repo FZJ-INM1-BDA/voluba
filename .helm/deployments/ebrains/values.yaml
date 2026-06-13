@@ -1,0 +1,5 @@
+image:
+  tag: rf_rewriteFrontend
+
+ingress:
+  enabled: false

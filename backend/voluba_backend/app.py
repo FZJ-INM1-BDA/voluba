@@ -15,7 +15,7 @@ enable_cors = False
 if enable_cors:
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=["http://localhost:8080"],
+        allow_origins=["http://localhost:4200"],
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"]
@@ -29,7 +29,5 @@ app.include_router(ebrains_router, prefix="/ebrains", tags=["ebrains"])
 app.include_router(sxplr_plugin_router, prefix="/viewerPlugin", include_in_schema=False)
 
 path_to_static = voluba_config.PATH_TO_STATIC
-
-print(path_to_static)
 
 app.mount("/", StaticFiles(directory=path_to_static, html=True))
