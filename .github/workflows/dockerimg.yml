@@ -93,13 +93,13 @@ jobs:
           cat > /tmp/delta.yaml << EOF
           image:
             tag: rf_rewriteFrontend
-          podLabel:
+          podLabels:
             commithash: ${{ github.sha }}
           EOF
           echo "DELTA_B64=$(base64 -w 0 /tmp/delta.yaml)" >> "$GITHUB_OUTPUT"
 
           # optional MR_TITLE
-          echo "MR_TITLE='voluba rf_rewriteFrontend update'" >> "$GITHUB_OUTPUT"
+          echo "MR_TITLE=voluba rf_rewriteFrontend update" >> "$GITHUB_OUTPUT"
 
       - name: 'Trigger GitLab GitOps pipeline'
         run: |
