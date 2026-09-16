@@ -299,6 +299,8 @@ export class ShareExportComponent {
     this.undoSvc.pushUndo(`Loaded transform from JSON file`, true)
   }
 
+  // TODO 20260916 publish is currently disabled. 
+  // fairgraph uses too much resources, and k8s evicts the pods
   async publish(){
     const { content } = await firstValueFrom(this.view$)
     const description = (this.descInput?.nativeElement as HTMLTextAreaElement).value || ''
