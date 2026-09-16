@@ -544,9 +544,13 @@ export class ViewerComponent implements AfterViewInit {
       outputs.selectors.getIncXform(),
       takeUntil(this.#destroyed$),
     ).subscribe((v) => {
-      this.viewerWrapper?.setLayerProperty(INC_VOL_ID, {
-        transform: v,
-      })
+      if (this.viewerWrappers) {
+        this.viewerWrappers.forEach(w => {
+          w.setLayerProperty(INC_VOL_ID, {
+            transform: v
+          })
+        })
+      }
     })
 
     this.store.pipe(

@@ -117,9 +117,3 @@ jobs:
             --form "variables[MR_TITLE]=$MR_TITLE" \
             "${{ secrets.GITLAB_GITOPS_URL }}/api/v4/projects/${{ secrets.GITLAB_GITOPS_PROJECT_ID }}/trigger/pipeline"
 
-# DO NOT EDIT BELOW
-# 
-# TODO
-# GITLAB_TRIGGER_TOKEN
-# GITLAB_GITOPS_URL
-# GITLAB_GITOPS_PROJECT_ID

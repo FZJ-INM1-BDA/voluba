@@ -114,7 +114,6 @@ export class DialCmp {
 
   // expensive operation, call as little as possible
   #getRect(){
-    console.log("get rect")
     return (this.el.nativeElement as HTMLElement).getBoundingClientRect()
   }
 
