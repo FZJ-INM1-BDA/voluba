@@ -239,11 +239,11 @@ export class ViewerComponent implements AfterViewInit {
     )
   ]).pipe(
     map(([ { landmarks, addLandmarkMode, hoveredLmp, purgatory }, { selectedIncoming, selectedTemplate, darkmode }, incLocked, { isDefaultMode, zenmode }, xform, mouseover, primaryNavigation, isDraggingViewer, user ]) => {
-      
+      const visibleLms = landmarks.filter(lm => lm.visible)
       const { mat4, quat } = export_nehuba
 
       const { getIncoming, getReference } = LandmarkSvc.GetXformToOverlay(xform, hoveredLmp)
-      const storedLandmarks = landmarks.map(lm => {
+      const storedLandmarks = visibleLms.map(lm => {
         const incomingLandmarks: OverlayLm[] = []
         if (isDefaultMode) {
           incomingLandmarks.push(getIncoming(lm))
@@ -276,7 +276,7 @@ export class ViewerComponent implements AfterViewInit {
 
       if (!isDefaultMode) {
         secondaryLandmarks.push(
-          ...landmarks.map(lm => {
+          ...visibleLms.map(lm => {
             return getIncoming(lm)
           })
         )

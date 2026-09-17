@@ -80,6 +80,7 @@ export class Effects {
       invokeActions.push(
         actions.addLandmarkPair({
           landmarkPair: {
+            visible: true,
             tmplLm: purgatory,
             incLm: incLandmark,
             name: `Untitled`,

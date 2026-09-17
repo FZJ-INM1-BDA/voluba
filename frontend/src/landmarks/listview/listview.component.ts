@@ -30,7 +30,7 @@ export class ListviewComponent {
   @Input()
   landmarkPair: LandmarkPair[] = [];
 
-  displayedColumns: string[] = ['delete', 'name', 'toTmpl', 'toInc'];
+  displayedColumns: string[] = ['visible', 'delete', 'name', 'toTmpl', 'toInc'];
 
   public trackBy: TrackByFunction<LandmarkPair> = (
     _idx: number,
@@ -86,6 +86,16 @@ export class ListviewComponent {
     this.store.dispatch(
       appState.actions.deleteLandmarkPair({
         landmarkPair
+      })
+    )
+  }
+  toggleLmVisible(landmarkPair: LandmarkPair){
+    this.store.dispatch(
+      appState.actions.updateLandmarkPair({
+        id: landmarkPair.id,
+        value: {
+          visible: !landmarkPair.visible
+        }
       })
     )
   }

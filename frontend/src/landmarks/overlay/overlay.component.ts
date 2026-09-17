@@ -1,9 +1,6 @@
 import { ChangeDetectionStrategy, Component, EventEmitter, Inject, Input, Output } from '@angular/core';
-import { Landmark } from '../const';
 import { BehaviorSubject, Observable, Subject, combineLatest, concat, debounceTime, distinctUntilChanged, filter, map, merge, of, pipe, share, shareReplay, switchMap, tap, throttleTime } from 'rxjs';
 import { DEBOUNCED_WINDOW_RESIZE, OverlayLm, arrayEqual } from 'src/const';
-import { Store, select } from '@ngrx/store';
-import * as appState from "src/state/app"
 
 function isSliceView(input: export_nehuba.SliceView|null): input is export_nehuba.SliceView {
   return !!input

@@ -15,6 +15,7 @@ export type Landmark = {
 }
 
 export type LandmarkPair = {
+  visible: boolean
   tmplLm: Landmark
   incLm: Landmark
   id: string

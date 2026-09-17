@@ -265,6 +265,7 @@ export class ToolbarComponent {
       this.store.dispatch(
         app.actions.addLandmarkPair({
           landmarkPair: {
+            visible: true,
             id,
             incLm: {
               position: inc.coord.map(v => v*1e6) as [number, number, number],

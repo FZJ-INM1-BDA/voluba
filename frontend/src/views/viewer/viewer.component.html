@@ -199,7 +199,7 @@
                 <mat-icon>self_improvement</mat-icon>
             </button>
             <!-- bottomright -->
-            <rotation-widget [rotation-widget-rot-quat]="view.rotationWidgetQuat"></rotation-widget>
+            <rotation-widget *ngIf="view.isDefaultMode" [rotation-widget-rot-quat]="view.rotationWidgetQuat"></rotation-widget>
         </div>
     </voluba-four-corners>
         
