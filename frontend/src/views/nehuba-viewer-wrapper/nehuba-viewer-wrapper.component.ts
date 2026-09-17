@@ -9,7 +9,7 @@ import {
   Output,
   inject,
 } from '@angular/core';
-import { ReplaySubject, Subject, distinctUntilChanged, fromEvent, map, merge, scan, shareReplay, takeUntil } from 'rxjs';
+import { BehaviorSubject, Subject, distinctUntilChanged, fromEvent, map, merge, shareReplay, takeUntil } from 'rxjs';
 import { FloatArrayEql, isHtmlElement, Mat4, PatchedSymbol } from 'src/const';
 import { DestroyDirective } from 'src/util/destroy.directive';
 
@@ -287,34 +287,52 @@ export class NehubaViewerWrapperComponent implements OnInit, AfterViewInit {
 
   }
 
-  private sliceViewsSubject$ = new ReplaySubject<{
-    idx: number,
-    sliceView: export_nehuba.SliceView
-  }>(3)
+  private sliceViewsSubject$ = new BehaviorSubject<(export_nehuba.SliceView | null)[]>([null, null, null])
 
   sliceViews$ = this.sliceViewsSubject$.pipe(
-    scan((acc, curr) => {
-      const returnVal = [...acc]
-
-      // check for collision
-      // unset to resolve the collision
-      
-      const sv = returnVal[curr.idx]
-      
-      if (!!sv) {
-        const el = this.sliceviewToElementWeakMap.get(sv)
-        if (!!el) {
-          this.elementToSliceViewWeakMap.delete(el)
-        }
-        returnVal[curr.idx] = null
-        return returnVal
-      }
-      
-      returnVal[curr.idx] = curr.sliceView
-      return returnVal
-    }, [null, null, null] as (export_nehuba.SliceView | null)[]),
     shareReplay(1),
   )
+
+  #recomputeScheduled = false
+
+  #scheduleRecompute() {
+    if (this.#recomputeScheduled) return
+    this.#recomputeScheduled = true
+    requestAnimationFrame(() => {
+      this.#recomputeScheduled = false
+      this.#recomputeSliceViews()
+    })
+  }
+
+  /**
+   * Measures all panels in a single batched pass (one reflow) and emits the full
+   * quadrant array. Quadrant is derived by comparing each panel's center against
+   * the container center. Recomputing the whole array each time makes an
+   * unsettled-layout measurement self-healing: the next trigger corrects it.
+   */
+  #recomputeSliceViews() {
+    if (!this.nehubaViewer) return
+    const parent = this.el.nativeElement.getBoundingClientRect()
+    const cx = parent.left + parent.width / 2
+    const cy = parent.top + parent.height / 2
+    const next: (export_nehuba.SliceView | null)[] = [null, null, null]
+    for (const panel of this.nehubaViewer.ngviewer.display.panels) {
+      const { sliceView, element } = panel
+      if (!sliceView) continue            // perspective panel has no sliceView
+      const r = element.getBoundingClientRect()
+      const left = (r.left + r.width / 2) < cx
+      const top  = (r.top + r.height / 2) < cy
+      let idx: number
+      if (top && left) idx = 0
+      else if (top && !left) idx = 1
+      else if (!top && left) idx = 2
+      else continue                       // bottom-right quadrant = perspective, skip
+      next[idx] = sliceView
+      this.elementToSliceViewWeakMap.set(element, sliceView)
+      this.sliceviewToElementWeakMap.set(sliceView, element)
+    }
+    this.sliceViewsSubject$.next(next)
+  }
 
   #patchNehuba() {
     if (!this.nehubaViewer) return
@@ -326,53 +344,29 @@ export class NehubaViewerWrapperComponent implements OnInit, AfterViewInit {
      * 
      */
 
-    const determineIdx = (el: HTMLElement) => {
-      
-      const { top, left } = this.el.nativeElement.getBoundingClientRect()
-      const child = el.getBoundingClientRect()
-      const rLeft = child.left - left
-      const rTop = child.top - top
-      if (rLeft < 5 && rTop < 5) {
-        return 0
-      }
-      if (rLeft > 5 && rTop < 5) {
-        return 1
-      }
-      if (rLeft < 5 && rTop > 5) {
-        return 2
-      }
-      throw new Error(`rLeft ${rLeft} rTop ${rTop} is unexpected`)
-    }
+    const scheduleRecompute = () => this.#scheduleRecompute()
 
     const patchSliceViewPanel = (
       sliceViewPanel: export_nehuba.SliceViewPanel
     ) => {
       if (this.#patchedSliceViewPanels.has(sliceViewPanel)) return;
-      const { sliceviewToElementWeakMap, elementToSliceViewWeakMap, sliceViewsSubject$ } = this;
+      const { sliceviewToElementWeakMap } = this;
       this.#patchedSliceViewPanels.add(sliceViewPanel);
       const originalDraw = sliceViewPanel.draw;
       sliceViewPanel.draw = function () {
-        if (!this.sliceView) {
-          originalDraw.call(this)
-          return
-        }
-        
-        if (!sliceviewToElementWeakMap.has(this.sliceView)) {
-          elementToSliceViewWeakMap.set(this.element, this.sliceView)
-          sliceviewToElementWeakMap.set(this.sliceView, this.element)
-          const idx = determineIdx(this.element)
-          sliceViewsSubject$.next({
-            idx,
-            sliceView: this.sliceView,
-          })
-        }
-
         originalDraw.call(this)
+        // Once the panel's sliceView is populated and not yet mapped, signal a
+        // (batched) recompute. No measurement happens here — the gate means a
+        // resolved sliceView stops scheduling, so steady-state overhead is zero.
+        if (this.sliceView && !sliceviewToElementWeakMap.has(this.sliceView)) {
+          scheduleRecompute()
+        }
       };
     };
     this.nehubaViewer.ngviewer.display.changed.add(() => {
       if (!this.nehubaViewer) return
       this.nehubaViewer.ngviewer.display.panels.forEach(patchSliceViewPanel)
+      this.#scheduleRecompute()
     })
   }
 
