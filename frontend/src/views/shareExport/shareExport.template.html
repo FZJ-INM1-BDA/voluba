@@ -1,0 +1,149 @@
+<ng-template [ngIf]="view$ | async" let-view>
+
+    <h3>
+        Load
+    </h3>
+    
+    <button mat-icon-button
+        matTooltip="Load JSON Transformation"
+        voluba-load-from-file
+        (from-file-content)="handleLoadedXform($event)"
+        >
+        <mat-icon>folder_open</mat-icon>
+    </button>
+    
+    <h3>
+        Save
+    </h3>
+    
+    <button mat-icon-button matTooltip="Export volume with the current transform." disabled>
+        <mat-icon>cloud_download</mat-icon>
+    </button>
+    
+    <button mat-icon-button
+        matTooltip="Save transformation as JSON"
+        voluba-save-to-file
+        [to-file-content]="view.content"
+        [to-file-filename]="view.filename">
+        <mat-icon>download</mat-icon>
+    </button>
+    
+    <a [href]="view.openInSxplr"
+        mat-icon-button
+        matTooltip="View the volume with the current transform in siibra-explorer"
+        target="_blank"
+        [disabled]="!view.openInSxplr">
+        <mat-icon>preview</mat-icon>
+    </a>
+    
+    <h3>
+        Share
+    </h3>
+    
+    <button mat-icon-button
+        matTooltip="Publish the transformation metadata to ebrains"
+        volubaDialog
+        [dialogTarget]="publishEbrainsTmpl"
+        [dialogCentered]="true"
+        [dialogBackdrop]="true"
+        [disabled]="!view.user">
+        <mat-icon>share</mat-icon>
+    </button>
+    
+    <ng-template #publishEbrainsTmpl>
+        <mat-card>
+            <mat-card-header>
+                <mat-card-title>
+                    Publish
+                </mat-card-title>
+                <mat-card-subtitle>
+                    Publish the anchor result to ebrains KG. This will not make the volume public.
+                </mat-card-subtitle>
+            </mat-card-header>
+            <mat-card-content>
+                <div class="publish-param">
+
+                    <mat-form-field>
+                        <mat-label>Reference Volume</mat-label>
+                        <input type="text"
+                            matInput
+                            disabled
+                            [value]="view.referenceVolume?.name || 'Unknown Reference Volume'">
+                    </mat-form-field>
+                    
+                    <mat-form-field>
+                        <mat-label>Incoming Volume</mat-label>
+                        <input type="text"
+                            matInput
+                            disabled
+                            [value]="view.incomingVolume?.name || 'Unknown Incoming Volume'">
+                    </mat-form-field>
+                    
+                    <mat-form-field>
+                        <mat-label>Incoming Volume Content Hash</mat-label>
+                        <input type="text"
+                            matInput
+                            disabled
+                            [value]="view.incomingVolume?.contentHash || 'Unknown Content Hash'">
+                    </mat-form-field>
+
+                    
+                    <mat-form-field>
+                        <mat-label>Transform Affine</mat-label>
+                        <textarea class="no-resize" rows="6" disabled matInput>{{ view.canonicalTransformText }}</textarea>
+                    </mat-form-field>
+
+                    <mat-form-field>
+                        <mat-label>Description</mat-label>
+                        <textarea
+                            matInput
+                            cols="30"
+                            placeholder="(Optional) Enter a description for this transformation."
+                            #description
+                            [disabled]="view.publishBusy"></textarea>
+                    </mat-form-field>    
+                </div>
+                <div>
+                    <h3 *ngIf="view.publishId">Publishing Job id: {{ view.publishId }}</h3>
+                    <mat-tab-group>
+                        <mat-tab *ngFor="let stage of view.publishStages" >
+                            <ng-template mat-tab-label>
+                                <span [ngSwitch]="stage.status" class="mat-tab-icon">
+                                    <mat-icon *ngSwitchCase="'ERROR'" color="warn">
+                                        error
+                                    </mat-icon>
+                                    <mat-icon *ngSwitchCase="'PENDING'">
+                                        pending
+                                    </mat-icon>
+                                    <mat-icon *ngSwitchCase="'RUNNING'">
+                                        play_arrow
+                                    </mat-icon>
+                                    <mat-icon *ngSwitchCase="'COMPLETED'" color="primary">
+                                        done
+                                    </mat-icon>
+                                    <mat-icon *ngSwitchDefault>
+                                        question_mark
+                                    </mat-icon>
+                                </span>
+                                {{ stage.name }}
+                              </ng-template>
+                        </mat-tab>
+                    </mat-tab-group>
+                </div>
+            </mat-card-content>
+
+            <mat-card-actions>
+                <button mat-raised-button
+                    color="primary"
+                    (click)="publish()"
+                    [disabled]="view.publishBusy">
+                    Publish
+                </button>
+                <button mat-button mat-dialog-close>
+                    Close
+                </button>
+            </mat-card-actions>
+            <mat-progress-bar *ngIf="view.publishBusy" mode="indeterminate"></mat-progress-bar>
+        </mat-card>
+    </ng-template>
+</ng-template>

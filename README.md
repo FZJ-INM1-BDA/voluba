@@ -4,7 +4,7 @@
 
 X. Gui, Y. Leprince, P. Chervakov, T. Dickscheid, D. Gogshelidze
 
-*Copyright 2017-2020 [Big Data Analytics Group](https://www.fz-juelich.de/inm/inm-1/EN/Forschung/Big_Data_Analytics/Big_Data_Analytics_node.html), [Institute of Neuroscience and Medicine (INM-1)](https://www.fz-juelich.de/inm/inm-1/), [Forschungszentrum Jülich](https://www.url.com)*
+*Copyright 2017-2024 [Big Data Analytics Group](https://www.fz-juelich.de/en/inm/inm-1/research/big-data-analytics), [Institute of Neuroscience and Medicine (INM-1)](https://www.fz-juelich.de/en/inm/inm-1), [Forschungszentrum Jülich](https://www.fz-juelich.de/en)*
 
 
 "voluba" is an acronym for **Volu**metric **B**rain **A**nchoring. 
@@ -29,12 +29,16 @@ You can download the resulting transformation parameters in json format, open th
 
 ## Technical details 
 
-voluba requires `node >10`. To run a local development instance, do
+voluba requires `node >= 20` and `python >= 3.8`. To run a local development instance, do
+
 ```bash
-cd app && npm run serve
+npm -C frontend/ i && npm -C frontend/ start
 ```
- voluba uses [Vue](https://vuejs.org) for the reactive UI layer, [Vuex](https://vuex.vuejs.org/) for state management, and [Bootstrap 4](https://getbootstrap.com/docs/4.0) for layout.
+
+voluba uses [Angular](https://angular.io/) for the frontend and [FastAPI](https://fastapi.tiangolo.com/) for the backend.
+
 Building on the [neuroglancer](https://github.com/google/neuroglancer) technology, it allows to interact with very large image volumes.
+
 It has been developed in the [Human Brain Project](https://humanbrainproject.eu) as an online service for integration of image data to brain atlases within the [EBRAINS](https://ebrains.eu) infrastructure for brain research.
 
 It has been designed as a service of the [EBRAINS](https://ebrains.eu) infrastructure for brain research and developed in the [Human Brain Project](https://humanbrainproject.eu). 

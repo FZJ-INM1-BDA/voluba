@@ -1,0 +1,31 @@
+:host
+{
+    --cell-size: auto;
+    --empty-size: 1fr;
+    display: grid;
+    grid-template-columns: var(--cell-size) var(--empty-size) var(--cell-size) var(--empty-size) var(--cell-size);
+    grid-template-rows: var(--cell-size) var(--empty-size) var(--cell-size) var(--empty-size) var(--cell-size);
+}
+
+.left
+{
+    grid-column-start: 1;
+    justify-self: start;
+}
+.right
+{
+    grid-column-start: 5;
+    justify-self: end;
+}
+
+.top
+{
+    grid-row-start: 1;
+    align-self: top;
+}
+
+.bottom
+{
+    grid-row-start: 5;
+    align-self: end;
+}

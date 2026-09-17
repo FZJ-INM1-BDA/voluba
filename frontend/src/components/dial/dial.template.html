@@ -1,0 +1,10 @@
+<ng-template [ngIf]="view$ | async" let-view>
+    <mat-icon
+        [style.transform]="view.transformRotateStr"
+        [ngClass]="{
+            'dial focus': view.mousedown,
+            'dial': !(view.mousedown)
+        }">
+        motion_photos_on
+    </mat-icon>
+</ng-template>

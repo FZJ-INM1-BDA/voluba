@@ -1,0 +1,14 @@
+:host
+{
+    display: inline-block;
+}
+
+.dial
+{
+    transition: opacity 200ms ease-in-out;
+    opacity: 0.5;
+    &.focus
+    {
+        opacity: 1.0;
+    }
+}

@@ -1,0 +1,59 @@
+<ng-template [ngIf]="view$ | async" let-view>
+    <svg viewBox="0 0 120 120"
+        xmlns="http://www.w3.org/2000/svg">
+
+
+        <path *ngFor="let widget of view.widgets"
+            (mousedown)="handleMouseDown($event, widget)"
+            [attr.d]="widget.d"
+            [attr.stroke-width]="10"
+            [attr.fill]="widget.fill"
+            [attr.stroke]="'url(#' + widget.color + ')'">
+        </path>
+
+        <clipPath id="clipPathId">
+            <path fill="none" [attr.d]="view.clipPathD"></path>
+        </clipPath>
+
+        <path *ngIf="view.guidingLineD" clip-path="url(#clipPathId)"
+            stroke-width="7"
+            stroke="white"
+            class="guilding-line"
+            [attr.d]="view.guidingLineD">
+        </path>
+
+        <defs>            
+            <linearGradient
+                *ngFor="let widget of view.widgets"
+                [attr.id]="widget.color"
+                [attr.x1]="widget.cf.closest[0] / 120"
+                [attr.y1]="widget.cf.closest[1] / 120"
+                [attr.x2]="widget.cf.furthest[0] / 120"
+                [attr.y2]="widget.cf.furthest[1] / 120">
+
+                <stop
+                    [attr.stop-color]="widget.color"
+                    stop-opacity="1.0"
+                    offset="0%">
+                </stop>
+                <stop
+                    [attr.stop-color]="widget.color"
+                    stop-opacity="0.8"
+                    offset="30%">
+                </stop>
+                <stop
+                    [attr.stop-color]="widget.color"
+                    stop-opacity="0.3"
+                    offset="70%">
+                </stop>
+                <stop
+                    [attr.stop-color]="widget.color"
+                    stop-opacity="0.3"
+                    offset="80%">
+                </stop>
+            </linearGradient>
+
+        </defs>
+    </svg>
+    
+</ng-template>

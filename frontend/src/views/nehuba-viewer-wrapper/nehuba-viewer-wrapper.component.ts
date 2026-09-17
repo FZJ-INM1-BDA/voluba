@@ -1,0 +1,425 @@
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  EventEmitter,
+  Input,
+  OnInit,
+  Output,
+  inject,
+} from '@angular/core';
+import { BehaviorSubject, Subject, distinctUntilChanged, fromEvent, map, merge, shareReplay, takeUntil } from 'rxjs';
+import { FloatArrayEql, isHtmlElement, Mat4, PatchedSymbol } from 'src/const';
+import { DestroyDirective } from 'src/util/destroy.directive';
+
+
+export type NehubaLayer = {
+  id: string
+  url: string
+  transform: Mat4
+}
+
+export type NehubaNavigation = {
+  position: Float32Array
+  orientation: Float32Array
+  zoom: number
+  perspectiveOrientation: Float32Array
+}
+
+const lightmode = {
+  globals: {
+    hideNullImageValues: true,
+    useNehubaLayout: {
+      keepDefaultLayouts: false,
+    },
+    useNehubaMeshLayer: true,
+    rightClickWithCtrlGlobal: false,
+    zoomWithoutCtrlGlobal: false,
+    useCustomSegmentColors: true,
+  },
+  zoomWithoutCtrl: true,
+  hideNeuroglancerUI: true,
+  rightClickWithCtrl: true,
+  rotateAtViewCentre: true,
+  enableMeshLoadingControl: true,
+  zoomAtViewCentre: true,
+  disableSegmentSelection: true,
+  dataset: {
+    imageBackground: [0.9, 0.9, 0.9, 1],
+    initialNgState: {
+      showDefaultAnnotations: true,
+      layers: {
+        // populated by the component
+      },
+      perspectiveOrientation: [
+        0.3140767216682434, -0.7418519854545593, 0.4988985061645508, -0.3195493221282959,
+      ],
+      perspectiveZoom: 1922235.5293810747,
+      navigation: {
+        zoomFactor: 350000,
+        pose: {
+          position: {
+            voxelCoordinates: [0, 0, 0]
+          },
+        }
+      },
+    },
+  },
+  layout: {
+    views: 'hbp-neuro',
+    planarSlicesBackground: [1, 1, 1, 0],
+    useNehubaPerspective: {
+      enableShiftDrag: false,
+      doNotRestrictUserNavigation: true,
+      perspectiveSlicesBackground: [1, 1, 1, 1],
+      removePerspectiveSlicesBackground: {
+        color: [1, 1, 1, 1],
+        mode: '==',
+      },
+      perspectiveBackground: [1, 1, 1, 1],
+      fixedZoomPerspectiveSlices: {
+        sliceViewportWidth: 300,
+        sliceViewportHeight: 300,
+        sliceZoom: 63818.3562426177,
+        sliceViewportSizeMultiplier: 1,
+      },
+      mesh: {
+        backFaceColor: [1, 1, 1, 1],
+        removeBasedOnNavigation: true,
+        flipRemovedOctant: true,
+      },
+      // "centerToOrigin": true,
+      // "drawSubstrates": {
+      //   "color": [
+      //     0,
+      //     0,
+      //     0.5,
+      //     0.15
+      //   ]
+      // },
+      drawZoomLevels: {
+        cutOff: 20,
+        color: [0.5, 0, 0, 0.15],
+      },
+      hideImages: false,
+      waitForMesh: false,
+      // restrictZoomLevel: {
+      //   minZoom: 1200000 * 0.002,
+      //   maxZoom: 3500000 * 0.002,
+      // },
+    },
+  },
+};
+
+const darkmode = {
+  ...lightmode,
+  dataset: {
+    ...lightmode.dataset,
+    imageBackground: [0.2, 0.2, 0.2, 1]
+  },
+  layout: {
+    ...lightmode.layout,
+    planarSlicesBackground: [0, 0, 0, 0],
+  }
+}
+
+const _config = darkmode
+
+type LayerProperties = {
+  transform: export_nehuba.mat4
+  visible: boolean
+};
+
+@Component({
+  selector: 'voluba-nehuba-viewer-wrapper',
+  templateUrl: './nehuba-viewer-wrapper.component.html',
+  styleUrls: ['./nehuba-viewer-wrapper.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  exportAs: 'nehubaViewerWrapper',
+  hostDirectives: [
+    DestroyDirective
+  ]
+})
+export class NehubaViewerWrapperComponent implements OnInit, AfterViewInit {
+
+  #destroyed$ = inject(DestroyDirective).destroyed$
+
+  @Input('nehuba-viewer-alias')
+  nehubaAlias: string = 'nehubaViewer'
+
+  @Input('nehuba-viewer-layers')
+  layers: NehubaLayer[] = []
+
+  @Input('nehuba-viewer-init-navigation')
+  initNavigation: NehubaNavigation|null = null
+
+  @Input()
+  darkmode = false
+
+  @Output()
+  mousePosition = new EventEmitter<Float32Array>()
+
+  @Output()
+  navigation = new EventEmitter<NehubaNavigation>()
+
+  @Output()
+  mousedownSliceView = new EventEmitter<{
+    sliceView: export_nehuba.SliceView | null | undefined;
+    event: MouseEvent;
+  }>();
+
+  nehubaViewer: export_nehuba.NehubaViewer | null = null;
+  sliceviewToElementWeakMap = new WeakMap<export_nehuba.SliceView, HTMLElement>()
+  elementToSliceViewWeakMap = new WeakMap<
+    HTMLElement,
+    export_nehuba.SliceView
+  >();
+  #patchedSliceViewPanels = new WeakSet<export_nehuba.SliceViewPanel>();
+
+  constructor(
+    private el: ElementRef,
+  ) {}
+
+  ngOnInit() {
+    if (!(export_nehuba as any)[PatchedSymbol]) {
+      (export_nehuba as any)[PatchedSymbol] = true;
+
+      const { UrlHashBinding } = export_nehuba.getNgPatchableObj();
+      UrlHashBinding.prototype.setUrlHash = () => {
+        // console.log('seturl hash')
+        // console.log('setting url hash')
+      }
+      UrlHashBinding.prototype.updateFromUrlHash = () => {
+        // console.log('update hash binding')
+      }
+    }
+
+    const config = JSON.parse(JSON.stringify(this.darkmode ? darkmode : lightmode));
+    config.dataset.initialNgState.layers = {};
+    for (const layer of this.layers) {
+      config.dataset.initialNgState.layers[layer.id] = {
+        source: layer.url,
+        transform: layer.transform,
+      };
+    }
+    if (this.initNavigation) {
+      config.dataset.initialNgState.navigation.pose.position.voxelCoordinates = Array.from(this.initNavigation.position)
+      config.dataset.initialNgState.navigation.zoomFactor = this.initNavigation.zoom
+      config.dataset.initialNgState.navigation.pose.orientation = Array.from(this.initNavigation.orientation)
+    }
+    
+    if (!!(window as any)['viewer']) {
+      const w = window as any
+      w['_viewer'] = w['viewer']
+      this.#destroyed$.subscribe(() => {
+        
+        w['viewer'] = w['_viewer']
+        w['_viewer'] = null
+        this.nehubaViewer?.ngviewer.dispose()
+      })
+    }
+
+    this.nehubaViewer = export_nehuba.createNehubaViewer(config, console.error)
+
+    /**
+     * vacate id neuroglancer-container so other containers can be inst
+     */
+    const el: HTMLElement = this.el.nativeElement.querySelector('#neuroglancer-container')
+    el.id = this.nehubaAlias
+
+    const subscription = this.nehubaViewer.mousePosition.inVoxels.subscribe(val => {
+      this.mousePosition.emit(val)
+    })
+
+    const posSubject = new Subject<NehubaNavigation>()
+    const navSub = this.nehubaViewer.navigationState.all.subscribe(val => {
+      posSubject.next({
+        position: val.position,
+        orientation: val.orientation,
+        zoom: val.zoom,
+        perspectiveOrientation: val.perspectiveOrientation,
+      })
+    })
+    posSubject.pipe(
+      distinctUntilChanged((o, n) => (
+        FloatArrayEql(o.orientation, n.orientation)
+        && FloatArrayEql(o.position, n.position)
+        && FloatArrayEql(o.perspectiveOrientation, n.perspectiveOrientation)
+        && o.zoom === n.zoom
+      )),
+      takeUntil(this.#destroyed$)
+    ).subscribe(nav => {
+      this.navigation.next(nav)
+    })
+
+    this.#destroyed$.subscribe(() => {
+      (window as any)[this.nehubaAlias] = null
+      subscription.unsubscribe()
+      navSub.unsubscribe()
+    })
+    
+    this.#patchNehuba();
+    (window as any)[this.nehubaAlias] = this.nehubaViewer
+  }
+
+  ngAfterViewInit(): void {
+    merge(
+      fromEvent<MouseEvent>(this.el.nativeElement, 'mousedown', {
+        capture: true,
+      }).pipe(
+        map((ev) => {
+          return {
+            sliceView: isHtmlElement(ev.target)
+              ? this.elementToSliceViewWeakMap.get(ev.target)
+              : null,
+            event: ev,
+          };
+        })
+      ),
+      fromEvent<MouseEvent>(this.el.nativeElement, 'mouseup', {
+        capture: true,
+      }).pipe(map((ev) => ({ event: ev, sliceView: null })))
+    ).pipe(
+      distinctUntilChanged((o, n) => o === n || o?.sliceView === n?.sliceView),
+      takeUntil(this.#destroyed$),
+    ).subscribe((v) => this.mousedownSliceView.emit(v));
+
+  }
+
+  private sliceViewsSubject$ = new BehaviorSubject<(export_nehuba.SliceView | null)[]>([null, null, null])
+
+  sliceViews$ = this.sliceViewsSubject$.pipe(
+    shareReplay(1),
+  )
+
+  #recomputeScheduled = false
+
+  #scheduleRecompute() {
+    if (this.#recomputeScheduled) return
+    this.#recomputeScheduled = true
+    requestAnimationFrame(() => {
+      this.#recomputeScheduled = false
+      this.#recomputeSliceViews()
+    })
+  }
+
+  /**
+   * Measures all panels in a single batched pass (one reflow) and emits the full
+   * quadrant array. Quadrant is derived by comparing each panel's center against
+   * the container center. Recomputing the whole array each time makes an
+   * unsettled-layout measurement self-healing: the next trigger corrects it.
+   */
+  #recomputeSliceViews() {
+    if (!this.nehubaViewer) return
+    const parent = this.el.nativeElement.getBoundingClientRect()
+    const cx = parent.left + parent.width / 2
+    const cy = parent.top + parent.height / 2
+    const next: (export_nehuba.SliceView | null)[] = [null, null, null]
+    for (const panel of this.nehubaViewer.ngviewer.display.panels) {
+      const { sliceView, element } = panel
+      if (!sliceView) continue            // perspective panel has no sliceView
+      const r = element.getBoundingClientRect()
+      const left = (r.left + r.width / 2) < cx
+      const top  = (r.top + r.height / 2) < cy
+      let idx: number
+      if (top && left) idx = 0
+      else if (top && !left) idx = 1
+      else if (!top && left) idx = 2
+      else continue                       // bottom-right quadrant = perspective, skip
+      next[idx] = sliceView
+      this.elementToSliceViewWeakMap.set(element, sliceView)
+      this.sliceviewToElementWeakMap.set(sliceView, element)
+    }
+    this.sliceViewsSubject$.next(next)
+  }
+
+  #patchNehuba() {
+    if (!this.nehubaViewer) return
+
+    /**
+     * n.b.
+     * There is a small chance that the reality may have drifted when
+     * boundingclientrect is called and when sliceview elements are measured
+     * 
+     */
+
+    const scheduleRecompute = () => this.#scheduleRecompute()
+
+    const patchSliceViewPanel = (
+      sliceViewPanel: export_nehuba.SliceViewPanel
+    ) => {
+      if (this.#patchedSliceViewPanels.has(sliceViewPanel)) return;
+      const { sliceviewToElementWeakMap } = this;
+      this.#patchedSliceViewPanels.add(sliceViewPanel);
+      const originalDraw = sliceViewPanel.draw;
+      sliceViewPanel.draw = function () {
+        originalDraw.call(this)
+        // Once the panel's sliceView is populated and not yet mapped, signal a
+        // (batched) recompute. No measurement happens here — the gate means a
+        // resolved sliceView stops scheduling, so steady-state overhead is zero.
+        if (this.sliceView && !sliceviewToElementWeakMap.has(this.sliceView)) {
+          scheduleRecompute()
+        }
+      };
+    };
+    this.nehubaViewer.ngviewer.display.changed.add(() => {
+      if (!this.nehubaViewer) return
+      this.nehubaViewer.ngviewer.display.panels.forEach(patchSliceViewPanel)
+      this.#scheduleRecompute()
+    })
+  }
+
+  setLayerProperty(id: string, property: Partial<LayerProperties>) {
+    let { transform, visible } = property;
+    const layer = this.nehubaViewer?.ngviewer.layerManager.getLayerByName(id);
+    if (!layer) throw new Error(`layer with id '${id}' not found`);
+
+    if (typeof transform !== "undefined") {
+      const dataSources = layer.layer.dataSources;
+      if (dataSources.length !== 1) {
+        throw new Error(
+          `managed layer needs to have exactly 1 data source, but has ${dataSources.length} instead`
+        );
+      }
+      if (dataSources[0].loadState) {
+        const loadedStateXform = dataSources[0].loadState.transform;
+        const rank =loadedStateXform.defaultTransform.rank;
+        if (rank !== 3) {
+          if (rank !== 4) {
+            console.error(`Incoming default transform rank !== 4`)
+            return;
+          }
+          const oldxform = Array.from(transform);
+          // [1, 0, 0, x, 0, 1, 0, y, 0, 0, 1, z, 0, 0, 0, 1]
+          //         ^           ^           ^  ^        ^ 
+          //         0           0           0  0,0,0,1,0 0
+          oldxform.splice(15, 0, /* */ 0);
+          oldxform.splice(12, 0, /* */ 0, 0, 0, 1, 0);
+          oldxform.splice(11, 0, /* */ 0);
+          oldxform.splice( 7, 0, /* */ 0);
+          oldxform.splice( 3, 0, /* */ 0);
+
+          transform = new Float32Array(oldxform);
+        }
+        
+        loadedStateXform.value = {
+          ...loadedStateXform.value,
+          transform: transform,
+        };
+      }
+    }
+
+    if (typeof visible !== "undefined") {
+      layer.setVisible(visible)
+    }
+  }
+
+  setPosition(position: number[]) {
+    this.nehubaViewer?.ngviewer.navigationState.pose.position.restoreState(position)
+  }
+
+  setOrientation(orientation: number[]) {
+    this.nehubaViewer?.ngviewer.navigationState.pose.orientation.restoreState( orientation )
+  }
+}

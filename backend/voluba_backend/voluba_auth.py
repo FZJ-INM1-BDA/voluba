@@ -62,7 +62,10 @@ async def login_via_ebrains(request: Request, state: str = None):
     kwargs = {}
     if state:
         kwargs["state"] = state
-    return await oauth.ebrains.authorize_redirect(request, redirect_uri=voluba_config.EBRAINS_IAM_REDIRECT_URL, **kwargs)
+    
+    base_url = str(request.base_url).replace("http://", "https://", 1)
+    redirect_uri = base_url.rstrip("/") + "/hbp-oidc-v2/cb"
+    return await oauth.ebrains.authorize_redirect(request, redirect_uri=voluba_config.EBRAINS_IAM_REDIRECT_URL or redirect_uri, **kwargs)
 
 @router.get("/hbp-oidc-v2/cb")
 async def ebrains_callback(request: Request):
@@ -73,7 +76,10 @@ async def ebrains_callback(request: Request):
         request.session[voluba_config.PROFILE_KEY],
         process_hbp_user(token)
     )
-    return RedirectResponse(voluba_config.HOSTNAME)
+    
+    base_url = str(request.base_url).replace("http://", "https://", 1)
+    redirect_uri = base_url.rstrip("/") + "/"
+    return RedirectResponse(voluba_config.HOSTNAME or redirect_uri)
 
 
 def process_orcid_user(resp):
@@ -95,7 +101,10 @@ async def login_via_orcid(request: Request, state: str = None):
     kwargs = {}
     if state:
         kwargs["state"] = state
-    return await oauth.orcid.authorize_redirect(request, redirect_uri=voluba_config.ORCID_REDIRECT_URL, **kwargs)
+
+    base_url = str(request.base_url).replace("http://", "https://", 1)
+    redirect_uri = base_url.rstrip("/") + "/orcid-oidc/cb"
+    return await oauth.orcid.authorize_redirect(request, redirect_uri=voluba_config.ORCID_REDIRECT_URL or redirect_uri, **kwargs)
 
 @router.get("/orcid-oidc/cb")
 async def orcid_callback(request: Request):
@@ -106,7 +115,10 @@ async def orcid_callback(request: Request):
         request.session[voluba_config.PROFILE_KEY],
         process_orcid_user(token)
     )
-    return RedirectResponse(voluba_config.HOSTNAME)
+    
+    base_url = str(request.base_url).replace("http://", "https://", 1)
+    redirect_uri = base_url.rstrip("/") + "/"
+    return RedirectResponse(voluba_config.HOSTNAME or redirect_uri)
 
 
 
@@ -115,7 +127,7 @@ async def logout(request: Request):
     token_store.delete_value(
         request.session.pop(voluba_config.PROFILE_KEY, None)
     )
-    return RedirectResponse(voluba_config.HOSTNAME)
+    return RedirectResponse(voluba_config.HOSTNAME or "/")
 
 
 class S2SToken:

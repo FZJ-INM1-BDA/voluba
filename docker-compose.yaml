@@ -1,0 +1,8 @@
+version: "3"
+
+services:
+  frontend:
+    container_name: voluba
+    image: docker-registry.ebrains.eu/voluba/voluba:rf_rewriteFrontend
+    ports:
+      - "10080:8080"

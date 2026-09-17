@@ -1,7 +1,12 @@
+class RefSpaceName:
+    BIG_BRAIN = "Big Brain (2015 Release)"
+    WAXHOLM = "Waxholm Space of the Sprague Dawley v1.01"
+    ALLEN_CCFV3 = "Allen Mouse Common Coordinate Framework v3"
+
 SPC_NAME_TO_ID_VOCAB = {
-    'BigBrain (2015)': 'minds/core/referencespace/v1.0.0/a1655b99-82f1-420f-a3c2-fe80fd4c8588',
-    'waxholm': 'minds/core/referencespace/v1.0.0/d5717c4a-0fa1-46e6-918c-b8003069ade8',
-    'allen': 'minds/core/referencespace/v1.0.0/265d32a0-3d84-40a5-926f-bf89f68212b9',
+    RefSpaceName.BIG_BRAIN: 'minds/core/referencespace/v1.0.0/a1655b99-82f1-420f-a3c2-fe80fd4c8588',
+    RefSpaceName.WAXHOLM: 'minds/core/referencespace/v1.0.0/d5717c4a-0fa1-46e6-918c-b8003069ade8',
+    RefSpaceName.ALLEN_CCFV3: 'minds/core/referencespace/v1.0.0/265d32a0-3d84-40a5-926f-bf89f68212b9',
 }
 
 class KG_IDS:
@@ -15,9 +20,9 @@ class KG_IDS:
 
 
 SPC_NAME_TO_KG_ID = {
-    'BigBrain (2015)': KG_IDS.BIGBRAIN_CCSV_ID,
-    'waxholm': KG_IDS.WAXHOLM_CCSV_ID,
-    'allen': KG_IDS.ALLEN_CCSV_ID,
+    RefSpaceName.BIG_BRAIN: KG_IDS.BIGBRAIN_CCSV_ID,
+    RefSpaceName.WAXHOLM: KG_IDS.WAXHOLM_CCSV_ID,
+    RefSpaceName.ALLEN_CCFV3: KG_IDS.ALLEN_CCSV_ID,
 }
 
 class KG_INSTANCES:

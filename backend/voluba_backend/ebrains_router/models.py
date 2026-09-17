@@ -32,7 +32,7 @@ class WorkflowV1_1(BaseModel):
     reference_volume: str = Field(..., alias="referenceVolume")
     version: Union[int, float, str]
     _type:str = Field(..., alias="@type")
-    transform_matrix_in_nm: List[List[float]] = Field(..., alias="transformMatrixInNm")
+    transform: List[float]
     description: str = ''
 
 class StartWorkflowResp(BaseModel):
