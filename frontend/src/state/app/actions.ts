@@ -70,6 +70,7 @@ export const navigateTo = createAction(
   `[${nameSpace}] navigateTo`,
   props<{
     position: number[]
+    viewer?: 'primary' | 'secondary'
   }>()
 )
 

@@ -444,9 +444,13 @@ export class ViewerComponent implements AfterViewInit {
       sliceView: export_nehuba.SliceView;
       mouseDownEvent: MouseEvent;
     } | null> = this.viewerWrapper.mousedownSliceView.pipe(
-      withLatestFrom(this.incLocked$, this.#isAddingLm$),
-      switchMap(([{ sliceView, event }, incLocked, isAddingLm]) => {
-        if (!sliceView || !this.mouseInteractive || incLocked || isAddingLm) {
+      withLatestFrom(
+        this.incLocked$,
+        this.#isAddingLm$,
+        this.store.pipe(select(appState.selectors.isDefaultMode)),
+      ),
+      switchMap(([{ sliceView, event }, incLocked, isAddingLm, isDefaultMode]) => {
+        if (!sliceView || !this.mouseInteractive || incLocked || isAddingLm || !isDefaultMode) {
           return NEVER
         }
         return this.mouseInteractive.volubaDrag.pipe(
@@ -565,13 +569,14 @@ export class ViewerComponent implements AfterViewInit {
     this.actions$.pipe(
       ofType(appState.actions.navigateTo),
       takeUntil(this.#destroyed$),
-    ).subscribe(({ position }) => {
+    ).subscribe(({ position, viewer }) => {
       if (!this.viewerWrappers) {
         return
       }
-      this.viewerWrappers.forEach(vw => {
-        vw.setPosition(position)
-      })
+      const alias = viewer === 'secondary' ? 'secondaryViewer' : 'nehubaViewer'
+      this.viewerWrappers
+        .filter(vw => vw.nehubaAlias === alias)
+        .forEach(vw => vw.setPosition(position))
     })
 
     this.#mousedownLm.pipe(

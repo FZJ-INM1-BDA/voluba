@@ -53,25 +53,30 @@ export class ListviewComponent {
   }
 
   async onClickLocation(landmark: Landmark) {
-    const [ inc, xform ] = await firstValueFrom(
+    const [ inc, xform, isDefaultMode ] = await firstValueFrom(
       combineLatest([
         this.store.pipe(
           select(inputs.selectors.selectedIncoming)
         ),
         this.store.pipe(
           outputs.selectors.getIncXform()
+        ),
+        this.store.pipe(
+          select(appState.selectors.isDefaultMode)
         )
       ])
     )
     const position = [...landmark.position]
     const { vec3 } = export_nehuba
-    if (landmark.targetVolumeId === inc?.id) {
+    const isIncoming = landmark.targetVolumeId === inc?.id
+    if (isIncoming) {
       vec3.transformMat4(position, position, xform)
     }
 
     this.store.dispatch(
       appState.actions.navigateTo({
-        position
+        position,
+        viewer: (isIncoming && !isDefaultMode) ? 'secondary' : 'primary',
       })
     )
   }
